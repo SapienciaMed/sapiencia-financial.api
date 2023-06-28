@@ -25,11 +25,6 @@ Route.get("/", async () => {
 });
 
 Route.group(() => {
-  Route.get(
-    "/get-by-grouper/:grouper",
-    "FundsController.getFundsById"
-  );
-  Route.get("/get-by-parent", "FundsController.getFundsByParent");
-  Route.get("/get-by-groupers", "FundsController.getFundsByIds");
-}).prefix("/api/v1/generic-list");
+  Route.get("/get-by-id/:id", "FundsController.getFundsById");
+}).prefix("/api/v1/Funds");
 // .middleware("auth");
