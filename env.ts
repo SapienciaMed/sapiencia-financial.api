@@ -18,10 +18,6 @@ export default Env.rules({
   HOST: Env.schema.string({ format: "host" }),
   PORT: Env.schema.number(),
   APP_KEY: Env.schema.string(),
-  SECRET_REFRESH: Env.schema.string(),
-  SECRET_RECOVERY: Env.schema.string(),
-  TOKEN_LIFETIME: Env.schema.string(),
-  TOKEN_RECOVERY_LIFETIME: Env.schema.string(),
 
   APP_NAME: Env.schema.string(),
   DRIVE_DISK: Env.schema.enum(["local"] as const),
