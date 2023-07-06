@@ -32,5 +32,9 @@ Route.group(() => {
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "BudgetsController.getBudgetsById");
-}).prefix("/api/v1/funds");
+}).prefix("/api/v1/budgets");
+
+Route.group(() => {
+  Route.get("/get-all", "EntitiesController.getEntities")
+}).prefix("/api/v1/entities")
 // .middleware("auth");
