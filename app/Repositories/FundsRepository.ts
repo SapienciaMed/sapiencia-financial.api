@@ -35,6 +35,8 @@ export default class FundsRepository implements IFundsRepository {
       query.where("dateTo", filters.entity);
     }*/
 
+    await query.preload('entity');
+
     const res = await query.paginate(filters.page, filters.perPage);
 
     const { data, meta } = res.serialize();
