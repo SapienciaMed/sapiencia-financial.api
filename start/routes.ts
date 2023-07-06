@@ -26,5 +26,10 @@ Route.get("/", async () => {
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "FundsController.getFundsById");
+  Route.post("/get-paginated", "FundsController.getFundsPaginated");
 }).prefix("/api/v1/funds");
+
+Route.group(() => {
+  Route.get("/get-all", "EntitiesController.getEntities")
+}).prefix("/api/v1/entities")
 // .middleware("auth");

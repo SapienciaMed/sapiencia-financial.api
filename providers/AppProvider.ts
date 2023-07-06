@@ -10,6 +10,7 @@ export default class AppProvider {
     /******************************** SERVICES ********************************/
     /**************************************************************************/
     const FundsService = await import("App/Services/FundsService");
+    const EntitiesService = await import("App/Services/EntitiesService");
 
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
@@ -21,6 +22,9 @@ export default class AppProvider {
     const FundsRepository = await import(
       "App/Repositories/FundsRepository"
     );
+    const EntitiesRepository = await import(
+      "App/Repositories/EntitiesRepository"
+    );
 
     /**************************************************************************/
     /******************************** CORE  ***********************************/
@@ -29,6 +33,10 @@ export default class AppProvider {
     this.app.container.singleton(
       "core.FundsProvider",
       () => new FundsService.default(new FundsRepository.default())
+    );
+    this.app.container.singleton(
+      "core.EntitiesProvider",
+      () => new EntitiesService.default(new EntitiesRepository.default())
     );
   }
 

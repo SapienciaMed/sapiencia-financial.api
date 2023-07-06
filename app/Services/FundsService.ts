@@ -1,10 +1,13 @@
-import { IFunds } from "App/Interfaces/FundsInterfaces";
+import { IFunds, IFundsFilters } from "App/Interfaces/FundsInterfaces";
 import { IFundsRepository } from "App/Repositories/FundsRepository";
-import { ApiResponse } from "App/Utils/ApiResponses";
+import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
 
 export interface IFundsService {
   getFundsById(id: number): Promise<ApiResponse<IFunds>>;
+  getFundsPaginated(
+    filters: IFundsFilters
+  ): Promise<ApiResponse<IPagingData<IFunds>>>;
 }
 
 export default class FundsService implements IFundsService {
@@ -20,6 +23,14 @@ export default class FundsService implements IFundsService {
         "Registro no encontrado"
       );
     }
+
+    return new ApiResponse(res, EResponseCodes.OK);
+  }
+
+  async getFundsPaginated(
+    filters: IFundsFilters
+  ): Promise<ApiResponse<IPagingData<IFunds>>> {
+    const res = await this.fundsRepository.getFundsPaginated(filters);
 
     return new ApiResponse(res, EResponseCodes.OK);
   }
