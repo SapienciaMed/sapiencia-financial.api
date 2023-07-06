@@ -18,6 +18,14 @@ export default class extends BaseSchema {
       .notNullable()
       .comment("Numero del fondo");
       table
+      .string("FND_DENOMINACION", 100)
+      .notNullable()
+      .comment("Denominación");
+      table
+      .string("FND_DESCRIPCION", 500)
+      .notNullable()
+      .comment("Descripción");
+      table
       .timestamp("FND_VIGENTE_DESDE")
       .notNullable()
       .comment("Fecha de inicio de la vigencia");

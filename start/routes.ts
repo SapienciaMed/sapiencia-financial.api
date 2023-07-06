@@ -28,8 +28,9 @@ Route.group(() => {
   Route.get("/get-by-id/:id", "FundsController.getFundsById");
   Route.post("/get-paginated", "FundsController.getFundsPaginated");
 }).prefix("/api/v1/funds");
+// .middleware("auth");
 
 Route.group(() => {
-  Route.get("/get-all", "EntitiesController.getEntities")
-}).prefix("/api/v1/entities")
+  Route.get("/get-by-id/:id", "BudgetsController.getBudgetsById");
+}).prefix("/api/v1/funds");
 // .middleware("auth");
