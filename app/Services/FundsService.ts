@@ -8,6 +8,8 @@ export interface IFundsService {
   getFundsPaginated(
     filters: IFundsFilters
   ): Promise<ApiResponse<IPagingData<IFunds>>>;
+  createFund(fund: IFunds): Promise<ApiResponse<IFunds>>;
+  updateFund(fund: IFunds, id: number): Promise<ApiResponse<IFunds>>;
 }
 
 export default class FundsService implements IFundsService {
@@ -31,6 +33,25 @@ export default class FundsService implements IFundsService {
     filters: IFundsFilters
   ): Promise<ApiResponse<IPagingData<IFunds>>> {
     const res = await this.fundsRepository.getFundsPaginated(filters);
+
+    return new ApiResponse(res, EResponseCodes.OK);
+  }
+
+  async createFund(fund: IFunds): Promise<ApiResponse<IFunds>> {
+    const res = await this.fundsRepository.createFund(fund);
+    return new ApiResponse(res, EResponseCodes.OK);
+  }
+
+  async updateFund(fund: IFunds, id: number): Promise<ApiResponse<IFunds>> {
+    const res = await this.fundsRepository.updateFund(fund, id);
+
+    if (!res) {
+      return new ApiResponse(
+        {} as IFunds,
+        EResponseCodes.FAIL,
+        "El registro indicado no existe"
+      );
+    }
 
     return new ApiResponse(res, EResponseCodes.OK);
   }

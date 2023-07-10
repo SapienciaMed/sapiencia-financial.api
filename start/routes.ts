@@ -27,6 +27,8 @@ Route.get("/", async () => {
 Route.group(() => {
   Route.get("/get-by-id/:id", "FundsController.getFundsById");
   Route.post("/get-paginated", "FundsController.getFundsPaginated");
+  Route.post("/create", "FundsController.createFund");
+  Route.put("/update/:id", "FundsController.updateFund");
 }).prefix("/api/v1/funds");
 // .middleware("auth");
 

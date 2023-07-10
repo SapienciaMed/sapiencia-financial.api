@@ -12,13 +12,13 @@ export default class Funds extends BaseModel {
   public entityId: number;
 
   @column({ columnName: "FND_NUMERO", serializeAs: "number" })
-  public number: number
+  public number: number;
 
   @column({ columnName: "FND_DENOMINACION", serializeAs: "denomination" })
-  public denomination: number
+  public denomination: string;
 
   @column({ columnName: "FND_DESCRIPCION", serializeAs: "description" })
-  public description: number
+  public description: string;
 
   @column({ columnName: "FND_VIGENTE_DESDE", serializeAs: "dateFrom" })
   public dateFrom: DateTime;
@@ -27,10 +27,10 @@ export default class Funds extends BaseModel {
   public dateTo: DateTime;
 
   @column({ columnName: "FND_USUARIO_MODIFICO", serializeAs: "userModify" })
-  public userModify: DateTime;
+  public userModify: string;
 
   @column({ columnName: "FND_FECHA_MODIFICO", serializeAs: "dateModify" })
-  public dateModify: DateTime;
+  public dateModify: Date;
 
   @column({ columnName: "FND_USUARIO_CREO", serializeAs: "userCreate" })
   public userCreate: string;
@@ -48,4 +48,5 @@ export default class Funds extends BaseModel {
     serializeAs: "entity",
   })
   public entity: HasOne<typeof Entities>;
+  toUpdate: Date;
 }

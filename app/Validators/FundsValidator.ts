@@ -23,12 +23,20 @@ export default class FundsValidator {
    *     ])
    *    ```
    */
-  public schema = schema.create({
-    name: schema.string(),
-    description: schema.string(),
-    aplicationId: schema.number(),
-  });
+  public secondSchema = schema.create({
 
+  })
+
+  public schema = schema.create({
+    entityId: schema.number(),
+    number: schema.number(),
+    denomination: schema.string(),
+    description: schema.string(),
+    dateFrom: schema.date(),
+    dateTo: schema.date(),
+    userModify: schema.string.optional(),
+    userCreate: schema.string.optional(),
+  });
   /**
    * Custom messages for validation failures. You can make use of dot notation `(.)`
    * for targeting nested fields and array expressions `(*)` for targeting all
