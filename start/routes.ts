@@ -25,11 +25,16 @@ Route.get("/", async () => {
 });
 
 Route.group(() => {
-  Route.get(
-    "/get-by-grouper/:grouper",
-    "FundsController.getFundsById"
-  );
-  Route.get("/get-by-parent", "FundsController.getFundsByParent");
-  Route.get("/get-by-groupers", "FundsController.getFundsByIds");
-}).prefix("/api/v1/generic-list");
+  Route.get("/get-by-id/:id", "FundsController.getFundsById");
+  Route.post("/get-paginated", "FundsController.getFundsPaginated");
+}).prefix("/api/v1/funds");
+// .middleware("auth");
+
+Route.group(() => {
+  Route.get("/get-by-id/:id", "BudgetsController.getBudgetsById");
+}).prefix("/api/v1/budgets");
+
+Route.group(() => {
+  Route.get("/get-all", "EntitiesController.getEntities")
+}).prefix("/api/v1/entities")
 // .middleware("auth");
