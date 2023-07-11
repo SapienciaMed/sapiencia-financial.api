@@ -4,7 +4,7 @@ import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { ApiResponse } from "App/Utils/ApiResponses";
 
 export default class EntitiesController {
-  public async getEntities({ request, response }: HttpContextContract) {
+  public async getEntities({ response }: HttpContextContract) {
     try {
       return response.send(await EntitiesProvider.getEntities());
     } catch (err) {

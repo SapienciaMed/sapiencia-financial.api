@@ -2,7 +2,6 @@ import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import BudgetsProvider from "@ioc:core.BudgetsProvider";
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { ApiResponse } from "App/Utils/ApiResponses";
-import BudgetsValidator from "App/Validators/BudgetsValidator";
 
 export default class BudgetsController {
   public async getBudgetsById({ request, response }: HttpContextContract) {
