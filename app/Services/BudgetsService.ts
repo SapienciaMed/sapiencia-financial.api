@@ -23,7 +23,7 @@ export default class BudgetsService implements IBudgetsService {
     if (!res) {
       return new ApiResponse(
         {} as IBudgets,
-        EResponseCodes.FAIL,
+        EResponseCodes.WARN,
         "Registro no encontrado"
       );
     }
