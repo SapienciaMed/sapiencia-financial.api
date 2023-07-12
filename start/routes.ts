@@ -34,6 +34,9 @@ Route.group(() => {
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "BudgetsController.getBudgetsById");
+  Route.post("/get-paginated", "BudgetsController.getBudgetsPaginated");
+  Route.post("/create", "BudgetsController.createBudgets");
+  Route.put("/update/:id", "BudgetsController.updateBudgets");
 }).prefix("/api/v1/budgets");
 
 Route.group(() => {
