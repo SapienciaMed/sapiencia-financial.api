@@ -1,0 +1,40 @@
+/api/v1/entities/get-all:
+  post:
+    tags:
+      - Entities
+    summary: Permite la consulta de las entidades disponibles
+    produces:
+      - application/json
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Entities"
+            examples:
+              Consulta:
+                value:
+                  {
+                    "data":
+                      [
+                        { "id": 1, "name": "TEST" },
+                        { "id": 2, "name": "SAPI" },
+                        { "id": 3, "name": "FMCN" },
+                      ],
+                    "operation": { "code": "OK" },
+                  }
+    security:
+      - apiAuth: []
+
+components:
+  schemas:
+    Entities:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1
+        name:
+          type: string
+          example: "SAPI"
