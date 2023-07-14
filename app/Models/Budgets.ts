@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import Entities from "./Entities";
 
 export default class Budgets extends BaseModel {
-  public static table = "PPR_POSICION_PRESUPUESTARIA";
+  public static table = "PPR_POSICIONES_PRESUPUESTARIAS";
 
   @column({ isPrimary: true, columnName: "PPR_CODIGO", serializeAs: "id" })
   public id: number;
