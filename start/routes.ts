@@ -42,4 +42,11 @@ Route.group(() => {
 Route.group(() => {
   Route.get("/get-all", "EntitiesController.getEntities")
 }).prefix("/api/v1/entities")
+
+Route.group(() => {
+  Route.get("/get-by-id/:id", "PosPreSapienciaController.getPosPreSapienciaById");
+  Route.post("/get-paginated", "PosPreSapienciaController.getPosPreSapienciaPaginated");
+  Route.post("/create", "PosPreSapienciaController.createPosPreSapiencia");
+  Route.put("/update/:id", "PosPreSapienciaController.updatePosPreSapiencia");
+}).prefix("/api/v1/pospre-sapiencia");
 // .middleware("auth");

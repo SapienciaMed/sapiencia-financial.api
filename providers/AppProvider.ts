@@ -12,6 +12,7 @@ export default class AppProvider {
     const FundsService = await import("App/Services/FundsService");
     const EntitiesService = await import("App/Services/EntitiesService");
     const BudgetsService = await import("App/Services/BudgetsService");
+    const PosPreSapienciaService = await import("App/Services/PosPreSapienciaService");
 
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
@@ -28,6 +29,9 @@ export default class AppProvider {
     );
     const EntitiesRepository = await import(
       "App/Repositories/EntitiesRepository"
+    );
+    const PosPreSapienciaRepository = await import(
+      "App/Repositories/PosPreSapienciaRepository"
     );
 
 
@@ -47,6 +51,10 @@ export default class AppProvider {
     this.app.container.singleton(
       "core.EntitiesProvider",
       () => new EntitiesService.default(new EntitiesRepository.default())
+    );
+    this.app.container.singleton(
+      "core.PosPreSapienciaProvider",
+      () => new PosPreSapienciaService.default(new PosPreSapienciaRepository.default())
     );
   }
 
