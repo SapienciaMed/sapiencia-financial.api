@@ -21,7 +21,7 @@ export default class FundsService implements IFundsService {
     if (!res) {
       return new ApiResponse(
         {} as IFunds,
-        EResponseCodes.FAIL,
+        EResponseCodes.WARN,
         "Registro no encontrado"
       );
     }

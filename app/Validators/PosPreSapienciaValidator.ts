@@ -1,7 +1,7 @@
 import { schema, CustomMessages } from "@ioc:Adonis/Core/Validator";
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 
-export default class BudgetsValidator {
+export default class PosPreSapienciaValidator {
   constructor(protected ctx: HttpContextContract) {}
 
   /*
@@ -28,14 +28,14 @@ export default class BudgetsValidator {
   })
 
   public schema = schema.create({
-
-    entityId: schema.number(),
+    number: schema.string(),
+    budgetId: schema.number(),
     ejercise: schema.number(),
-    number: schema.number(),
     description: schema.string(),
-    userCreate: schema.string.optional(),
+    consecutive: schema.number(),
+    assignedTo: schema.string(),
     userModify: schema.string.optional(),
-    denomination: schema.string(),
+    userCreate: schema.string.optional()
   });
   /**
    * Custom messages for validation failures. You can make use of dot notation `(.)`

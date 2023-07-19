@@ -34,9 +34,19 @@ Route.group(() => {
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "BudgetsController.getBudgetsById");
+  Route.post("/get-paginated", "BudgetsController.getBudgetsPaginated");
+  Route.post("/create", "BudgetsController.createBudgets");
+  Route.put("/update/:id", "BudgetsController.updateBudgets");
 }).prefix("/api/v1/budgets");
 
 Route.group(() => {
   Route.get("/get-all", "EntitiesController.getEntities")
 }).prefix("/api/v1/entities")
+
+Route.group(() => {
+  Route.get("/get-by-id/:id", "PosPreSapienciaController.getPosPreSapienciaById");
+  Route.post("/get-paginated", "PosPreSapienciaController.getPosPreSapienciaPaginated");
+  Route.post("/create", "PosPreSapienciaController.createPosPreSapiencia");
+  Route.put("/update/:id", "PosPreSapienciaController.updatePosPreSapiencia");
+}).prefix("/api/v1/pospre-sapiencia");
 // .middleware("auth");
