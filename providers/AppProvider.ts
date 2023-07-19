@@ -13,7 +13,7 @@ export default class AppProvider {
     const EntitiesService = await import("App/Services/EntitiesService");
     const BudgetsService = await import("App/Services/BudgetsService");
     const PosPreSapienciaService = await import("App/Services/PosPreSapienciaService");
-
+    const VinculationMGAService = await import("App/Services/VinculationMGAService");
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -33,6 +33,10 @@ export default class AppProvider {
     const PosPreSapienciaRepository = await import(
       "App/Repositories/PosPreSapienciaRepository"
     );
+    const VinculationMGARepository = await import(
+      "App/Repositories/VinculationMGARepository"
+    );
+    
 
 
 
@@ -55,6 +59,10 @@ export default class AppProvider {
     this.app.container.singleton(
       "core.PosPreSapienciaProvider",
       () => new PosPreSapienciaService.default(new PosPreSapienciaRepository.default())
+    );
+    this.app.container.singleton(
+      "core.VinculationMGAProvider",
+      () => new VinculationMGAService.default(new VinculationMGARepository.default())
     );
   }
 

@@ -19,6 +19,7 @@
 */
 
 import Route from "@ioc:Adonis/Core/Route";
+import VinculationMGAController from "App/Controllers/Http/VinculationMGAController";
 
 Route.get("/", async () => {
   return "Api de servicios Transversales de SAPIENCIA";
@@ -49,4 +50,13 @@ Route.group(() => {
   Route.post("/create", "PosPreSapienciaController.createPosPreSapiencia");
   Route.put("/update/:id", "PosPreSapienciaController.updatePosPreSapiencia");
 }).prefix("/api/v1/pospre-sapiencia");
+
+Route.group(() => {
+  Route.get("/get-by-id/:id", "VinculationMGAController.getVinculationMGAById");
+  Route.post("/get-paginated", "VinculationMGAController.getVinculationMGAPaginated");
+  Route.post("/create", "VinculationMGAController.createVinculationMGA");
+  Route.post("/delete", "VinculationMGAController.deleteVinculationMGA");
+}).prefix("/api/v1/vinculation-mga");
+
+
 // .middleware("auth");
