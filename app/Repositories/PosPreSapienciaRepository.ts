@@ -6,7 +6,7 @@ import { DateTime } from "luxon";
 export interface IPosPreSapienciaRepository {
     getPosPreSapienciaById(id:number): Promise<IPosPreSapiencia | null>;
     getPosPreSapienciaPaginated(filters: IFiltersPosPreSapiencia): Promise<IPagingData<IPosPreSapiencia>>;
-    createPosPreSapiencia(posPreSapiencia: IPosPreSapiencia): Promise<IPosPreSapiencia>;
+    createPosPreSapiencia(posPreSapiencia: IPosPreSapiencia): Promise<IPosPreSapiencia | null>;
     updatePosPreSapiencia(posPreSapiencia: IPosPreSapiencia, id: number): Promise<IPosPreSapiencia | null>;
 }
 
@@ -26,6 +26,10 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
       query.where("budgetId", filters.budgetId);
     }
 
+    if(filters.number) {
+      query.where("number", filters.number)
+    }
+
     await query.preload('budget');
 
     const res = await query.paginate(filters.page, filters.perPage);
@@ -38,7 +42,13 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
     };
   }
 
-  async createPosPreSapiencia(posPreSapiencia: IPosPreSapiencia): Promise<IPosPreSapiencia> {
+  async createPosPreSapiencia(posPreSapiencia: IPosPreSapiencia): Promise<IPosPreSapiencia | null> {
+    const consecutive = await PosPreSapiencia.query().where("consecutive", posPreSapiencia.consecutive).andWhere("budgetId", posPreSapiencia.budgetId);
+
+    if(consecutive.length != 0) {
+      return null;
+    }
+
     const toCreatePosPreSapiencia = new PosPreSapiencia();
     toCreatePosPreSapiencia.fill({ ...posPreSapiencia });
     await toCreatePosPreSapiencia.save();
@@ -47,13 +57,24 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
   }
 
   async updatePosPreSapiencia(posPreSapiencia: IPosPreSapiencia, id: number): Promise<IPosPreSapiencia | null> {
+
     const toUpdate = await PosPreSapiencia.find(id);
     if (!toUpdate) {
       return null;
     }
 
-    
+    const consecutive = await PosPreSapiencia.query().where("consecutive", posPreSapiencia.consecutive).andWhere("id", "<>", toUpdate.id).andWhere("budgetId", posPreSapiencia.budgetId);
+
+    if(consecutive.length != 0) {
+      return null;
+    }
+
     toUpdate.dateModify = DateTime.local().toJSDate();
+    toUpdate.consecutive = posPreSapiencia.consecutive;
+    toUpdate.ejercise = posPreSapiencia.ejercise;
+    toUpdate.number = posPreSapiencia.number;
+    toUpdate.description = posPreSapiencia.description;
+
     if(posPreSapiencia.userModify) {
       toUpdate.userModify = posPreSapiencia.userModify;
     }
