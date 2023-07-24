@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { IFunctionalArea } from "./FunctionalAreaInterfaces";
 
-export interface IProyectVinculation {
+export interface IProyects {
   id?: number;
   entity?: IFunctionalArea,
   codeProyect:number,
@@ -13,7 +13,7 @@ export interface IProyectVinculation {
   
 }
 
-export interface IFunctionalAreaFilters {
+export interface IProyectsFilters {
   page: number;
   perPage: number;
   entity?: IFunctionalArea,
@@ -21,6 +21,4 @@ export interface IFunctionalAreaFilters {
   name: string;
   plannedValue: number;
   budgetValue:number;
-  userCreate?: string;
-  dateCreate?: DateTime;
 }

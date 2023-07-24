@@ -1,5 +1,4 @@
 import { DateTime } from "luxon";
-import { IEntities } from "./EntitiesInterfaces";
 
 export interface IFunctionalArea {
   id?: number;

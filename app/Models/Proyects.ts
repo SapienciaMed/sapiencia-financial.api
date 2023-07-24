@@ -2,14 +2,14 @@ import { BaseModel, HasOne, column, hasOne } from "@ioc:Adonis/Lucid/Orm";
 import { DateTime } from "luxon";
 import FuntionalAreas from "./FunctionalArea";
 
-export default class ProyectVinculation  extends BaseModel {
+export default class Proyects  extends BaseModel {
   public static table = "VPY_VINCULACIONES_PROYECTO";
 
   @column({ isPrimary: true, columnName: "VPY_CODIGO", serializeAs: "id" })
   public id: number;
 
   @column({ columnName: "VPY_CODARF_AREA_FUNCIONAL", serializeAs: "areaFunctionalCodeId" })
-  public areaFunctionalCode: number;
+  public areaFunctionalCodeId: number;
   
   @column({ columnName: "VPY_CODIGO_PROYECTO", serializeAs: "codeProyect" })
   public codeProyect: string;
