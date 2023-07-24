@@ -9,6 +9,7 @@ export interface IVinculationMGAService {
     getVinculationMGAPaginated(filters: IFiltersVinculationMGA): Promise<ApiResponse<IPagingData<IActivityMGA>>>;
     createVinculationMGA(vinculationMGA: ICrudVinculation): Promise<ApiResponse<IVinculationMGA[]>>;
     deleteVinculationMGA( id: ICrudVinculation): Promise<ApiResponse<boolean>>;
+    
 }
 
 export default class VinculationMGAService implements IVinculationMGAService {

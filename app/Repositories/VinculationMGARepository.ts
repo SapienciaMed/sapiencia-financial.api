@@ -34,7 +34,9 @@ export default class VinculationMGARepository
     filters: IFiltersVinculationMGA
   ): Promise<IPagingData<IActivityMGA>> {
     const query = ActivitiesMGA.query();
-
+    if(filters.mgaId){
+      await query.where("id",filters.mgaId);
+    }
     query.preload("vinculation");
 
     query.doesntHave("vinculation").orWhereHas("vinculation", (builder) => {
@@ -47,9 +49,11 @@ export default class VinculationMGARepository
 
     const nonNullObjects = data.filter((obj) => obj.vinculation !== null);
     const nullObjects = data.filter((obj) => obj.vinculation === null);
+    const objectReturn = filters.active ? nonNullObjects :  nonNullObjects.concat(nullObjects);
     return {
-      array: nonNullObjects.concat(nullObjects) as IActivityMGA[],
+      array:  objectReturn as IActivityMGA[],
       meta,
+      
     };
   }
 

@@ -22,6 +22,8 @@ export interface IFiltersVinculationMGA {
   page: number;
   perPage: number;
   budgetId: number;
+  mgaId?:number;
+  active?:boolean;
 }
 
 export interface ICrudVinculation{
