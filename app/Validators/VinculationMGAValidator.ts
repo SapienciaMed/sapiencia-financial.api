@@ -1,6 +1,5 @@
 import { schema, CustomMessages } from "@ioc:Adonis/Core/Validator";
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import ActivitiesMGA from "App/Models/ActivitiesMGA";
 
 export default class VinculationMGAValidator {
   constructor(protected ctx: HttpContextContract) {}

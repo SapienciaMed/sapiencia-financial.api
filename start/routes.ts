@@ -19,7 +19,6 @@
 */
 
 import Route from "@ioc:Adonis/Core/Route";
-import VinculationMGAController from "App/Controllers/Http/VinculationMGAController";
 
 Route.get("/", async () => {
   return "Api de servicios Transversales de SAPIENCIA";

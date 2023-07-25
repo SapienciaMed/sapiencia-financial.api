@@ -1,6 +1,5 @@
 import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
-import { IActivityMGA } from "App/Interfaces/VinculationMGAInterfaces";
 import { IFunctionalArea,IFunctionalAreaFilters} from "App/Interfaces/FunctionalAreaInterfaces";
 import { IFunctionalAreaRepository} from "App/Repositories/FunctionalAreaRepository";
 import { DateTime } from "luxon";
