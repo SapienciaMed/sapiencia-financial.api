@@ -58,5 +58,10 @@ Route.group(() => {
   Route.post("/delete", "VinculationMGAController.deleteVinculationMGA");
 }).prefix("/api/v1/vinculation-mga");
 
+Route.group(() => {
+  Route.get("/get-by-id/:id", "FunctionalAreaController.getFunctionalAreaById");
+  Route.post("/get-paginated", "FunctionalAreaController.getFunctionalAreaPaginated");
+}).prefix("/api/v1/functional-area");
+
 
 // .middleware("auth");

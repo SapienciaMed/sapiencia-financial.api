@@ -7,8 +7,8 @@ export default class FunctionalArea  extends BaseModel {
   @column({ isPrimary: true, columnName: "ARF_CODIGO", serializeAs: "id" })
   public id: number;
 
-  @column({ columnName: "ARF_CODIGO_REFERENCIA", serializeAs: "areaFunctionalCode" })
-  public areaFunctionalCode: string;
+  @column({ columnName: "ARF_CODIGO_REFERENCIA", serializeAs: "number" })
+  public number: string;
   
   @column({ columnName: "ARF_DENOMINACION", serializeAs: "denomination" })
   public denomination: number;
