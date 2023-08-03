@@ -37,6 +37,15 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
 
     async createPosPreSapiencia(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia>> {
         const res = await this.posPreSapienciaRepository.createPosPreSapiencia(posPreSapiencia);
+
+        if (!res) {
+            return new ApiResponse(
+                {} as IPosPreSapiencia,
+                EResponseCodes.FAIL,
+                "Ya existe un consecutivo asociado a este Pospre"
+            );
+        }
+        
         return new ApiResponse(res, EResponseCodes.OK);
     }
 
@@ -47,7 +56,7 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
             return new ApiResponse(
                 {} as IPosPreSapiencia,
                 EResponseCodes.FAIL,
-                "El registro indicado no existe"
+                "Ya existe un consecutivo asociado a este Pospre"
             );
         }
 

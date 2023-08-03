@@ -20,4 +20,5 @@ export interface IFiltersPosPreSapiencia {
   page: number;
   perPage: number;
   budgetId: number;
+  number: string;
 }
