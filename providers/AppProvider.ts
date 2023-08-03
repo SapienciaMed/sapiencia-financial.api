@@ -15,6 +15,7 @@ export default class AppProvider {
     const PosPreSapienciaService = await import("App/Services/PosPreSapienciaService");
     const VinculationMGAService = await import("App/Services/VinculationMGAService");
     const FunctionalAreaService = await import("App/Services/FunctionalAreaService");
+    const ProjectsService = await import("App/Services/ProjectsService");
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -39,6 +40,9 @@ export default class AppProvider {
     );
     const FunctionalAreaRepository = await import(
       "App/Repositories/FunctionalAreaRepository"
+    );
+    const ProjectsRepository = await import(
+      "App/Repositories/ProjectsRepository"
     );
     
 
@@ -72,6 +76,10 @@ export default class AppProvider {
     this.app.container.singleton(
       "core.FunctionalAreaProvider",
       () => new FunctionalAreaService.default(new FunctionalAreaRepository.default())
+    );
+    this.app.container.singleton(
+      "core.ProjectsProvider",
+      () => new ProjectsService.default(new ProjectsRepository.default())
     );
   }
 

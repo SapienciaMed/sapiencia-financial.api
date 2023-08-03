@@ -11,10 +11,10 @@ export default class FunctionalArea  extends BaseModel {
   public number: string;
   
   @column({ columnName: "ARF_DENOMINACION", serializeAs: "denomination" })
-  public denomination: number;
+  public denomination: string;
 
   @column({ columnName: "ARF_DESCRIPCION", serializeAs: "description" })
-  public description: number;
+  public description: string;
 
   @column({ columnName: "ARF_USUARIO_CREO", serializeAs: "userCreate" })
   public userCreate: string;

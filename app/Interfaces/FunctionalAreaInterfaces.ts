@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 
 export interface IFunctionalArea {
   id?: number;
-  areaFunctionalCode: number;
+  number: string;
   denomination: string;
   description: string;
   userCreate?: string;

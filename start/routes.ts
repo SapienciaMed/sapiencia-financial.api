@@ -60,7 +60,19 @@ Route.group(() => {
 Route.group(() => {
   Route.get("/get-by-id/:id", "FunctionalAreaController.getFunctionalAreaById");
   Route.post("/get-paginated", "FunctionalAreaController.getFunctionalAreaPaginated");
+  Route.post("/create", "FunctionalAreaController.createFunctionalArea");
+  Route.put("/update/:id", "FunctionalAreaController.updateFunctionalArea");
+  Route.post("/link/create", "FunctionalAreaController.createProjectFunctionalArea");
+  Route.post("/link/update", "FunctionalAreaController.updateProjectFunctionalArea");
+  Route.delete("/link/delete/:id", "FunctionalAreaController.deleteProjectFunctionalArea");
+  Route.get("/link/get-all", "FunctionalAreaController.getAllProjectFunctionalArea");
+  Route.post("/link/get-paginated", "FunctionalAreaController.getProjectFunctionalAreaPaginated");
 }).prefix("/api/v1/functional-area");
+
+Route.group(() => {
+  Route.post("/get-paginated", "ProjectsController.getProjectsPaginated");
+  Route.get("/get-all", "ProjectsController.getAllProjects");
+}).prefix("/api/v1/projects");
 
 
 // .middleware("auth");
