@@ -13,7 +13,11 @@ export default class AppProvider {
     const EntitiesService = await import("App/Services/EntitiesService");
     const BudgetsService = await import("App/Services/BudgetsService");
     const PosPreSapienciaService = await import("App/Services/PosPreSapienciaService");
-
+    const VinculationMGAService = await import("App/Services/VinculationMGAService");
+    const FunctionalAreaService = await import("App/Services/FunctionalAreaService");
+    const ManagementCenterService = await import("App/Services/ManagementCenterService")
+    const TypesTransfersService = await import("App/Services/TypesTransfersService")
+    const ProjectsService = await import("App/Services/ProjectsService");
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -33,6 +37,21 @@ export default class AppProvider {
     const PosPreSapienciaRepository = await import(
       "App/Repositories/PosPreSapienciaRepository"
     );
+    const VinculationMGARepository = await import(
+      "App/Repositories/VinculationMGARepository"
+    );
+    const FunctionalAreaRepository = await import(
+      "App/Repositories/FunctionalAreaRepository"
+    );
+    const ProjectsRepository = await import(
+      "App/Repositories/ProjectsRepository"
+    );
+    const ManagementCenterRepository =await import(
+      "App/Repositories/ManagementCenterRepository"
+    )
+    const TypesTransfersRepository = await import(
+      "App/Repositories/TypeTransfersRepository"
+    )
 
 
 
@@ -55,6 +74,26 @@ export default class AppProvider {
     this.app.container.singleton(
       "core.PosPreSapienciaProvider",
       () => new PosPreSapienciaService.default(new PosPreSapienciaRepository.default())
+    );
+    this.app.container.singleton(
+      "core.VinculationMGAProvider",
+      () => new VinculationMGAService.default(new VinculationMGARepository.default())
+    );
+    this.app.container.singleton(
+      "core.FunctionalAreaProvider",
+      () => new FunctionalAreaService.default(new FunctionalAreaRepository.default())
+    );
+    this.app.container.singleton(
+      "core.ProjectsProvider",
+      () => new ProjectsService.default(new ProjectsRepository.default())
+    );
+    this.app.container.singleton(
+      "core.ManagementCenterProvider",
+      () => new ManagementCenterService.default(new ManagementCenterRepository.default())
+    );
+    this.app.container.singleton(
+      "core.TypesTransfersProvider",
+      () => new TypesTransfersService.default(new TypesTransfersRepository.default())
     );
   }
 

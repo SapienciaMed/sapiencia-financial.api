@@ -49,4 +49,39 @@ Route.group(() => {
   Route.post("/create", "PosPreSapienciaController.createPosPreSapiencia");
   Route.put("/update/:id", "PosPreSapienciaController.updatePosPreSapiencia");
 }).prefix("/api/v1/pospre-sapiencia");
+
+Route.group(() => {
+  Route.get("/get-by-id/:id", "VinculationMGAController.getVinculationMGAById");
+  Route.post("/get-paginated", "VinculationMGAController.getVinculationMGAPaginated");
+  Route.post("/create", "VinculationMGAController.createVinculationMGA");
+  Route.post("/delete", "VinculationMGAController.deleteVinculationMGA");
+}).prefix("/api/v1/vinculation-mga");
+
+Route.group(() => {
+  Route.get("/get-by-id/:id", "FunctionalAreaController.getFunctionalAreaById");
+  Route.post("/get-paginated", "FunctionalAreaController.getFunctionalAreaPaginated");
+  Route.post("/create", "FunctionalAreaController.createFunctionalArea");
+  Route.put("/update/:id", "FunctionalAreaController.updateFunctionalArea");
+  Route.post("/link/create", "FunctionalAreaController.createProjectFunctionalArea");
+  Route.post("/link/update", "FunctionalAreaController.updateProjectFunctionalArea");
+  Route.delete("/link/delete/:id", "FunctionalAreaController.deleteProjectFunctionalArea");
+  Route.get("/link/get-all", "FunctionalAreaController.getAllProjectFunctionalArea");
+  Route.post("/link/get-paginated", "FunctionalAreaController.getProjectFunctionalAreaPaginated");
+}).prefix("/api/v1/functional-area");
+
+Route.group(() => {
+  Route.post("/get-paginated", "ProjectsController.getProjectsPaginated");
+  Route.get("/get-all", "ProjectsController.getAllProjects");
+}).prefix("/api/v1/projects");
+
+
+Route.group(() => {
+  Route.get("/get-by-id/:id", "ManagementCenterController.getManagementCenterById");
+  Route.post("/get-paginated", "ManagementCenterController.getManagementCenterPaginated");
+}).prefix("/api/v1/management-center");
+
+Route.group(() => {
+  Route.get("/get-all", "TypesTransfersController.getTypeTransfers")
+}).prefix("/api/v1/type-transfers")
+
 // .middleware("auth");
