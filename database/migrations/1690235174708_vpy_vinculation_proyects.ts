@@ -20,17 +20,13 @@ export default class extends BaseSchema {
       .notNullable()
       .comment("Codigo del proyecto (Direccion Estrategica)");
       table
-      .string("VPY_NOMBRE",200)
-      .notNullable()
-      .comment("Nombre del Proyecto ");
-      table
-      .integer("VPY_VALOR_PLANIFICADO")
-      .notNullable()
-      .comment("Valor planificado desde Direccion Estrategica");
-      table
       .integer("VPY_VALOR_PRESUPUESTADO")
       .notNullable()
       .comment("Presupuesto asignado");
+      table
+      .boolean("VPY_VINCULADO")
+      .notNullable()
+      .comment("Indicador de que si la vinculacion esta vigente o no");
       table
       .string("VPY_USUARIO_CREO", 15)
       .notNullable()

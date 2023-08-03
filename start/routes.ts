@@ -75,4 +75,13 @@ Route.group(() => {
 }).prefix("/api/v1/projects");
 
 
+Route.group(() => {
+  Route.get("/get-by-id/:id", "ManagementCenterController.getManagementCenterById");
+  Route.post("/get-paginated", "ManagementCenterController.getManagementCenterPaginated");
+}).prefix("/api/v1/management-center");
+
+Route.group(() => {
+  Route.get("/get-all", "TypesTransfersController.getTypeTransfers")
+}).prefix("/api/v1/type-transfers")
+
 // .middleware("auth");
