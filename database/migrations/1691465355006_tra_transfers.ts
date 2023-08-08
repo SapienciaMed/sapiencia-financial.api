@@ -12,6 +12,7 @@ export default class extends BaseSchema {
       table
       .integer("TRA_CODTTR_TIPO_TRASLADO")
       .notNullable()
+      .unsigned()
       .references("TTR_CODIGO")
       .inTable("TTR_TIPOS_TRASLADOS")
       .comment("Codigo tipo traslado (FK TTR_TIPOS_TRASLADOS)");

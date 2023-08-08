@@ -12,6 +12,7 @@ export default class extends BaseSchema {
       table
       .integer("RPP_CODVPY_PROYECTO")
       .notNullable()
+      .unsigned()
       .references("VPY_CODIGO")
       .inTable("VPY_VINCULACIONES_PROYECTO")
       .comment("Codigo del Proyecto Vinculado (FK VPY_VINCULACIONES_PROYECTO)");
@@ -26,28 +27,31 @@ export default class extends BaseSchema {
       table
       .integer("RPP_CODPPR_POSPRE")
       .notNullable()
+      .unsigned()
       .references("PPR_CODIGO")
       .inTable("PPR_POSICIONES_PRESUPUESTARIAS")
       .comment("Codigo de pospre (FK PPR_POSICIONES_PRESUPUESTARIAS)");
       table
       .integer("RPP_CODPPS_POSPRE_SAPIENCIA")
       .notNullable()
+      .unsigned()
       .references("PPS_CODIGO")
       .inTable("PPS_POSICIONES_PRESUPUESTARIAS_SAPIENCIA")
       .comment("Codigo de pospre (FK PPR_POSICIONES_PRESUPUESTARIAS)");
       table
       .integer("RPP_CODFND_FONDO")
       .notNullable()
+      .unsigned()
       .references("FND_CODIGO")
       .inTable("FND_FONDOS")
       .comment("Codigo del fondo (FK FND_FONDOS)");
       table
       .string("RPP_USUARIO_MODIFICO",15)
-      .notNullable()
+      .nullable()
       .comment("Numero del documento del ultimo usuario que hizo una modificacion");
       table
       .timestamp("RPP_FECHA_MODIFICO")
-      .notNullable()
+      .nullable()
       .comment("Fecha y hora de la ultima modificacion");
       table
       .string("RPP_USUARIO_CREO", 15)

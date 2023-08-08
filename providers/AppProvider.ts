@@ -18,6 +18,7 @@ export default class AppProvider {
     const ManagementCenterService = await import("App/Services/ManagementCenterService")
     const TypesTransfersService = await import("App/Services/TypesTransfersService")
     const ProjectsService = await import("App/Services/ProjectsService");
+    const BudgetsRoutesService = await import ("App/Services/BudgetsRoutesService");
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -52,7 +53,9 @@ export default class AppProvider {
     const TypesTransfersRepository = await import(
       "App/Repositories/TypeTransfersRepository"
     )
-
+    const BudgetsRoutesRepository = await import(
+      "App/Repositories/BudgetsRoutesRepository"
+    )
 
 
     /**************************************************************************/
@@ -94,6 +97,11 @@ export default class AppProvider {
     this.app.container.singleton(
       "core.TypesTransfersProvider",
       () => new TypesTransfersService.default(new TypesTransfersRepository.default())
+    );
+
+    this.app.container.singleton(
+      "core.BudgetsRoutesProvider",
+      () => new BudgetsRoutesService.default(new BudgetsRoutesRepository.default())
     );
   }
 

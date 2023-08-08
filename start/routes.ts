@@ -84,4 +84,10 @@ Route.group(() => {
   Route.get("/get-all", "TypesTransfersController.getTypeTransfers")
 }).prefix("/api/v1/type-transfers")
 
+Route.group(() => {
+  Route.get("/get-by-id/:id", "BudgetsRoutesController.getBudgetsRoutesById");
+  Route.post("/get-paginated", "BudgetsRoutesController.getBudgetsRoutesPaginated");
+  Route.post("/create", "BudgetsRoutesController.createBudgetsRoutes");
+  Route.put("/update/:id", "BudgetsRoutesController.updateBudgetsRoutes");
+}).prefix("/api/v1/budgets-routes")
 // .middleware("auth");

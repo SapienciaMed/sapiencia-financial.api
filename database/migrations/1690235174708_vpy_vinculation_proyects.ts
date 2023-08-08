@@ -12,6 +12,7 @@ export default class extends BaseSchema {
       table
       .integer("VPY_CODARF_AREA_FUNCIONAL")
       .notNullable()
+      .unsigned()
       .references("ARF_CODIGO")
       .inTable("ARF_AREAS_FUNCIONALES")
       .comment("Codigo de la entidad (FK ARF_AREAS_FUNCIONALES)");
