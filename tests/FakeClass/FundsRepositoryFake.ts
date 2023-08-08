@@ -42,4 +42,12 @@ export class FundsRepositoryFake implements IFundsRepository {
       res(list.find((i) => i.id == _id) || null);
     });
   }
+
+  getAllFunds(): Promise<IFunds[]> {
+    const list = [fundFake];
+
+    return new Promise((res) => {
+      res(list);
+    });
+  }
 }

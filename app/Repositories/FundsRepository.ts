@@ -53,7 +53,7 @@ export default class FundsRepository implements IFundsRepository {
 
   async createFund(fund: IFunds): Promise<IFunds> {
     const toCreateFund = new Funds();
-    toCreateFund.fill({ ...fund, dateTo: new Date(fund.dateTo), dateFrom: new Date(fund.dateFrom)});
+    toCreateFund.fill({ ...fund, dateTo: new Date(fund.dateTo.toJSDate()), dateFrom: new Date(fund.dateFrom.toJSDate())});
     await toCreateFund.save();
 
     return toCreateFund.serialize() as IFunds;
@@ -69,8 +69,8 @@ export default class FundsRepository implements IFundsRepository {
     toUpdate.number = fund.number;
     toUpdate.denomination = fund.denomination;
     toUpdate.description = fund.description;
-    toUpdate.dateFrom = new Date(fund.dateFrom);
-    toUpdate.dateTo = new Date(fund.dateTo);
+    toUpdate.dateFrom = new Date(fund.dateFrom.toJSDate());
+    toUpdate.dateTo = new Date(fund.dateTo.toJSDate());
     toUpdate.dateModify = DateTime.local().toJSDate();
     if(fund.userModify) {
       toUpdate.userModify = fund.userModify;
@@ -82,6 +82,6 @@ export default class FundsRepository implements IFundsRepository {
 
   async getAllFunds():Promise<IFunds[]> {
     const res = await Funds.query();
-    return res as IFunds[];
+    return res as unknown as IFunds[];
   }
 }

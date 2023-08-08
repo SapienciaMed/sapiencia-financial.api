@@ -48,5 +48,4 @@ export default class Funds extends BaseModel {
     serializeAs: "entity",
   })
   public entity: HasOne<typeof Entities>;
-  toUpdate: Date;
 }
