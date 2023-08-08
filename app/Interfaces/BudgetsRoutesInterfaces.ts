@@ -17,7 +17,7 @@ export interface IBudgetsRoutes {
   userCreate?: string;
   dateCreate?: DateTime;
   projectVinculation?:IProjectsVinculate;
-  posPreSapiencia?:IPosPreSapiencia;  
+  pospreSapiencia?:IPosPreSapiencia;  
   budget?:IBudgets;
   fund?:IFunds;
 }

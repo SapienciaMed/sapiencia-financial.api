@@ -22,6 +22,9 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
      const query =  BudgetsRoutes.query();
      
      query.preload("projectVinculation");
+     query.preload("budget");
+     query.preload("funds");
+     query.preload("pospreSapiencia");
       
     if (filters.idProjectVinculation) {
       query.where("idProjectVinculation", filters.idProjectVinculation);
@@ -43,8 +46,9 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
     toCreateIBudgetsRoutes.managementCenter = budgetsRoutes.managementCenter;
     toCreateIBudgetsRoutes.div = budgetsRoutes.div;
     toCreateIBudgetsRoutes.idBudget = budgetsRoutes.idBudget;
-    toCreateIBudgetsRoutes.idPosPreSapiencia = budgetsRoutes.idPospreSapiencia;
+    toCreateIBudgetsRoutes.idPospreSapiencia = budgetsRoutes.idPospreSapiencia;
     toCreateIBudgetsRoutes.idFund = budgetsRoutes.idFund;
+    if(budgetsRoutes.userCreate) toCreateIBudgetsRoutes.userCreate = budgetsRoutes.userCreate;
 
     await toCreateIBudgetsRoutes.save();
 
@@ -61,7 +65,7 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
     toUpdate.managementCenter = budgetsRoutes.managementCenter;
     toUpdate.div = budgetsRoutes.div;
     toUpdate.idBudget = budgetsRoutes.idBudget;
-    toUpdate.idPosPreSapiencia = budgetsRoutes.idPospreSapiencia;
+    toUpdate.idPospreSapiencia = budgetsRoutes.idPospreSapiencia;
     toUpdate.idFund = budgetsRoutes.idFund;
     toUpdate.dateModify = DateTime.local().toJSDate();
     if(budgetsRoutes.userModify) {

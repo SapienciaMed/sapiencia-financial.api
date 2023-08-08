@@ -21,10 +21,10 @@ export default class Funds extends BaseModel {
   public description: string;
 
   @column({ columnName: "FND_VIGENTE_DESDE", serializeAs: "dateFrom" })
-  public dateFrom: DateTime;
+  public dateFrom: Date;
   
   @column({ columnName: "FND_VIGENTE_HASTA", serializeAs: "dateTo" })
-  public dateTo: DateTime;
+  public dateTo: Date;
 
   @column({ columnName: "FND_USUARIO_MODIFICO", serializeAs: "userModify" })
   public userModify: string;

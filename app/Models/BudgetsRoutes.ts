@@ -23,8 +23,8 @@ export default class BudgetsRoutes  extends BaseModel {
   @column({ columnName: "RPP_CODPPR_POSPRE", serializeAs: "idBudget" })
   public idBudget: number;
 
-  @column({ columnName: "RPP_CODPPS_POSPRE_SAPIENCIA", serializeAs: "idPosPreSapiencia" })
-  public idPosPreSapiencia: number;
+  @column({ columnName: "RPP_CODPPS_POSPRE_SAPIENCIA", serializeAs: "idPospreSapiencia" })
+  public idPospreSapiencia: number;
 
   @column({ columnName: "RPP_CODFND_FONDO", serializeAs: "idFund" })
   public idFund: number;
@@ -60,7 +60,7 @@ export default class BudgetsRoutes  extends BaseModel {
   public budget: HasOne<typeof Budgets>;
 
   @hasOne(() => PosPreSapiencia, {
-    localKey: "idPosPreSapiencia",
+    localKey: "idPospreSapiencia",
     foreignKey: "id",
     serializeAs: "pospreSapiencia",
   })

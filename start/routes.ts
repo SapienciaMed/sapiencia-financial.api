@@ -93,5 +93,5 @@ Route.group(() => {
   Route.post("/get-paginated", "BudgetsRoutesController.getBudgetsRoutesPaginated");
   Route.post("/create", "BudgetsRoutesController.createBudgetsRoutes");
   Route.put("/update/:id", "BudgetsRoutesController.updateBudgetsRoutes");
-}).prefix("/api/v1/budgets-routes")
+}).prefix("/api/v1/budget-routes")
 // .middleware("auth");
