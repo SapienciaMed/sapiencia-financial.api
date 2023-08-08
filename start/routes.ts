@@ -29,6 +29,7 @@ Route.group(() => {
   Route.post("/get-paginated", "FundsController.getFundsPaginated");
   Route.post("/create", "FundsController.createFund");
   Route.put("/update/:id", "FundsController.updateFund");
+  Route.get("/get-all", "FundsController.getAllFunds");
 }).prefix("/api/v1/funds");
 // .middleware("auth");
 
@@ -37,6 +38,7 @@ Route.group(() => {
   Route.post("/get-paginated", "BudgetsController.getBudgetsPaginated");
   Route.post("/create", "BudgetsController.createBudgets");
   Route.put("/update/:id", "BudgetsController.updateBudgets");
+  Route.get("/get-all", "BudgetsController.getAllBudgets");
 }).prefix("/api/v1/budgets");
 
 Route.group(() => {
@@ -48,6 +50,7 @@ Route.group(() => {
   Route.post("/get-paginated", "PosPreSapienciaController.getPosPreSapienciaPaginated");
   Route.post("/create", "PosPreSapienciaController.createPosPreSapiencia");
   Route.put("/update/:id", "PosPreSapienciaController.updatePosPreSapiencia");
+  Route.get("/get-all", "PosPreSapienciaController.getAllPosPreSapiencia");
 }).prefix("/api/v1/pospre-sapiencia");
 
 Route.group(() => {
@@ -62,6 +65,7 @@ Route.group(() => {
   Route.post("/get-paginated", "FunctionalAreaController.getFunctionalAreaPaginated");
   Route.post("/create", "FunctionalAreaController.createFunctionalArea");
   Route.put("/update/:id", "FunctionalAreaController.updateFunctionalArea");
+  Route.get("/get-all", "FunctionalAreaController.getAllFunctionalAreas");
   Route.post("/link/create", "FunctionalAreaController.createProjectFunctionalArea");
   Route.post("/link/update", "FunctionalAreaController.updateProjectFunctionalArea");
   Route.delete("/link/delete/:id", "FunctionalAreaController.deleteProjectFunctionalArea");

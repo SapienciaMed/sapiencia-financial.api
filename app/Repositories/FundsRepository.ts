@@ -8,6 +8,7 @@ export interface IFundsRepository {
   getFundsPaginated(filters: IFundsFilters): Promise<IPagingData<IFunds>>;
   createFund(fund: IFunds): Promise<IFunds>;
   updateFund(fund: IFunds, id: number): Promise<IFunds | null>;
+  getAllFunds():Promise<IFunds[]>;
 }
 
 export default class FundsRepository implements IFundsRepository {
@@ -77,5 +78,10 @@ export default class FundsRepository implements IFundsRepository {
     
     await toUpdate.save();
     return toUpdate.serialize() as IFunds;
+  }
+
+  async getAllFunds():Promise<IFunds[]> {
+    const res = await Funds.query();
+    return res as IFunds[];
   }
 }

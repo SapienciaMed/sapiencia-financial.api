@@ -12,6 +12,7 @@ export interface IBudgetsService {
     ): Promise<ApiResponse<IPagingData<IBudgets>>>;
     createBudgets(budgets: IBudgets): Promise<ApiResponse<IBudgets>>;
     updateBudgets(fund: IBudgets, id: number): Promise<ApiResponse<IBudgets>>;
+    getAllBudgets(): Promise<ApiResponse<IBudgets[]>>;
 }
 
 export default class BudgetsService implements IBudgetsService {
@@ -55,6 +56,12 @@ export default class BudgetsService implements IBudgetsService {
         "El registro indicado no existe"
       );
     }
+
+    return new ApiResponse(res, EResponseCodes.OK);
+  }
+
+  async getAllBudgets(): Promise<ApiResponse<IBudgets[]>> {
+    const res = await this.budgetsRepository.getAllBudgets();
 
     return new ApiResponse(res, EResponseCodes.OK);
   }

@@ -14,6 +14,7 @@ export interface IFunctionalAreaService {
     deleteProjectFunctionalArea(projectVinculate: number): Promise<ApiResponse<boolean>>;
     getAllProjectFunctionalArea(): Promise<ApiResponse<IProjectsVinculation[]>>;
     getProjectFunctionalAreaPaginated(filters: IProjectsVinculateFilters): Promise<ApiResponse<IPagingData<IProjectsVinculation>>>;
+    getAllFunctionalAreas(): Promise<ApiResponse<IFunctionalArea[]>>;
 }
 
 export default class FunctionalAreaService implements IFunctionalAreaService {
@@ -56,7 +57,7 @@ export default class FunctionalAreaService implements IFunctionalAreaService {
         return new ApiResponse(res, EResponseCodes.OK);
     }
 
-    async createProjectFunctionalArea(projectsVinculate: IProjectsVinculate): Promise<ApiResponse<IProjectsVinculation[]>>{
+    async createProjectFunctionalArea(projectsVinculate: IProjectsVinculate): Promise<ApiResponse<IProjectsVinculation[]>> {
         const res = await this.FunctionalAreaRepository.createProjectFunctionalArea(projectsVinculate);
         return new ApiResponse(res, EResponseCodes.OK);
     }
@@ -73,7 +74,7 @@ export default class FunctionalAreaService implements IFunctionalAreaService {
         return new ApiResponse(res, EResponseCodes.OK);
     }
 
-    async deleteProjectFunctionalArea(projectVinculate: number): Promise<ApiResponse<boolean>>{
+    async deleteProjectFunctionalArea(projectVinculate: number): Promise<ApiResponse<boolean>> {
         const res = await this.FunctionalAreaRepository.deleteProjectFunctionalArea(projectVinculate);
         return new ApiResponse(res, EResponseCodes.OK);
     }
@@ -87,6 +88,12 @@ export default class FunctionalAreaService implements IFunctionalAreaService {
         filters: IProjectsVinculateFilters
     ): Promise<ApiResponse<IPagingData<IProjectsVinculation>>> {
         const res = await this.FunctionalAreaRepository.getProjectFunctionalAreaPaginated(filters);
+
+        return new ApiResponse(res, EResponseCodes.OK);
+    }
+
+    async getAllFunctionalAreas(): Promise<ApiResponse<IFunctionalArea[]>> {
+        const res = await this.FunctionalAreaRepository.getAllFunctionalAreas();
 
         return new ApiResponse(res, EResponseCodes.OK);
     }

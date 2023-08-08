@@ -8,6 +8,7 @@ export interface IPosPreSapienciaService {
     getPosPreSapienciaPaginated(filters: IFiltersPosPreSapiencia): Promise<ApiResponse<IPagingData<IPosPreSapiencia>>>;
     createPosPreSapiencia(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia>>;
     updatePosPreSapiencia(posPreSapiencia: IPosPreSapiencia, id: number): Promise<ApiResponse<IPosPreSapiencia>>;
+    getAllPosPreSapiencia(): Promise<ApiResponse<IPosPreSapiencia[]>>;
 }
 
 export default class PosPreSapienciaService implements IPosPreSapienciaService {
@@ -62,4 +63,10 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
 
         return new ApiResponse(res, EResponseCodes.OK);
     }
+
+    async getAllPosPreSapiencia(): Promise<ApiResponse<IPosPreSapiencia[]>> {
+        const res = await this.posPreSapienciaRepository.getAllPosPreSapiencia();
+    
+        return new ApiResponse(res, EResponseCodes.OK);
+      }
 }  

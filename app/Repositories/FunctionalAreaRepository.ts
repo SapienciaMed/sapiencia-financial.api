@@ -21,6 +21,7 @@ export interface IFunctionalAreaRepository {
   getProjectFunctionalAreaPaginated(
     filters: IProjectsVinculateFilters
   ): Promise<IPagingData<IProjectsVinculation>>;
+  getAllFunctionalAreas():Promise<IFunctionalArea[]>;
 }
 
 export default class FunctionalAreaRepository
@@ -135,5 +136,10 @@ export default class FunctionalAreaRepository
       array: data as IProjectsVinculation[],
       meta,
     };
+  }
+
+  async getAllFunctionalAreas():Promise<IFunctionalArea[]> {
+    const res = await FunctionalArea.query();
+    return res as IFunctionalArea[];
   }
 }

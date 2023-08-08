@@ -107,4 +107,14 @@ export default class FunctionalAreaController {
       );
     }
   }
+
+  public async getAllFunctionalAreas({ response }: HttpContextContract) {
+    try {
+      return response.send(await FuncitonalAreaProvider.getAllFunctionalAreas());
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
 }

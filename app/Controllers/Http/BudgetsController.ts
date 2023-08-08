@@ -16,29 +16,6 @@ export default class BudgetsController {
       );
     }
   }
-
-  //    public async deleteBudgets({ request, response }: HttpContextContract) {
-  //     try {
-  //       const { id } = request.params();
-  //       return response.send(await BudgetsProvider.deleteBudgets(id));
-  //     } catch (err) {
-  //       return response.badRequest(
-  //         new ApiResponse(null, EResponseCodes.FAIL, String(err))
-  //       );
-  //     }
-  //   }
-
-  //   public async updateBudgets({ request, response }: HttpContextContract) {
-  //     try {
-  //       const { id } = request.params();
-  //       const data = await request.validate(BudgetsValidator);
-  //       return response.send(await BudgetsProvider.updateBudgets(data, id));
-  //     } catch (err) {
-  //       return response.badRequest(
-  //         new ApiResponse(null, EResponseCodes.FAIL, String(err))
-  //       );
-  //     }
-  //   }
   
      public async createBudgets({ request, response }: HttpContextContract) {
       try {
@@ -67,6 +44,16 @@ export default class BudgetsController {
       const { id } = request.params();
       const data = await request.validate(BudgetsValidator);
       return response.send(await BudgetsProvider.updateBudgets(data, id));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
+
+  public async getAllBudgets({ response }: HttpContextContract) {
+    try {
+      return response.send(await BudgetsProvider.getAllBudgets());
     } catch (err) {
       return response.badRequest(
         new ApiResponse(null, EResponseCodes.FAIL, String(err))

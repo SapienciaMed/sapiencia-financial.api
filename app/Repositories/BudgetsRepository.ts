@@ -8,6 +8,7 @@ export interface IBudgetsRepository {
   getBudgetsById(id: number): Promise<IBudgets | null>;
   getBudgetsPaginated(filters: IFilterBudgets): Promise<IPagingData<IBudgets>>;
   createBudgets(role: IBudgets): Promise<IBudgets>;
+  getAllBudgets(): Promise<IBudgets[]>;
 }
 
 export default class BudgetsRepository implements IBudgetsRepository {
@@ -75,5 +76,10 @@ export default class BudgetsRepository implements IBudgetsRepository {
     
     await toUpdate.save();
     return toUpdate.serialize() as IBudgets;
+  }
+
+  async getAllBudgets():Promise<IBudgets[]> {
+    const res = await Budgets.query();
+    return res as IBudgets[];
   }
 }

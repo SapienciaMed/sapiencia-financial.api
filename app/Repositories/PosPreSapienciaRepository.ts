@@ -8,6 +8,7 @@ export interface IPosPreSapienciaRepository {
     getPosPreSapienciaPaginated(filters: IFiltersPosPreSapiencia): Promise<IPagingData<IPosPreSapiencia>>;
     createPosPreSapiencia(posPreSapiencia: IPosPreSapiencia): Promise<IPosPreSapiencia | null>;
     updatePosPreSapiencia(posPreSapiencia: IPosPreSapiencia, id: number): Promise<IPosPreSapiencia | null>;
+    getAllPosPreSapiencia():Promise<IPosPreSapiencia[]>;
 }
 
 export default class PosPreSapienciaRepository implements IPosPreSapienciaRepository {
@@ -81,5 +82,10 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
     
     await toUpdate.save();
     return toUpdate.serialize() as IPosPreSapiencia;
+  }
+
+  async getAllPosPreSapiencia():Promise<IPosPreSapiencia[]> {
+    const res = await PosPreSapiencia.query();
+    return res as IPosPreSapiencia[];
   }
 }

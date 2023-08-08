@@ -10,6 +10,7 @@ export interface IFundsService {
   ): Promise<ApiResponse<IPagingData<IFunds>>>;
   createFund(fund: IFunds): Promise<ApiResponse<IFunds>>;
   updateFund(fund: IFunds, id: number): Promise<ApiResponse<IFunds>>;
+  getAllFunds(): Promise<ApiResponse<IFunds[]>>;
 }
 
 export default class FundsService implements IFundsService {
@@ -52,6 +53,12 @@ export default class FundsService implements IFundsService {
         "El registro indicado no existe"
       );
     }
+
+    return new ApiResponse(res, EResponseCodes.OK);
+  }
+
+  async getAllFunds(): Promise<ApiResponse<IFunds[]>> {
+    const res = await this.fundsRepository.getAllFunds();
 
     return new ApiResponse(res, EResponseCodes.OK);
   }
