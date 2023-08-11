@@ -95,3 +95,11 @@ Route.group(() => {
   Route.put("/update/:id", "BudgetsRoutesController.updateBudgetsRoutes");
 }).prefix("/api/v1/budget-routes")
 // .middleware("auth");
+
+Route.group(() => {
+  Route.post("/get-paginated", "AdditionsController.getAdditionsPaginated");
+  Route.post("/create", "AdditionsController.createAdditions");
+  Route.get("/get-actadmin-district", "AdditionsController.getAllAdditionsByDistrict");
+  Route.get("/get-actadmin-sapiencia", "AdditionsController.getAllAdditionsBySapiencia");
+  Route.get("/get-by-id/:id", "AdditionsController.getAdditionById");
+}).prefix("/api/v1/additions")
