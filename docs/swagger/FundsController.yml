@@ -1,0 +1,370 @@
+/api/v1/funds/get-by-id/{id}:
+  get:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: number
+        required: true
+        description: Id del Fondo a consultar
+    tags:
+      - Fondos
+    summary: Permite la consulta un fondo en específico a traves de su id
+    produces:
+      - application/json
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Fonds"
+            examples:
+              Consulta:
+                value:
+                  {
+                    "data":
+                      {
+                        "id": 1,
+                        "entityId": 1,
+                        "number": 1234,
+                        "denomination": "Deno",
+                        "description": "Desc deno",
+                        "dateFrom": "2023-07-05T21:14:31.577Z",
+                        "dateTo": "2023-07-05T21:14:31.577Z",
+                        "userModify": null,
+                        "dateModify": null,
+                        "userCreate": "test",
+                        "dateCreate": "2023-07-05T16:14:31.577-05:00",
+                        "entity": { "id": 1, "name": "TEST" },
+                      },
+                    "operation": { "code": "OK" },
+                  }
+              Fondo no encontrado:
+                value:
+                  {
+                    "data": {},
+                    "operation":
+                      {
+                        "code": "WARN",
+                        "message": "El registro indicado no existe",
+                      },
+                  }
+    security:
+      - apiAuth: []
+
+/api/v1/funds/get-paginated:
+  post:
+    tags:
+      - Fondos
+    summary: Permite la consulta de fondos por filtros y paginado
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              page:
+                type: number
+                example: 1
+              perPage:
+                type: number
+                example: 10
+              entity:
+                type: number
+                example: 1
+              number:
+                type: number
+                example: 1234
+              dateFrom:
+                type: date
+                example: "2023-07-05T05:00:00.000Z"
+              dateTo:
+                type: date
+                example: "2023-07-06T05:00:00.000Z"
+    produces:
+      - application/json
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Fonds"
+            examples:
+              Consulta:
+                value:
+                  {
+                    "data":
+                      {
+                        "array":
+                          [
+                            {
+                              "id": 1,
+                              "entityId": 1,
+                              "number": 1234,
+                              "denomination": "Deno",
+                              "description": "Desc deno",
+                              "dateFrom": "2023-07-05T21:14:31.577Z",
+                              "dateTo": "2023-07-05T21:14:31.577Z",
+                              "userModify": null,
+                              "dateModify": null,
+                              "userCreate": "test",
+                              "dateCreate": "2023-07-05T16:14:31.577-05:00",
+                              "entity": { "id": 1, "name": "TEST" },
+                            },
+                          ],
+                        "meta":
+                          {
+                            "total": 2,
+                            "per_page": 1,
+                            "current_page": 1,
+                            "last_page": 2,
+                            "first_page": 1,
+                            "first_page_url": "/?page=1",
+                            "last_page_url": "/?page=2",
+                            "next_page_url": "/?page=2",
+                            "previous_page_url": null,
+                          },
+                      },
+                    "operation": { "code": "OK" },
+                  }
+    security:
+      - apiAuth: []
+
+/api/v1/funds/create:
+  post:
+    tags:
+      - Fondos
+    summary: Permite la creación de un fondo
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              entityId:
+                type: number
+                example: 1
+              number:
+                type: number
+                example: 111
+              denomination:
+                type: string
+                example: "denominacion"
+              description:
+                type: string
+                example: "descripcion"
+              dateFrom:
+                type: date
+                example: "2023-07-05T21:14:31.577Z"
+              dateTo:
+                type: date
+                example: "2023-07-05T21:14:31.577Z"
+              userCreate:
+                type: string
+                example: "prueba swagger"
+    produces:
+      - application/json
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                entityId:
+                  type: number
+                number:
+                  type: number
+                denomination:
+                  type: string
+                description:
+                  type: string
+                dateFrom:
+                  type: date
+                dateTo:
+                  type: date
+                userCreate:
+                  type: string
+                dateCreate:
+                  type: date
+                id:
+                  type: number
+            examples:
+              Creacion:
+                value:
+                  {
+                    "data":
+                      {
+                        "entityId": 1,
+                        "number": 111,
+                        "denomination": "denominacion",
+                        "description": "descripcion",
+                        "dateFrom": "2023-07-05T16:14:31.577-05:00",
+                        "dateTo": "2023-07-05T16:14:31.577-05:00",
+                        "userCreate": "prueba swagger",
+                        "dateCreate": "2023-07-12T11:52:33.438-05:00",
+                        "id": 8,
+                      },
+                    "operation": { "code": "OK" },
+                  }
+    security:
+      - apiAuth: []
+
+/api/v1/funds/update/{id}:
+  put:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: number
+        required: true
+        description: Id del Fondo a actualizar
+    tags:
+      - Fondos
+    summary: Permite la actualización de un fondo a traves de un id
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              entityId:
+                type: number
+                example: 1
+              number:
+                type: number
+                example: 111
+              denomination:
+                type: string
+                example: "denominacion"
+              description:
+                type: string
+                example: "descripcion"
+              dateFrom:
+                type: date
+                example: "2023-07-05T21:14:31.577Z"
+              dateTo:
+                type: date
+                example: "2023-07-05T21:14:31.577Z"
+              userModify:
+                type: string
+                example: "prueba swagger"
+    produces:
+      - application/json
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: number
+                entityId:
+                  type: number
+                number:
+                  type: number
+                denomination:
+                  type: string
+                description:
+                  type: string
+                dateFrom:
+                  type: date
+                dateTo:
+                  type: date
+                userModify:
+                  type: string
+                dateModify:
+                  type: date
+                userCreate:
+                  type: string
+                dateCreate:
+                  type: date
+            examples:
+              Actualizacion:
+                value:
+                  {
+                    "data":
+                      {
+                        "id": 8,
+                        "entityId": 1,
+                        "number": 111,
+                        "denomination": "denominacion",
+                        "description": "descripcion",
+                        "dateFrom": "2023-07-05T16:14:31.577-05:00",
+                        "dateTo": "2023-07-05T16:14:31.577-05:00",
+                        "userModify": "prueba swagger",
+                        "dateModify": "2023-07-12T17:33:04.330Z",
+                        "userCreate": "prueba swagger",
+                        "dateCreate": "2023-07-12T11:52:33.438-05:00",
+                      },
+                    "operation": { "code": "OK" },
+                  }
+              Fondo no encontrado:
+                value:
+                  {
+                    "data": {},
+                    "operation":
+                      {
+                        "code": "FAIL",
+                        "message": "El registro indicado no existe",
+                      },
+                  }
+    security:
+      - apiAuth: []
+
+components:
+  schemas:
+    Fonds:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1
+        entityId:
+          type: number
+          example: 1
+        number:
+          type: number
+          example: 111
+        denomination:
+          type: string
+          example: "Denominacion"
+        description:
+          type: string
+          example: "Descripcion"
+        dateFrom:
+          type: date
+          example: "2023-07-05T21:14:31.577Z"
+        dateTo:
+          type: date
+          example: "2023-07-05T21:14:31.577Z"
+        userModify:
+          type: string
+          example: "797940"
+        dateModify:
+          type: date
+          example: "2023-06-27T09:40:02.350-05:00"
+        userCreate:
+          type: string
+          example: "797940"
+        dateCreate:
+          type: date
+          example: "2023-05-31T15:42:35.451-05:00"
+        entity:
+          type: array
+          example:
+            [
+              {
+                "id": 1,
+                "name": "SAPI",
+              },
+              {
+                "id": 2,
+                "name": "TEST",
+              },
+            ]

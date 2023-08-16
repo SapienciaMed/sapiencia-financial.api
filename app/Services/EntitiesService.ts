@@ -16,7 +16,7 @@ export default class EntitiesService implements IEntitiesService {
     if (!res) {
       return new ApiResponse(
         [] as IEntities[],
-        EResponseCodes.FAIL,
+        EResponseCodes.WARN,
         "Registro no encontrado"
       );
     }

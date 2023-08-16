@@ -50,4 +50,14 @@ export default class FundsController {
       );
     }
   }
+
+  public async getAllFunds({ response }: HttpContextContract) {
+    try {
+      return response.send(await FundsProvider.getAllFunds());
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
 }
