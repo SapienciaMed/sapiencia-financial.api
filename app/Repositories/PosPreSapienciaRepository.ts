@@ -79,7 +79,7 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
     if(posPreSapiencia.userModify) {
       toUpdate.userModify = posPreSapiencia.userModify;
     }
-    
+
     await toUpdate.save();
     return toUpdate.serialize() as IPosPreSapiencia;
   }

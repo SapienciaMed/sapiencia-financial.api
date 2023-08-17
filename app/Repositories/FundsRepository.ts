@@ -2,6 +2,7 @@ import { IFunds, IFundsFilters } from "App/Interfaces/FundsInterfaces";
 import Funds from "../Models/Funds";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
+import { IProjectAdditionFilters, IFundsAdditionList } from '../Interfaces/AdditionsInterfaces';
 
 export interface IFundsRepository {
   getFundsById(id: number): Promise<IFunds | null>;
@@ -9,6 +10,7 @@ export interface IFundsRepository {
   createFund(fund: IFunds): Promise<IFunds>;
   updateFund(fund: IFunds, id: number): Promise<IFunds | null>;
   getAllFunds():Promise<IFunds[]>;
+  getFundsList(filters: IProjectAdditionFilters): Promise<IPagingData<IFundsAdditionList>>;
 }
 
 export default class FundsRepository implements IFundsRepository {
@@ -34,7 +36,7 @@ export default class FundsRepository implements IFundsRepository {
     if (filters.dateFrom) {
       query.where("dateFrom", ">=" , filters.dateFrom.toLocaleString());
     }
-    
+
     if (filters.dateTo) {
       query.where("dateTo", "<=", filters.dateTo.toLocaleString());
     }
@@ -75,7 +77,7 @@ export default class FundsRepository implements IFundsRepository {
     if(fund.userModify) {
       toUpdate.userModify = fund.userModify;
     }
-    
+
     await toUpdate.save();
     return toUpdate.serialize() as IFunds;
   }
@@ -84,4 +86,28 @@ export default class FundsRepository implements IFundsRepository {
     const res = await Funds.query();
     return res as unknown as IFunds[];
   }
+
+  async getFundsList(filters: IProjectAdditionFilters): Promise<IPagingData<IFundsAdditionList>> {
+
+    let { page , perPage } = filters;
+
+    const res = Funds.query();
+
+    res.preload("entity");
+
+    page = 1;
+    perPage = (await res).length;
+
+    const fundsPaginated = await res.paginate(page, perPage);
+
+    const { data, meta } = fundsPaginated.serialize();
+    const dataArray = data ?? [];
+
+    return {
+      array: dataArray as IFundsAdditionList[],
+      meta,
+    };
+
+  }
+
 }

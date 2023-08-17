@@ -1,9 +1,21 @@
-import { IAdditions,
+import {
+         IAdditions,
          IAdditionsFilters,
-         IAdditionsWithMovements } from "App/Interfaces/AdditionsInterfaces";
+         IAdditionsWithMovements,
+         IFundsAdditionList,
+         IPosPreAddition,
+         IProjectAdditionFilters,
+         IProjectAdditionList,
+       } from "App/Interfaces/AdditionsInterfaces";
 import { IAdditionsRepository } from "App/Repositories/AdditionsRepository";
 import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
+import AdditionsMovement from '../Models/AdditionsMovement';
+import { IMovementAdditionRepository } from '../Repositories/MovementAdditionRepository';
+import { IProjectsRepository } from '../Repositories/ProjectsRepository';
+import { IFundsRepository } from '../Repositories/FundsRepository';
+import { IPosPreSapienciaRepository } from '../Repositories/PosPreSapienciaRepository';
+import { IBudgetsRepository } from '../Repositories/BudgetsRepository';
 
 export interface IAdditionsService {
 
@@ -11,12 +23,22 @@ export interface IAdditionsService {
   createAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>>;
   getAllAdditionsList(list: string): Promise<ApiResponse<IAdditions[]>>;
   getAdditionById(id: number): Promise<ApiResponse<IAdditionsWithMovements>>;
+  getProjectsList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IProjectAdditionList>>>;
+  getFundsList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IFundsAdditionList>>>;
+  getPosPreList(): Promise<IPosPreAddition | string[]>;
 
 }
 
 export default class AdditionsService implements IAdditionsService{
 
-  constructor(private additionsRepository: IAdditionsRepository) {}
+  constructor(
+    private additionsRepository: IAdditionsRepository,
+    private movementsRepository: IMovementAdditionRepository,
+    private projectRepository: IProjectsRepository,
+    private fundsRepository: IFundsRepository,
+    private pospreSapRepository: IPosPreSapienciaRepository,
+    private budgetRepository: IBudgetsRepository
+  ) {}
 
   //?OBTENER PAGINADO Y FILTRADO LAS ADICIONES CON SUS MOVIMIENTOS
   async getAdditionsPaginated(filters: IAdditionsFilters): Promise<ApiResponse<IPagingData<IAdditions>>> {
@@ -27,21 +49,37 @@ export default class AdditionsService implements IAdditionsService{
   }
 
   //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO
-  async createAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>>{
+  async createAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements | any>>{
 
-    const res = await this.additionsRepository.createAdditions(addition);
+    const add = await this.additionsRepository.createAdditions(addition.headAdditon);
 
-    if (!res) {
+    console.log(this.movementsRepository);
+    //Garantizo inserción cabecera adición.
+    if(add.id){
+
+      for( let i of addition.additionMove ){
+
+        const toCreate = new AdditionsMovement();
+        toCreate.fill({ additionId : add.id, ...i });
+        await toCreate.save();
+
+      }
+
+    }else{
 
       return new ApiResponse(
-        {} as IAdditionsWithMovements,
+        addition,
         EResponseCodes.FAIL,
-        "Ocurrió un error en su Transacción "
+        "Ocurrio un error al intentar realizar la transacción."
       );
 
     }
 
-    return new ApiResponse(res, EResponseCodes.OK);
+    return new ApiResponse(
+      addition,
+      EResponseCodes.OK,
+      "Adición con movimientos creada exitosamente."
+    );
 
   }
 
@@ -80,6 +118,41 @@ export default class AdditionsService implements IAdditionsService{
     }
 
     return new ApiResponse(addition, EResponseCodes.OK);
+
+  }
+
+  //?OBTENER LISTADO DE PROYECTOS CON SU ÁREA FUNCIONAL VINCULADA
+  async getProjectsList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IProjectAdditionList | any>>>{
+
+    const projects = await this.projectRepository.getProjectsList(filters);
+    return new ApiResponse(projects, EResponseCodes.OK);
+
+  }
+
+  //?OBTENER LISTADO DE FONDOS
+  async getFundsList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IFundsAdditionList>>> {
+
+    const funds = await this.fundsRepository.getFundsList(filters);
+    return new ApiResponse(funds, EResponseCodes.OK);
+
+  }
+
+  //?OBTENER POS PRE - COMBINAMOS RESULTADO DE POS PRE SAPIENCIA CON BUDGETS
+  async getPosPreList(): Promise<IPosPreAddition | string[]> {
+
+    const posPreRes = await this.pospreSapRepository.getAllPosPreSapiencia();
+    const budgetRes = await this.budgetRepository.getAllBudgets();
+    const arrayResult: string[] = [];
+
+    for( let i of posPreRes ){
+      arrayResult.push(i.number);
+    }
+
+    for( let j of budgetRes ){
+      arrayResult.push(j.number.toString());
+    }
+
+    return arrayResult;
 
   }
 

@@ -60,6 +60,9 @@ export default class AppProvider {
     const AdditionsRepository = await import(
       "App/Repositories/AdditionsRepository"
     );
+    const MovementAdditionRepository = await import(
+      "App/Repositories/MovementAdditionRepository"
+    );
 
     /**************************************************************************/
     /******************************** CORE  ***********************************/
@@ -105,10 +108,26 @@ export default class AppProvider {
       "core.BudgetsRoutesProvider",
       () => new BudgetsRoutesService.default(new BudgetsRoutesRepository.default())
     );
+
+
+    // this.app.container.singleton(
+    //   "core.AdditionsMovementsProvider",
+    //   () => new AdditionsService.default(new AdditionsRepository.default())
+    // );
+
     this.app.container.singleton(
       "core.AdditionsProvider",
-      () => new AdditionsService.default(new AdditionsRepository.default())
+      () =>
+          new AdditionsService.default(
+            new AdditionsRepository.default(),
+            new MovementAdditionRepository.default(),
+            new ProjectsRepository.default(),
+            new FundsRepository.default(),
+            new PosPreSapienciaRepository.default(),
+            new BudgetsRepository.default()
+          )
     );
+
   }
 
   public async boot() {
