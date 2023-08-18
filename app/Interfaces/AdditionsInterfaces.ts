@@ -84,7 +84,7 @@ export interface IFundsAddition {
 export interface IFundsAdditionList {
   id?: number;
   entityId: number;
-  number: number;
+  number: string;
   denomination: string;
   description: string;
   dateFrom: DateTime;

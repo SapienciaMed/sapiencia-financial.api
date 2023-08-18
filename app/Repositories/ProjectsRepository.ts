@@ -1,6 +1,6 @@
 import { IPagingData } from "App/Utils/ApiResponses";
 import { IProject, IProjectFilters } from "App/Interfaces/ProjectsInterfaces";
-import { IProjectAddition, IProjectAdditionFilters, IProjectAdditionList } from '../Interfaces/AdditionsInterfaces';
+import { IProjectAdditionFilters, IProjectAdditionList } from '../Interfaces/AdditionsInterfaces';
 import ProjectsVinculation from 'App/Models/ProjectsVinculation';
 
 export interface IProjectsRepository {

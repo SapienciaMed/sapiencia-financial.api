@@ -40,7 +40,7 @@ test.group("FundsService TEST for getFundsById", () => {
 
     const expectedItems: IFunds = {
       id: 1,
-      number: 12,
+      number: '12',
       entityId: 1,
       denomination: "Denominacion",
       description: "Descripcion",
@@ -89,7 +89,7 @@ test.group("FundsService TEST for getFundsPaginated", () => {
 
     const expectedItems: IFunds = {
       id: 1,
-      number: 12,
+      number: '12',
       entityId: 1,
       denomination: "Denominacion",
       description: "Descripcion",
@@ -104,7 +104,7 @@ test.group("FundsService TEST for getFundsPaginated", () => {
 test.group("FundsService TEST for createFund", () =>{
   const fund: IFunds = {
     id: 2,
-    number: 12,
+    number: '12',
     entityId: 1,
     denomination: "Denominacion",
     description: "Descripcion",
@@ -132,7 +132,7 @@ test.group("FundsService TEST for createFund", () =>{
 
     const expectedItems: IFunds = {
       id: 1,
-      number: 12,
+      number: '12',
       entityId: 1,
       denomination: "Denominacion",
       description: "Descripcion",
@@ -146,7 +146,7 @@ test.group("FundsService TEST for createFund", () =>{
 
 test.group("FundsService TEST for updateFund", () =>{
   const fund: IFunds = {
-    number: 12,
+    number: '12',
     entityId: 1,
     denomination: "Denominacion",
     description: "Descripcion",
@@ -180,7 +180,7 @@ test.group("FundsService TEST for updateFund", () =>{
 
     const expectedItems: IFunds = {
       id: 1,
-      number: 12,
+      number: '12',
       entityId: 1,
       denomination: "Denominacion",
       description: "Descripcion",
