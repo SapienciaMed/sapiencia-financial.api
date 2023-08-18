@@ -8,7 +8,7 @@ import { IPagingData } from "App/Utils/ApiResponses";
 export interface IAdditionsRepository {
 
   getAdditionsPaginated(filters: IAdditionsFilters): Promise<IPagingData<IAdditions>>;
-  createAdditions(addition: IAdditionsWithMovements): Promise<IAdditionsWithMovements>;
+  createAdditions(addition: IAdditions): Promise<IAdditions>;
   getAllAdditionsList(list: string): Promise<IAdditions[] | any>;
   getAdditionById(id: number): Promise<IAdditionsWithMovements | any>;
 
@@ -46,16 +46,13 @@ export default class AdditionsRepository implements IAdditionsRepository{
   }
 
   //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO
-  async createAdditions(addition: IAdditionsWithMovements): Promise<IAdditionsWithMovements | any>{
+  async createAdditions(addition: IAdditions): Promise<IAdditions | any>{
 
-    //TODO: Definir como llegará la data
-    //TODO: Definir como haremos la inserción
-    // const toCreate = new Additions();
-    // toCreate.fill({ ...addition });
-    // await toCreate.save();
-    // return toCreate.serialize() as IAdditionsWithMovements;
+    const toCreate = new Additions();
 
-    console.log(addition);
+    toCreate.fill({ ...addition });
+    await toCreate.save();
+    return toCreate.serialize() as IAdditions;
 
   }
 

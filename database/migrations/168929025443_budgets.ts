@@ -6,12 +6,18 @@ export default class extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.comment("Tabla que almacena los tipos presupuestos");
-      table.increments("PPR_CODIGO").primary().comment("Llave primaria");
       table
-        .integer("PPR_NUMERO")
+        .increments("PPR_CODIGO")
+        .primary()
+        .comment("Llave primaria");
+      table
+        .string("PPR_NUMERO", 30)
         .notNullable()
         .comment("Número de la posición presupuestaria");
-      table.integer("PPR_EJERCICIO").notNullable().comment("Año del ejercicio");
+      table
+        .integer("PPR_EJERCICIO")
+        .notNullable()
+        .comment("Año del ejercicio");
       table
         .integer("PPR_CODECP_ENTIDAD")
         .notNullable()
@@ -23,7 +29,10 @@ export default class extends BaseSchema {
         .string("PPR_DENOMINACION", 100)
         .notNullable()
         .comment("Denominación");
-      table.string("PPR_DESCRIPCION", 500).notNullable().comment("Descripción");
+      table
+        .string("PPR_DESCRIPCION", 500)
+        .notNullable()
+        .comment("Descripción");
       table
         .string("PPR_USUARIO_MODIFICO", 15)
         .comment(

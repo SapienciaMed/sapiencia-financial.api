@@ -2,6 +2,7 @@ import { IPosPreSapiencia, IFiltersPosPreSapiencia } from "App/Interfaces/PosPre
 import PosPreSapiencia from "App/Models/PosPreSapiencia";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
+import { IProjectAdditionFilters, IPosPreSapienciaAdditionList } from '../Interfaces/AdditionsInterfaces';
 
 export interface IPosPreSapienciaRepository {
     getPosPreSapienciaById(id:number): Promise<IPosPreSapiencia | null>;
@@ -9,6 +10,7 @@ export interface IPosPreSapienciaRepository {
     createPosPreSapiencia(posPreSapiencia: IPosPreSapiencia): Promise<IPosPreSapiencia | null>;
     updatePosPreSapiencia(posPreSapiencia: IPosPreSapiencia, id: number): Promise<IPosPreSapiencia | null>;
     getAllPosPreSapiencia():Promise<IPosPreSapiencia[]>;
+    getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<IPagingData<IPosPreSapienciaAdditionList>>;
 }
 
 export default class PosPreSapienciaRepository implements IPosPreSapienciaRepository {
@@ -79,7 +81,7 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
     if(posPreSapiencia.userModify) {
       toUpdate.userModify = posPreSapiencia.userModify;
     }
-    
+
     await toUpdate.save();
     return toUpdate.serialize() as IPosPreSapiencia;
   }
@@ -88,4 +90,36 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
     const res = await PosPreSapiencia.query();
     return res as IPosPreSapiencia[];
   }
+
+  async getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<IPagingData<IPosPreSapienciaAdditionList>> {
+
+    let { page , perPage } = filters;
+    const query = PosPreSapiencia.query();
+    query.select('id',
+                 'number',
+                 'budgetId',
+                 'ejercise',
+                 'description',
+                 'consecutive')
+    await query.preload('budget', (w) => {
+      w.select('id',
+               'number',
+               'entityId',
+               'denomination',
+               'description')
+    });
+
+    page = 1;
+    perPage = (await query).length;
+
+    const res = await query.paginate(page, perPage);
+    const { data, meta } = res.serialize();
+
+    return {
+      array: data as IPosPreSapienciaAdditionList[],
+      meta,
+    };
+
+  }
+
 }

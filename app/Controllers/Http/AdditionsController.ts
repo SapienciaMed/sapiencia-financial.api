@@ -4,6 +4,7 @@ import { IAdditionsFilters , IAdditionsWithMovements } from "App/Interfaces/Addi
 import { ApiResponse } from "App/Utils/ApiResponses";
 import AdditionsProvider from "@ioc:core.AdditionsProvider";
 // import AdditionsValidator from "App/Validators/AdditionsValidator";
+import { IProjectAdditionFilters } from '../../Interfaces/AdditionsInterfaces';
 
 export default class AdditionsController {
 
@@ -64,18 +65,20 @@ export default class AdditionsController {
   //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO
   public async createAdditions({ request, response }: HttpContextContract) {
 
-    try {
+      try {
 
-      const addition = request.body() as IAdditionsWithMovements;
-      return response.send(
-        await AdditionsProvider.createAdditions(addition)
-      );
+        const addition = request.body() as IAdditionsWithMovements;
+        return response.send(
+          await AdditionsProvider.createAdditions(addition)
+        );
 
-    } catch (err) {
+      } catch (error) {
 
-      return new ApiResponse(null, EResponseCodes.FAIL, String(err.messages));
+        return response.badRequest(
+          new ApiResponse(null, EResponseCodes.FAIL, String(error))
+        );
 
-    }
+      }
 
   }
 
@@ -86,6 +89,79 @@ export default class AdditionsController {
 
       const { id } = request.params();
       return response.send(await AdditionsProvider.getAdditionById(id));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  //?OBTENER LISTADO DE PROYECTOS CON SU ÁREA FUNCIONAL VINCULADA
+  public async getProjectsList({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = request.body() as IProjectAdditionFilters;
+
+      return response.send(await AdditionsProvider.getProjectsList(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  //?OBTENER LISTADO DE FONDOS
+  public async getFundsList({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = request.body() as IProjectAdditionFilters;
+
+      return response.send(await AdditionsProvider.getFundsList(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  //?OBTENER POS PRE - COMBINAMOS RESULTADO DE POS PRE SAPIENCIA CON BUDGETS
+  public async getPosPreList({ response }: HttpContextContract) {
+
+    try {
+
+      return response.send(await AdditionsProvider.getPosPreList());
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  //?OBTENER LISTADO DE POS PRE SAPIENCIA ANIDADOS CON POSPRE ORIGEN
+  public async getPosPreSapienciaList({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = request.body() as IAdditionsFilters;
+      return response.send(await AdditionsProvider.getPosPreSapienciaList(data));
 
     } catch (err) {
 

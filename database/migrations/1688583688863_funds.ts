@@ -8,7 +8,10 @@ export default class extends BaseSchema {
       table.comment(
         "Tabla que contiene los fondos que se pueden asignar a usuarios del sistema"
       );
-      table.increments("FND_CODIGO").primary().comment("Llave primaria");
+      table
+        .increments("FND_CODIGO")
+        .primary()
+        .comment("Llave primaria");
       table
         .integer("FND_CODECP_ENTIDAD")
         .notNullable()
@@ -16,12 +19,18 @@ export default class extends BaseSchema {
         .references("ECP_CODIGO")
         .inTable("ECP_ENTIDADES_CP")
         .comment("Codigo de la entidad CP(FK ECP_ENTIDADES_CP)");
-      table.integer("FND_NUMERO").notNullable().comment("Numero del fondo");
+      table
+        .string("FND_NUMERO", 30)
+        .notNullable()
+        .comment("Numero del fondo");
       table
         .string("FND_DENOMINACION", 100)
         .notNullable()
         .comment("Denominación");
-      table.string("FND_DESCRIPCION", 500).notNullable().comment("Descripción");
+      table
+        .string("FND_DESCRIPCION", 500)
+        .notNullable()
+        .comment("Descripción");
       table
         .timestamp("FND_VIGENTE_DESDE")
         .notNullable()

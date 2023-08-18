@@ -31,7 +31,7 @@ export default class BudgetsValidator {
 
     entityId: schema.number(),
     ejercise: schema.number(),
-    number: schema.number(),
+    number: schema.string(),
     description: schema.string(),
     userCreate: schema.string.optional(),
     userModify: schema.string.optional(),

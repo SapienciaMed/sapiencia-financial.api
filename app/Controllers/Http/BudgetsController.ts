@@ -3,7 +3,8 @@ import BudgetsProvider from "@ioc:core.BudgetsProvider";
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { ApiResponse } from "App/Utils/ApiResponses";
 import { IFilterBudgets } from "App/Interfaces/BudgetsInterfaces";
-import BudgetsValidator from "App/Validators/BudgetsValidator";
+// import BudgetsValidator from "App/Validators/BudgetsValidator";
+import { IBudgets } from '../../Interfaces/BudgetsInterfaces';
 
 export default class BudgetsController {
   public async getBudgetsById({ request, response }: HttpContextContract) {
@@ -16,10 +17,12 @@ export default class BudgetsController {
       );
     }
   }
-  
+
      public async createBudgets({ request, response }: HttpContextContract) {
       try {
-        const data = await request.validate(BudgetsValidator);
+
+        // const data = await request.validate(BudgetsValidator);
+        const data = request.body() as IBudgets;
         return response.send(await BudgetsProvider.createBudgets(data));
       } catch (err) {
         return response.badRequest(
@@ -42,7 +45,8 @@ export default class BudgetsController {
   public async updateBudgets({ request, response }: HttpContextContract) {
     try {
       const { id } = request.params();
-      const data = await request.validate(BudgetsValidator);
+      // const data = await request.validate(BudgetsValidator);
+      const data = request.body() as IBudgets;
       return response.send(await BudgetsProvider.updateBudgets(data, id));
     } catch (err) {
       return response.badRequest(

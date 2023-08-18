@@ -47,9 +47,12 @@ export default class extends BaseSchema {
         .comment("Código del fondo (FK FND_FONDOS)");
 
       table
-        .string("MAD_POSICION_PRESUPUESTARIA", 50)
+        .integer("MAD_CODPPS_POSPRE_SAPIENCIA")
         .notNullable()
-        .comment("Codigo de referencia de la posicion presupuestaria (origen / sapiencia )");
+        .unsigned()
+        .references("PPS_CODIGO")
+        .inTable("PPS_POSICIONES_PRESUPUESTARIAS_SAPIENCIA")
+        .comment("Código del pospre sapiencia (FK PPS)");
 
       table
         .decimal("MAD_VALOR", 20,2)

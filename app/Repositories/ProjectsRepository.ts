@@ -1,9 +1,14 @@
 import { IPagingData } from "App/Utils/ApiResponses";
 import { IProject, IProjectFilters } from "App/Interfaces/ProjectsInterfaces";
+import { IProjectAdditionFilters, IProjectAdditionList } from '../Interfaces/AdditionsInterfaces';
+import ProjectsVinculation from 'App/Models/ProjectsVinculation';
 
 export interface IProjectsRepository {
+
   getProjectsPaginated(filters: IProjectFilters): Promise<IPagingData<IProject>>;
   getAllProjects(): Promise<IProject[]>;
+  getProjectsList(filters: IProjectAdditionFilters): Promise<IPagingData<IProjectAdditionList>>;
+
 }
 
 
@@ -146,4 +151,29 @@ export default class ProjectsRepository implements IProjectsRepository {
   async getAllProjects(): Promise<IProject[]> {
     return this.data;
   }
+
+  //?OBTENER LISTADO DE PROYECTOS CON SU ÁREA FUNCIONAL VINCULADA
+  async getProjectsList(filters: IProjectAdditionFilters): Promise<IPagingData<IProjectAdditionList>>{
+
+    let { page , perPage } = filters;
+
+    const res = ProjectsVinculation.query();
+
+    res.preload("areaFuntional");
+
+    page = 1;
+    perPage = (await res).length;
+
+    const projectsVinculationPaginated = await res.paginate(page, perPage);
+
+    const { data, meta } = projectsVinculationPaginated.serialize();
+    const dataArray = data ?? [];
+
+    return {
+      array: dataArray as IProjectAdditionList[],
+      meta,
+    };
+
+  }
+
 }

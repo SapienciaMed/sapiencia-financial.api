@@ -29,7 +29,7 @@ export default class FundsValidator {
 
   public schema = schema.create({
     entityId: schema.number(),
-    number: schema.number(),
+    number: schema.string(),
     denomination: schema.string(),
     description: schema.string(),
     dateFrom: schema.date(),

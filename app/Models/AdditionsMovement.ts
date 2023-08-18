@@ -3,6 +3,7 @@ import { BaseModel, column, hasOne } from '@ioc:Adonis/Lucid/Orm'
 import Addition from './Addition';
 import Funds from './Funds';
 import ProjectsVinculation from './ProjectsVinculation';
+import PosPreSapiencia from './PosPreSapiencia';
 
 export default class AdditionsMovement extends BaseModel {
 
@@ -26,8 +27,8 @@ export default class AdditionsMovement extends BaseModel {
   @column({ columnName: "MAD_CODFND_FONDO", serializeAs: "fundId" })
   public fundId: number;
 
-  @column({ columnName: "MAD_POSICION_PRESUPUESTARIA", serializeAs: "budgetPosition" })
-  public budgetPosition: string;
+  @column({ columnName: "MAD_CODPPS_POSPRE_SAPIENCIA", serializeAs: "budgetPosition" })
+  public budgetPosition: number;
 
   @column({ columnName: "MAD_VALOR", serializeAs: "value" })
   public value: number;
@@ -52,5 +53,12 @@ export default class AdditionsMovement extends BaseModel {
     serializeAs: "found",
   })
   public found: HasOne<typeof Funds>;
+
+  @hasOne(() => PosPreSapiencia, {
+    localKey: "budgetPosition",
+    foreignKey: "id",
+    serializeAs: "posPreSapiencia",
+  })
+  public posPreSapiencia: HasOne<typeof PosPreSapiencia>;
 
 }
