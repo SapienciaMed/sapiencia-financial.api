@@ -9,7 +9,7 @@ export default class Budgets extends BaseModel {
   public id: number;
 
   @column({ columnName: 'PPR_NUMERO' ,  serializeAs: "number"})
-  public number: number;
+  public number: string;
 
   @column({ columnName: 'PPR_EJERCICIO',  serializeAs: "ejercise" })
   public ejercise: number;
@@ -32,7 +32,7 @@ export default class Budgets extends BaseModel {
   @column({ columnName: 'PPR_USUARIO_CREO' ,serializeAs: "userCreate"  })
   public userCreate: string;
 
- 
+
 
   @column.dateTime({
     autoCreate: true,
@@ -40,7 +40,7 @@ export default class Budgets extends BaseModel {
     serializeAs: "dateCreate",
   })
   public dateCreate: DateTime;
-  
+
   @hasOne(() => Entities, {
     localKey: "entityId",
     foreignKey: "id",

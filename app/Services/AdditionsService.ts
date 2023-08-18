@@ -4,6 +4,7 @@ import {
          IAdditionsWithMovements,
          IFundsAdditionList,
          IPosPreAddition,
+         IPosPreSapienciaAdditionList,
          IProjectAdditionFilters,
          IProjectAdditionList,
        } from "App/Interfaces/AdditionsInterfaces";
@@ -26,6 +27,10 @@ export interface IAdditionsService {
   getProjectsList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IProjectAdditionList>>>;
   getFundsList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IFundsAdditionList>>>;
   getPosPreList(): Promise<IPosPreAddition | string[]>;
+  getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IPosPreSapienciaAdditionList>>>;
+
+  //*Validaciones Front
+  totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<Boolean>
 
 }
 
@@ -51,10 +56,21 @@ export default class AdditionsService implements IAdditionsService{
   //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO
   async createAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements | any>>{
 
-    const add = await this.additionsRepository.createAdditions(addition.headAdditon);
+    //* Validación de totales ingresos/gastos
 
+
+    //* Validación de ruta presupuestaria
+
+
+    // return new ApiResponse(
+    //   addition,
+    //   EResponseCodes.OK,
+    //   "Adición con movimientos creada exitosamente."
+    // );
+
+    const add = await this.additionsRepository.createAdditions(addition.headAdditon);
     console.log(this.movementsRepository);
-    //Garantizo inserción cabecera adición.
+
     if(add.id){
 
       for( let i of addition.additionMove ){
@@ -153,6 +169,36 @@ export default class AdditionsService implements IAdditionsService{
     }
 
     return arrayResult;
+
+  }
+
+  //?OBTENER LISTADO DE POS PRE SAPIENCIA ANIDADOS CON POSPRE ORIGEN
+  async getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IPosPreSapienciaAdditionList>>>{
+
+    const posPreRes = await this.pospreSapRepository.getPosPreSapienciaList(filters);
+    return new ApiResponse(posPreRes, EResponseCodes.OK);
+
+  }
+
+
+  //* **************************************
+  //? ************ VALIDATIONS ************
+  async totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<Boolean> {
+
+    let income: number = 0; //Ingresos
+    let spend : number = 0; //Gastos
+
+    for( let i of addition.additionMove ){
+
+        if(i.type == "Ingreso"){
+          income += i.value;
+        }else{
+          spend += i.value;
+        }
+
+    }
+
+    return (income === spend) ? true : false;
 
   }
 

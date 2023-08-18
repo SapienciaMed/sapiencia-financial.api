@@ -12,7 +12,7 @@ export default class Funds extends BaseModel {
   public entityId: number;
 
   @column({ columnName: "FND_NUMERO", serializeAs: "number" })
-  public number: number;
+  public number: string;
 
   @column({ columnName: "FND_DENOMINACION", serializeAs: "denomination" })
   public denomination: string;
@@ -22,7 +22,7 @@ export default class Funds extends BaseModel {
 
   @column({ columnName: "FND_VIGENTE_DESDE", serializeAs: "dateFrom" })
   public dateFrom: Date;
-  
+
   @column({ columnName: "FND_VIGENTE_HASTA", serializeAs: "dateTo" })
   public dateTo: Date;
 

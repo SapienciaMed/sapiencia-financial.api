@@ -156,21 +156,21 @@ export default class AdditionsController {
   }
 
   //?OBTENER LISTADO DE POS PRE SAPIENCIA ANIDADOS CON POSPRE ORIGEN
-  // public async getPosPreSapienciaList({ request, response }: HttpContextContract) {
+  public async getPosPreSapienciaList({ request, response }: HttpContextContract) {
 
-  //   try {
+    try {
 
-  //     const data = request.body() as IAdditionsFilters;
-  //     return response.send(await AdditionsProvider.getPosPreSapienciaList(data));
+      const data = request.body() as IAdditionsFilters;
+      return response.send(await AdditionsProvider.getPosPreSapienciaList(data));
 
-  //   } catch (err) {
+    } catch (err) {
 
-  //     return response.badRequest(
-  //       new ApiResponse(null, EResponseCodes.FAIL, String(err))
-  //     );
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
 
-  //   }
+    }
 
-  // }
+  }
 
 }

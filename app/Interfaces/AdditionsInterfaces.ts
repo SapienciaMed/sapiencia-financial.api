@@ -7,7 +7,7 @@ export interface IAdditionsMovements {
   managerCenter: string;
   projectId: number;
   fundId: number;
-  budgetPosition: string;
+  budgetPosition: number;
   value: number;
 }
 
@@ -26,6 +26,7 @@ export interface IAdditionsWithMovements {
   additionMove: IAdditionsMovements[]
 }
 
+//Lo dejarémos genérico para todos los elementos subyacentes
 export interface IAdditionsFilters {
   page: number;
   perPage: number;
@@ -99,7 +100,36 @@ export interface IBudgetsAddition {
   id?: number;
   entityId: number;
   ejercise: number;
-  number:number;
+  number:string;
+  denomination:string;
+  description:string;
+  userModify?: string;
+  dateModify?: Date;
+  userCreate?: string;
+  dateCreate?: DateTime;
+  entity?: IEntitiesAddition
+}
+
+export interface IPosPreSapienciaAdditionList {
+  id?: number;
+  number: string;
+  budgetId: number;
+  ejercise: number;
+  description: string;
+  consecutive: number;
+  assignedTo: string;
+  userModify?: string;
+  dateModify?: Date;
+  userCreate?: string;
+  dateCreate?: DateTime;
+  budget?: IBudgetsAddition;
+}
+
+export interface IBudgetsAddition {
+  id?: number;
+  entityId: number;
+  ejercise: number;
+  number:string;
   denomination:string;
   description:string;
   userModify?: string;
