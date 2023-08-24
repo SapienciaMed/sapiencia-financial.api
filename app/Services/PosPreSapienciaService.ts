@@ -43,10 +43,10 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
             return new ApiResponse(
                 {} as IPosPreSapiencia,
                 EResponseCodes.FAIL,
-                "Ya existe un consecutivo asociado a este Pospre"
+                "Se ha encontrado un error en los datos, revisa las rutas presupuestales"
             );
         }
-        
+
         return new ApiResponse(res, EResponseCodes.OK);
     }
 
@@ -57,7 +57,7 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
             return new ApiResponse(
                 {} as IPosPreSapiencia,
                 EResponseCodes.FAIL,
-                "Ya existe un consecutivo asociado a este Pospre"
+                "Se ha encontrado un error en los datos, revisa las rutas presupuestales"
             );
         }
 
@@ -66,7 +66,7 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
 
     async getAllPosPreSapiencia(): Promise<ApiResponse<IPosPreSapiencia[]>> {
         const res = await this.posPreSapienciaRepository.getAllPosPreSapiencia();
-    
+
         return new ApiResponse(res, EResponseCodes.OK);
       }
-}  
+}

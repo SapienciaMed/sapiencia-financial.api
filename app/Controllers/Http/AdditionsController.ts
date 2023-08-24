@@ -63,6 +63,7 @@ export default class AdditionsController {
   }
 
   //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO
+  //! IMPORTANTE => Este nos servirá para las validaciones que no se harán en FRONT.
   public async createAdditions({ request, response }: HttpContextContract) {
 
       try {
@@ -81,6 +82,27 @@ export default class AdditionsController {
       }
 
   }
+
+  //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO
+  //! IMPORTANTE => ESTE REALIZARÁ LA ACCIÓN DE GUARDAR LUEGO VALIDADOS DATOS FRONT
+  public async executeCreateAdditions({ request, response }: HttpContextContract) {
+
+    try {
+
+      const addition = request.body() as IAdditionsWithMovements;
+      return response.send(
+        await AdditionsProvider.executeCreateAdditions(addition)
+      );
+
+    } catch (error) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(error))
+      );
+
+    }
+
+}
 
   //?OBTENER UNA ADICIÓN CON SUS MOVIMIENTOS EN PARALELO A TRAVÉS DE UN ID PARAM
   public async getAdditionById({ response, request }: HttpContextContract) {

@@ -1,11 +1,12 @@
 import { DateTime } from "luxon";
 
 export interface IAdditionsMovements {
+  idCard? : string;
   id?: number;
   additionId?: number;
   type: string;
   managerCenter: string;
-  projectId: number;
+  projectId: string; //Referencia a la otra API de planeación
   fundId: number;
   budgetPosition: number;
   value: number;

@@ -124,7 +124,8 @@ export default class AppProvider {
             new ProjectsRepository.default(),
             new FundsRepository.default(),
             new PosPreSapienciaRepository.default(),
-            new BudgetsRepository.default()
+            new BudgetsRepository.default(),
+            new BudgetsRoutesRepository.default()
           )
     );
 
