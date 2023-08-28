@@ -39,8 +39,21 @@ export default class FundsService implements IFundsService {
   }
 
   async createFund(fund: IFunds): Promise<ApiResponse<IFunds>> {
+
+    //No pueden repetirse funds.
+    const validNumber = await this.fundsRepository.getFundsByNumber(fund.number);
+
+    if(validNumber.array.length > 0) {
+      return new ApiResponse(
+        {} as IFunds,
+        EResponseCodes.FAIL,
+        `Ya existe un consecutivo asociado a este Fondo.`
+      );
+    }
+
     const res = await this.fundsRepository.createFund(fund);
     return new ApiResponse(res, EResponseCodes.OK);
+
   }
 
   async updateFund(fund: IFunds, id: number): Promise<ApiResponse<IFunds>> {

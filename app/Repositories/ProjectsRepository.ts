@@ -8,7 +8,7 @@ export interface IProjectsRepository {
   getProjectsPaginated(filters: IProjectFilters): Promise<IPagingData<IProject>>;
   getAllProjects(): Promise<IProject[]>;
   getProjectsList(filters: IProjectAdditionFilters): Promise<IPagingData<IProjectAdditionList>>;
-  getProjectByCode(projectId: string): Promise<IProjectAdditionList | null>;
+  getProjectById(projectId: number): Promise<IProjectAdditionList | null>;
 
 }
 
@@ -200,10 +200,10 @@ export default class ProjectsRepository implements IProjectsRepository {
   }
 
   //?OBTENER PROYECTO POR CODIGO DE PROYECTO (REFERENCIAL)
-  async getProjectByCode(projectId: string): Promise<IProjectAdditionList | null>{
+  async getProjectById(projectId: number): Promise<IProjectAdditionList | null>{
 
     const res = await ProjectsVinculation.query()
-                                         .where('projectId', projectId)
+                                         .where('id', projectId)
                                          .first();
 
     return res ? (res.serialize() as IProjectAdditionList) : null;

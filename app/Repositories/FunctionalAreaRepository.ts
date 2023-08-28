@@ -22,6 +22,8 @@ export interface IFunctionalAreaRepository {
     filters: IProjectsVinculateFilters
   ): Promise<IPagingData<IProjectsVinculation>>;
   getAllFunctionalAreas():Promise<IFunctionalArea[]>;
+  getFunctionalAreaByNumber(number: string): Promise<IPagingData<IFunctionalArea>>;
+
 }
 
 export default class FunctionalAreaRepository
@@ -34,7 +36,10 @@ export default class FunctionalAreaRepository
   }
 
   async getFunctionalAreaPaginated(filters: IFunctionalAreaFilters): Promise<IPagingData<IFunctionalArea>> {
+
     const query = FunctionalArea.query();
+    query.orderBy("number", "asc");
+
     if (filters.number) {
       await query.where("number", filters.number);
     }
@@ -142,4 +147,24 @@ export default class FunctionalAreaRepository
     const res = await FunctionalArea.query();
     return res as IFunctionalArea[];
   }
+
+  async getFunctionalAreaByNumber(number: string): Promise<IPagingData<IFunctionalArea>> {
+
+    const query = FunctionalArea.query();
+    query.where("number", number);
+    query.orderBy("number", "asc");
+
+    const page = 1;
+    const perPage = 1;
+
+    const res = await query.paginate(page, perPage);
+    const { data, meta } = res.serialize();
+
+    return {
+      array: data as IFunctionalArea[],
+      meta,
+    };
+
+  }
+
 }

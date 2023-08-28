@@ -5,8 +5,10 @@ export default class extends BaseSchema {
 
   public async up () {
     this.schema.createTable(this.tableName, (table) => {
-      table.comment("Tabla que almacena los tipos presupuestos");
-      table.increments("VPY_CODIGO")
+      table.comment("Tabla que contiene los proyectos");
+
+      table
+      .increments("VPY_CODIGO")
       .primary()
       .comment("Llave primaria");
       table
@@ -21,9 +23,17 @@ export default class extends BaseSchema {
       .notNullable()
       .comment("Codigo del proyecto (Direccion Estrategica)");
       table
-      .integer("VPY_VALOR_PRESUPUESTADO")
+      .string("VPY_CONCEPTO_PROYECTO",200)
       .notNullable()
-      .comment("Presupuesto asignado");
+      .comment("Nombre / Concepto del proyecto (Direccion Estrategica)");
+      table
+      .bigInteger("VPY_VALOR_PRESUPUESTADO")
+      .notNullable()
+      .comment("Valor presupuestado");
+      table
+      .bigInteger("VPY_VALOR_ASIGNADO")
+      .notNullable()
+      .comment("Valor asignado");
       table
       .boolean("VPY_VINCULADO")
       .notNullable()

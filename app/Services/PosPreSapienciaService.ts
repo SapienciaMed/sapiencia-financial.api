@@ -43,7 +43,7 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
             return new ApiResponse(
                 {} as IPosPreSapiencia,
                 EResponseCodes.FAIL,
-                "Se ha encontrado un error en los datos, revisa las rutas presupuestales"
+                "Se ha encontrado un error en los datos, revisa Pospre Sapiencia"
             );
         }
 
@@ -57,7 +57,7 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
             return new ApiResponse(
                 {} as IPosPreSapiencia,
                 EResponseCodes.FAIL,
-                "Se ha encontrado un error en los datos, revisa las rutas presupuestales"
+                "Se ha encontrado un error en los datos, revisa Pospre Sapiencia"
             );
         }
 

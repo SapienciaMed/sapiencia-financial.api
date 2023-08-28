@@ -11,7 +11,10 @@ import {
 import { IAdditionsRepository } from "App/Repositories/AdditionsRepository";
 import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
+
 import AdditionsMovement from '../Models/AdditionsMovement';
+import Addition from '../Models/Addition';
+
 import { IMovementAdditionRepository } from '../Repositories/MovementAdditionRepository';
 import { IProjectsRepository } from '../Repositories/ProjectsRepository';
 import { IFundsRepository } from '../Repositories/FundsRepository';
@@ -31,8 +34,9 @@ export interface IAdditionsService {
   getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IPosPreSapienciaAdditionList>>>;
 
   //*Validaciones Front y crear
+  namesAddtionsValidations(addition: IAdditionsWithMovements): Promise<Boolean>;
   totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<Boolean>;
-  budgetPathValidations(idCard: string, projectId: string , foundId: number , posPreId: number): Promise<string>;
+  budgetPathValidations(idCard: string, projectId: number , foundId: number , posPreId: number): Promise<string>;
   executeCreateAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>>;
 
 }
@@ -61,27 +65,34 @@ export default class AdditionsService implements IAdditionsService{
   //* Vamos a terminar usando este como el validador general y un createAdditionExecute
   async createAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements | any>>{
 
-    //* Validación de totales ingresos/gastos
+    //! Validación de nombre Acto Admin Distrito y el Sapiencia
+    const respNames = await this.namesAddtionsValidations(addition);
+
+    if(respNames){
+
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "El nombre de Acto Admin Distrito y/o el Acto Admin Sapiencia ya se encuentran registrados."
+      );
+
+    }
+
+    //! Validación de totales ingresos/gastos
     const totalMovementsVal = await this.totalsMovementsValidations(addition);
 
     if(!totalMovementsVal){
+
       console.log(this.movementsRepository);
       return new ApiResponse(
         null,
         EResponseCodes.FAIL,
         "El total de ingresos no coincide con el total de gastos."
       );
+
     }
 
-    //* Validación de proyecto a través de código de referencia
-
-
-    //TODO: Registrar la Adición (CABECERA)
-    //! const add = await this.additionsRepository.createAdditions(addition.headAdditon);
-
-    //* Validación de ruta presupuestaria
-    //? Esta validación la harémos sobre cada ingreso y gasto que llegue:
-
+    //! Validación de ruta presupuestaria
     let bandControl: boolean = false;
     let arrayCardsErrorRoutes: string[] = [];
     let arrayCardsErrorProjects: string[] = [];
@@ -89,7 +100,7 @@ export default class AdditionsService implements IAdditionsService{
     for( let i of addition.additionMove ){
 
       const idCard: string = i.idCard!;          // ID Card del FRONT para pintar si hay errores
-      const projectId: string = i.projectId;     // Id Proyecto - De acá saco el área funcional
+      const projectId: number = i.projectId;     // Id Proyecto - De acá saco el área funcional
       const foundId: number = i.fundId;          // Id del Fondo
       const posPreId: number = i.budgetPosition; // Id del Pos Pre Sapiencia - De acá saco el pospre origen
 
@@ -125,42 +136,12 @@ export default class AdditionsService implements IAdditionsService{
 
     }
 
-    //? Si llega hasta acá entonces pasó los filtros
-
+    //! Si llega hasta acá entonces pasó los filtros
     return new ApiResponse(
       null,
       EResponseCodes.OK,
       "Validaciones pasadas con éxito."
     );
-
-    // const add = await this.additionsRepository.createAdditions(addition.headAdditon);
-    // console.log(this.movementsRepository);
-
-    // if(add.id){
-
-    //   for( let i of addition.additionMove ){
-
-    //     const toCreate = new AdditionsMovement();
-    //     toCreate.fill({ additionId : add.id, ...i });
-    //     await toCreate.save();
-
-    //   }
-
-    // }else{
-
-    //   return new ApiResponse(
-    //     addition,
-    //     EResponseCodes.FAIL,
-    //     "Ocurrio un error al intentar realizar la transacción."
-    //   );
-
-    // }
-
-    // return new ApiResponse(
-    //   addition,
-    //   EResponseCodes.OK,
-    //   "Adición con movimientos creada exitosamente."
-    // );
 
   }
 
@@ -246,10 +227,31 @@ export default class AdditionsService implements IAdditionsService{
   }
 
 
+  //! |------------------------------------------------------------|
+  //* |************************************************************|
+  //? |******************** VALIDACIONES EXTRA ********************|
+  //* |************************************************************|
+  //! |------------------------------------------------------------|
 
-  //* ********************************************
-  //? ************ VALIDACIONES EXTRA ************
-  //* ********************************************
+  //Validador manual para que los nombres no se repitan
+  async namesAddtionsValidations(addition: IAdditionsWithMovements): Promise<Boolean> {
+
+    //Aplicando el tema del trim() y toUpperCase()
+    // const band: boolean = false;
+    const nameActAdminDis: string = addition.headAdditon.actAdminDistrict.trim().toUpperCase();
+    const nameActAdminSap: string = addition.headAdditon.actAdminSapiencia.trim().toUpperCase();
+
+    const res1 = await Addition.query()
+                                .where('actAdminDistrict', nameActAdminDis)
+                                .first();
+
+    const res2 = await Addition.query()
+                                .where('actAdminSapiencia', nameActAdminSap)
+                                .first();
+
+    return (res1 || res2) ? true : false;
+
+  }
 
   //Validador manual para que los valores tengan coincidencia respecto a la información
   async totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<Boolean> {
@@ -271,35 +273,31 @@ export default class AdditionsService implements IAdditionsService{
 
   }
 
-  //Validar que el proyecto, área funcional, fondo, pos pre origen y pos pre sapiencia pertenezcan
-  //a una ruta presupuestal ya proveida en la aplicación. Validar existencia de proyecto a partir
-  //del código de proyecto referencial.
-  async budgetPathValidations(idCard: string, projectId: string , foundId: number , posPreId: number): Promise<string> {
+  //Validar proyecto, área funcional, fondo, pos pre origen y pos pre sapiencia
+  async budgetPathValidations(idCard: string, projectId: number , foundId: number , posPreId: number): Promise<string> {
 
     //* Consulta pos pre sapiencia para obtener el de origen
     const query = await this.pospreSapRepository.getPosPreSapienciaById(posPreId);
     const posPreOriginId = Number(query?.budget?.id);
 
     //* Primero busquemos si encontramos el proyecto
-    const resultProj = await this.projectRepository.getProjectByCode(projectId);
+    const resultProj = await this.projectRepository.getProjectById(projectId);
     if(!resultProj) return `ERROR_CODIGOPROYECTO-${idCard}`;
-    const presupuestalProjectId = resultProj.id;
 
     //* Validación contra ruta presupuestal
-    // Debe existir una row que tenga todos estos elementos en coincidencia:
-    const resultRPP = await this.budgetRouteRepository.getBudgetForAdditions(presupuestalProjectId,
+    const resultRPP = await this.budgetRouteRepository.getBudgetForAdditions(projectId,
                                                                              foundId,
                                                                              posPreOriginId,
                                                                              posPreId);
-
+    //Devolvemos el id card para que pueda ser pintado en el Frontend
     if(!resultRPP) return `ERROR_RUTAPRESUPUESTARIA-${idCard}`;
 
-    console.log({idCard});
-    console.log({projectId});
-    console.log({presupuestalProjectId});
-    console.log({foundId});
-    console.log({posPreOriginId});
-    console.log({posPreId});
+    // console.log({idCard});
+    // console.log({projectId});
+    // console.log({presupuestalProjectId});
+    // console.log({foundId});
+    // console.log({posPreOriginId});
+    // console.log({posPreId});
 
     return `OK-${idCard}`;
 
@@ -307,16 +305,24 @@ export default class AdditionsService implements IAdditionsService{
 
   async executeCreateAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>> {
 
-    const add = await this.additionsRepository.createAdditions(addition.headAdditon);
-    console.log(this.movementsRepository);
+    //* Agregar cabecera de adición
+    const add = await this.additionsRepository.createAdditions({
+      actAdminDistrict : addition.headAdditon.actAdminDistrict.trim().toUpperCase(),
+      actAdminSapiencia : addition.headAdditon.actAdminSapiencia.trim().toUpperCase(),
+      userCreate : addition.headAdditon.userCreate,
+      dateCreate : addition.headAdditon.dateCreate,
+      userModify : addition.headAdditon.userModify,
+      dateModify : addition.headAdditon.dateModify
+    });
 
+    //* Agregar detalles de adición
     if(add.id){
 
       for( let i of addition.additionMove ){
 
         //*Hallamos primero el id de proyecto presupuestal a través del código referencial
-        const resultProj = await this.projectRepository.getProjectByCode(i.projectId);
-        const presupuestalProjectId = Number(resultProj!.id);
+        // const resultProj = await this.projectRepository.getProjectByCode(i.projectId);
+        // const presupuestalProjectId = Number(resultProj!.id);
 
         const toCreate = new AdditionsMovement();
 
@@ -324,11 +330,12 @@ export default class AdditionsService implements IAdditionsService{
                         additionId : add.id,
                         type : i.type,
                         managerCenter : i.managerCenter,
-                        projectId : presupuestalProjectId,
+                        projectId : i.projectId,
                         fundId : i.fundId,
                         budgetPosition : i.budgetPosition,
                         value : i.value
                       });
+
         await toCreate.save();
 
       }
