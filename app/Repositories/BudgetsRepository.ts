@@ -9,6 +9,7 @@ export interface IBudgetsRepository {
   getBudgetsPaginated(filters: IFilterBudgets): Promise<IPagingData<IBudgets>>;
   createBudgets(role: IBudgets): Promise<IBudgets>;
   getAllBudgets(): Promise<IBudgets[]>;
+  getBudgetsByNumber(number: string): Promise<IPagingData<IBudgets>>;
 }
 
 export default class BudgetsRepository implements IBudgetsRepository {
@@ -18,9 +19,10 @@ export default class BudgetsRepository implements IBudgetsRepository {
     const res = await Budgets.find(id);
     return res ? (res.serialize() as IBudgets) : null;
   }
-  
+
   async getBudgetsPaginated(filters: IFilterBudgets): Promise<IPagingData<IBudgets>> {
     const query = Budgets.query();
+    query.orderBy("number", "asc");
 
     if (filters.entity) {
       query.where("entityId", filters.entity);
@@ -33,7 +35,7 @@ export default class BudgetsRepository implements IBudgetsRepository {
     if (filters.denomination) {
       query.where("denomination", filters.denomination);
     }
-    
+
     if (filters.number) {
       query.where("number", filters.number);
     }
@@ -73,7 +75,7 @@ export default class BudgetsRepository implements IBudgetsRepository {
     if(budgets.userModify) {
       toUpdate.userModify = budgets.userModify;
     }
-    
+
     await toUpdate.save();
     return toUpdate.serialize() as IBudgets;
   }
@@ -82,4 +84,25 @@ export default class BudgetsRepository implements IBudgetsRepository {
     const res = await Budgets.query();
     return res as IBudgets[];
   }
+
+  async getBudgetsByNumber(number: string): Promise<IPagingData<IBudgets>> {
+
+    const query = Budgets.query();
+    query.where("number", number);
+
+    await query.preload("entity");
+
+    const page = 1;
+    const perPage = 1;
+
+    const res = await query.paginate(page, perPage);
+
+    const { data, meta } = res.serialize();
+
+    return {
+      array: data as IBudgets[],
+      meta,
+    };
+  }
+
 }
