@@ -67,4 +67,15 @@ export class FundsRepositoryFake implements IFundsRepository {
       res({ array: [fundFake2], meta: { total: 1 } });
     });
   }
+
+  getFundsByNumber(_number: string): Promise<IPagingData<IFundsAdditionList | null>>{
+
+    // const list = [fundFake];
+
+    return new Promise((res) => {
+      res({ array: [fundFake], meta: { total: 1 } });
+    });
+
+  }
+
 }
