@@ -11,12 +11,16 @@ import {
 import { IAdditionsRepository } from "App/Repositories/AdditionsRepository";
 import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
+
 import AdditionsMovement from '../Models/AdditionsMovement';
+import Addition from '../Models/Addition';
+
 import { IMovementAdditionRepository } from '../Repositories/MovementAdditionRepository';
 import { IProjectsRepository } from '../Repositories/ProjectsRepository';
 import { IFundsRepository } from '../Repositories/FundsRepository';
 import { IPosPreSapienciaRepository } from '../Repositories/PosPreSapienciaRepository';
 import { IBudgetsRepository } from '../Repositories/BudgetsRepository';
+import { IBudgetsRoutesRepository } from '../Repositories/BudgetsRoutesRepository';
 
 export interface IAdditionsService {
 
@@ -29,8 +33,11 @@ export interface IAdditionsService {
   getPosPreList(): Promise<IPosPreAddition | string[]>;
   getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IPosPreSapienciaAdditionList>>>;
 
-  //*Validaciones Front
-  totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<Boolean>
+  //*Validaciones Front y crear
+  namesAddtionsValidations(addition: IAdditionsWithMovements): Promise<Boolean>;
+  totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<Boolean>;
+  budgetPathValidations(idCard: string, projectId: number , foundId: number , posPreId: number): Promise<string>;
+  executeCreateAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>>;
 
 }
 
@@ -42,7 +49,8 @@ export default class AdditionsService implements IAdditionsService{
     private projectRepository: IProjectsRepository,
     private fundsRepository: IFundsRepository,
     private pospreSapRepository: IPosPreSapienciaRepository,
-    private budgetRepository: IBudgetsRepository
+    private budgetRepository: IBudgetsRepository,
+    private budgetRouteRepository: IBudgetsRoutesRepository
   ) {}
 
   //?OBTENER PAGINADO Y FILTRADO LAS ADICIONES CON SUS MOVIMIENTOS
@@ -53,48 +61,86 @@ export default class AdditionsService implements IAdditionsService{
 
   }
 
-  //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO
+  //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO (VALIDACIÓN)
+  //* Vamos a terminar usando este como el validador general y un createAdditionExecute
   async createAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements | any>>{
 
-    //* Validación de totales ingresos/gastos
+    //! Validación de nombre Acto Admin Distrito y el Sapiencia
+    const respNames = await this.namesAddtionsValidations(addition);
 
-
-    //* Validación de ruta presupuestaria
-
-
-    // return new ApiResponse(
-    //   addition,
-    //   EResponseCodes.OK,
-    //   "Adición con movimientos creada exitosamente."
-    // );
-
-    const add = await this.additionsRepository.createAdditions(addition.headAdditon);
-    console.log(this.movementsRepository);
-
-    if(add.id){
-
-      for( let i of addition.additionMove ){
-
-        const toCreate = new AdditionsMovement();
-        toCreate.fill({ additionId : add.id, ...i });
-        await toCreate.save();
-
-      }
-
-    }else{
+    if(respNames){
 
       return new ApiResponse(
-        addition,
+        null,
         EResponseCodes.FAIL,
-        "Ocurrio un error al intentar realizar la transacción."
+        "El nombre de Acto Admin Distrito y/o el Acto Admin Sapiencia ya se encuentran registrados."
       );
 
     }
 
+    //! Validación de totales ingresos/gastos
+    const totalMovementsVal = await this.totalsMovementsValidations(addition);
+
+    if(!totalMovementsVal){
+
+      console.log(this.movementsRepository);
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "El total de ingresos no coincide con el total de gastos."
+      );
+
+    }
+
+    //! Validación de ruta presupuestaria
+    let bandControl: boolean = false;
+    let arrayCardsErrorRoutes: string[] = [];
+    let arrayCardsErrorProjects: string[] = [];
+
+    for( let i of addition.additionMove ){
+
+      const idCard: string = i.idCard!;          // ID Card del FRONT para pintar si hay errores
+      const projectId: number = i.projectId;     // Id Proyecto - De acá saco el área funcional
+      const foundId: number = i.fundId;          // Id del Fondo
+      const posPreId: number = i.budgetPosition; // Id del Pos Pre Sapiencia - De acá saco el pospre origen
+
+      const resp = await this.budgetPathValidations(idCard, projectId , foundId , posPreId);
+      const status = resp.split('-')[0];
+      const card = resp.split('-')[1];
+
+      if(status == "ERROR_RUTAPRESUPUESTARIA"){
+
+        bandControl = true;
+        arrayCardsErrorRoutes.push(card);
+
+      }
+
+      if(status == "ERROR_CODIGOPROYECTO"){
+
+        bandControl = true;
+        arrayCardsErrorProjects.push(card);
+
+      }
+
+    }
+
+    if(bandControl){
+
+      const arrayResponse = `RUTASPRESUPUESTARIAS@@@${JSON.stringify(arrayCardsErrorRoutes)}@@@PROYECTOS@@@${JSON.stringify(arrayCardsErrorProjects)}`;
+
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        `Se han detectado errores en uno o varios elementos, por favor revise__${arrayResponse}`
+      );
+
+    }
+
+    //! Si llega hasta acá entonces pasó los filtros
     return new ApiResponse(
-      addition,
+      null,
       EResponseCodes.OK,
-      "Adición con movimientos creada exitosamente."
+      "Validaciones pasadas con éxito."
     );
 
   }
@@ -181,8 +227,33 @@ export default class AdditionsService implements IAdditionsService{
   }
 
 
-  //* **************************************
-  //? ************ VALIDATIONS ************
+  //! |------------------------------------------------------------|
+  //* |************************************************************|
+  //? |******************** VALIDACIONES EXTRA ********************|
+  //* |************************************************************|
+  //! |------------------------------------------------------------|
+
+  //Validador manual para que los nombres no se repitan
+  async namesAddtionsValidations(addition: IAdditionsWithMovements): Promise<Boolean> {
+
+    //Aplicando el tema del trim() y toUpperCase()
+    // const band: boolean = false;
+    const nameActAdminDis: string = addition.headAdditon.actAdminDistrict.trim().toUpperCase();
+    const nameActAdminSap: string = addition.headAdditon.actAdminSapiencia.trim().toUpperCase();
+
+    const res1 = await Addition.query()
+                                .where('actAdminDistrict', nameActAdminDis)
+                                .first();
+
+    const res2 = await Addition.query()
+                                .where('actAdminSapiencia', nameActAdminSap)
+                                .first();
+
+    return (res1 || res2) ? true : false;
+
+  }
+
+  //Validador manual para que los valores tengan coincidencia respecto a la información
   async totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<Boolean> {
 
     let income: number = 0; //Ingresos
@@ -199,6 +270,91 @@ export default class AdditionsService implements IAdditionsService{
     }
 
     return (income === spend) ? true : false;
+
+  }
+
+  //Validar proyecto, área funcional, fondo, pos pre origen y pos pre sapiencia
+  async budgetPathValidations(idCard: string, projectId: number , foundId: number , posPreId: number): Promise<string> {
+
+    //* Consulta pos pre sapiencia para obtener el de origen
+    const query = await this.pospreSapRepository.getPosPreSapienciaById(posPreId);
+    const posPreOriginId = Number(query?.budget?.id);
+
+    //* Primero busquemos si encontramos el proyecto
+    const resultProj = await this.projectRepository.getProjectById(projectId);
+    if(!resultProj) return `ERROR_CODIGOPROYECTO-${idCard}`;
+
+    //* Validación contra ruta presupuestal
+    const resultRPP = await this.budgetRouteRepository.getBudgetForAdditions(projectId,
+                                                                             foundId,
+                                                                             posPreOriginId,
+                                                                             posPreId);
+    //Devolvemos el id card para que pueda ser pintado en el Frontend
+    if(!resultRPP) return `ERROR_RUTAPRESUPUESTARIA-${idCard}`;
+
+    // console.log({idCard});
+    // console.log({projectId});
+    // console.log({presupuestalProjectId});
+    // console.log({foundId});
+    // console.log({posPreOriginId});
+    // console.log({posPreId});
+
+    return `OK-${idCard}`;
+
+  }
+
+  async executeCreateAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>> {
+
+    //* Agregar cabecera de adición
+    const add = await this.additionsRepository.createAdditions({
+      actAdminDistrict : addition.headAdditon.actAdminDistrict.trim().toUpperCase(),
+      actAdminSapiencia : addition.headAdditon.actAdminSapiencia.trim().toUpperCase(),
+      userCreate : addition.headAdditon.userCreate,
+      dateCreate : addition.headAdditon.dateCreate,
+      userModify : addition.headAdditon.userModify,
+      dateModify : addition.headAdditon.dateModify
+    });
+
+    //* Agregar detalles de adición
+    if(add.id){
+
+      for( let i of addition.additionMove ){
+
+        //*Hallamos primero el id de proyecto presupuestal a través del código referencial
+        // const resultProj = await this.projectRepository.getProjectByCode(i.projectId);
+        // const presupuestalProjectId = Number(resultProj!.id);
+
+        const toCreate = new AdditionsMovement();
+
+        toCreate.fill({
+                        additionId : add.id,
+                        type : i.type,
+                        managerCenter : i.managerCenter,
+                        projectId : i.projectId,
+                        fundId : i.fundId,
+                        budgetPosition : i.budgetPosition,
+                        value : i.value
+                      });
+
+        await toCreate.save();
+
+      }
+
+    }else{
+
+      return new ApiResponse(
+        addition,
+        EResponseCodes.FAIL,
+        "Ocurrio un error al intentar realizar la transacción."
+      );
+
+    }
+
+    return new ApiResponse(
+      addition,
+      EResponseCodes.OK,
+      "Adición con movimientos creada exitosamente."
+    );
 
   }
 

@@ -8,6 +8,7 @@ export interface IProjectsRepository {
   getProjectsPaginated(filters: IProjectFilters): Promise<IPagingData<IProject>>;
   getAllProjects(): Promise<IProject[]>;
   getProjectsList(filters: IProjectAdditionFilters): Promise<IPagingData<IProjectAdditionList>>;
+  getProjectById(projectId: number): Promise<IProjectAdditionList | null>;
 
 }
 
@@ -19,112 +20,134 @@ export default class ProjectsRepository implements IProjectsRepository {
       {
         id: "1",
         name: "Proyecto 1",
-        plannedValue: 550000
+        plannedValue: 550000,
+        assignmentValue: 600000
       },
       {
         id: "2",
         name: "Proyecto 2",
-        plannedValue: 132239444
+        plannedValue: 132239444,
+        assignmentValue: 140000000
       },
       {
         id: "3",
         name: "Proyecto 3",
-        plannedValue: 55433222
+        plannedValue: 55433222,
+        assignmentValue: 56000000
       },
       {
         id: "4",
         name: "Proyecto 4",
-        plannedValue: 4445677
+        plannedValue: 4445677,
+        assignmentValue: 4500000
       },
       {
         id: "5",
         name: "Proyecto 5",
-        plannedValue: 74344551
+        plannedValue: 74344551,
+        assignmentValue: 7500000
       },
       {
         id: "6",
         name: "Proyecto 6",
-        plannedValue: 74344551
+        plannedValue: 74344551,
+        assignmentValue: 75000000
       },
       {
         id: "7",
         name: "Proyecto 7",
-        plannedValue: 74344551
+        plannedValue: 84344551,
+        assignmentValue: 85000000
       },
       {
         id: "8",
         name: "Proyecto 8",
-        plannedValue: 74344551
+        plannedValue: 74344551,
+        assignmentValue: 75000000
       },
       {
         id: "9",
         name: "Proyecto 9",
-        plannedValue: 74344551
+        plannedValue: 74344551,
+        assignmentValue: 75000000
       },
       {
         id: "10",
         name: "Proyecto 10",
-        plannedValue: 74344551
+        plannedValue: 74344551,
+        assignmentValue: 75000000
       },
       {
         id: "11",
         name: "Proyecto 11",
-        plannedValue: 74344551
+        plannedValue: 74344551,
+        assignmentValue: 75000000
       },
       {
         id: "12",
         name: "Proyecto 12",
-        plannedValue: 74344551
+        plannedValue: 94344551,
+        assignmentValue: 95000000
       },
       {
         id: "13",
         name: "Proyecto 13",
-        plannedValue: 74344551
+        plannedValue: 1274344551,
+        assignmentValue: 1274344551
       },
       {
         id: "14",
         name: "Proyecto 14",
-        plannedValue: 74344551
+        plannedValue: 456344551,
+        assignmentValue: 460000000
       },
       {
         id: "15",
         name: "Proyecto 15",
-        plannedValue: 74344551
+        plannedValue: 90000000,
+        assignmentValue: 90000000
       },
       {
         id: "16",
         name: "Proyecto 16",
-        plannedValue: 74344551
+        plannedValue: 90000000,
+        assignmentValue: 90000000
       },
       {
         id: "17",
         name: "Proyecto 17",
-        plannedValue: 74344551
+        plannedValue: 45000000,
+        assignmentValue: 50000000
       },
       {
         id: "18",
         name: "Proyecto 18",
-        plannedValue: 74344551
+        plannedValue: 670000000,
+        assignmentValue: 670000000
       },
       {
         id: "19",
         name: "Proyecto 19",
-        plannedValue: 74344551
+        plannedValue: 74344551,
+        assignmentValue: 74344551
       },
       {
         id: "20",
         name: "Proyecto 20",
-        plannedValue: 74344551
+        plannedValue: 74344551,
+        assignmentValue: 74344551
       },
       {
         id: "21",
         name: "Proyecto 21",
-        plannedValue: 74344551
+        plannedValue: 74344551,
+        assignmentValue: 74344551
       },
       {
         id: "22",
         name: "Proyecto 22",
-        plannedValue: 74344551
+        plannedValue: 350000,
+        assignmentValue: 500000
       },
     ];
   };
@@ -173,6 +196,17 @@ export default class ProjectsRepository implements IProjectsRepository {
       array: dataArray as IProjectAdditionList[],
       meta,
     };
+
+  }
+
+  //?OBTENER PROYECTO POR CODIGO DE PROYECTO (REFERENCIAL)
+  async getProjectById(projectId: number): Promise<IProjectAdditionList | null>{
+
+    const res = await ProjectsVinculation.query()
+                                         .where('id', projectId)
+                                         .first();
+
+    return res ? (res.serialize() as IProjectAdditionList) : null;
 
   }
 

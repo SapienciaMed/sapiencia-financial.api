@@ -41,8 +41,20 @@ export default class FunctionalAreaService implements IFunctionalAreaService {
     }
 
     async createFunctionalArea(functionalArea: IFunctionalArea): Promise<ApiResponse<IFunctionalArea>> {
-        const res = await this.FunctionalAreaRepository.createFunctionalArea(functionalArea);
-        return new ApiResponse(res, EResponseCodes.OK);
+
+      //No pueden repetirse budget.
+      const validNumber = await this.FunctionalAreaRepository.getFunctionalAreaByNumber(functionalArea.number);
+
+      if(validNumber.array.length > 0) {
+        return new ApiResponse(
+          {} as IFunctionalArea,
+          EResponseCodes.FAIL,
+          `Ya existe un consecutivo asociado a esta Área Funcional.`
+        );
+      }
+
+      const res = await this.FunctionalAreaRepository.createFunctionalArea(functionalArea);
+      return new ApiResponse(res, EResponseCodes.OK);
     }
 
     async updateFunctionalArea(functionalArea: IFunctionalArea, id: number): Promise<ApiResponse<IFunctionalArea | null>> {

@@ -1,11 +1,12 @@
 import { DateTime } from "luxon";
 
 export interface IAdditionsMovements {
+  idCard? : string;
   id?: number;
   additionId?: number;
   type: string;
   managerCenter: string;
-  projectId: number;
+  projectId: number //Referencia a la otra API de planeación
   fundId: number;
   budgetPosition: number;
   value: number;
@@ -48,7 +49,7 @@ export interface IFunctionalAreaAddition {
 export interface IProjectAddition {
   id : number;
   functionalAreaId : number;
-  projectId : string;
+  projectId : number;
   budgetValue : number;
   linked : boolean;
 }
@@ -56,7 +57,7 @@ export interface IProjectAddition {
 export interface IProjectAdditionList {
   id : number;
   functionalAreaId : number;
-  projectId : string;
+  projectId : number;
   budgetValue : number;
   linked : boolean;
   areaFuntional?: IFunctionalAreaAddition

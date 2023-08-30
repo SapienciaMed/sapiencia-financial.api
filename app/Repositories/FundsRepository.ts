@@ -11,6 +11,7 @@ export interface IFundsRepository {
   updateFund(fund: IFunds, id: number): Promise<IFunds | null>;
   getAllFunds():Promise<IFunds[]>;
   getFundsList(filters: IProjectAdditionFilters): Promise<IPagingData<IFundsAdditionList>>;
+  getFundsByNumber(number: string): Promise<IPagingData<IFundsAdditionList | null>>;
 }
 
 export default class FundsRepository implements IFundsRepository {
@@ -23,7 +24,9 @@ export default class FundsRepository implements IFundsRepository {
   }
 
   async getFundsPaginated(filters: IFundsFilters): Promise<IPagingData<IFunds>> {
+
     const query = Funds.query();
+    query.orderBy("number", "asc");
 
     if (filters.number) {
       query.where("number", filters.number);
@@ -102,6 +105,30 @@ export default class FundsRepository implements IFundsRepository {
 
     const { data, meta } = fundsPaginated.serialize();
     const dataArray = data ?? [];
+
+    return {
+      array: dataArray as IFundsAdditionList[],
+      meta,
+    };
+
+  }
+
+  async getFundsByNumber(number: string): Promise<IPagingData<IFundsAdditionList | null>> {
+
+    const res = Funds.query();
+    res.where("number", number);
+    await res.preload('entity');
+
+
+    const page = 1;
+    const perPage = 1;
+
+    const fundsPaginated = await res.paginate(page, perPage);
+
+    const { data, meta } = fundsPaginated.serialize();
+    const dataArray = data ?? [];
+
+    console.log(dataArray as IFundsAdditionList[]);
 
     return {
       array: dataArray as IFundsAdditionList[],

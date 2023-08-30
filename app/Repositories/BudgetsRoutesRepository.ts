@@ -8,6 +8,11 @@ export interface IBudgetsRoutesRepository {
   getBudgetsRoutesById(id: number): Promise<IBudgetsRoutes | null>;
   getBudgetsRoutesPaginated(filters: IBudgetsRoutesFilters): Promise<IPagingData<IBudgetsRoutes>>;
   createBudgetsRoutes(budgets: IBudgetsRoutes): Promise<IBudgetsRoutes>;
+
+  getBudgetForAdditions(projectId: number,
+                        foundId: number,
+                        posPreOriginId: number,
+                        posPreId: number): Promise<IBudgetsRoutes | null>;
 }
 
 export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository {
@@ -17,15 +22,15 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
     const res = await BudgetsRoutes.find(id);
     return res ? (res.serialize() as IBudgetsRoutes) : null;
   }
-  
+
   async getBudgetsRoutesPaginated(filters: IBudgetsRoutesFilters): Promise<IPagingData<IBudgetsRoutes>> {
      const query =  BudgetsRoutes.query();
-     
+
      query.preload("projectVinculation");
      query.preload("budget");
      query.preload("funds");
      query.preload("pospreSapiencia");
-      
+
     if (filters.idProjectVinculation) {
       query.where("idProjectVinculation", filters.idProjectVinculation);
     }
@@ -71,8 +76,25 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
     if(budgetsRoutes.userModify) {
       toUpdate.userModify = budgetsRoutes.userModify;
     }
-    
+
     await toUpdate.save();
     return toUpdate.serialize() as IBudgetsRoutes;
   }
+
+  async getBudgetForAdditions(projectId: number,
+                              foundId: number,
+                              posPreOriginId: number,
+                              posPreId: number): Promise<IBudgetsRoutes | null> {
+
+    const res = await BudgetsRoutes.query()
+                                .where('idProjectVinculation', projectId)
+                                .andWhere('idBudget', posPreOriginId)
+                                .andWhere('idPospreSapiencia', posPreId)
+                                .andWhere('idFund', foundId)
+                                .first();
+
+    return res ? (res.serialize() as IBudgetsRoutes) : null;
+
+  }
+
 }
