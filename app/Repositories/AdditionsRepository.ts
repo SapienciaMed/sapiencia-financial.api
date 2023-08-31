@@ -4,6 +4,7 @@ import { IAdditions,
 import Additions from "../Models/Addition";
 import { IPagingData } from "App/Utils/ApiResponses";
 // import { DateTime } from "luxon";
+import AdditionsMovement from '../Models/AdditionsMovement';
 
 export interface IAdditionsRepository {
 
@@ -28,13 +29,18 @@ export default class AdditionsRepository implements IAdditionsRepository{
 
 
     if (filters.adminDistrict) {
-      query.where("actAdminDistrict", filters.adminDistrict);
+      const criterial = filters.adminDistrict.toUpperCase();
+      query.where("actAdminDistrict", 'LIKE', `%${criterial}%`);
       console.log(filters.adminDistrict);
     }
 
     if (filters.adminSapiencia) {
-      query.where("actAdminSapiencia", filters.adminSapiencia);
+      const criterial = filters.adminSapiencia.toUpperCase();
+      query.where("actAdminSapiencia", 'LIKE', `%${criterial}%`);
+      console.log(filters.adminSapiencia);
     }
+
+    query.orderBy("id", "desc");
 
     const res = await query.paginate(filters.page, filters.perPage);
     const { data, meta } = res.serialize();
@@ -75,10 +81,60 @@ export default class AdditionsRepository implements IAdditionsRepository{
   //?OBTENER UNA ADICIÓN CON SUS MOVIMIENTOS EN PARALELO A TRAVÉS DE UN ID PARAM
   async getAdditionById(id: number): Promise<IAdditionsWithMovements | any>{
 
-    const res = await Additions.find(id);
-    await res!.load("additionMove");
+    const head = await Additions
+                                .query()
+                                .where("id", id)
+                                .select("id",
+                                        "actAdminDistrict",
+                                        "actAdminSapiencia");
 
-    return res ? (res.serialize() as IAdditionsWithMovements) : null;
+    const details = await AdditionsMovement.query().where("additionId", id)
+      .preload("found", (a) => {
+        a.select("id",
+                 "entityId",
+                 "number",
+                 "denomination",
+                 "description");
+        a.preload("entity");
+      })
+      .preload("posPreSapiencia", (b) => {
+        b.select("id",
+                 "number",
+                 "budgetId",
+                 "ejercise",
+                 "description",
+                 "consecutive");
+        b.preload("budget", (bb) => {
+          bb.select("id",
+                    "number",
+                    "ejercise",
+                    "denomination",
+                    "description");
+        });
+      })
+      .preload("project", (c) => {
+        c.select("id",
+                 "functionalAreaId",
+                 "projectId",
+                 "conceptProject",
+                 "budgetValue",
+                 "assignmentValue",
+                 "linked");
+        c.preload("areaFuntional", (cc) => {
+          cc.select("id",
+                    "number",
+                    "denomination",
+                    "description");
+        });
+      })
+
+
+    const result = {
+      head,
+      details
+    }
+
+    return result;
 
   }
 

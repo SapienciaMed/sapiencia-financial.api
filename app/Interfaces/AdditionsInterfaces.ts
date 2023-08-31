@@ -23,7 +23,8 @@ export interface IAdditions {
 }
 
 export interface IAdditionsWithMovements {
-  headAdditon: IAdditions,
+  id?: number;                //Para edición
+  headAdditon?: IAdditions,   //Opcional porque en edición no lo requerimos
   additionMove: IAdditionsMovements[]
 }
 

@@ -103,8 +103,10 @@ Route.group(() => {
   Route.post("/get-pospre", "AdditionsController.getPosPreList");
   Route.post("/get-pospre-sapiencia", "AdditionsController.getPosPreSapienciaList");
   Route.post("/save-data", "AdditionsController.executeCreateAdditions"); //Como acción de guardado
-  Route.post("/create", "AdditionsController.createAdditions"); //Como validación
+  Route.post("/create", "AdditionsController.createAdditions"); //Como acción validación
   Route.get("/get-actadmin-district", "AdditionsController.getAllAdditionsByDistrict");
   Route.get("/get-actadmin-sapiencia", "AdditionsController.getAllAdditionsBySapiencia");
   Route.get("/get-by-id/:id", "AdditionsController.getAdditionById");
+  Route.post("/update/:id", "AdditionsController.updateAdditionWithMov"); //Como acción de validación
+  Route.post("/update-save/:id", "AdditionsController.executeUpdateAdditionWithMov"); //Como acción de guardado/actualizado
 }).prefix("/api/v1/additions")
