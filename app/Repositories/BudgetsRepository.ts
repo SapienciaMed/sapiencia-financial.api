@@ -27,7 +27,7 @@ export default class BudgetsRepository implements IBudgetsRepository {
       q.preload("budget")
     });
 
-    query.orderBy("number", "asc");
+    query.orderBy("denomination", "asc");
 
     if (filters.entity) {
       query.where("entityId", filters.entity);
