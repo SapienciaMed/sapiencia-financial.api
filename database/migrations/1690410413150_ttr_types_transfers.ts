@@ -10,7 +10,7 @@ export default class extends BaseSchema {
       .primary()
       .comment("Llave primaria");
       table
-      .string("TTR_NOMBRE",100)
+      .string("TTR_NOMBRE",200)
       .notNullable()
       .comment("Nombre del tipo de traslado");
     })

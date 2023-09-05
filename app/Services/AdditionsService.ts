@@ -379,6 +379,8 @@ export default class AdditionsService implements IAdditionsService{
 
     }
 
+    console.log({income , spend});
+
     return (income === spend) ? true : false;
 
   }

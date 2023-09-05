@@ -40,10 +40,12 @@ Route.group(() => {
   Route.put("/update/:id", "BudgetsController.updateBudgets");
   Route.get("/get-all", "BudgetsController.getAllBudgets");
 }).prefix("/api/v1/budgets");
+// .middleware("auth");
 
 Route.group(() => {
   Route.get("/get-all", "EntitiesController.getEntities")
 }).prefix("/api/v1/entities")
+// .middleware("auth");
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "PosPreSapienciaController.getPosPreSapienciaById");
@@ -52,6 +54,7 @@ Route.group(() => {
   Route.put("/update/:id", "PosPreSapienciaController.updatePosPreSapiencia");
   Route.get("/get-all", "PosPreSapienciaController.getAllPosPreSapiencia");
 }).prefix("/api/v1/pospre-sapiencia");
+// .middleware("auth");
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "VinculationMGAController.getVinculationMGAById");
@@ -59,6 +62,7 @@ Route.group(() => {
   Route.post("/create", "VinculationMGAController.createVinculationMGA");
   Route.post("/delete", "VinculationMGAController.deleteVinculationMGA");
 }).prefix("/api/v1/vinculation-mga");
+// .middleware("auth");
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "FunctionalAreaController.getFunctionalAreaById");
@@ -72,21 +76,24 @@ Route.group(() => {
   Route.get("/link/get-all", "FunctionalAreaController.getAllProjectFunctionalArea");
   Route.post("/link/get-paginated", "FunctionalAreaController.getProjectFunctionalAreaPaginated");
 }).prefix("/api/v1/functional-area");
+// .middleware("auth");
 
 Route.group(() => {
   Route.post("/get-paginated", "ProjectsController.getProjectsPaginated");
   Route.get("/get-all", "ProjectsController.getAllProjects");
 }).prefix("/api/v1/projects");
-
+// .middleware("auth");
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "ManagementCenterController.getManagementCenterById");
   Route.post("/get-paginated", "ManagementCenterController.getManagementCenterPaginated");
 }).prefix("/api/v1/management-center");
+// .middleware("auth");
 
 Route.group(() => {
   Route.get("/get-all", "TypesTransfersController.getTypeTransfers")
 }).prefix("/api/v1/type-transfers")
+// .middleware("auth");
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "BudgetsRoutesController.getBudgetsRoutesById");
@@ -94,7 +101,7 @@ Route.group(() => {
   Route.post("/create", "BudgetsRoutesController.createBudgetsRoutes");
   Route.put("/update/:id", "BudgetsRoutesController.updateBudgetsRoutes");
 }).prefix("/api/v1/budget-routes")
-// .middleware("auth");
+  // .middleware("auth");
 
 Route.group(() => {
   Route.post("/get-paginated", "AdditionsController.getAdditionsPaginated");
@@ -110,3 +117,20 @@ Route.group(() => {
   Route.post("/update/:id", "AdditionsController.updateAdditionWithMov"); //Como acción de validación
   Route.post("/update-save/:id", "AdditionsController.executeUpdateAdditionWithMov"); //Como acción de guardado/actualizado
 }).prefix("/api/v1/additions")
+  // .middleware("auth");
+
+Route.group(() => {
+  Route.post("/get-paginated", "TransfersController.getTransfersPaginated");
+  Route.post("/get-projects", "TransfersController.getProjectsList");
+  Route.post("/get-funds", "TransfersController.getFundsList");
+  Route.post("/get-pospre", "TransfersController.getPosPreList");
+  Route.post("/get-pospre-sapiencia", "TransfersController.getPosPreSapienciaList");
+  Route.post("/save-data", "TransfersController.executeCreateTransfers"); //Como acción de guardado
+  Route.post("/create", "TransfersController.createTransfers"); //Como acción validación
+  Route.get("/get-actadmin-district", "TransfersController.getAllTransfersByDistrict");
+  Route.get("/get-actadmin-sapiencia", "TransfersController.getAllTransfersBySapiencia");
+  Route.get("/get-by-id/:id", "TransfersController.getTransferById");
+  Route.post("/update/:id", "TransfersController.updateTransferWithMov"); //Como acción de validación
+  Route.post("/update-save/:id", "TransfersController.executeUpdateTransferWithMov"); //Como acción de guardado/actualizado
+}).prefix("/api/v1/transfers")
+  // .middleware("auth");
