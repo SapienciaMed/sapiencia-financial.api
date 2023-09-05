@@ -1,6 +1,7 @@
-import { BaseModel, HasOne, column, hasOne } from "@ioc:Adonis/Lucid/Orm";
+import { BaseModel, HasOne, column, hasOne, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm';
 import { DateTime } from "luxon";
 import Entities from "./Entities";
+import PosPreSapiencia from './PosPreSapiencia';
 
 export default class Budgets extends BaseModel {
   public static table = "PPR_POSICIONES_PRESUPUESTARIAS";
@@ -47,4 +48,12 @@ export default class Budgets extends BaseModel {
     serializeAs: "entity",
   })
   public entity: HasOne<typeof Entities>;
+
+
+  @hasMany(() => PosPreSapiencia, {
+    foreignKey: "budgetId",
+    serializeAs: "pospresap",
+  })
+  public pospresap: HasMany<typeof PosPreSapiencia>;
+
 }

@@ -22,6 +22,11 @@ export default class BudgetsRepository implements IBudgetsRepository {
 
   async getBudgetsPaginated(filters: IFilterBudgets): Promise<IPagingData<IBudgets>> {
     const query = Budgets.query();
+
+    query.preload("pospresap", (q) => {
+      q.preload("budget")
+    });
+
     query.orderBy("number", "asc");
 
     if (filters.entity) {
