@@ -39,7 +39,7 @@ export interface IAdditionsService {
 
   //*Validaciones Front y CREAR/ACTUALIZAR
   namesAddtionsValidations(addition: IAdditionsWithMovements): Promise<Boolean>;
-  totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<Boolean>;
+  totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<any>;
   budgetPathValidations(idCard: string, projectId: number , foundId: number , posPreId: number): Promise<string>;
 
 }
@@ -80,15 +80,48 @@ export default class AdditionsService implements IAdditionsService{
 
     }
 
-    //! Validación de totales ingresos/gastos
-    const totalMovementsVal = await this.totalsMovementsValidations(addition);
+    //! Validación de que no venga movimientos
+    if( !addition.additionMove || addition.additionMove.length <= 0 ) {
 
-    if(!totalMovementsVal){
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "No se permite guardar, debe diligenciar ingresos y gastos."
+      );
+
+    }
+
+    //! Validación de totales ingresos/gastos
+    const { bandEquals , bandZeros , income  , spend } = await this.totalsMovementsValidations(addition);
+
+    if(bandEquals){
 
       return new ApiResponse(
         null,
         EResponseCodes.FAIL,
         "El total de ingresos no coincide con el total de gastos."
+      );
+
+    }
+
+    //! Totales no pueden ser iguales a cero
+    if(bandZeros){
+
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "El total de ingresos y/o el total de gastos no pueden ser cero."
+      );
+
+    }
+
+    //! Existencia de totales es requerida
+    if(!income || !spend){
+
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "El total de ingresos y/o el total de gastos deben existir en la transacción."
       );
 
     }
@@ -145,7 +178,7 @@ export default class AdditionsService implements IAdditionsService{
 
     if(bandControl){
 
-      const arrayResponse = `NOEXISTERUTASPRESUPUESTARIAS@@@${JSON.stringify(arrayCardsErrorRoutes)}@@@PROYECTOS@@@${JSON.stringify(arrayCardsErrorProjects)}@@@RUTASPRESUPUESTARIASREPETIDAS@@@${JSON.stringify(arrayCardsErrorRepeatRoutes)}`;
+      const arrayResponse = `@@@Se ha encontrado un error en los datos, revisa rutas presupuestales@@@NOEXISTERUTASPRESUPUESTARIAS@@@${JSON.stringify(arrayCardsErrorRoutes)}@@@Se ha encontrado un error en los datos, revise proyectos@@@PROYECTOS@@@${JSON.stringify(arrayCardsErrorProjects)}@@@Se ha encontrado un error, datos duplicados en el sistema@@@RUTASPRESUPUESTARIASREPETIDAS@@@${JSON.stringify(arrayCardsErrorRepeatRoutes)}`;
 
       return new ApiResponse(
         null,
@@ -168,14 +201,48 @@ export default class AdditionsService implements IAdditionsService{
   async updateAdditionWithMov(id: number, addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements | any>>{
 
     //! Validación de totales ingresos/gastos
-    const totalMovementsVal = await this.totalsMovementsValidations(addition);
+    //! Validación de que no venga movimientos
+    if( !addition.additionMove || addition.additionMove.length <= 0 ) {
 
-    if(!totalMovementsVal){
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "No se permite guardar, debe diligenciar ingresos y gastos."
+      );
+
+    }
+
+    //! Validación de totales ingresos/gastos
+    const { bandEquals , bandZeros , income  , spend } = await this.totalsMovementsValidations(addition);
+
+    if(bandEquals){
 
       return new ApiResponse(
         null,
         EResponseCodes.FAIL,
         "El total de ingresos no coincide con el total de gastos."
+      );
+
+    }
+
+    //! Totales no pueden ser iguales a cero
+    if(bandZeros){
+
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "El total de ingresos y/o el total de gastos no pueden ser cero."
+      );
+
+    }
+
+    //! Existencia de totales es requerida
+    if(!income || !spend){
+
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "El total de ingresos y/o el total de gastos deben existir en la transacción."
       );
 
     }
@@ -232,7 +299,7 @@ export default class AdditionsService implements IAdditionsService{
 
     if(bandControl){
 
-      const arrayResponse = `NOEXISTERUTASPRESUPUESTARIAS@@@${JSON.stringify(arrayCardsErrorRoutes)}@@@PROYECTOS@@@${JSON.stringify(arrayCardsErrorProjects)}@@@RUTASPRESUPUESTARIASREPETIDAS@@@${JSON.stringify(arrayCardsErrorRepeatRoutes)}`;
+      const arrayResponse = `@@@Se ha encontrado un error en los datos, revisa rutas presupuestales@@@NOEXISTERUTASPRESUPUESTARIAS@@@${JSON.stringify(arrayCardsErrorRoutes)}@@@Se ha encontrado un error en los datos, revise proyectos@@@PROYECTOS@@@${JSON.stringify(arrayCardsErrorProjects)}@@@Se ha encontrado un error, datos duplicados en el sistema@@@RUTASPRESUPUESTARIASREPETIDAS@@@${JSON.stringify(arrayCardsErrorRepeatRoutes)}`;
 
       return new ApiResponse(
         null,
@@ -364,10 +431,13 @@ export default class AdditionsService implements IAdditionsService{
   }
 
   //Validador manual para que los valores tengan coincidencia respecto a la información
-  async totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<Boolean> {
+  async totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<any> {
 
     let income: number = 0; //Ingresos
     let spend : number = 0; //Gastos
+
+    let bandZeros = false;
+    let bandEquals = false;
 
     for( let i of addition.additionMove ){
 
@@ -379,9 +449,20 @@ export default class AdditionsService implements IAdditionsService{
 
     }
 
-    console.log({income , spend});
+    if(income !== spend){
+      bandEquals = true;
+    }
 
-    return (income === spend) ? true : false;
+    if(income === 0 || spend === 0){
+      bandZeros = true;
+    }
+
+    return {
+      bandEquals,
+      bandZeros,
+      income,
+      spend,
+    }
 
   }
 
@@ -455,7 +536,7 @@ export default class AdditionsService implements IAdditionsService{
     return new ApiResponse(
       addition,
       EResponseCodes.OK,
-      "Creación de Adición con Movimientos creada exitosamente."
+      "¡Se ha guardado la información correctamente en el sistema!"
     );
 
   }
@@ -505,7 +586,7 @@ export default class AdditionsService implements IAdditionsService{
     return new ApiResponse(
       res,
       EResponseCodes.OK,
-      "Actualización de Adición con Movimientos realizada exitosamente."
+      "¡Se ha guardado la información correctamente en el sistema!"
     );
 
   }
