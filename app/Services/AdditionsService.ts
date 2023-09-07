@@ -507,15 +507,21 @@ export default class AdditionsService implements IAdditionsService{
 
       for( let i of addition.additionMove ){
 
+        //* Al pasar las validaciones, garantizamos que tenemos rutas presupuestales.
+        //* Obtengamos el pospre origen a partir del sapiencia para contra validar la ruta:
+        const query = await this.pospreSapRepository.getPosPreSapienciaById(i.budgetPosition);
+        const posPreOriginId = Number(query?.budget?.id);
+        const getRouteId = await this.budgetRouteRepository.getBudgetForAdditions(i.projectId,
+                                                                                  i.fundId,
+                                                                                  posPreOriginId,
+                                                                                  i.budgetPosition);
+        const routeId = Number(getRouteId?.id);
         const toCreate = new AdditionsMovement();
 
         toCreate.fill({
                         additionId : add.id,
                         type : i.type,
-                        managerCenter : i.managerCenter,
-                        projectId : i.projectId,
-                        fundId : i.fundId,
-                        budgetPosition : i.budgetPosition,
+                        budgetRouteId : routeId,
                         value : i.value
                       });
 
@@ -552,15 +558,22 @@ export default class AdditionsService implements IAdditionsService{
 
       for( let i of addition.additionMove ){
 
+        //* Al pasar las validaciones, garantizamos que tenemos rutas presupuestales.
+        //* Obtengamos el pospre origen a partir del sapiencia para contra validar la ruta:
+        const query = await this.pospreSapRepository.getPosPreSapienciaById(i.budgetPosition);
+        const posPreOriginId = Number(query?.budget?.id);
+        const getRouteId = await this.budgetRouteRepository.getBudgetForAdditions(i.projectId,
+                                                                                  i.fundId,
+                                                                                  posPreOriginId,
+                                                                                  i.budgetPosition);
+
+        const routeId = Number(getRouteId?.id);
         const toCreate = new AdditionsMovement();
 
         toCreate.fill({
                         additionId : id,
                         type : i.type,
-                        managerCenter : i.managerCenter,
-                        projectId : i.projectId,
-                        fundId : i.fundId,
-                        budgetPosition : i.budgetPosition,
+                        budgetRouteId : routeId,
                         value : i.value
                       });
 

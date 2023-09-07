@@ -1,6 +1,7 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
 export default class extends BaseSchema {
+
   protected tableName = 'TTR_TIPOS_TRASLADOS'
 
   public async up () {

@@ -24,20 +24,18 @@ export default class AdditionsRepository implements IAdditionsRepository{
     query.select('id', 'actAdminDistrict', 'actAdminSapiencia');
 
     query.preload('additionMove' , (q) => {
-      q.select('id' , 'type' , 'value');
+      q.select('id' , 'type' , 'value', 'budgetRouteId');
     });
 
 
     if (filters.adminDistrict) {
       const criterial = filters.adminDistrict.toUpperCase();
       query.where("actAdminDistrict", 'LIKE', `%${criterial}%`);
-      console.log(filters.adminDistrict);
     }
 
     if (filters.adminSapiencia) {
       const criterial = filters.adminSapiencia.toUpperCase();
       query.where("actAdminSapiencia", 'LIKE', `%${criterial}%`);
-      console.log(filters.adminSapiencia);
     }
 
     query.orderBy("id", "desc");
@@ -89,45 +87,55 @@ export default class AdditionsRepository implements IAdditionsRepository{
                                         "actAdminSapiencia");
 
     const details = await AdditionsMovement.query().where("additionId", id)
-      .preload("found", (a) => {
-        a.select("id",
-                 "entityId",
-                 "number",
-                 "denomination",
-                 "description");
-        a.preload("entity");
-      })
-      .preload("posPreSapiencia", (b) => {
-        b.select("id",
-                 "number",
-                 "budgetId",
-                 "ejercise",
-                 "description",
-                 "consecutive");
-        b.preload("budget", (bb) => {
-          bb.select("id",
-                    "number",
-                    "ejercise",
-                    "denomination",
-                    "description");
-        });
-      })
-      .preload("project", (c) => {
-        c.select("id",
-                 "functionalAreaId",
-                 "projectId",
-                 "conceptProject",
-                 "budgetValue",
-                 "assignmentValue",
-                 "linked");
-        c.preload("areaFuntional", (cc) => {
-          cc.select("id",
-                    "number",
-                    "denomination",
-                    "description");
-        });
-      })
+      .preload("budgetRoute", (q1) => {
+        q1.select("id",
+                  "managementCenter",
+                  "div",
+                  "idProjectVinculation",
+                  "idFund",
+                  "idBudget",
+                  "idPospreSapiencia")
+        q1
+          //Preload para traer proyecto y área funcional
+          .preload("projectVinculation", (a) => {
+            a.select("id",
+                     "functionalAreaId",
+                     "projectId",
+                     "conceptProject")
+            a.preload("areaFuntional", (aa) => {
+              aa.select("id",
+                        "number",
+                        "denomination",
+                        "description")
+            })
+          })
 
+          //Preload para traer los fondos
+          .preload("funds", (b) => {
+            b.select("id",
+                     "number",
+                     "denomination",
+                     "description")
+          })
+
+          //Preload para traer pospre origen
+          .preload("budget", (c) => {
+            c.select("id",
+                     "number",
+                     "ejercise",
+                     "denomination",
+                     "description")
+          })
+
+          //Preload para traer los pospre sapiencia asociados
+          .preload("pospreSapiencia", (d) => {
+            d.select("id",
+                     "number",
+                     "ejercise",
+                     "consecutive",
+                     "description")
+          })
+      })
 
     const result = {
       head,
