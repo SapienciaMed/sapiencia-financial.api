@@ -1,9 +1,11 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
 export default class extends BaseSchema {
+
   protected tableName = 'TRA_TRASLADOS'
 
   public async up () {
+
     this.schema.createTable(this.tableName, (table) => {
       table
         .comment("Tabla que almacena las acciones de los traslados");
@@ -51,6 +53,7 @@ export default class extends BaseSchema {
         .notNullable()
         .comment("Fecha y hora de creación del registro");
     })
+
   }
 
   public async down () {
