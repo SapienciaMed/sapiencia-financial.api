@@ -99,7 +99,7 @@ export default class AdditionsService implements IAdditionsService{
       return new ApiResponse(
         null,
         EResponseCodes.FAIL,
-        "El total de ingresos no coincide con el total de gastos."
+        "No se permite guardar, los valores son diferentes revisa los formularios."
       );
 
     }
@@ -220,7 +220,7 @@ export default class AdditionsService implements IAdditionsService{
       return new ApiResponse(
         null,
         EResponseCodes.FAIL,
-        "El total de ingresos no coincide con el total de gastos."
+        "No se permite guardar, los valores son diferentes revisa los formularios."
       );
 
     }
