@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, column, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm';
+import TransfersMovement from './TransfersMovement';
 
 export default class Transfer extends BaseModel {
 
@@ -38,4 +39,11 @@ export default class Transfer extends BaseModel {
     serializeAs: "dateCreate",
   })
   public dateCreate: DateTime;
+
+  @hasMany(() => TransfersMovement, {
+    localKey: "id",
+    foreignKey: "transferId",
+  })
+  public transferMove: HasMany<typeof TransfersMovement>;
+
 }

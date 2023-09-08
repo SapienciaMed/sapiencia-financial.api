@@ -1,16 +1,25 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { ApiResponse } from "App/Utils/ApiResponses";
-// import TransfersProvider from "@ioc:core.TransfersProvider";
+import TransfersProvider from "@ioc:core.TransfersProvider";
+import { ITransfersFilters } from '../../Interfaces/TransfersInterfaces';
 
 export default class TransfersController {
 
   public async getTransfersPaginated({request, response}: HttpContextContract) {
 
-    console.log(request);
-    return response.badRequest(
-      new ApiResponse(null, EResponseCodes.INFO, "Hola desde getTransfersPaginated")
-    );
+    try {
+
+      const data = request.body() as ITransfersFilters;
+      return response.send(await TransfersProvider.getTransfersPaginated(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
 
   }
 

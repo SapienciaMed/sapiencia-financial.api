@@ -1,6 +1,7 @@
 import { BaseModel, column } from "@ioc:Adonis/Lucid/Orm";
 
 export default class Entities extends BaseModel {
+
   public static table = "TTR_TIPOS_TRASLADOS";
 
   @column({ isPrimary: true, columnName: "TTR_CODIGO", serializeAs: "id" })
@@ -8,4 +9,8 @@ export default class Entities extends BaseModel {
 
   @column({ columnName: "TTR_NOMBRE", serializeAs: "name" })
   public name: string;
+
+  @column({ columnName: "TTR_DESCRIPCION", serializeAs: "description" })
+  public description: string;
+
 }

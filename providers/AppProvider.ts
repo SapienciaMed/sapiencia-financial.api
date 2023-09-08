@@ -20,6 +20,7 @@ export default class AppProvider {
     const ProjectsService = await import("App/Services/ProjectsService");
     const BudgetsRoutesService = await import ("App/Services/BudgetsRoutesService");
     const AdditionsService = await import("App/Services/AdditionsService");
+    const TransfersService = await import("App/Services/TransfersService");
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -63,6 +64,12 @@ export default class AppProvider {
     const MovementAdditionRepository = await import(
       "App/Repositories/MovementAdditionRepository"
     );
+    const TransfersRepository = await import(
+      "App/Repositories/TransfersRepository"
+    );
+    // const MovementTransferRepository = await import(
+    //   "App/Repositories/MovementTransferRepository"
+    // );
 
     /**************************************************************************/
     /******************************** CORE  ***********************************/
@@ -126,6 +133,20 @@ export default class AppProvider {
             new PosPreSapienciaRepository.default(),
             new BudgetsRepository.default(),
             new BudgetsRoutesRepository.default()
+          )
+    );
+
+    this.app.container.singleton(
+      "core.TransfersProvider",
+      () =>
+          new TransfersService.default(
+            new TransfersRepository.default(),
+            // new MovementTransferRepository.default(),
+            // new ProjectsRepository.default(),
+            // new FundsRepository.default(),
+            // new PosPreSapienciaRepository.default(),
+            // new BudgetsRepository.default(),
+            // new BudgetsRoutesRepository.default()
           )
     );
 
