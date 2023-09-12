@@ -24,11 +24,13 @@ import { IBudgetsRoutesRepository } from '../Repositories/BudgetsRoutesRepositor
 
 import { ITransfersRepository } from '../Repositories/TransfersRepository';
 // import { IMovementTransferRepository } from '../Repositories/MovementTransferRepository';
+import { ITransfersWithMovements } from '../Interfaces/TransfersInterfaces';
+import Transfer from '../Models/Transfer';
 
 export interface ITransfersService {
 
   getTransfersPaginated(filters: ITransfersFilters): Promise<ApiResponse<IPagingData<ITransfers>>>;
-  // createAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>>;
+  createTransfers(transfer: ITransfersWithMovements): Promise<ApiResponse<ITransfersWithMovements>>;
   // executeCreateAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>>;
   // getAllAdditionsList(list: string): Promise<ApiResponse<IAdditions[]>>;
   // getAdditionById(id: number): Promise<ApiResponse<IAdditionsWithMovements>>;
@@ -41,8 +43,8 @@ export interface ITransfersService {
 
 
   //*Validaciones Front y CREAR/ACTUALIZAR
-  // namesAddtionsValidations(addition: IAdditionsWithMovements): Promise<Boolean>;
-  // totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<any>;
+  namesAndObservationsValidations(transfer: ITransfersWithMovements): Promise<Boolean>;
+  totalsMovementsValidations(transfer: ITransfersWithMovements): Promise<any>;
   // budgetPathValidations(idCard: string, projectId: number , foundId: number , posPreId: number): Promise<string>;
 
 }
@@ -68,137 +70,53 @@ export default class TransfersService implements ITransfersService {
   }
 
   // //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO (VALIDADOR GENERAL ANTES DE CREAR)
-  // async createAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements | any>> {
+  async createTransfers(transfer: ITransfersWithMovements): Promise<ApiResponse<ITransfersWithMovements | any>> {
 
-  //   //! Validación de nombre Acto Admin Distrito y el Sapiencia
-  //   const respNames = await this.namesAddtionsValidations(addition);
+    // console.log(transfer);
 
-  //   if (respNames) {
+    if(!transfer ||
+       !transfer.headTransfer ||
+       !transfer.transferMovesGroups ||
+       transfer.transferMovesGroups.length <= 0){
 
-  //     return new ApiResponse(
-  //       null,
-  //       EResponseCodes.FAIL,
-  //       "El nombre de Acto Admin Distrito y/o el Acto Admin Sapiencia ya se encuentran registrados."
-  //     );
+        return new ApiResponse(
+          null,
+          EResponseCodes.FAIL,
+          "No se envió la cabecera del traslado y/o los traslados respectivos, verifique."
+        );
 
-  //   }
+    }
 
-  //   //! Validación de que no venga movimientos
-  //   if (!addition.additionMove || addition.additionMove.length <= 0) {
+    //! Paso lo anterior, entonces tenemos garantía de información:
+    const myRequestHeadTransfer = transfer.headTransfer;
+    const myRequestBodyTransfer = transfer.transferMovesGroups;
+    console.log({myRequestHeadTransfer , myRequestBodyTransfer})
 
-  //     return new ApiResponse(
-  //       null,
-  //       EResponseCodes.FAIL,
-  //       "No se permite guardar, debe diligenciar ingresos y gastos."
-  //     );
+    //! Validamos los nombres acto admin distrito y el de sapiencia
+    // const respNames = await this.namesAndObservationsValidations(transfer);
 
-  //   }
+    // if (respNames) {
 
-  //   //! Validación de totales ingresos/gastos
-  //   const { bandEquals, bandZeros, income, spend } = await this.totalsMovementsValidations(addition);
+    //   return new ApiResponse(
+    //     null,
+    //     EResponseCodes.FAIL,
+    //     "El nombre de Acto Admin Distrito, Acto Admin Sapiencia y/o Observaciones ya se encuentran registrados."
+    //   );
 
-  //   if (bandEquals) {
+    // }
 
-  //     return new ApiResponse(
-  //       null,
-  //       EResponseCodes.FAIL,
-  //       "El total de ingresos no coincide con el total de gastos."
-  //     );
+    //! Vamos a validar los totales
+    const totals = await this.totalsMovementsValidations(transfer);
+    console.log({totals})
 
-  //   }
+    //! Si llega hasta acá entonces pasó los filtros
+    return new ApiResponse(
+      null,
+      EResponseCodes.OK,
+      "Validaciones pasadas con éxito para agregar traslado."
+    );
 
-  //   //! Totales no pueden ser iguales a cero
-  //   if (bandZeros) {
-
-  //     return new ApiResponse(
-  //       null,
-  //       EResponseCodes.FAIL,
-  //       "El total de ingresos y/o el total de gastos no pueden ser cero."
-  //     );
-
-  //   }
-
-  //   //! Existencia de totales es requerida
-  //   if (!income || !spend) {
-
-  //     return new ApiResponse(
-  //       null,
-  //       EResponseCodes.FAIL,
-  //       "El total de ingresos y/o el total de gastos deben existir en la transacción."
-  //     );
-
-  //   }
-
-  //   //! Validación de existencia de Rutas Presupuestarias
-  //   //! Validación de existenica de Proyecto y Área Funcional
-  //   //! Validación Pospre Origen y Pospre Sapiencia
-  //   //! Validación Rutas Presupuestarias Repetidas
-  //   let bandControl: boolean = false;
-  //   let arrayCardsErrorRoutes: string[] = [];
-  //   let arrayCardsErrorProjects: string[] = [];
-
-  //   let arrayNoRepeatRoutes: string[] = [];
-  //   let arrayCardsErrorRepeatRoutes: string[] = [];
-
-  //   for (let i of addition.additionMove) {
-
-  //     const concat: string = `${i.projectId},${i.fundId},${i.budgetPosition}`; //Concatenar rutas para no repetir
-  //     const idCard: string = i.idCard!;          // ID Card del FRONT para pintar si hay errores
-  //     const projectId: number = i.projectId;     // Id Proyecto - De acá saco el área funcional
-  //     const foundId: number = i.fundId;          // Id del Fondo
-  //     const posPreId: number = i.budgetPosition; // Id del Pos Pre Sapiencia - De acá saco el pospre origen
-
-  //     //! Validación si se nos repite ruta presupuestaria ...
-  //     if (arrayNoRepeatRoutes.includes(concat)) {
-  //       arrayCardsErrorRepeatRoutes.push(idCard);
-  //       bandControl = true;
-  //     }
-  //     arrayNoRepeatRoutes.push(concat);
-
-  //     //! Validación proyectos y que exista ruta presupuestaria en paralelo
-  //     //! Validación de Pospre Origen y Pospre Sapiencia en paralelo
-  //     const resp = await this.budgetPathValidations(idCard, projectId, foundId, posPreId);
-  //     const status = resp.split('-')[0];
-  //     const card = resp.split('-')[1];
-
-  //     //! Validación si no encontré la ruta presupuestaria
-  //     if (status == "ERROR_RUTAPRESUPUESTARIA") {
-
-  //       bandControl = true;
-  //       arrayCardsErrorRoutes.push(card);
-
-  //     }
-
-  //     //! Validación si no encontré proyecto en presupuesto
-  //     if (status == "ERROR_CODIGOPROYECTO") {
-
-  //       bandControl = true;
-  //       arrayCardsErrorProjects.push(card);
-
-  //     }
-
-  //   }
-
-  //   if (bandControl) {
-
-  //     const arrayResponse = `@@@Se ha encontrado un error en los datos, revisa rutas presupuestales@@@NOEXISTERUTASPRESUPUESTARIAS@@@${JSON.stringify(arrayCardsErrorRoutes)}@@@Se ha encontrado un error en los datos, revise proyectos@@@PROYECTOS@@@${JSON.stringify(arrayCardsErrorProjects)}@@@Se ha encontrado un error, datos duplicados en el sistema@@@RUTASPRESUPUESTARIASREPETIDAS@@@${JSON.stringify(arrayCardsErrorRepeatRoutes)}`;
-
-  //     return new ApiResponse(
-  //       null,
-  //       EResponseCodes.FAIL,
-  //       `Se han detectado errores en uno o varios elementos para la creación de la adición, por favor revise__${arrayResponse}`
-  //     );
-
-  //   }
-
-  //   //! Si llega hasta acá entonces pasó los filtros
-  //   return new ApiResponse(
-  //     null,
-  //     EResponseCodes.OK,
-  //     "Validaciones pasadas con éxito para agregar adición."
-  //   );
-
-  // }
+  }
 
   // //?ACTUALIZACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO (VALIDADOR GENERAL ANTES DE EDITAR)
   // async updateAdditionWithMov(id: number, addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements | any>> {
@@ -413,61 +331,114 @@ export default class TransfersService implements ITransfersService {
   // //* |************************************************************|
   // //! |------------------------------------------------------------|
 
-  // //Validador manual para que los nombres no se repitan
-  // async namesAddtionsValidations(addition: IAdditionsWithMovements): Promise<Boolean> {
+  //Validador manual para que los nombres no se repitan
+  async namesAndObservationsValidations(transfer: ITransfersWithMovements): Promise<Boolean> {
 
-  //   //Aplicando el tema del trim() y toUpperCase()
-  //   // const band: boolean = false;
-  //   const nameActAdminDis: string = addition.headAdditon!.actAdminDistrict.trim().toUpperCase();
-  //   const nameActAdminSap: string = addition.headAdditon!.actAdminSapiencia.trim().toUpperCase();
+    const nameActAdminDis  : string = transfer.headTransfer!.actAdminDistrict.trim().toUpperCase();
+    const nameActAdminSap  : string = transfer.headTransfer!.actAdminSapiencia.trim().toUpperCase();
+    const nameObservations : string = transfer.headTransfer!.observations.trim().toUpperCase();
 
-  //   const res1 = await Addition.query()
-  //     .where('actAdminDistrict', nameActAdminDis)
-  //     .first();
+    const res1 = await Transfer.query()
+      .where('actAdminDistrict', nameActAdminDis)
+      .first();
 
-  //   const res2 = await Addition.query()
-  //     .where('actAdminSapiencia', nameActAdminSap)
-  //     .first();
+    const res2 = await Transfer.query()
+      .where('actAdminSapiencia', nameActAdminSap)
+      .first();
 
-  //   return (res1 || res2) ? true : false;
+    const res3 = await Transfer.query()
+      .where('observations', nameObservations)
+      .first();
 
-  // }
+    return (res1 || res2 || res3) ? true : false;
 
-  // //Validador manual para que los valores tengan coincidencia respecto a la información
-  // async totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<any> {
+  }
 
-  //   let income: number = 0; //Ingresos
-  //   let spend: number = 0; //Gastos
+  //Validador manual para que los valores tengan coincidencia respecto a la información
+  //?NOTA: En este método validaremos no solo el total crédito y contra crédito de un gran taslado.
+  //?      sino que también validaremos especificamente crédito y contra crédito por traslado específico.
+  async totalsMovementsValidations(transfer: ITransfersWithMovements): Promise<any> {
 
-  //   let bandZeros = false;
-  //   let bandEquals = false;
+    let globalAgainstCredit: number = 0; //Contra Crédito Global - Origen
+    let globalCredit: number = 0; //Crédito Global - Destino
+    // let message: string = "Initial";
+    // let cardError: string = ""; //TODO: ¿Cómo vamos a usar esto :'v?
 
-  //   for (let i of addition.additionMove) {
+    // let bandGeneral: boolean = false;
+    // let bandSpecify: boolean = false;
 
-  //     if (i.type == "Ingreso") {
-  //       income += i.value;
-  //     } else {
-  //       spend += i.value;
-  //     }
+    for (let i of transfer.transferMovesGroups){
 
-  //   }
+      let spcifyAgainstCredit: number = 0; //Contra Crédito Específico - Origen
+      let spcifyCredit: number = 0; //Crédito Específico - Destino
 
-  //   if (income !== spend) {
-  //     bandEquals = true;
-  //   }
 
-  //   if (income === 0 || spend === 0) {
-  //     bandZeros = true;
-  //   }
+      for (let j of i.data){
 
-  //   return {
-  //     bandEquals,
-  //     bandZeros,
-  //     income,
-  //     spend,
-  //   }
+        if (j.type === "Origen"){
+          globalAgainstCredit += j.value;
+          spcifyAgainstCredit += j.value;
+        }
 
-  // }
+        if (j.type === "Destino"){
+          globalCredit += j.value;
+          spcifyCredit += j.value;
+        }
+        console.log(j.idCard);
+
+      }
+
+      //!Valido el segmento, el contra crédito y crédito tienen que ser iguales
+      if( spcifyAgainstCredit !== spcifyCredit ){
+
+        // bandSpecify = true;
+        break; //Salte
+      }
+      console.log("-");
+      console.log({
+        "spcifyAgainstCredit" : spcifyAgainstCredit,
+        "spcifyCredit" : spcifyCredit
+      })
+      console.log("-");
+
+    }
+
+    // if(bandSpecify && !bandGeneral) message = "Ocurrió un error en alguno de los traslados específicos"
+
+    console.log({
+      "globalAgainstCredit" : globalAgainstCredit,
+      "globalCredit" : globalCredit
+    })
+
+    // let bandZeros = false;
+    // let bandEquals = false;
+
+    // for (let i of addition.additionMove) {
+
+    //   if (i.type == "Ingreso") {
+    //     income += i.value;
+    //   } else {
+    //     spend += i.value;
+    //   }
+
+    // }
+
+    // if (income !== spend) {
+    //   bandEquals = true;
+    // }
+
+    // if (income === 0 || spend === 0) {
+    //   bandZeros = true;
+    // }
+
+    // return {
+    //   bandEquals,
+    //   bandZeros,
+    //   income,
+    //   spend,
+    // }
+
+  }
 
   //Validar proyecto, área funcional, fondo, pos pre origen y pos pre sapiencia
   async budgetPathValidations(idCard: string, projectId: number, foundId: number, posPreId: number): Promise<string> {
