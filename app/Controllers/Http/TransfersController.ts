@@ -2,7 +2,7 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { ApiResponse } from "App/Utils/ApiResponses";
 import TransfersProvider from "@ioc:core.TransfersProvider";
-import { ITransfersFilters } from '../../Interfaces/TransfersInterfaces';
+import { ITransfersFilters, ITransfersWithMovements } from '../../Interfaces/TransfersInterfaces';
 
 export default class TransfersController {
 
@@ -43,10 +43,20 @@ export default class TransfersController {
 
   public async createTransfers({request, response}: HttpContextContract) {
 
-    console.log(request);
-    return response.badRequest(
-      new ApiResponse(null, EResponseCodes.INFO, "Hola desde createTransfers")
-    );
+    try {
+
+      const transfer = request.body() as ITransfersWithMovements;
+      return response.send(
+        await TransfersProvider.createTransfers(transfer)
+      );
+
+    } catch (error) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(error))
+      );
+
+    }
 
   }
 

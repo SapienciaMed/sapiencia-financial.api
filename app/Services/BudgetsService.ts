@@ -50,7 +50,7 @@ export default class BudgetsService implements IBudgetsService {
       return new ApiResponse(
         {} as IBudgets,
         EResponseCodes.FAIL,
-        `Ya existe un consecutivo asociado a este Pospre.`
+        `Se ha encontrado un error, pospre ya existente.`
       );
     }
 

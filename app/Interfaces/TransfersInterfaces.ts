@@ -22,20 +22,30 @@ export interface ITransfersFilters {
   number?: string;
 }
 
+export interface IOriginsAndDestinations {
+
+  id?: number,
+  transferId?: number;
+  idCard?: string,
+  type : string,
+  managerCenter : string,
+  projectId : number,
+  fundId : number,
+  budgetPosition : number,
+  value : number
+
+}
+
 export interface ITransfersMovements {
-  idCard? : string;
-  id?: number;
-  additionId?: number;
-  type: string;
-  managerCenter: string;
-  projectId: number //Referencia a la otra API de planeación
-  fundId: number;
-  budgetPosition: number;
-  value: number;
+
+
+    data : IOriginsAndDestinations[]
+
+
 }
 
 export interface ITransfersWithMovements {
-  id?: number;                //Para edición
-  headTransfer?: ITransfers,   //Opcional porque en edición no lo requerimos
-  transferMove?: ITransfersMovements[]
+  id?: number; //Para traslado
+  headTransfer?: ITransfers,
+  transferMovesGroups: ITransfersMovements[]
 }
