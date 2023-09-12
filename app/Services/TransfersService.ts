@@ -24,7 +24,8 @@ import { IBudgetsRoutesRepository } from '../Repositories/BudgetsRoutesRepositor
 
 import { ITransfersRepository } from '../Repositories/TransfersRepository';
 // import { IMovementTransferRepository } from '../Repositories/MovementTransferRepository';
-import { ITransfersFilters, ITransfers } from '../Interfaces/TransfersInterfaces';
+import { ITransfersWithMovements } from '../Interfaces/TransfersInterfaces';
+import Transfer from '../Models/Transfer';
 
 export interface ITransfersService {
 
@@ -89,6 +90,7 @@ export default class TransfersService implements ITransfersService {
     //! Paso lo anterior, entonces tenemos garantía de información:
     const myRequestHeadTransfer = transfer.headTransfer;
     const myRequestBodyTransfer = transfer.transferMovesGroups;
+    console.log({myRequestHeadTransfer , myRequestBodyTransfer})
 
     //! Validamos los nombres acto admin distrito y el de sapiencia
     // const respNames = await this.namesAndObservationsValidations(transfer);
@@ -105,6 +107,7 @@ export default class TransfersService implements ITransfersService {
 
     //! Vamos a validar los totales
     const totals = await this.totalsMovementsValidations(transfer);
+    console.log({totals})
 
     //! Si llega hasta acá entonces pasó los filtros
     return new ApiResponse(
@@ -358,11 +361,11 @@ export default class TransfersService implements ITransfersService {
 
     let globalAgainstCredit: number = 0; //Contra Crédito Global - Origen
     let globalCredit: number = 0; //Crédito Global - Destino
-    let message: string = "";
+    // let message: string = "Initial";
     // let cardError: string = ""; //TODO: ¿Cómo vamos a usar esto :'v?
 
-    let bandGeneral: boolean = false;
-    let bandSpecify: boolean = false;
+    // let bandGeneral: boolean = false;
+    // let bandSpecify: boolean = false;
 
     for (let i of transfer.transferMovesGroups){
 
@@ -388,7 +391,7 @@ export default class TransfersService implements ITransfersService {
       //!Valido el segmento, el contra crédito y crédito tienen que ser iguales
       if( spcifyAgainstCredit !== spcifyCredit ){
 
-        bandSpecify = true;
+        // bandSpecify = true;
         break; //Salte
       }
       console.log("-");
@@ -400,7 +403,7 @@ export default class TransfersService implements ITransfersService {
 
     }
 
-    if(bandSpecify && !bandGeneral) message = "Ocurrió un error en alguno de los traslados específicos"
+    // if(bandSpecify && !bandGeneral) message = "Ocurrió un error en alguno de los traslados específicos"
 
     console.log({
       "globalAgainstCredit" : globalAgainstCredit,
