@@ -18,7 +18,7 @@ export default class TransfersRepository implements ITransfersRepository {
   async getTransfersPaginated(filters: ITransfersFilters): Promise<IPagingData<ITransfers>> {
 
     const query = Transfer.query();
-    query.select('id', 'actAdminDistrict', 'actAdminSapiencia', 'observations');
+    query.select('id', 'actAdminDistrict', 'actAdminSapiencia', 'observations', 'value');
 
     query.preload('transferMove', (q) => {
       q.select('id', 'type', 'value', 'budgetRouteId');

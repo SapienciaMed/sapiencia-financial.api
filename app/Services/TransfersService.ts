@@ -1,20 +1,29 @@
 // import { IAdditionsRepository } from "App/Repositories/AdditionsRepository";
 import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
+import {
+  ITransfers,
+  ITransfersFilters,
+  ITransfersWithMovements,
+  IFundsTransferList,
+  IPosPreTransfer,
+  IPosPreSapienciaTransferList,
+  IProjectTransferFilters,
+  IProjectTransferList,
+} from "App/Interfaces/TransfersInterfaces";
 
 // import AdditionsMovement from '../Models/AdditionsMovement';
 // import Addition from '../Models/Addition';
 
 // import { IMovementAdditionRepository } from '../Repositories/MovementAdditionRepository';
-// import { IProjectsRepository } from '../Repositories/ProjectsRepository';
-// import { IFundsRepository } from '../Repositories/FundsRepository';
-// import { IPosPreSapienciaRepository } from '../Repositories/PosPreSapienciaRepository';
-// import { IBudgetsRepository } from '../Repositories/BudgetsRepository';
-// import { IBudgetsRoutesRepository } from '../Repositories/BudgetsRoutesRepository';
+import { IProjectsRepository } from '../Repositories/ProjectsRepository';
+import { IFundsRepository } from '../Repositories/FundsRepository';
+import { IPosPreSapienciaRepository } from '../Repositories/PosPreSapienciaRepository';
+import { IBudgetsRepository } from '../Repositories/BudgetsRepository';
+import { IBudgetsRoutesRepository } from '../Repositories/BudgetsRoutesRepository';
 
 import { ITransfersRepository } from '../Repositories/TransfersRepository';
 // import { IMovementTransferRepository } from '../Repositories/MovementTransferRepository';
-import { ITransfersFilters, ITransfers, ITransfersWithMovements } from '../Interfaces/TransfersInterfaces';
 import Transfer from '../Models/Transfer';
 
 export interface ITransfersService {
@@ -24,18 +33,18 @@ export interface ITransfersService {
   // executeCreateAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>>;
   // getAllAdditionsList(list: string): Promise<ApiResponse<IAdditions[]>>;
   // getAdditionById(id: number): Promise<ApiResponse<IAdditionsWithMovements>>;
-  // getProjectsList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IProjectAdditionList>>>;
-  // getFundsList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IFundsAdditionList>>>;
-  // getPosPreList(): Promise<IPosPreAddition | string[]>;
-  // getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IPosPreSapienciaAdditionList>>>;
+  getProjectsList(filters: IProjectTransferFilters): Promise<ApiResponse<IPagingData<IProjectTransferList>>>;
+  getFundsList(filters: IProjectTransferFilters): Promise<ApiResponse<IPagingData<IFundsTransferList>>>;
+  getPosPreList(): Promise<IPosPreTransfer | string[]>;
+  getPosPreSapienciaList(filters: IProjectTransferFilters): Promise<ApiResponse<IPagingData<IPosPreSapienciaTransferList>>>;
   // updateAdditionWithMov(id: number, addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>>;
   // executeUpdateAdditionWithMov(id: number, addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>>;
 
 
   //*Validaciones Front y CREAR/ACTUALIZAR
   namesAndObservationsValidations(transfer: ITransfersWithMovements): Promise<Boolean>;
-  totalsMovementsValidations(transfer: ITransfersWithMovements): Promise<any>;
-  // budgetPathValidations(idCard: string, projectId: number , foundId: number , posPreId: number): Promise<string>;
+  totalsMovementsValidations(transfer: ITransfersWithMovements): Promise<string>;
+  budgetPathValidations(idCard: string, projectId: number , foundId: number , posPreId: number): Promise<string>;
 
 }
 
@@ -44,11 +53,11 @@ export default class TransfersService implements ITransfersService {
   constructor(
     private transfersRepository: ITransfersRepository,
     // private movementsRepository: IMovementTransferRepository,
-    // private projectRepository: IProjectsRepository,
-    // private fundsRepository: IFundsRepository,
-    // private pospreSapRepository: IPosPreSapienciaRepository,
-    // private budgetRepository: IBudgetsRepository,
-    // private budgetRouteRepository: IBudgetsRoutesRepository
+    private projectRepository: IProjectsRepository,
+    private fundsRepository: IFundsRepository,
+    private pospreSapRepository: IPosPreSapienciaRepository,
+    private budgetRepository: IBudgetsRepository,
+    private budgetRouteRepository: IBudgetsRoutesRepository
   ) { }
 
   //?OBTENER PAGINADO Y FILTRADO LAS ADICIONES CON SUS MOVIMIENTOS
@@ -78,24 +87,127 @@ export default class TransfersService implements ITransfersService {
     }
 
     //! Paso lo anterior, entonces tenemos garantía de información:
-    const myRequestHeadTransfer = transfer.headTransfer;
-    const myRequestBodyTransfer = transfer.transferMovesGroups;
+    // const myRequestHeadTransfer = transfer.headTransfer;
+    // const myRequestBodyTransfer = transfer.transferMovesGroups;
+    // console.log({myRequestHeadTransfer , myRequestBodyTransfer})
 
     //! Validamos los nombres acto admin distrito y el de sapiencia
-    // const respNames = await this.namesAndObservationsValidations(transfer);
+    const respNames = await this.namesAndObservationsValidations(transfer);
 
-    // if (respNames) {
+    if (respNames) {
 
-    //   return new ApiResponse(
-    //     null,
-    //     EResponseCodes.FAIL,
-    //     "El nombre de Acto Admin Distrito, Acto Admin Sapiencia y/o Observaciones ya se encuentran registrados."
-    //   );
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "El nombre de Acto Admin Distrito, Acto Admin Sapiencia y/o Observaciones ya se encuentran registrados."
+      );
 
-    // }
+    }
 
     //! Vamos a validar los totales
     const totals = await this.totalsMovementsValidations(transfer);
+    const responseTotalAction = totals.split("@")[0];
+    const responseTotalDescription = totals.split("@")[1];
+    const responseInfoDescription = totals.split("@")[2];
+
+    if(responseTotalAction === "ERROR"){
+
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        `Mensaje_Backend_Totales:@${responseTotalDescription}@Info_Mensaje_Backend_Totales:@${responseInfoDescription}`
+      );
+
+    }
+
+    //! Validación de existencia de Rutas Presupuestarias
+    //! Validación de existenica de Proyecto y Área Funcional
+    //! Validación Pospre Origen y Pospre Sapiencia
+    //! Validación Fondo asociado
+    //! Validación Rutas Presupuestarias Repetidas
+    //! Validación Existencia Proyecto
+    let bandControl: boolean = false;
+    let arrayCardsErrorRoutes: string[] = [];
+    let arrayCardsErrorProjects: string[] = [];
+
+    let arrayNoRepeatRoutes: string[] = [];
+    let arrayCardsErrorRepeatRoutes: string[] = [];
+
+    for (let i of transfer.transferMovesGroups){
+
+      for (let j of i.data){
+
+        const concat: string = `${j.projectId},${j.fundId},${j.budgetPosition}`; //Concatenar rutas para no repetir
+        const idCard: string = j.idCard!;          // ID Card del FRONT para pintar si hay errores
+        const projectId: number = j.projectId;     // Id Proyecto - De acá saco el área funcional
+        const foundId: number = j.fundId;          // Id del Fondo
+        const posPreId: number = j.budgetPosition; // Id del Pos Pre Sapiencia - De acá saco el pospre origen
+
+        //* No repetir rutas durante el traslado, A NIVEL DE GRUPO TRASLADO
+        if (arrayNoRepeatRoutes.includes(concat)) {
+          arrayCardsErrorRepeatRoutes.push(idCard);
+          bandControl = true;
+        }
+        arrayNoRepeatRoutes.push(concat);
+
+        //* Validación proyectos y que exista ruta presupuestaria en paralelo
+        //* Validación de Pospre Origen y Pospre Sapiencia en paralelo
+        const resp = await this.budgetPathValidations(idCard, projectId, foundId, posPreId);
+        const status = resp.split('-')[0];
+        const card = resp.split('-')[1];
+
+        //* Validación si no encontré la ruta presupuestaria
+        if (status == "ERROR_RUTAPRESUPUESTARIA") {
+
+          bandControl = true;
+          arrayCardsErrorRoutes.push(card);
+
+        }
+
+        //* Validación si no encontré proyecto en presupuesto
+        if (status == "ERROR_CODIGOPROYECTO") {
+
+          bandControl = true;
+          arrayCardsErrorProjects.push(card);
+
+        }
+
+      }
+
+    }
+
+    if (bandControl) {
+
+      const arrayResponse = `@@@Se ha encontrado un error en los datos, revisa rutas presupuestales@@@NOEXISTERUTASPRESUPUESTARIAS@@@${JSON.stringify(arrayCardsErrorRoutes)}@@@Se ha encontrado un error en los datos, revise proyectos@@@PROYECTOS@@@${JSON.stringify(arrayCardsErrorProjects)}@@@Se ha encontrado un error, datos duplicados en el sistema@@@RUTASPRESUPUESTARIASREPETIDAS@@@${JSON.stringify(arrayCardsErrorRepeatRoutes)}`;
+
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        `Se han detectado errores en uno o varios elementos para la creación de la adición, por favor revise__${arrayResponse}`
+      );
+
+    }
+
+    //! << ****************************************************** >>
+    //! << REALIZAMOS LAS VALIDACIONES ESPECÍFICAS PARA TRASLADOS >>
+    //! << ****************************************************** >>
+
+    for (let i of transfer.transferMovesGroups){
+
+      for (let j of i.data){
+
+        console.log(j);
+
+      }
+
+    }
+
+
+
+
+
+
+    // console.log({totals})
 
     //! Si llega hasta acá entonces pasó los filtros
     return new ApiResponse(
@@ -268,47 +380,47 @@ export default class TransfersService implements ITransfersService {
   // }
 
   // //?OBTENER LISTADO DE PROYECTOS CON SU ÁREA FUNCIONAL VINCULADA
-  // async getProjectsList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IProjectAdditionList | any>>> {
+  async getProjectsList(filters: IProjectTransferFilters): Promise<ApiResponse<IPagingData<IProjectTransferList | any>>> {
 
-  //   const projects = await this.projectRepository.getProjectsList(filters);
-  //   return new ApiResponse(projects, EResponseCodes.OK);
+    const projects = await this.projectRepository.getProjectsList(filters);
+    return new ApiResponse(projects, EResponseCodes.OK);
 
-  // }
+  }
 
   // //?OBTENER LISTADO DE FONDOS
-  // async getFundsList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IFundsAdditionList>>> {
+  async getFundsList(filters: IProjectTransferFilters): Promise<ApiResponse<IPagingData<IFundsTransferList>>> {
 
-  //   const funds = await this.fundsRepository.getFundsList(filters);
-  //   return new ApiResponse(funds, EResponseCodes.OK);
+    const funds = await this.fundsRepository.getFundsList(filters);
+    return new ApiResponse(funds, EResponseCodes.OK);
 
-  // }
+  }
 
   // //?OBTENER POS PRE - COMBINAMOS RESULTADO DE POS PRE SAPIENCIA CON BUDGETS
-  // async getPosPreList(): Promise<IPosPreAddition | string[]> {
+  async getPosPreList(): Promise<IPosPreTransfer | string[]> {
 
-  //   const posPreRes = await this.pospreSapRepository.getAllPosPreSapiencia();
-  //   const budgetRes = await this.budgetRepository.getAllBudgets();
-  //   const arrayResult: string[] = [];
+    const posPreRes = await this.pospreSapRepository.getAllPosPreSapiencia();
+    const budgetRes = await this.budgetRepository.getAllBudgets();
+    const arrayResult: string[] = [];
 
-  //   for (let i of posPreRes) {
-  //     arrayResult.push(i.number);
-  //   }
+    for (let i of posPreRes) {
+      arrayResult.push(i.number);
+    }
 
-  //   for (let j of budgetRes) {
-  //     arrayResult.push(j.number.toString());
-  //   }
+    for (let j of budgetRes) {
+      arrayResult.push(j.number.toString());
+    }
 
-  //   return arrayResult;
+    return arrayResult;
 
-  // }
+  }
 
   // //?OBTENER LISTADO DE POS PRE SAPIENCIA ANIDADOS CON POSPRE ORIGEN
-  // async getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<ApiResponse<IPagingData<IPosPreSapienciaAdditionList>>> {
+  async getPosPreSapienciaList(filters: IProjectTransferFilters): Promise<ApiResponse<IPagingData<IPosPreSapienciaTransferList>>> {
 
-  //   const posPreRes = await this.pospreSapRepository.getPosPreSapienciaList(filters);
-  //   return new ApiResponse(posPreRes, EResponseCodes.OK);
+    const posPreRes = await this.pospreSapRepository.getPosPreSapienciaList(filters);
+    return new ApiResponse(posPreRes, EResponseCodes.OK);
 
-  // }
+  }
 
 
 
@@ -345,20 +457,22 @@ export default class TransfersService implements ITransfersService {
   //Validador manual para que los valores tengan coincidencia respecto a la información
   //?NOTA: En este método validaremos no solo el total crédito y contra crédito de un gran taslado.
   //?      sino que también validaremos especificamente crédito y contra crédito por traslado específico.
-  async totalsMovementsValidations(transfer: ITransfersWithMovements): Promise<any> {
+  async totalsMovementsValidations(transfer: ITransfersWithMovements): Promise<string> {
 
     let globalAgainstCredit: number = 0; //Contra Crédito Global - Origen
     let globalCredit: number = 0; //Crédito Global - Destino
-    let message: string = "";
-    // let cardError: string = ""; //TODO: ¿Cómo vamos a usar esto :'v?
 
     let bandGeneral: boolean = false;
     let bandSpecify: boolean = false;
+    let cardsArray: string[] = [];
+    let spcifyAgainstCredit: number = 0; //Contra Crédito Específico - Origen
+    let spcifyCredit: number = 0; //Crédito Específico - Destino
 
     for (let i of transfer.transferMovesGroups){
 
-      let spcifyAgainstCredit: number = 0; //Contra Crédito Específico - Origen
-      let spcifyCredit: number = 0; //Crédito Específico - Destino
+      spcifyAgainstCredit = 0; //Contra Crédito Específico - Origen
+      spcifyCredit = 0; //Crédito Específico - Destino
+      cardsArray = []; //Reseteamos para volverlo a usar
 
 
       for (let j of i.data){
@@ -372,7 +486,8 @@ export default class TransfersService implements ITransfersService {
           globalCredit += j.value;
           spcifyCredit += j.value;
         }
-        console.log(j.idCard);
+        // console.log(j.idCard);
+        cardsArray.push(j.idCard!);
 
       }
 
@@ -387,77 +502,65 @@ export default class TransfersService implements ITransfersService {
         "spcifyAgainstCredit" : spcifyAgainstCredit,
         "spcifyCredit" : spcifyCredit
       })
-      console.log("-");
 
     }
 
-    if(bandSpecify && !bandGeneral) message = "Ocurrió un error en alguno de los traslados específicos"
+    if(bandSpecify && !bandGeneral){
 
-    console.log({
-      "globalAgainstCredit" : globalAgainstCredit,
-      "globalCredit" : globalCredit
-    })
+      console.log("¡¡ Se encontraron errores específicos en un grupo de traslados !!");
+      console.log("A continuación, los ID's cards que se detectaron líos: ");
+      console.log({cardsArray});
+      console.log("<<Los valores que obtuvimos fueron los siguientes: >>");
+      console.log({spcifyAgainstCredit, spcifyCredit});
+      return `ERROR@Error en total específico, cards:@${cardsArray}`;
 
-    // let bandZeros = false;
-    // let bandEquals = false;
+    }
 
-    // for (let i of addition.additionMove) {
+    if(globalAgainstCredit !== globalCredit){
 
-    //   if (i.type == "Ingreso") {
-    //     income += i.value;
-    //   } else {
-    //     spend += i.value;
-    //   }
+      console.log("¡¡ Se encontraron errores generales en todo el traslado !!");
+      console.log({ globalAgainstCredit, globalCredit })
+      bandGeneral = true;
+      return `ERROR@Error en totales generales, totales:@ContraCredito:${globalAgainstCredit},Credito:${globalCredit}`;
 
-    // }
+    }
 
-    // if (income !== spend) {
-    //   bandEquals = true;
-    // }
+    if(!bandSpecify && !bandGeneral){
 
-    // if (income === 0 || spend === 0) {
-    //   bandZeros = true;
-    // }
+      return `OK@Se pasaron las validaciones de los totales y subtotales satisfactoriamente@TodoOK`;
 
-    // return {
-    //   bandEquals,
-    //   bandZeros,
-    //   income,
-    //   spend,
-    // }
+    }
+
+    return "";
 
   }
 
-  // //Validar proyecto, área funcional, fondo, pos pre origen y pos pre sapiencia
-  // async budgetPathValidations(idCard: string, projectId: number, foundId: number, posPreId: number): Promise<string> {
+  //Validar proyecto, área funcional, fondo, pos pre origen y pos pre sapiencia
+  async budgetPathValidations(idCard: string, projectId: number, foundId: number, posPreId: number): Promise<string> {
 
-  //   //* Consulta pos pre sapiencia para obtener el de origen
-  //   const query = await this.pospreSapRepository.getPosPreSapienciaById(posPreId);
-  //   const posPreOriginId = Number(query?.budget?.id);
+    //* Consulta pos pre sapiencia para obtener el de origen
+    const query = await this.pospreSapRepository.getPosPreSapienciaById(posPreId);
+    const posPreOriginId = Number(query?.budget?.id);
+    console.log("PosPreOrigen Detectado: ", posPreOriginId);
 
-  //   //* Primero busquemos si encontramos el proyecto
-  //   const resultProj = await this.projectRepository.getProjectById(projectId);
-  //   if (!resultProj) return `ERROR_CODIGOPROYECTO-${idCard}`;
+    //* Primero busquemos si encontramos el proyecto
+    const resultProj = await this.projectRepository.getProjectById(projectId);
+    if (!resultProj) return `ERROR_CODIGOPROYECTO-${idCard}`;
 
-  //   //* Validación contra ruta presupuestal
-  //   const resultRPP = await this.budgetRouteRepository.getBudgetForAdditions(projectId,
-  //     foundId,
-  //     posPreOriginId,
-  //     posPreId);
-  //   //Devolvemos el id card para que pueda ser pintado en el Frontend
-  //   if (!resultRPP) return `ERROR_RUTAPRESUPUESTARIA-${idCard}`;
+    //* Validación contra ruta presupuestal
+    const resultRPP = await this.budgetRouteRepository.getBudgetForAdditions(projectId,
+      foundId,
+      posPreOriginId,
+      posPreId);
+    //Devolvemos el id card para que pueda ser pintado en el Frontend
+    if (!resultRPP) return `ERROR_RUTAPRESUPUESTARIA-${idCard}`;
 
-  //   return `OK-${idCard}`;
+    return `OK-${idCard}`;
 
-  // }
+  }
 
-  // //? ACCIÓN DIRECTA PARA CREAR LA ADICIÓN (AQUÍ YA NO HAY VALIDACIONES, SE ASUME QUE YA PASO POR EL VALIDADOR)
-  // async executeCreateAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>> {
 
-  //   //* Agregar cabecera de adición
-  //   const add = await this.additionsRepository.createAdditions({
-  //     actAdminDistrict: addition.headAdditon!.actAdminDistrict.trim().toUpperCase(),
-  //     actAdminSapiencia: addition.headAdditon!.actAdminSapiencia.trim().toUpperCase(),
+// on.headAdditon!.actAdminSapiencia.trim().toUpperCase(),
   //     userCreate: addition.headAdditon!.userCreate,
   //     dateCreate: addition.headAdditon!.dateCreate,
   //     userModify: addition.headAdditon!.userModify,
