@@ -1,6 +1,16 @@
 // import { IAdditionsRepository } from "App/Repositories/AdditionsRepository";
 import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
+import {
+  ITransfers,
+  ITransfersFilters,
+  ITransfersWithMovements,
+  IFundsTransferList,
+  IPosPreTransfer,
+  IPosPreSapienciaTransferList,
+  IProjectTransferFilters,
+  IProjectTransferList,
+} from "App/Interfaces/TransfersInterfaces";
 
 // import AdditionsMovement from '../Models/AdditionsMovement';
 // import Addition from '../Models/Addition';
@@ -14,7 +24,6 @@ import { IBudgetsRoutesRepository } from '../Repositories/BudgetsRoutesRepositor
 
 import { ITransfersRepository } from '../Repositories/TransfersRepository';
 // import { IMovementTransferRepository } from '../Repositories/MovementTransferRepository';
-import { ITransfersFilters, ITransfers, ITransfersWithMovements } from '../Interfaces/TransfersInterfaces';
 import Transfer from '../Models/Transfer';
 
 export interface ITransfersService {
@@ -78,8 +87,9 @@ export default class TransfersService implements ITransfersService {
     }
 
     //! Paso lo anterior, entonces tenemos garantía de información:
-    const myRequestHeadTransfer = transfer.headTransfer;
-    const myRequestBodyTransfer = transfer.transferMovesGroups;
+    // const myRequestHeadTransfer = transfer.headTransfer;
+    // const myRequestBodyTransfer = transfer.transferMovesGroups;
+    // console.log({myRequestHeadTransfer , myRequestBodyTransfer})
 
     //! Validamos los nombres acto admin distrito y el de sapiencia
     const respNames = await this.namesAndObservationsValidations(transfer);
@@ -96,6 +106,108 @@ export default class TransfersService implements ITransfersService {
 
     //! Vamos a validar los totales
     const totals = await this.totalsMovementsValidations(transfer);
+    const responseTotalAction = totals.split("@")[0];
+    const responseTotalDescription = totals.split("@")[1];
+    const responseInfoDescription = totals.split("@")[2];
+
+    if(responseTotalAction === "ERROR"){
+
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        `Mensaje_Backend_Totales:@${responseTotalDescription}@Info_Mensaje_Backend_Totales:@${responseInfoDescription}`
+      );
+
+    }
+
+    //! Validación de existencia de Rutas Presupuestarias
+    //! Validación de existenica de Proyecto y Área Funcional
+    //! Validación Pospre Origen y Pospre Sapiencia
+    //! Validación Fondo asociado
+    //! Validación Rutas Presupuestarias Repetidas
+    //! Validación Existencia Proyecto
+    let bandControl: boolean = false;
+    let arrayCardsErrorRoutes: string[] = [];
+    let arrayCardsErrorProjects: string[] = [];
+
+    let arrayNoRepeatRoutes: string[] = [];
+    let arrayCardsErrorRepeatRoutes: string[] = [];
+
+    for (let i of transfer.transferMovesGroups){
+
+      for (let j of i.data){
+
+        const concat: string = `${j.projectId},${j.fundId},${j.budgetPosition}`; //Concatenar rutas para no repetir
+        const idCard: string = j.idCard!;          // ID Card del FRONT para pintar si hay errores
+        const projectId: number = j.projectId;     // Id Proyecto - De acá saco el área funcional
+        const foundId: number = j.fundId;          // Id del Fondo
+        const posPreId: number = j.budgetPosition; // Id del Pos Pre Sapiencia - De acá saco el pospre origen
+
+        //* No repetir rutas durante el traslado, A NIVEL DE GRUPO TRASLADO
+        if (arrayNoRepeatRoutes.includes(concat)) {
+          arrayCardsErrorRepeatRoutes.push(idCard);
+          bandControl = true;
+        }
+        arrayNoRepeatRoutes.push(concat);
+
+        //* Validación proyectos y que exista ruta presupuestaria en paralelo
+        //* Validación de Pospre Origen y Pospre Sapiencia en paralelo
+        const resp = await this.budgetPathValidations(idCard, projectId, foundId, posPreId);
+        const status = resp.split('-')[0];
+        const card = resp.split('-')[1];
+
+        //* Validación si no encontré la ruta presupuestaria
+        if (status == "ERROR_RUTAPRESUPUESTARIA") {
+
+          bandControl = true;
+          arrayCardsErrorRoutes.push(card);
+
+        }
+
+        //* Validación si no encontré proyecto en presupuesto
+        if (status == "ERROR_CODIGOPROYECTO") {
+
+          bandControl = true;
+          arrayCardsErrorProjects.push(card);
+
+        }
+
+      }
+
+    }
+
+    if (bandControl) {
+
+      const arrayResponse = `@@@Se ha encontrado un error en los datos, revisa rutas presupuestales@@@NOEXISTERUTASPRESUPUESTARIAS@@@${JSON.stringify(arrayCardsErrorRoutes)}@@@Se ha encontrado un error en los datos, revise proyectos@@@PROYECTOS@@@${JSON.stringify(arrayCardsErrorProjects)}@@@Se ha encontrado un error, datos duplicados en el sistema@@@RUTASPRESUPUESTARIASREPETIDAS@@@${JSON.stringify(arrayCardsErrorRepeatRoutes)}`;
+
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        `Se han detectado errores en uno o varios elementos para la creación de la adición, por favor revise__${arrayResponse}`
+      );
+
+    }
+
+    //! << ****************************************************** >>
+    //! << REALIZAMOS LAS VALIDACIONES ESPECÍFICAS PARA TRASLADOS >>
+    //! << ****************************************************** >>
+
+    for (let i of transfer.transferMovesGroups){
+
+      for (let j of i.data){
+
+        console.log(j);
+
+      }
+
+    }
+
+
+
+
+
+
+    // console.log({totals})
 
     //! Si llega hasta acá entonces pasó los filtros
     return new ApiResponse(
@@ -349,11 +461,12 @@ export default class TransfersService implements ITransfersService {
 
     let globalAgainstCredit: number = 0; //Contra Crédito Global - Origen
     let globalCredit: number = 0; //Crédito Global - Destino
-    let message: string = "";
-    // let cardError: string = ""; //TODO: ¿Cómo vamos a usar esto :'v?
 
     let bandGeneral: boolean = false;
     let bandSpecify: boolean = false;
+    let cardsArray: string[] = [];
+    let spcifyAgainstCredit: number = 0; //Contra Crédito Específico - Origen
+    let spcifyCredit: number = 0; //Crédito Específico - Destino
 
     for (let i of transfer.transferMovesGroups){
 
@@ -381,7 +494,7 @@ export default class TransfersService implements ITransfersService {
       //!Valido el segmento, el contra crédito y crédito tienen que ser iguales
       if( spcifyAgainstCredit !== spcifyCredit ){
 
-        // bandSpecify = true;
+        bandSpecify = true;
         break; //Salte
       }
       console.log("-");
@@ -392,7 +505,14 @@ export default class TransfersService implements ITransfersService {
 
     }
 
-    if(bandSpecify && !bandGeneral) message = "Ocurrió un error en alguno de los traslados específicos"
+    if(bandSpecify && !bandGeneral){
+
+      console.log("¡¡ Se encontraron errores específicos en un grupo de traslados !!");
+      console.log("A continuación, los ID's cards que se detectaron líos: ");
+      console.log({cardsArray});
+      console.log("<<Los valores que obtuvimos fueron los siguientes: >>");
+      console.log({spcifyAgainstCredit, spcifyCredit});
+      return `ERROR@Error en total específico, cards:@${cardsArray}`;
 
     }
 
@@ -418,9 +538,10 @@ export default class TransfersService implements ITransfersService {
   //Validar proyecto, área funcional, fondo, pos pre origen y pos pre sapiencia
   async budgetPathValidations(idCard: string, projectId: number, foundId: number, posPreId: number): Promise<string> {
 
-  //   //* Consulta pos pre sapiencia para obtener el de origen
-  //   const query = await this.pospreSapRepository.getPosPreSapienciaById(posPreId);
-  //   const posPreOriginId = Number(query?.budget?.id);
+    //* Consulta pos pre sapiencia para obtener el de origen
+    const query = await this.pospreSapRepository.getPosPreSapienciaById(posPreId);
+    const posPreOriginId = Number(query?.budget?.id);
+    console.log("PosPreOrigen Detectado: ", posPreOriginId);
 
     //* Primero busquemos si encontramos el proyecto
     const resultProj = await this.projectRepository.getProjectById(projectId);
