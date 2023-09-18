@@ -25,12 +25,14 @@ import { IBudgetsRoutesRepository } from '../Repositories/BudgetsRoutesRepositor
 import { ITransfersRepository } from '../Repositories/TransfersRepository';
 // import { IMovementTransferRepository } from '../Repositories/MovementTransferRepository';
 import Transfer from '../Models/Transfer';
+import TransfersMovement from '../Models/TransfersMovement';
 
 export interface ITransfersService {
 
   getTransfersPaginated(filters: ITransfersFilters): Promise<ApiResponse<IPagingData<ITransfers>>>;
   createTransfers(transfer: ITransfersWithMovements): Promise<ApiResponse<ITransfersWithMovements>>;
-  // executeCreateAdditions(addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>>;
+  executeCreateTransfers(transfer: ITransfersWithMovements): Promise<ApiResponse<ITransfersWithMovements | any>>;
+  totalTransferCalculator(transfer: ITransfersWithMovements): Promise<ApiResponse<number>>;
   // getAllAdditionsList(list: string): Promise<ApiResponse<IAdditions[]>>;
   // getAdditionById(id: number): Promise<ApiResponse<IAdditionsWithMovements>>;
   getProjectsList(filters: IProjectTransferFilters): Promise<ApiResponse<IPagingData<IProjectTransferList>>>;
@@ -44,7 +46,7 @@ export interface ITransfersService {
   //*Validaciones Front y CREAR/ACTUALIZAR
   namesAndObservationsValidations(transfer: ITransfersWithMovements): Promise<Boolean>;
   totalsMovementsValidations(transfer: ITransfersWithMovements): Promise<string>;
-  budgetPathValidations(idCard: string, projectId: number , foundId: number , posPreId: number): Promise<string>;
+  budgetPathValidations(idCard: string, projectId: number, foundId: number, posPreId: number): Promise<string>;
 
 }
 
@@ -71,25 +73,18 @@ export default class TransfersService implements ITransfersService {
   // //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO (VALIDADOR GENERAL ANTES DE CREAR)
   async createTransfers(transfer: ITransfersWithMovements): Promise<ApiResponse<ITransfersWithMovements | any>> {
 
-    // console.log(transfer);
+    if (!transfer ||
+      !transfer.headTransfer ||
+      !transfer.transferMovesGroups ||
+      transfer.transferMovesGroups.length <= 0) {
 
-    if(!transfer ||
-       !transfer.headTransfer ||
-       !transfer.transferMovesGroups ||
-       transfer.transferMovesGroups.length <= 0){
-
-        return new ApiResponse(
-          null,
-          EResponseCodes.FAIL,
-          "No se envió la cabecera del traslado y/o los traslados respectivos, verifique."
-        );
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "No se envió la cabecera del traslado y/o los traslados respectivos, verifique."
+      );
 
     }
-
-    //! Paso lo anterior, entonces tenemos garantía de información:
-    // const myRequestHeadTransfer = transfer.headTransfer;
-    // const myRequestBodyTransfer = transfer.transferMovesGroups;
-    // console.log({myRequestHeadTransfer , myRequestBodyTransfer})
 
     //! Validamos los nombres acto admin distrito y el de sapiencia
     const respNames = await this.namesAndObservationsValidations(transfer);
@@ -110,7 +105,7 @@ export default class TransfersService implements ITransfersService {
     const responseTotalDescription = totals.split("@")[1];
     const responseInfoDescription = totals.split("@")[2];
 
-    if(responseTotalAction === "ERROR"){
+    if (responseTotalAction === "ERROR") {
 
       return new ApiResponse(
         null,
@@ -133,9 +128,9 @@ export default class TransfersService implements ITransfersService {
     let arrayNoRepeatRoutes: string[] = [];
     let arrayCardsErrorRepeatRoutes: string[] = [];
 
-    for (let i of transfer.transferMovesGroups){
+    for (let i of transfer.transferMovesGroups) {
 
-      for (let j of i.data){
+      for (let j of i.data) {
 
         const concat: string = `${j.projectId},${j.fundId},${j.budgetPosition}`; //Concatenar rutas para no repetir
         const idCard: string = j.idCard!;          // ID Card del FRONT para pintar si hay errores
@@ -191,10 +186,27 @@ export default class TransfersService implements ITransfersService {
     //! << ****************************************************** >>
     //! << REALIZAMOS LAS VALIDACIONES ESPECÍFICAS PARA TRASLADOS >>
     //! << ****************************************************** >>
+    let transferCards: string = "";
+    let errorType: string = "";
 
-    for (let i of transfer.transferMovesGroups){
+    let errorDetected_PiToPf: boolean = false;
 
-      for (let j of i.data){
+    for (let i of transfer.transferMovesGroups) {
+
+      //? VALIDAMOS QUE NO SE PUEDA PASAR DE UN PROYECTO DE INVERSIÓN A UNO DE FUNCIONAMIENTO
+      const dePiToPf = await this.noPermitedInversionProyToFunctionalProy(i);
+      const resultPiToPf = dePiToPf.data.split('@')[0];
+
+      if(resultPiToPf === "true"){
+
+        transferCards = dePiToPf.data.split('@')[1];
+        errorType = "Se esta intentado trasladar de un Proyecto de Inversión a uno de Funcionamiento";
+        errorDetected_PiToPf = true;
+        break;
+
+      }
+
+      for (let j of i.data) {
 
         console.log(j);
 
@@ -202,12 +214,15 @@ export default class TransfersService implements ITransfersService {
 
     }
 
+    if(errorDetected_PiToPf){
 
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        `Se ha detectado un error en las validaciones de traslados.@Tipo Error: ${errorType}@Cards grupales de falla: ${transferCards}`
+      );
 
-
-
-
-    // console.log({totals})
+    }
 
     //! Si llega hasta acá entonces pasó los filtros
     return new ApiResponse(
@@ -434,9 +449,9 @@ export default class TransfersService implements ITransfersService {
   //Validador manual para que los nombres no se repitan
   async namesAndObservationsValidations(transfer: ITransfersWithMovements): Promise<Boolean> {
 
-    const nameActAdminDis  : string = transfer.headTransfer!.actAdminDistrict.trim().toUpperCase();
-    const nameActAdminSap  : string = transfer.headTransfer!.actAdminSapiencia.trim().toUpperCase();
-    const nameObservations : string = transfer.headTransfer!.observations.trim().toUpperCase();
+    const nameActAdminDis: string = transfer.headTransfer!.actAdminDistrict.trim().toUpperCase();
+    const nameActAdminSap: string = transfer.headTransfer!.actAdminSapiencia.trim().toUpperCase();
+    const nameObservations: string = transfer.headTransfer!.observations.trim().toUpperCase();
 
     const res1 = await Transfer.query()
       .where('actAdminDistrict', nameActAdminDis)
@@ -468,64 +483,54 @@ export default class TransfersService implements ITransfersService {
     let spcifyAgainstCredit: number = 0; //Contra Crédito Específico - Origen
     let spcifyCredit: number = 0; //Crédito Específico - Destino
 
-    for (let i of transfer.transferMovesGroups){
+    for (let i of transfer.transferMovesGroups) {
 
-      spcifyAgainstCredit = 0; //Contra Crédito Específico - Origen
-      spcifyCredit = 0; //Crédito Específico - Destino
-      cardsArray = []; //Reseteamos para volverlo a usar
+      spcifyAgainstCredit = 0;
+      spcifyCredit = 0;
+      cardsArray = [];
 
 
-      for (let j of i.data){
+      for (let j of i.data) {
 
-        if (j.type === "Origen"){
+        if (j.type === "Origen") {
           globalAgainstCredit += j.value;
           spcifyAgainstCredit += j.value;
         }
 
-        if (j.type === "Destino"){
+        if (j.type === "Destino") {
           globalCredit += j.value;
           spcifyCredit += j.value;
         }
-        // console.log(j.idCard);
+
         cardsArray.push(j.idCard!);
 
       }
 
       //!Valido el segmento, el contra crédito y crédito tienen que ser iguales
-      if( spcifyAgainstCredit !== spcifyCredit ){
+      if (spcifyAgainstCredit !== spcifyCredit) {
 
         bandSpecify = true;
-        break; //Salte
+        break;
       }
-      console.log("-");
-      console.log({
-        "spcifyAgainstCredit" : spcifyAgainstCredit,
-        "spcifyCredit" : spcifyCredit
-      })
 
     }
 
-    if(bandSpecify && !bandGeneral){
+    //* Errores específicos
+    if (bandSpecify && !bandGeneral) {
 
-      console.log("¡¡ Se encontraron errores específicos en un grupo de traslados !!");
-      console.log("A continuación, los ID's cards que se detectaron líos: ");
-      console.log({cardsArray});
-      console.log("<<Los valores que obtuvimos fueron los siguientes: >>");
-      console.log({spcifyAgainstCredit, spcifyCredit});
       return `ERROR@Error en total específico, cards:@${cardsArray}`;
 
     }
 
-    if(globalAgainstCredit !== globalCredit){
+    //* Errores generales
+    if (globalAgainstCredit !== globalCredit) {
 
-      console.log("¡¡ Se encontraron errores generales en todo el traslado !!");
-      console.log({ globalAgainstCredit, globalCredit })
       bandGeneral = true;
       return `ERROR@Error en totales generales, totales:@ContraCredito:${globalAgainstCredit},Credito:${globalCredit}`;
 
     }
 
-    if(!bandSpecify && !bandGeneral){
+    if (!bandSpecify && !bandGeneral) {
 
       return `OK@Se pasaron las validaciones de los totales y subtotales satisfactoriamente@TodoOK`;
 
@@ -541,7 +546,7 @@ export default class TransfersService implements ITransfersService {
     //* Consulta pos pre sapiencia para obtener el de origen
     const query = await this.pospreSapRepository.getPosPreSapienciaById(posPreId);
     const posPreOriginId = Number(query?.budget?.id);
-    console.log("PosPreOrigen Detectado: ", posPreOriginId);
+
 
     //* Primero busquemos si encontramos el proyecto
     const resultProj = await this.projectRepository.getProjectById(projectId);
@@ -552,6 +557,7 @@ export default class TransfersService implements ITransfersService {
       foundId,
       posPreOriginId,
       posPreId);
+
     //Devolvemos el id card para que pueda ser pintado en el Frontend
     if (!resultRPP) return `ERROR_RUTAPRESUPUESTARIA-${idCard}`;
 
@@ -559,58 +565,123 @@ export default class TransfersService implements ITransfersService {
 
   }
 
+  //? EJECUTAMOS EL GUARDADO
+  async executeCreateTransfers(transfer: ITransfersWithMovements): Promise<ApiResponse<ITransfersWithMovements | any>>{
 
-// on.headAdditon!.actAdminSapiencia.trim().toUpperCase(),
-  //     userCreate: addition.headAdditon!.userCreate,
-  //     dateCreate: addition.headAdditon!.dateCreate,
-  //     userModify: addition.headAdditon!.userModify,
-  //     dateModify: addition.headAdditon!.dateModify
-  //   });
+    //* Calcular total traslado. Se asume que ya paso las anteriores validaciones.
+    const totalTransfer: ApiResponse<number> = await this.totalTransferCalculator(transfer);
 
-  //   //* Agregar detalles de adición
-  //   if (add.id) {
+    if( !totalTransfer || totalTransfer.data <= 0 ){
 
-  //     for (let i of addition.additionMove) {
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "Ocurrio un error al calcular el total del traslado. Copie los datos de trabajo y consule con el admin del sistema"
+      );
 
-  //       //* Al pasar las validaciones, garantizamos que tenemos rutas presupuestales.
-  //       //* Obtengamos el pospre origen a partir del sapiencia para contra validar la ruta:
-  //       const query = await this.pospreSapRepository.getPosPreSapienciaById(i.budgetPosition);
-  //       const posPreOriginId = Number(query?.budget?.id);
-  //       const getRouteId = await this.budgetRouteRepository.getBudgetForAdditions(i.projectId,
-  //         i.fundId,
-  //         posPreOriginId,
-  //         i.budgetPosition);
-  //       const routeId = Number(getRouteId?.id);
-  //       const toCreate = new AdditionsMovement();
+    }
 
-  //       toCreate.fill({
-  //         additionId: add.id,
-  //         type: i.type,
-  //         budgetRouteId: routeId,
-  //         value: i.value
-  //       });
+    //* Agregar cabecera de traslado
+    const addToHead = await this.transfersRepository.createTransfers({
 
-  //       await toCreate.save();
+      actAdminDistrict : transfer.headTransfer!.actAdminDistrict.trim().toUpperCase(),
+      actAdminSapiencia : transfer.headTransfer!.actAdminSapiencia.trim().toUpperCase(),
+      value : Number(totalTransfer.data),
+      observations : transfer.headTransfer!.observations,
+      userCreate : transfer.headTransfer!.userCreate,
+      dateCreate : transfer.headTransfer!.dateCreate,
+      userModify : transfer.headTransfer!.userModify,
+      dateModify : transfer.headTransfer!.dateModify
 
-  //     }
+    });
 
-  //   } else {
+    // const objAddToHead: ITransfers = {
 
-  //     return new ApiResponse(
-  //       addition,
-  //       EResponseCodes.FAIL,
-  //       "Ocurrio un error al intentar realizar la transacción."
-  //     );
+    //   actAdminDistrict : transfer.headTransfer!.actAdminDistrict.trim().toUpperCase(),
+    //   actAdminSapiencia : transfer.headTransfer!.actAdminSapiencia.trim().toUpperCase(),
+    //   value : Number(totalTransfer.data),
+    //   observations : transfer.headTransfer!.observations,
+    //   userCreate : transfer.headTransfer!.userCreate,
+    //   dateCreate : transfer.headTransfer!.dateCreate,
+    //   userModify : transfer.headTransfer!.userModify,
+    //   dateModify : transfer.headTransfer!.dateModify
 
-  //   }
+    // }
 
-  //   return new ApiResponse(
-  //     addition,
-  //     EResponseCodes.OK,
-  //     "¡Se ha guardado la información correctamente en el sistema!"
-  //   );
+    // console.log(objAddToHead);
 
-  // }
+    if(addToHead.id){
+
+      //* Agreguemos los detalles del traslado
+      for (let i of transfer.transferMovesGroups) {
+
+        for (let j of i.data) {
+
+          //Obtengamos primero PosPreOrigen para procesar en la ruta.
+          const q = await this.pospreSapRepository.getPosPreSapienciaById(j.budgetPosition);
+          const posPreOriginId = Number(q?.budget?.id);
+          const getRouteId = await this.budgetRouteRepository.getBudgetForAdditions(j.projectId,
+                                                                                    j.fundId,
+                                                                                    posPreOriginId,
+                                                                                    j.budgetPosition);
+
+          const routeId = Number(getRouteId?.id);
+          const toCreate = new TransfersMovement();
+
+          toCreate.fill({
+                          transferId : addToHead.id,
+                          type : j.type,
+                          budgetRouteId : routeId,
+                          value : j.value
+                        });
+
+          await toCreate.save();
+
+        }
+
+      }
+
+    }else{
+
+      return new ApiResponse(
+        transfer,
+        EResponseCodes.FAIL,
+        "Ocurrio un error al intentar realizar la transacción."
+      );
+
+    }
+
+    return new ApiResponse(
+      transfer,
+      EResponseCodes.OK,
+      "¡Se ha guardado la información correctamente en el sistema!"
+    );
+
+
+  }
+
+  async totalTransferCalculator(transfer: ITransfersWithMovements): Promise<ApiResponse<number>> {
+
+    let total: number = 0;
+
+    for (let i of transfer.transferMovesGroups) {
+
+      for (let j of i.data) {
+
+        //También podríamos con Origen
+        if( j.type === "Destino" ) total += j.value;
+
+      }
+
+    }
+
+    return new ApiResponse(
+      total,
+      EResponseCodes.OK,
+      "Devolviendo el total obtenido"
+    );
+
+  }
 
   // //? ACCIÓN DIRECTA PARA ACTUALIZAR LA ADICIÓN (AQUÍ YA NO HAY VALIDACIONES, SE ASUME QUE YA PASO POR EL VALIDADOR)
   // async executeUpdateAdditionWithMov(id: number, addition: IAdditionsWithMovements): Promise<ApiResponse<IAdditionsWithMovements>> {
@@ -668,5 +739,52 @@ export default class TransfersService implements ITransfersService {
   //   );
 
   // }
+
+  //Validación de que no se puede trasladasr de un proyecto de inversión a uno de funcionamiento.
+  async noPermitedInversionProyToFunctionalProy(i: ITransfersWithMovements | any): Promise<ApiResponse<string>> {
+
+    let arrayCards: string[] = [];
+    let bandInveProject: boolean = false; //Si detectamos que es proyecto de inversión.
+    let bandFuncProject: boolean = false; //Si detectamos que es proyecto de funcionamiento.
+
+    for (const iter of i.data) {
+
+      arrayCards.push(iter.idCard);
+
+      //?Debemos sacar el código del proyecto!
+      const resultProj = await this.projectRepository.getProjectById(iter.projectId);
+      const referenceCodeProject = resultProj?.projectId.toString();
+
+      if(iter.type === "Origen" && referenceCodeProject !== "9000000") bandInveProject = true;
+      if(iter.type === "Destino" && referenceCodeProject === "9000000") bandFuncProject = true;
+
+      // console.log("*************************")
+      // console.log(iter.idCard)
+      // console.log(referenceCodeProject)
+
+    }
+
+    console.log({bandInveProject , bandFuncProject});
+
+    if(bandInveProject && bandFuncProject){
+
+      return new ApiResponse(
+        `true@${arrayCards}`,
+        EResponseCodes.OK,
+        "¡Este traslado ¡NO cumple! con el NO TRASLADAR de PI a PF!"
+      );
+
+    }else{
+
+      arrayCards = [];
+      return new ApiResponse(
+        `false@${arrayCards}`,
+        EResponseCodes.OK,
+        "¡Este traslado cumple con el NO TRASLADAR de PI a PF!"
+      );
+
+    }
+
+  }
 
 }
