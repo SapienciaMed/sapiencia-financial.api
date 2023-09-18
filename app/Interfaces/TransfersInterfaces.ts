@@ -4,6 +4,7 @@ export interface ITransfers {
   id?: number;
   actAdminDistrict: string;
   actAdminSapiencia: string;
+  value: number;
   observations: string;
   userModify?: string;
   dateModify?: Date;

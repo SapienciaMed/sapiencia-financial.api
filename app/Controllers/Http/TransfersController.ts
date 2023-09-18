@@ -41,6 +41,8 @@ export default class TransfersController {
 
   }
 
+  //?VALIDACIÓN DE TRASLADO CON SUS MOVIMIENTOS EN PARALELO
+  //! IMPORTANTE => Este nos servirá para las validaciones que no se harán en FRONT.
   public async createTransfers({request, response}: HttpContextContract) {
 
     try {
@@ -60,12 +62,24 @@ export default class TransfersController {
 
   }
 
+  //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO
+  //! IMPORTANTE => ESTE REALIZARÁ LA ACCIÓN DE GUARDAR LUEGO VALIDADOS DATOS FRONT
   public async executeCreateTransfers({request, response}: HttpContextContract) {
 
-    console.log(request);
-    return response.badRequest(
-      new ApiResponse(null, EResponseCodes.INFO, "Hola desde executeCreateTransfers")
-    );
+    try {
+
+      const transfer = request.body() as ITransfersWithMovements;
+      return response.send(
+        await TransfersProvider.executeCreateTransfers(transfer)
+      );
+
+    } catch (error) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(error))
+      );
+
+    }
 
   }
 

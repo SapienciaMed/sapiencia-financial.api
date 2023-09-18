@@ -64,7 +64,6 @@ export default class AdditionsController {
 
   //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO
   //! IMPORTANTE => Este nos servirá para las validaciones que no se harán en FRONT.
-  //! IMPORTANTE! => Re usaremos este para poder validar también la edición
   public async createAdditions({ request, response }: HttpContextContract) {
 
       try {
