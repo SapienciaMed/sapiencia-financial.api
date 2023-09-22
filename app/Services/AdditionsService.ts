@@ -393,12 +393,12 @@ export default class AdditionsService implements IAdditionsService {
 
     // 2. buscar proyectos de inversion
 
-    const projectInvestmentList =
-      await this.strategicDirectionService.getProjectInvestmentByIds(
-        projectsVinculationList
-          .filter((p) => p.type === "Inversion")
-          .map((i) => i.id) || []
-      );
+    // const projectInvestmentList =
+    //   await this.strategicDirectionService.getProjectInvestmentByIds(
+    //     projectsVinculationList
+    //       .filter((p) => p.type === "Inversion")
+    //       .map((i) => i.id) || []
+    //   );
 
     const toSend: IProjectAdditionList[] = [];
 
