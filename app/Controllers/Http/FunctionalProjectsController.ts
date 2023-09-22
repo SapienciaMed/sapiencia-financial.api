@@ -1,6 +1,9 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { EResponseCodes } from '../../Constants/ResponseCodesEnum';
 import { ApiResponse } from '../../Utils/ApiResponses';
+import FunctionalProjectValidator from 'App/Validators/FunctionalProjectValidator';
+import FunctionalProjectRepository from '@ioc:core.FunctionalProjectProvider'
+import { IFunctionalProject } from 'App/Interfaces/FunctionalProjectInterfaces';
 
 export default class FunctionalProjectsController {
 
@@ -13,11 +16,14 @@ export default class FunctionalProjectsController {
 
   }
 
-  public async createFunctionalProjec({ request, response }: HttpContextContract) {
+  public async createFunctionalProject({ request, response }: HttpContextContract) {
 
-    console.log({request});
+    const data:IFunctionalProject = await request.validate(FunctionalProjectValidator)
+    const resp = await FunctionalProjectRepository.createFunctionalProject(data)
+
+
     return response.accepted(
-      new ApiResponse(null, EResponseCodes.OK, "Hola desde createFunctionalProjec")
+      new ApiResponse(resp, EResponseCodes.OK, "Hola desde createFunctionalProjec")
     );
 
   }
