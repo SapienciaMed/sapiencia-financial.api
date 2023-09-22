@@ -28,6 +28,11 @@ export default class extends BaseSchema {
         .comment("Numero del documento del ultimo usuario que hizo una modificacion");
 
       table
+        .string("ADC_TIPO", 15)
+        .notNullable()
+        .comment("Indicador  de tipo de movimiento (Disminucion / Adicion)");
+
+      table
         .datetime("ADC_FECHA_MODIFICO")
         .nullable()
         .comment("Fecha y hora de la última modificación");

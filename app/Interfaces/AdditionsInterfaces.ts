@@ -10,6 +10,7 @@ export interface IAdditionsMovements {
   fundId: number;
   budgetPosition: number;
   value: number;
+  typeMovement: string;
 }
 
 export interface IAdditions {
@@ -19,7 +20,8 @@ export interface IAdditions {
   userModify?: string;
   dateModify?: Date;
   userCreate?: string;
-  dateCreate?: DateTime
+  dateCreate?: DateTime,
+  typeMovement: string;
 }
 
 export interface IAdditionsWithMovements {
