@@ -53,6 +53,12 @@ Route.group(() => {
   Route.post("/create", "PosPreSapienciaController.createPosPreSapiencia");
   Route.put("/update/:id", "PosPreSapienciaController.updatePosPreSapiencia");
   Route.get("/get-all", "PosPreSapienciaController.getAllPosPreSapiencia");
+
+  //New
+  //TODO: Lo nuevo para ajustar todo el tema de los PosPre Sapiencia
+  Route.post("/get-list-pospresap-vinculation-paginated/:id" , "PosPreSapienciaController.getListPosPreSapVinculationPaginated");
+  Route.post("/get-by-id-pospresap-vinculation/:pospresap" , "PosPreSapienciaController.getPosPreSapVinculation");
+
 }).prefix("/api/v1/pospre-sapiencia");
 // .middleware("auth");
 
@@ -61,6 +67,12 @@ Route.group(() => {
   Route.post("/get-paginated", "VinculationMGAController.getVinculationMGAPaginated");
   Route.post("/create", "VinculationMGAController.createVinculationMGA");
   Route.post("/delete", "VinculationMGAController.deleteVinculationMGA");
+
+  //New
+  //TODO: Lo nuevo para ajustar todo el tema de las vinculaciones
+
+
+
 }).prefix("/api/v1/vinculation-mga");
 // .middleware("auth");
 
@@ -81,6 +93,10 @@ Route.group(() => {
 Route.group(() => {
   Route.post("/get-paginated", "ProjectsController.getProjectsPaginated");
   Route.get("/get-all", "ProjectsController.getAllProjects");
+
+  //New
+  Route.post("/get-projects-api-planning", "ProjectsController.getProjectsUpdateV2");
+
 }).prefix("/api/v1/projects");
 // .middleware("auth");
 

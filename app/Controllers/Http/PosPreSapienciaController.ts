@@ -48,4 +48,46 @@ export default class PosPreSapienciaController {
       );
     }
   }
+
+  //? ---------------------------------------------------------------------------
+  //? ---------- RE ESTRUCTURACIÓN DE TODO EL TEMA DE POSPRE SAPIENCIA ----------
+  //? ---------------------------------------------------------------------------
+
+  public async getListPosPreSapVinculationPaginated({ request, response }: HttpContextContract) {
+
+    try {
+
+      const { id } = request.params();
+      console.log({id});
+      // return response.send(await PosPreSapienciaProvider.getListPosPreSapVinculationPaginated(id));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  public async getPosPreSapVinculation({ request, response }: HttpContextContract) {
+
+    try {
+
+      const { pospresap } = request.params();
+      console.log({pospresap});
+      // return response.send(await PosPreSapienciaProvider.getPosPreSapVinculation(pospresap));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+
 }

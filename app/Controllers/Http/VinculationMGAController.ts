@@ -6,6 +6,7 @@ import { ApiResponse } from "App/Utils/ApiResponses";
 import VinculationMGAValidator from "App/Validators/VinculationMGAValidator";
 
 export default class VinculationMGAController {
+
     public async getVinculationMGAById({ request, response }: HttpContextContract) {
         try {
           const { id } = request.params();
@@ -16,7 +17,7 @@ export default class VinculationMGAController {
           );
         }
       }
-    
+
       public async getVinculationMGAPaginated({ request, response }: HttpContextContract) {
         try {
           const data = request.body() as IFiltersVinculationMGA;
@@ -27,7 +28,7 @@ export default class VinculationMGAController {
           );
         }
       }
-      
+
       public async createVinculationMGA({ request, response }: HttpContextContract) {
         try {
           const data = await request.validate(VinculationMGAValidator);
@@ -49,4 +50,11 @@ export default class VinculationMGAController {
           );
         }
       }
+
+      //? -------------------------------------------------------------------------
+      //? --------- RE ESTRUCTURACIÓN DE TODO EL TEMA DE VINCULACIÓN MGA ----------
+      //? -------------------------------------------------------------------------
+
+
+
 }
