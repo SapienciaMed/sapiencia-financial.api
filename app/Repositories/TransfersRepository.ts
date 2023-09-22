@@ -6,7 +6,7 @@ import { ITransfers, ITransfersFilters } from '../Interfaces/TransfersInterfaces
 export interface ITransfersRepository {
 
   getTransfersPaginated(filters: ITransfersFilters): Promise<IPagingData<ITransfers>>;
-  // createAdditions(addition: IAdditions): Promise<IAdditions>;
+  createTransfers(transfer: ITransfers): Promise<ITransfers>;
   // getAllAdditionsList(list: string): Promise<IAdditions[] | any>;
   // getAdditionById(id: number): Promise<IAdditionsWithMovements | any>;
 
@@ -18,7 +18,7 @@ export default class TransfersRepository implements ITransfersRepository {
   async getTransfersPaginated(filters: ITransfersFilters): Promise<IPagingData<ITransfers>> {
 
     const query = Transfer.query();
-    query.select('id', 'actAdminDistrict', 'actAdminSapiencia', 'observations');
+    query.select('id', 'actAdminDistrict', 'actAdminSapiencia', 'observations', 'value');
 
     query.preload('transferMove', (q) => {
       q.select('id', 'type', 'value', 'budgetRouteId');
@@ -51,16 +51,16 @@ export default class TransfersRepository implements ITransfersRepository {
     };
   }
 
-  //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO
-  // async createAdditions(addition: IAdditions): Promise<IAdditions | any> {
+  //?CREACIÓN DE TRASLADO - CABECERA
+  async createTransfers(transfer: ITransfers): Promise<ITransfers | any> {
 
-  //   const toCreate = new Additions();
+    const toCreate = new Transfer();
 
-  //   toCreate.fill({ ...addition });
-  //   await toCreate.save();
-  //   return toCreate.serialize() as IAdditions;
+    toCreate.fill({ ...transfer });
+    await toCreate.save();
+    return toCreate.serialize() as ITransfers;
 
-  // }
+  }
 
   //?OBTENER LISTADO GENERAL DE ADICIONES - CON PARAMETRO LIST DEFINIMOS QUE LISTADO MOSTRAR
   // async getAllAdditionsList(list: string): Promise<IAdditions[] | any> {

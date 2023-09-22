@@ -142,11 +142,11 @@ export default class AppProvider {
           new TransfersService.default(
             new TransfersRepository.default(),
             // new MovementTransferRepository.default(),
-            // new ProjectsRepository.default(),
-            // new FundsRepository.default(),
-            // new PosPreSapienciaRepository.default(),
-            // new BudgetsRepository.default(),
-            // new BudgetsRoutesRepository.default()
+            new ProjectsRepository.default(),
+            new FundsRepository.default(),
+            new PosPreSapienciaRepository.default(),
+            new BudgetsRepository.default(),
+            new BudgetsRoutesRepository.default()
           )
     );
 
