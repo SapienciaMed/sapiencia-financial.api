@@ -47,7 +47,7 @@ export default class FundsService implements IFundsService {
       return new ApiResponse(
         {} as IFunds,
         EResponseCodes.FAIL,
-        `Ya existe un consecutivo asociado a este Fondo.`
+        `Se ha encontrado un error, fondo ya existente.`
       );
     }
 

@@ -1,39 +1,41 @@
 // import { TransactionClientContract } from "@ioc:Adonis/Lucid/Database";
-// import { IAdditionsMovements } from "App/Interfaces/AdditionsInterfaces";
-// import AdditionsMovement from "App/Models/AdditionsMovement";
+import AdditionsMovement from '../Models/AdditionsMovement';
+import { IPagingData } from "App/Utils/ApiResponses";
+import { IAdditionsWithMovements } from '../Interfaces/AdditionsInterfaces';
 
 export interface IMovementAdditionRepository {
 
-  // createManyMovementsAddition(movements: IAdditionsMovements[],trx: TransactionClientContract): Promise<boolean>;
-  // createMovementsAddition(movement: IAdditionsMovements, additionId: number): Promise<boolean>;
+  getMovementById(id: number): Promise<IPagingData<IAdditionsWithMovements>>;
+  deleteMovementById(id: number): Promise<Boolean>;
 
 }
 
 export default class MovementAdditionRepository implements IMovementAdditionRepository {
 
-  constructor() {}
+  async getMovementById(id: number): Promise<IPagingData<IAdditionsWithMovements> | any> {
 
-  // async createManyMovementsAddition(movements: IAdditionsMovements[],trx: TransactionClientContract): Promise<boolean> {
+    const movements = AdditionsMovement.query().where("additionId" , id);
 
-  //   console.log(movements);
-  //   await AdditionsMovement.createMany(movements, { client: trx });
-  //   return true;
+    const page = 1;
+    const perPage = 1000000;
 
-  // }
+    const res = await movements.paginate(page, perPage);
+    const { data, meta } = res.serialize();
 
-  // async createMovementsAddition(movement: IAdditionsMovements, additionId: number): Promise<boolean>{
+    return {
+      array: data as IAdditionsWithMovements[],
+      meta,
+    };
 
-  //   console.log({movement , additionId})
-  //   const toCreate = new AdditionsMovement();
+  }
 
-  //   toCreate.fill({
-  //     additionId,
-  //     ...movement
-  //   });
+  async deleteMovementById(id: number): Promise<Boolean> {
 
-  //   await toCreate.save();
-  //   return true;
+    const movements = AdditionsMovement.query().where("additionId" , id).delete();
+    await movements;
 
-  // }
+    return true;
+
+  }
 
 }

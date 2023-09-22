@@ -37,13 +37,14 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
     }
 
     async createPosPreSapiencia(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia>> {
+
         const res = await this.posPreSapienciaRepository.createPosPreSapiencia(posPreSapiencia);
 
         if (!res) {
             return new ApiResponse(
                 {} as IPosPreSapiencia,
                 EResponseCodes.FAIL,
-                "Se ha encontrado un error en los datos, revisa Pospre Sapiencia"
+                "Se ha encontrado un error, el código sapiencia ya existe en el sistema"
             );
         }
 
@@ -57,7 +58,7 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
             return new ApiResponse(
                 {} as IPosPreSapiencia,
                 EResponseCodes.FAIL,
-                "Se ha encontrado un error en los datos, revisa Pospre Sapiencia"
+                "Se ha encontrado un error, el código sapiencia ya existe en el sistema"
             );
         }
 

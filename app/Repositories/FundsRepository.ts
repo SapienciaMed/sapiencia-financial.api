@@ -26,7 +26,7 @@ export default class FundsRepository implements IFundsRepository {
   async getFundsPaginated(filters: IFundsFilters): Promise<IPagingData<IFunds>> {
 
     const query = Funds.query();
-    query.orderBy("number", "asc");
+    query.orderBy("dateFrom" , 'desc');
 
     if (filters.number) {
       query.where("number", filters.number);
