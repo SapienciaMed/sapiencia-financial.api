@@ -499,7 +499,8 @@ export default class AdditionsService implements IAdditionsService{
       userCreate : addition.headAdditon!.userCreate,
       dateCreate : addition.headAdditon!.dateCreate,
       userModify : addition.headAdditon!.userModify,
-      dateModify : addition.headAdditon!.dateModify
+      dateModify : addition.headAdditon!.dateModify,
+      typeMovement : addition.headAdditon!.typeMovement
     });
 
     //* Agregar detalles de adición

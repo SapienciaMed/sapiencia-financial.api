@@ -24,6 +24,9 @@ export default class Addition extends BaseModel {
   @column({ columnName: "ADC_USUARIO_CREO", serializeAs: "userCreate" })
   public userCreate: string;
 
+  @column({ columnName: "ADC_TIPO", serializeAs: "typeMovement" })
+  public typeMovement: string;
+
   @column.dateTime({
     autoCreate: true,
     columnName: "ADC_FECHA_CREO",
