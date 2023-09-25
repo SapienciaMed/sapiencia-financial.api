@@ -4,6 +4,7 @@ import { IFiltersPosPreSapiencia } from "App/Interfaces/PosPreSapienciaInterface
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { ApiResponse } from "App/Utils/ApiResponses";
 import PosPreSapienciaValidator from "App/Validators/PosPreSapienciaValidator";
+import { IFiltersPosPreSapienciaMix } from '../../Interfaces/PosPreSapienciaInterfaces';
 
 export default class PosPreSapienciaController {
   public async getPosPreSapienciaById({ request, response }: HttpContextContract) {
@@ -57,9 +58,8 @@ export default class PosPreSapienciaController {
 
     try {
 
-      const { id } = request.params();
-      console.log({id});
-      // return response.send(await PosPreSapienciaProvider.getListPosPreSapVinculationPaginated(id));
+      const data = request.body() as IFiltersPosPreSapienciaMix;
+      return response.send(await PosPreSapienciaProvider.getListPosPreSapVinculationPaginated(data));
 
     } catch (err) {
 
@@ -71,13 +71,12 @@ export default class PosPreSapienciaController {
 
   }
 
-  public async getPosPreSapVinculation({ request, response }: HttpContextContract) {
+  public async createPosPreSapVinculation({ request, response }: HttpContextContract) {
 
     try {
 
-      const { pospresap } = request.params();
-      console.log({pospresap});
-      // return response.send(await PosPreSapienciaProvider.getPosPreSapVinculation(pospresap));
+      const body = await request.validate(PosPreSapienciaValidator);
+      return response.send(await PosPreSapienciaProvider.createPosPreSapVinculation(body));
 
     } catch (err) {
 

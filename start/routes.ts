@@ -56,8 +56,8 @@ Route.group(() => {
 
   //New
   //TODO: Lo nuevo para ajustar todo el tema de los PosPre Sapiencia
-  Route.post("/get-list-pospresap-vinculation-paginated/:id" , "PosPreSapienciaController.getListPosPreSapVinculationPaginated");
-  Route.post("/get-by-id-pospresap-vinculation/:pospresap" , "PosPreSapienciaController.getPosPreSapVinculation");
+  Route.post("/get-list-pospresap-vinculation-paginated" , "PosPreSapienciaController.getListPosPreSapVinculationPaginated");
+  Route.post("/create-pospresap-vinculation" , "PosPreSapienciaController.createPosPreSapVinculation");
 
 }).prefix("/api/v1/pospre-sapiencia");
 // .middleware("auth");
