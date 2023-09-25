@@ -19,15 +19,14 @@ export default class AdditionsRepository implements IAdditionsRepository{
 
   //?OBTENER PAGINADO Y FILTRADO LAS ADICIONES CON SUS MOVIMIENTOS
   async getAdditionsPaginated(filters: IAdditionsFilters): Promise<IPagingData<IAdditions>> {
-
     const query = Additions.query();
-    query.select('id', 'actAdminDistrict', 'actAdminSapiencia');
-
+    query.select('id', 'actAdminDistrict', 'actAdminSapiencia','typeMovement');
+    
     query.preload('additionMove' , (q) => {
       q.select('id' , 'type' , 'value', 'budgetRouteId');
     });
-
-
+    
+    
     if (filters.adminDistrict) {
       const criterial = filters.adminDistrict.toUpperCase();
       query.where("actAdminDistrict", 'LIKE', `%${criterial}%`);
@@ -37,12 +36,17 @@ export default class AdditionsRepository implements IAdditionsRepository{
       const criterial = filters.adminSapiencia.toUpperCase();
       query.where("actAdminSapiencia", 'LIKE', `%${criterial}%`);
     }
-
+    
+    if (filters.typeMovement) {
+      const criterial = filters.typeMovement.toUpperCase();
+      query.where("typeMovement", 'LIKE', `%${criterial}%`);
+    }
+    
     query.orderBy("id", "desc");
-
+    
     const res = await query.paginate(filters.page, filters.perPage);
-    const { data, meta } = res.serialize();
-
+    const { data, meta } = res.serialize();    
+   
     return {
       array: data as IAdditions[],
       meta,
