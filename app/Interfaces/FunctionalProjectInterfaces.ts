@@ -8,12 +8,12 @@ export interface IFunctionalProject {
   name: string;
   isActivated: boolean;
   exercise: number;
-  dateFrom: DateTime;
-  dateTo: DateTime;
-  budgetValue: number;
-  assignmentValue: number;
+  dateFrom: Date;
+  dateTo: Date;
+  budgetValue?: number;
+  assignmentValue?: number;
   userModify: string;
-  dateModify: DateTime;
+  dateModify: Date;
   userCreate: string;
   dateCreate: DateTime;
 
