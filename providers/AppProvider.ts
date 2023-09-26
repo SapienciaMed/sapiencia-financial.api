@@ -22,6 +22,7 @@ export default class AppProvider {
     const AdditionsService = await import("App/Services/AdditionsService");
     const TransfersService = await import("App/Services/TransfersService");
     const FunctionalProjectService = await import("App/Services/FunctionalProjectService");
+    const StrategicDirectionService = await import("App/Services/External/StrategicDirectionService");
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -146,6 +147,16 @@ export default class AppProvider {
             new BudgetsRepository.default(),
             new BudgetsRoutesRepository.default()
           )
+    );
+
+    //API EXTERNA
+    this.app.container.singleton(
+      "core.PlanningProvider",
+      () =>
+        new StrategicDirectionService.default(
+          new ProjectsRepository.default(),
+          new VinculationMGARepository.default()
+        )
     );
 
     this.app.container.singleton(
