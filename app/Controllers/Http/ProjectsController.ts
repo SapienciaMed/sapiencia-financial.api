@@ -1,4 +1,5 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+import PlanningProvider from "@ioc:core.PlanningProvider";
 import ProjectsProvider from "@ioc:core.ProjectsProvider";
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { IProjectFilters } from "App/Interfaces/ProjectsInterfaces";
@@ -26,4 +27,24 @@ export default class ProjectsController {
             );
         }
     }
+
+    //? --------------------------------------------------------------------------------
+    //? --------- RE ESTRUCTURACIÓN DE TODO EL TEMA DE PROYECTOS DE INVERSIÓN ----------
+    //? --------------------------------------------------------------------------------
+
+    public async getProjectsUpdateV2({ request, response }: HttpContextContract) {
+
+      try {
+
+        const data = request.body() as Array<number>
+        return response.send( await PlanningProvider.getProjectInvestmentByIds(data))
+
+      } catch (error) {
+        return response.badRequest(
+          new ApiResponse(null, EResponseCodes.FAIL, String(error))
+        );
+      }
+
+    }
+
 }

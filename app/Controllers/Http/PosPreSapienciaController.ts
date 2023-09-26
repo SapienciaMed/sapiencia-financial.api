@@ -4,6 +4,7 @@ import { IFiltersPosPreSapiencia } from "App/Interfaces/PosPreSapienciaInterface
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { ApiResponse } from "App/Utils/ApiResponses";
 import PosPreSapienciaValidator from "App/Validators/PosPreSapienciaValidator";
+import { IFiltersPosPreSapienciaMix } from '../../Interfaces/PosPreSapienciaInterfaces';
 
 export default class PosPreSapienciaController {
   public async getPosPreSapienciaById({ request, response }: HttpContextContract) {
@@ -48,4 +49,44 @@ export default class PosPreSapienciaController {
       );
     }
   }
+
+  //? ---------------------------------------------------------------------------
+  //? ---------- RE ESTRUCTURACIÓN DE TODO EL TEMA DE POSPRE SAPIENCIA ----------
+  //? ---------------------------------------------------------------------------
+
+  public async getListPosPreSapVinculationPaginated({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = request.body() as IFiltersPosPreSapienciaMix;
+      return response.send(await PosPreSapienciaProvider.getListPosPreSapVinculationPaginated(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  public async createPosPreSapVinculation({ request, response }: HttpContextContract) {
+
+    try {
+
+      const body = await request.validate(PosPreSapienciaValidator);
+      return response.send(await PosPreSapienciaProvider.createPosPreSapVinculation(body));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+
 }

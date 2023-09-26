@@ -10,6 +10,7 @@ export interface IAdditionsMovements {
   fundId: number;
   budgetPosition: number;
   value: number;
+  typeMovement: string;
 }
 
 export interface IAdditions {
