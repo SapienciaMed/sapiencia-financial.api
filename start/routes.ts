@@ -70,6 +70,8 @@ Route.group(() => {
 
   //New
   //TODO: Lo nuevo para ajustar todo el tema de las vinculaciones
+  Route.post("/get-detailed-activities-api-planning", "VinculationMGAController.getDetailedActivitiesV2");
+  Route.post("/create-vinculation-api-planning", "VinculationMGAController.createVinculationWithPlanningV2");
 
 
 
@@ -95,6 +97,7 @@ Route.group(() => {
   Route.get("/get-all", "ProjectsController.getAllProjects");
 
   //New
+  //TODO: Lo nuevo para ajustar todo el tema de proyectos de inversión
   Route.post("/get-projects-api-planning", "ProjectsController.getProjectsUpdateV2");
 
 }).prefix("/api/v1/projects");

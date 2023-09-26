@@ -151,9 +151,14 @@ export default class AppProvider {
           )
     );
 
+    //API EXTERNA
     this.app.container.singleton(
       "core.PlanningProvider",
-      () => new StrategicDirectionService.default(new ProjectsRepository.default())
+      () =>
+        new StrategicDirectionService.default(
+          new ProjectsRepository.default(),
+          new VinculationMGARepository.default()
+        )
     );
 
   }

@@ -13,7 +13,7 @@ export interface IPosPreSapienciaService {
 
   //TODO: Nuevos
   getListPosPreSapVinculationPaginated(filters: IFiltersPosPreSapienciaMix): Promise<ApiResponse<IPagingData<IPosPreSapiencia>>>;
-  createPosPreSapVinculation(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia>>;
+  createPosPreSapVinculation(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia | null>>;
 }
 
 export default class PosPreSapienciaService implements IPosPreSapienciaService {
@@ -85,23 +85,31 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
 
   }
 
-  async createPosPreSapVinculation(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia>> {
+  async createPosPreSapVinculation(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia | null>> {
 
     //?Verifiquemos el PosPre Sapi con la nueva mecánica:
     const posPreSap = posPreSapiencia.number;
     const searchPosPreSapi = await this.posPreSapienciaRepository.searchPosPreSapByNumber(posPreSap);
 
-    const res = await this.posPreSapienciaRepository.createPosPreSapVinculation(posPreSapiencia);
+    console.log({searchPosPreSapi});
 
-    if (!res) {
+    if(!searchPosPreSapi){
+
+      const res = await this.posPreSapienciaRepository.createPosPreSapVinculation(posPreSapiencia);
+
       return new ApiResponse(
-        {} as IPosPreSapiencia,
-        EResponseCodes.FAIL,
-        "Se ha encontrado un error, el código sapiencia ya existe en el sistema"
+        res,
+        EResponseCodes.OK,
+        "Pospre Sapiencia registrado correctamente."
       );
+
     }
 
-    return new ApiResponse(res, EResponseCodes.OK);
+    return new ApiResponse(
+      null,
+      EResponseCodes.FAIL,
+      "Se ha encontrado un error, el código sapiencia ya existe en el sistema"
+    );
 
   }
 

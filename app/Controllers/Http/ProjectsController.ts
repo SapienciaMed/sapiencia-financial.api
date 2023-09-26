@@ -28,6 +28,9 @@ export default class ProjectsController {
         }
     }
 
+    //? --------------------------------------------------------------------------------
+    //? --------- RE ESTRUCTURACIÓN DE TODO EL TEMA DE PROYECTOS DE INVERSIÓN ----------
+    //? --------------------------------------------------------------------------------
 
     public async getProjectsUpdateV2({ request, response }: HttpContextContract) {
 

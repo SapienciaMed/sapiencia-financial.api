@@ -17,6 +17,7 @@ export interface IPosPreSapienciaRepository {
     //TODO: Nuevos
     getListPosPreSapVinculationPaginated(filters: IFiltersPosPreSapienciaMix): Promise<IPagingData<IPosPreSapiencia>>;
     searchPosPreSapByNumber(posPreSap: string): Promise<boolean>;
+    createPosPreSapVinculation(posPreSapiencia: IPosPreSapiencia): Promise<IPosPreSapiencia | null>;
 }
 
 export default class PosPreSapienciaRepository implements IPosPreSapienciaRepository {
@@ -191,9 +192,29 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
 
   async searchPosPreSapByNumber(posPreSap: string): Promise<boolean> {
 
+    const queryPosPreSapi = PosPreSapiencia.query();
+    queryPosPreSapi.where("number", posPreSap);
 
+    const res = await queryPosPreSapi.paginate(1, 10);
+    const { data, meta } = res.serialize();
+    console.log({meta});
+    const element = data as IPosPreSapiencia[];
+
+    if(!element || element.length <= 0){
+      return false;
+    }
 
     return true;
+
+  }
+
+  async createPosPreSapVinculation(posPreSapiencia: IPosPreSapiencia): Promise<IPosPreSapiencia | null> {
+
+    const toCreate = new PosPreSapiencia();
+    toCreate.fill({ ...posPreSapiencia });
+    await toCreate.save();
+
+    return toCreate.serialize() as IPosPreSapiencia;
 
   }
 
