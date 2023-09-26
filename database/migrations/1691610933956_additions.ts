@@ -3,7 +3,7 @@ import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 export default class extends BaseSchema {
   protected tableName = 'ADC_ADICIONES'
 
-  public async up () {
+  public async up() {
     this.schema.createTable(this.tableName, (table) => {
 
       table.comment(
@@ -30,7 +30,7 @@ export default class extends BaseSchema {
       table
         .string("ADC_TIPO", 15)
         .notNullable()
-        .comment("Indicador  de tipo de movimiento (Disminucion / Adicion)");
+        .comment("Indicador de tipo de movimiento (Disminucion / Adicion)");
 
       table
         .datetime("ADC_FECHA_MODIFICO")
@@ -48,7 +48,7 @@ export default class extends BaseSchema {
     })
   }
 
-  public async down () {
+  public async down() {
     this.schema.dropTable(this.tableName)
   }
 }
