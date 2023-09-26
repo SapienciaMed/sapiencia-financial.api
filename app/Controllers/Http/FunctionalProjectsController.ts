@@ -7,11 +7,11 @@ import { IFunctionalProject } from 'App/Interfaces/FunctionalProjectInterfaces';
 
 export default class FunctionalProjectsController {
 
-  public async getFunctionalProjectPaginated({ request, response }: HttpContextContract) {
+  public async getFunctionalProjectPaginated({ response }: HttpContextContract) {
 
-    console.log({request});
+    const resp = await FunctionalProjectRepository.getFunctionalProjectPaginated()
     return response.accepted(
-      new ApiResponse(null, EResponseCodes.OK, "Hola desde getFunctionalProjectPaginated")
+      new ApiResponse(resp, EResponseCodes.OK, "Proyectos encontrados")
     );
 
   }
