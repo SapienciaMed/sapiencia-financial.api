@@ -1,4 +1,4 @@
-import { schema, CustomMessages, rules } from "@ioc:Adonis/Core/Validator";
+import { schema, CustomMessages } from "@ioc:Adonis/Core/Validator";
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 
 export default class FunctionalProjectValidator {
@@ -11,14 +11,14 @@ export default class FunctionalProjectValidator {
       name:schema.string(),
       isActivated:schema.boolean(),
       exercise:schema.number(),
-      dateFrom:schema.date(),
-      dateTo:schema.date(),
-      budgetValue:schema.number(),
-      assignmentValue:schema.number(),
-      userModify:schema.string(),
-      dateModify:schema.date(),
-      userCreate:schema.string(),
-      dateCreate:schema.date(),
+      dateFrom:schema.string(),
+      dateTo:schema.string(),
+      budgetValue:schema.number.optional(),
+      assignmentValue:schema.number.optional(),
+      userModify:schema.string.optional(),
+      dateModify:schema.string(),
+      userCreate:schema.string.optional(),
+      dateCreate:schema.string(),
   })
 
   /**

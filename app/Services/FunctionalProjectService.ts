@@ -33,6 +33,14 @@ export default class FunctionalProjectService implements IFunctionalProjectServi
           "Registro no encontrado"
       );
   }
+    if (Object(res).data?.errno==1062) {
+      return new ApiResponse(
+          {} as IFunctionalProject,
+          EResponseCodes.WARN,
+          "Projecto duplicado"
+      );
+  }
+    
     return new ApiResponse(res, EResponseCodes.OK);
 
 }

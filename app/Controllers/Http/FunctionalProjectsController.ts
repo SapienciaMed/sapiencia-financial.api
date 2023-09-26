@@ -23,7 +23,7 @@ export default class FunctionalProjectsController {
 
 
     return response.accepted(
-      new ApiResponse(resp, EResponseCodes.OK, "Hola desde createFunctionalProjec")
+      new ApiResponse(resp, EResponseCodes.OK, "¡Proyecto guardado exitosamente!")
     );
 
   }

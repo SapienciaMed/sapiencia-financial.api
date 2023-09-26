@@ -22,9 +22,19 @@ export default class FunctionalProjectRepository implements IFunctionalProjectRe
   
   async createFunctionalProject (functionalProject:IFunctionalProject):Promise<IFunctionalProject> {
 
-    return functionalProject;
-    //const res = await FunctionalProject.query();
-    //return res as unknown as IFunctionalProject;
+    try {
+    
+      const toCreate = new FunctionalProject();
+
+      toCreate.fill({ ...functionalProject });
+      await toCreate.save();
+      return toCreate.serialize() as IFunctionalProject;  
+
+    } catch (error) {
+      console.log({error})
+      return error;
+    }
+    
 
   }
 

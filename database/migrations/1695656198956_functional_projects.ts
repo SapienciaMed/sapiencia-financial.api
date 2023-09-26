@@ -38,16 +38,17 @@ export default class extends BaseSchema {
 
       table
         .integer("PFU_EJERCICIO")
-        .nullable()
+        .unique()
+        .notNullable()
         .comment("Año de ejercicio del proyecto");
 
       table
-        .timestamp("PFU_VALIDEZ_DESDE")
+        .string("PFU_VALIDEZ_DESDE")
         .nullable()
         .comment("Fecha de inicio de la validez");
 
       table
-        .timestamp("PFU_VALIDEZ_HASTA")
+        .string("PFU_VALIDEZ_HASTA")
         .nullable()
         .comment("Fecha de finalizacion de la validez");
 
@@ -67,7 +68,7 @@ export default class extends BaseSchema {
         .comment("Numero del documento del ultimo usuario que hizo una modificacion");
 
       table
-        .datetime("PFU_FECHA_MODIFICO")
+        .string("PFU_FECHA_MODIFICO")
         .nullable()
         .comment("Fecha y hora de la última modificación");
 
@@ -75,15 +76,12 @@ export default class extends BaseSchema {
         .string("PFU_USUARIO_CREO", 15)
         .notNullable()
         .comment("Número del documento del usuario que creó el registro");
-
-        table.timestamp('PFU_FECHA_CREO', { useTz: true })
+      
+        table
+        .string("PFU_FECHA_CREO")
         .notNullable()
         .comment("Fecha y hora de creación del registro");
-        /* table
-        .timestamp("PFU_FECHA_CREO")
-        .notNullable()
-        .comment("Fecha y hora de creación del registro"); */
-
+       
     })
   }
 

@@ -1,4 +1,3 @@
-import { DateTime } from "luxon";
 
 export interface IFunctionalProject {
 
@@ -8,13 +7,13 @@ export interface IFunctionalProject {
   name: string;
   isActivated: boolean;
   exercise: number;
-  dateFrom: Date;
-  dateTo: Date;
+  dateFrom: string;
+  dateTo: string;
   budgetValue?: number;
   assignmentValue?: number;
-  userModify: string;
-  dateModify: Date;
-  userCreate: string;
-  dateCreate: DateTime;
+  userModify?: string;
+  dateModify: string;
+  userCreate?: string;
+  dateCreate: string;
 
 }
