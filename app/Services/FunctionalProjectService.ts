@@ -7,7 +7,7 @@ import { EResponseCodes } from '../Constants/ResponseCodesEnum';
 
 export interface IFunctionalProjectService {
 
-  getAllFunctionalProjects(): Promise<ApiResponse<IFunctionalProject[]>>;
+  getFunctionalProjectPaginated(): Promise<ApiResponse<IFunctionalProject[]>>;
   createFunctionalProject(functionalProject:IFunctionalProject):Promise<ApiResponse<IFunctionalProject>>;
 
 }
@@ -16,9 +16,9 @@ export default class FunctionalProjectService implements IFunctionalProjectServi
 
   constructor(private functionalProjectRepository: IFunctionalProjectRepository) {}
   
-  async getAllFunctionalProjects(): Promise<ApiResponse<IFunctionalProject[]>> {
+  async getFunctionalProjectPaginated(): Promise<ApiResponse<IFunctionalProject[]>> {
 
-    const res = await this.functionalProjectRepository.getAllFunctionalProjects();
+    const res = await this.functionalProjectRepository.getFunctionalProjectPaginated();
     return new ApiResponse(res, EResponseCodes.OK);
 
   }
