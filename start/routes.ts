@@ -134,3 +134,7 @@ Route.group(() => {
   Route.post("/update-save/:id", "TransfersController.executeUpdateTransferWithMov"); //Como acción de guardado/actualizado
 }).prefix("/api/v1/transfers")
   // .middleware("auth");
+
+  Route.group(() => {
+    Route.post("/create", "FunctionalProjectsController.createFunctionalProject");
+  }).prefix("/api/v1/projectOperation")
