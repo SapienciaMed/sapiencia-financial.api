@@ -39,6 +39,7 @@ export interface IAdditionsFilters {
   adminSapiencia?: string;
   budgetId?: number;
   number?: string;
+  typeMovement?: string;
 }
 
 //* ***********************************

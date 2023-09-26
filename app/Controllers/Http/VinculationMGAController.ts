@@ -4,8 +4,11 @@ import { IFiltersVinculationMGA } from "App/Interfaces/VinculationMGAInterfaces"
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { ApiResponse } from "App/Utils/ApiResponses";
 import VinculationMGAValidator from "App/Validators/VinculationMGAValidator";
+import PlanningProvider from "@ioc:core.PlanningProvider";
+import { IVinculationMgaV2 } from '../../Interfaces/VinculationMGAInterfaces';
 
 export default class VinculationMGAController {
+
     public async getVinculationMGAById({ request, response }: HttpContextContract) {
         try {
           const { id } = request.params();
@@ -16,7 +19,7 @@ export default class VinculationMGAController {
           );
         }
       }
-    
+
       public async getVinculationMGAPaginated({ request, response }: HttpContextContract) {
         try {
           const data = request.body() as IFiltersVinculationMGA;
@@ -27,17 +30,17 @@ export default class VinculationMGAController {
           );
         }
       }
-      
-      public async createVinculationMGA({ request, response }: HttpContextContract) {
-        try {
-          const data = await request.validate(VinculationMGAValidator);
-          return response.send(await VinculationMGAProvider.createVinculationMGA(data));
-        } catch (err) {
-          return response.badRequest(
-            new ApiResponse(null, EResponseCodes.FAIL, String(err))
-          );
-        }
-      }
+
+      // public async createVinculationMGA({ request, response }: HttpContextContract) {
+      //   try {
+      //     const data = await request.validate(VinculationMGAValidator);
+      //     return response.send(await VinculationMGAProvider.createVinculationMGA(data));
+      //   } catch (err) {
+      //     return response.badRequest(
+      //       new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      //     );
+      //   }
+      // }
 
       public async deleteVinculationMGA({ request, response }: HttpContextContract) {
         try {
@@ -49,4 +52,41 @@ export default class VinculationMGAController {
           );
         }
       }
+
+      //? -------------------------------------------------------------------------
+      //? --------- RE ESTRUCTURACIÓN DE TODO EL TEMA DE VINCULACIÓN MGA ----------
+      //? -------------------------------------------------------------------------
+
+      public async getDetailedActivitiesV2({ request, response }: HttpContextContract) {
+
+        try {
+
+          const data = request.body() as Array<number>
+          return response.send( await PlanningProvider.getDetailedActivitiesByIds(data))
+
+        } catch (error) {
+          return response.badRequest(
+            new ApiResponse(null, EResponseCodes.FAIL, String(error))
+          );
+        }
+
+      }
+
+      public async createVinculationWithPlanningV2({ request, response }: HttpContextContract){
+
+        try {
+
+          const data = request.body() as IVinculationMgaV2;
+          return response.send(await VinculationMGAProvider.createVinculationWithPlanningV2(data));
+
+        } catch (err) {
+
+          return response.badRequest(
+            new ApiResponse(null, EResponseCodes.FAIL, String(err))
+          );
+
+        }
+
+      }
+
 }

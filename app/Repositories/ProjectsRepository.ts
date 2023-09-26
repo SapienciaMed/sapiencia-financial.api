@@ -5,6 +5,7 @@ import ProjectsVinculation from 'App/Models/ProjectsVinculation';
 
 export interface IProjectsRepository {
 
+  getInitialResource(): Promise<string>;
   getProjectsPaginated(filters: IProjectFilters): Promise<IPagingData<IProject>>;
   getAllProjects(): Promise<IProject[]>;
   getProjectsList(filters: IProjectAdditionFilters): Promise<IPagingData<IProjectAdditionList>>;
@@ -151,6 +152,12 @@ export default class ProjectsRepository implements IProjectsRepository {
       },
     ];
   };
+
+  async getInitialResource(): Promise<string> {
+
+    return "Iniciando Repositorio ...";
+
+  }
 
   async getProjectsPaginated(filters: IProjectFilters): Promise<IPagingData<IProject>> {
     const returnData = filters.id ? this.data.filter(item => item.id === filters.id) : this.data;

@@ -3,6 +3,8 @@ import PosPreSapiencia from "App/Models/PosPreSapiencia";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
 import { IProjectAdditionFilters, IPosPreSapienciaAdditionList } from '../Interfaces/AdditionsInterfaces';
+import { IFiltersPosPreSapienciaMix, IPosPreOrigen } from '../Interfaces/PosPreSapienciaInterfaces';
+import Budgets from '../Models/Budgets';
 
 export interface IPosPreSapienciaRepository {
     getPosPreSapienciaById(id:number): Promise<IPosPreSapiencia | null>;
@@ -11,6 +13,11 @@ export interface IPosPreSapienciaRepository {
     updatePosPreSapiencia(posPreSapiencia: IPosPreSapiencia, id: number): Promise<IPosPreSapiencia | null>;
     getAllPosPreSapiencia():Promise<IPosPreSapiencia[]>;
     getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<IPagingData<IPosPreSapienciaAdditionList>>;
+
+    //TODO: Nuevos
+    getListPosPreSapVinculationPaginated(filters: IFiltersPosPreSapienciaMix): Promise<IPagingData<IPosPreSapiencia>>;
+    searchPosPreSapByNumber(posPreSap: string): Promise<boolean>;
+    createPosPreSapVinculation(posPreSapiencia: IPosPreSapiencia): Promise<IPosPreSapiencia | null>;
 }
 
 export default class PosPreSapienciaRepository implements IPosPreSapienciaRepository {
@@ -119,6 +126,95 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
       array: data as IPosPreSapienciaAdditionList[],
       meta,
     };
+
+  }
+
+  //?Lo nuevo
+
+  async getListPosPreSapVinculationPaginated(filters: IFiltersPosPreSapienciaMix): Promise<IPagingData<IPosPreSapiencia>> {
+
+    //Traer los PosPre Sapi
+    const queryPosPreSapi = PosPreSapiencia.query();
+
+    //Traer PosPre Origen
+    const queryPosPreOrig = Budgets.query();
+
+    //* Por ID de PosPre Origen
+    if(filters.budgetIdOrig){
+
+      queryPosPreSapi.where("budgetId", filters.budgetIdOrig);
+
+    }
+
+    //* Por Number de PosPre Origen
+    if(filters.budgetNumberOrig){
+
+      queryPosPreOrig.where("number", filters.budgetNumberOrig);
+      const resQueryPosPreOrig = await queryPosPreOrig.paginate(1, 10);
+      const { data, meta } = resQueryPosPreOrig.serialize();
+      console.log({meta});
+      const parsingResult = data as IPosPreOrigen[];
+      let idPosPreOrig: number = 0;
+
+      parsingResult.forEach( r => {
+        idPosPreOrig = r.id!;
+      });
+
+      //Ahora si, ejecute consulta:
+      queryPosPreSapi.where("budgetId", idPosPreOrig);
+
+    }
+
+    //* Por ID de PosPre Sapi
+    if(filters.budgetIdSapi){
+
+      queryPosPreSapi.where("id", filters.budgetIdSapi);
+
+    }
+
+    //* Por Number de PosPre Sapi
+    if(filters.budgetNumberSapi){
+
+      queryPosPreSapi.where("number", filters.budgetNumberSapi);
+
+    }
+
+    await queryPosPreSapi.preload('budget');
+    const res = await queryPosPreSapi.paginate(filters.page, filters.perPage);
+    const { data, meta } = res.serialize();
+
+    return {
+      array: data as IPosPreSapiencia[],
+      meta,
+    };
+
+  }
+
+  async searchPosPreSapByNumber(posPreSap: string): Promise<boolean> {
+
+    const queryPosPreSapi = PosPreSapiencia.query();
+    queryPosPreSapi.where("number", posPreSap);
+
+    const res = await queryPosPreSapi.paginate(1, 10);
+    const { data, meta } = res.serialize();
+    console.log({meta});
+    const element = data as IPosPreSapiencia[];
+
+    if(!element || element.length <= 0){
+      return false;
+    }
+
+    return true;
+
+  }
+
+  async createPosPreSapVinculation(posPreSapiencia: IPosPreSapiencia): Promise<IPosPreSapiencia | null> {
+
+    const toCreate = new PosPreSapiencia();
+    toCreate.fill({ ...posPreSapiencia });
+    await toCreate.save();
+
+    return toCreate.serialize() as IPosPreSapiencia;
 
   }
 

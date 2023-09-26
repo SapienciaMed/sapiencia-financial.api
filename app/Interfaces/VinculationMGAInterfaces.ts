@@ -31,3 +31,15 @@ export interface ICrudVinculation{
   activities:number[];
   userCreate?: string;
 }
+
+//? Nuevo
+export interface IVinculationMgaV2 {
+
+  id?: number;
+  budgetId: number;
+  activityId: number;
+  consecutiveActivityDetailed: string;
+  detailedActivityId: number;
+  userCreate?: string;
+
+}
