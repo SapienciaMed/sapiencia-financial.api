@@ -1,9 +1,7 @@
-import { DateTime } from 'luxon'
 import { BaseModel, column, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm';
 import Entities from './Entities';
 
 export default class FunctionalProject extends BaseModel {
-
   public static table = "PFU_PROYECTOS_FUNCIONAMIENTO";
 
   @column({
@@ -14,7 +12,7 @@ export default class FunctionalProject extends BaseModel {
   public id: number;
 
   @column({
-    columnName: 'PPR_CODECP_ENTIDAD',
+    columnName: 'PFU_CODECP_ENTIDAD',
     serializeAs: "entityId"
   })
   public entityId: number;
@@ -47,13 +45,13 @@ export default class FunctionalProject extends BaseModel {
     columnName: "PFU_VALIDEZ_DESDE",
     serializeAs: "dateFrom"
   })
-  public dateFrom: Date;
+  public dateFrom: string;
 
   @column({
     columnName: "PFU_VALIDEZ_HASTA",
     serializeAs: "dateTo"
   })
-  public dateTo: Date;
+  public dateTo: string;
 
   @column({
     columnName: "PFU_VALOR_PRESUPUESTADO",
@@ -77,7 +75,7 @@ export default class FunctionalProject extends BaseModel {
     columnName: "PFU_FECHA_MODIFICO",
     serializeAs: "dateModify"
   })
-  public dateModify: Date;
+  public dateModify: string;
 
   @column({
     columnName: "PFU_USUARIO_CREO",
@@ -85,12 +83,11 @@ export default class FunctionalProject extends BaseModel {
   })
   public userCreate: string;
 
-  @column.dateTime({
-    autoCreate: true,
+  @column({
     columnName: "PFU_FECHA_CREO",
     serializeAs: "dateCreate",
   })
-  public dateCreate: DateTime;
+  public dateCreate: string;
 
   @hasOne(() => Entities, {
     localKey: "entityId",

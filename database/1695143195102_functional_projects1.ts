@@ -40,7 +40,7 @@ export default class extends BaseSchema {
         .comment("Indicador de que si el proyecto esta activo o no");
 
       table
-        .bigInteger("PFU_EJERCICIO")
+        .integer("PFU_EJERCICIO")
         .nullable()
         .comment("Año de ejercicio del proyecto");
 
@@ -79,10 +79,13 @@ export default class extends BaseSchema {
         .notNullable()
         .comment("Número del documento del usuario que creó el registro");
 
-      table
-        .timestamp("PFU_FECHA_CREO")
+        table.timestamp('PFU_FECHA_CREO', { useTz: true })
         .notNullable()
         .comment("Fecha y hora de creación del registro");
+        /* table
+        .timestamp("PFU_FECHA_CREO")
+        .notNullable()
+        .comment("Fecha y hora de creación del registro"); */
 
     })
   }
