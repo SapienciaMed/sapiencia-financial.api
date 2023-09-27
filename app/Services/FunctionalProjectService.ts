@@ -19,6 +19,12 @@ export default class FunctionalProjectService implements IFunctionalProjectServi
   async getFunctionalProjectPaginated(filters:IFunctionalProjectFilters): Promise<ApiResponse<IPagingData<IFunctionalProject>>> {
 
     const res = await this.functionalProjectRepository.getFunctionalProjectPaginated(filters);
+    res.array.map(e=>{
+     e.isActivated = e.isActivated ? true : false; 
+     e.number = e.number == "1" ? "9000000" : e.number; 
+     return e;
+    })
+    
     return new ApiResponse(res, EResponseCodes.OK);
 
   }

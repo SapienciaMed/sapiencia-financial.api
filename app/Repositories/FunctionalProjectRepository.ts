@@ -24,7 +24,7 @@ export default class FunctionalProjectRepository implements IFunctionalProjectRe
 
   async getFunctionalProjectPaginated(filters: IFunctionalProjectFilters): Promise<IPagingData<IFunctionalProject>> {
     const query = FunctionalProject.query();
-    query.orderBy("id", 'desc');
+    query.orderBy("id", 'desc').preload('entity');
     const res = await query.paginate(filters.page, filters.perPage);
 
     const { data, meta } = res.serialize();
