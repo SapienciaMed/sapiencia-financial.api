@@ -6,10 +6,12 @@ import { IApiPlanningProject,
          IApiPlanningDetailedActivities,
          IApiPlanningDetailedActivitiesSpecify } from '../../Interfaces/ApiPlanningInterfaces';
 import { IVinculationMGARepository } from '../../Repositories/VinculationMGARepository';
+import { EResponseCodes } from '../../Constants/ResponseCodesEnum';
+import { IInternalPagination } from '../../Interfaces/ApiPlanningInterfaces';
 
 export interface IPlanningService {
-  getProjectInvestmentByIds(ids: Array<number>): Promise<IApiSpecificPlanningProjectData[]>;
-  getDetailedActivitiesByIds(ids: Array<number>): Promise<IApiPlanningDetailedActivitiesSpecify[]>;
+  getProjectInvestmentByIds(ids: Array<number>): Promise<ApiResponse<IApiSpecificPlanningProjectData[]>>;
+  getDetailedActivitiesByIds(ids: Array<number>): Promise<ApiResponse<IApiPlanningDetailedActivitiesSpecify[]>>;
 }
 
 export default class StrategicDirectionService implements IPlanningService {
@@ -27,7 +29,7 @@ export default class StrategicDirectionService implements IPlanningService {
 
   }
 
-  public async getProjectInvestmentByIds(ids: Array<number>): Promise<IApiSpecificPlanningProjectData[]> {
+  public async getProjectInvestmentByIds(ids: Array<number>): Promise<ApiResponse<IApiSpecificPlanningProjectData[]>> {
 
     const requestResult: IApiSpecificPlanningProjectData[] = [];
     const urlConsumer = `/api/v1/project/get-by-filters`;
@@ -59,13 +61,17 @@ export default class StrategicDirectionService implements IPlanningService {
 
     })
 
-    return requestResult;
+    return new ApiResponse(
+      requestResult,
+      EResponseCodes.OK,
+      "Listado de Proyectos de Inversión desde Planeación."
+    );
 
   }
 
-  async getDetailedActivitiesByIds(ids: Array<number>): Promise<IApiPlanningDetailedActivitiesSpecify[]> {
+  async getDetailedActivitiesByIds(ids: Array<number>): Promise<ApiResponse<IApiPlanningDetailedActivitiesSpecify[] | any>> {
 
-    const urlConsumer = `/api/v1/activities/get-by-filters`;
+    const urlConsumer = `/api/v1/activities/get-paginated`;
 
     const dataUser = await this.axiosInstance
       .post<ApiResponse<IApiPlanningDetailedActivities[]>>
@@ -77,11 +83,12 @@ export default class StrategicDirectionService implements IPlanningService {
 
     const requestResult: IApiPlanningDetailedActivitiesSpecify[] = [];
     const result: IApiPlanningDetailedActivities | any = dataUser;
-    const data: IApiPlanningDetailedActivities[] = result.data.data;
+    const dataI: IApiPlanningDetailedActivities[] = result.data.data.array;
+    const dataJ: IInternalPagination = result.data.data.meta;
     const aiRepo = this.vinculationMGARepository.getInitialResource();
     console.log({ aiRepo });
 
-    data.forEach(res => {
+    dataI.forEach(res => {
 
       const objResult: IApiPlanningDetailedActivitiesSpecify = {
 
@@ -108,8 +115,38 @@ export default class StrategicDirectionService implements IPlanningService {
 
     })
 
-    return requestResult;
+    const paginationResult = {
+      array: requestResult,
+      meta: dataJ
+    }
+
+    return new ApiResponse(
+      paginationResult,
+      EResponseCodes.OK,
+      "Listado de Actividades Detalladas con su Actividad General desde Planeación."
+    );
 
   }
+
+  // async getDetailedActivitiesNoUseOnPosPreOrig(ids: Array<number>, idPosPreOrg: number): Promise<ApiResponse<IApiPlanningDetailedActivitiesSpecify[] | any>> {
+
+  //   const urlConsumer = `/api/v1/activities/get-paginated`;
+
+  //   const dataUser = await this.axiosInstance
+  //     .post<ApiResponse<IApiPlanningDetailedActivities[]>>
+  //     (urlConsumer, ids, {
+  //       headers: {
+  //         Authorization: process.env.CURRENT_AUTHORIZATION,
+  //       }
+  //     });
+
+  //   const requestResult: IApiPlanningDetailedActivitiesSpecify[] = [];
+  //   const result: IApiPlanningDetailedActivities | any = dataUser;
+  //   const dataI: IApiPlanningDetailedActivities[] = result.data.data.array;
+  //   const dataJ: IInternalPagination = result.data.data.meta;
+  //   const aiRepo = this.vinculationMGARepository.getInitialResource();
+  //   console.log({ aiRepo });
+
+  // }
 
 }

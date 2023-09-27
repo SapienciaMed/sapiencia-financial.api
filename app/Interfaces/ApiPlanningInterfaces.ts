@@ -1,3 +1,18 @@
+
+export interface IInternalPagination {
+
+  total: number,
+  per_page: number,
+  current_page: number,
+  last_page: number,
+  first_page: number,
+  first_page_url: string,
+  last_page_url: string,
+  next_page_url: string,
+  previous_page_url: string
+
+}
+
 export interface IProjectFilters {
   idList?: number[]
   codeList?: string[]
@@ -97,6 +112,8 @@ export interface IApiPlanningDetailedActivitiesSpecify {
   productDescriptionMGA: string;        // Descripción Producto
   codeConsecutiveActivityMga: string;   // Consecutivo Código Actividad
   activityDescriptionMGA: string;       // Descripción Actividad
+
+  meta?: IInternalPagination
 
 }
 
