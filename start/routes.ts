@@ -155,6 +155,8 @@ Route.group(() => {
   // .middleware("auth");
 
   Route.group(() => {
-    Route.get("/get-all-projects", "FunctionalProjectsController.getFunctionalProjectPaginated");
+    Route.get("/get-by-id/:id", "FunctionalProjectsController.getFunctionalProjectById");
+    Route.post("/get-paginated", "FunctionalProjectsController.getFunctionalProjectPaginated");
     Route.post("/create", "FunctionalProjectsController.createFunctionalProject");
+    Route.post("/update-save/:id", "FunctionalProjectsController.updateFunctionalProject");
   }).prefix("/api/v1/projectOperation")

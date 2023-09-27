@@ -17,3 +17,8 @@ export interface IFunctionalProject {
   dateCreate: string;
 
 }
+
+export interface IFunctionalProjectFilters {
+  page: number;
+  perPage: number;
+}

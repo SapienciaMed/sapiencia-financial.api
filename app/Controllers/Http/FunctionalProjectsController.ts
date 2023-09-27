@@ -3,16 +3,21 @@ import { EResponseCodes } from '../../Constants/ResponseCodesEnum';
 import { ApiResponse } from '../../Utils/ApiResponses';
 import FunctionalProjectValidator from 'App/Validators/FunctionalProjectValidator';
 import FunctionalProjectRepository from '@ioc:core.FunctionalProjectProvider'
-import { IFunctionalProject } from 'App/Interfaces/FunctionalProjectInterfaces';
+import { IFunctionalProject, IFunctionalProjectFilters } from 'App/Interfaces/FunctionalProjectInterfaces';
 
 export default class FunctionalProjectsController {
 
-  public async getFunctionalProjectPaginated({ response }: HttpContextContract) {
+  public async getFunctionalProjectPaginated({ request, response }: HttpContextContract) {
+    
+    try {
+      const data = request.body() as IFunctionalProjectFilters;
+      return response.send(await FunctionalProjectRepository.getFunctionalProjectPaginated(data));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }  
 
-    const resp = await FunctionalProjectRepository.getFunctionalProjectPaginated()
-    return response.accepted(
-      new ApiResponse(resp, EResponseCodes.OK, "Proyectos encontrados")
-    );
 
   }
 
@@ -28,21 +33,29 @@ export default class FunctionalProjectsController {
 
   }
 
-  public async getFunctionalProjecById({ request, response }: HttpContextContract) {
+  public async getFunctionalProjectById({ request, response }: HttpContextContract) {
 
-    console.log({request});
-    return response.accepted(
-      new ApiResponse(null, EResponseCodes.OK, "Hola desde getFunctionalProjecById")
-    );
+    try {
+      const { id } = request.params();
+      return response.send(await FunctionalProjectRepository.getFunctionalProjectById(id));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
 
   }
+  public async updateFunctionalProject({ request, response }: HttpContextContract) {
 
-  public async updateFunctionalProjec({ request, response }: HttpContextContract) {
-
-    console.log({request});
-    return response.accepted(
-      new ApiResponse(null, EResponseCodes.OK, "Hola desde updateFunctionalProjec")
-    );
+    try {
+      const { id } = request.params();
+      const data = await request.validate(FunctionalProjectValidator);
+      return response.send(await FunctionalProjectRepository.updateFunctionalProject(data, id));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
 
   }
 
