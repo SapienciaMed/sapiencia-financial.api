@@ -16,9 +16,9 @@ export default class FunctionalProjectValidator {
       budgetValue:schema.number.optional(),
       assignmentValue:schema.number.optional(),
       userModify:schema.string.optional(),
-      dateModify:schema.string(),
+      dateModify:schema.string.optional(),
       userCreate:schema.string.optional(),
-      dateCreate:schema.string(),
+      dateCreate:schema.string.optional(),
   })
 
   /**

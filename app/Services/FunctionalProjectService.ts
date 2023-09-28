@@ -20,7 +20,7 @@ export default class FunctionalProjectService implements IFunctionalProjectServi
 
     const res = await this.functionalProjectRepository.getFunctionalProjectPaginated(filters);
     res.array.map(e=>{
-     e.isActivated = e.isActivated ? true : false; 
+     Object(e).isActivatedDescription = e.isActivated ? 'Activo' : 'Inactivo'; 
      e.number = e.number == "1" ? "9000000" : e.number; 
      return e;
     })
@@ -66,7 +66,7 @@ async getFunctionalProjectById(id: number): Promise<ApiResponse<IFunctionalProje
 
 async updateFunctionalProject(fund: IFunctionalProject, id: number): Promise<ApiResponse<IFunctionalProject>> {
   const res = await this.functionalProjectRepository.updateFunctionalProject(fund, id);
-
+  
   if (!res) {
     return new ApiResponse(
       {} as IFunctionalProject,

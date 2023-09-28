@@ -22,10 +22,10 @@ export default class FunctionalProjectsController {
   }
 
   public async createFunctionalProject({ request, response }: HttpContextContract) {
-
+    const now = new Date();
     const data:IFunctionalProject = await request.validate(FunctionalProjectValidator)
+    data.dateCreate = `${now}`
     const resp = await FunctionalProjectRepository.createFunctionalProject(data)
-
 
     return response.accepted(
       new ApiResponse(resp, EResponseCodes.OK, "¡Proyecto guardado exitosamente!")
@@ -50,7 +50,12 @@ export default class FunctionalProjectsController {
     try {
       const { id } = request.params();
       const data = await request.validate(FunctionalProjectValidator);
-      return response.send(await FunctionalProjectRepository.updateFunctionalProject(data, id));
+      
+      const resp =  await FunctionalProjectRepository.updateFunctionalProject(data, id);
+      return response.accepted(
+        new ApiResponse(resp, EResponseCodes.OK, "¡Proyecto guardado exitosamente!")
+      );
+    
     } catch (err) {
       return response.badRequest(
         new ApiResponse(null, EResponseCodes.FAIL, String(err))
