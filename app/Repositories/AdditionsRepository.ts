@@ -88,7 +88,8 @@ export default class AdditionsRepository implements IAdditionsRepository{
                                 .where("id", id)
                                 .select("id",
                                         "actAdminDistrict",
-                                        "actAdminSapiencia");
+                                        "actAdminSapiencia",
+                                        "typeMovement");
 
     const details = await AdditionsMovement.query().where("additionId", id)
       .preload("budgetRoute", (q1) => {
