@@ -1,26 +1,73 @@
 import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
-import { EResponseCodes } from "../Constants/ResponseCodesEnum";
 import { IProject, IProjectFilters } from "App/Interfaces/ProjectsInterfaces";
-import { IProjectsRepository } from "App/Repositories/ProjectsRepository";
+import { IPlanningService } from "./External/StrategicDirectionService";
+import { IFunctionalAreaRepository } from "../Repositories/FunctionalAreaRepository";
+import { IProjectAdditionList } from "App/Interfaces/AdditionsInterfaces";
+import { EProjectTypes } from "App/Constants/ProjectsEnums";
+import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 
 export interface IProjectsService {
-    getProjectsPaginated(filters: IProjectFilters): Promise<ApiResponse<IPagingData<IProject>>>;
-    getAllProjects(): Promise<ApiResponse<IProject[]>>;
+  getAllProjects(): Promise<ApiResponse<IProjectAdditionList[]>>;
+  getUnrelatedProjects(
+    filters: IProjectFilters
+  ): Promise<ApiResponse<IPagingData<IProject>>>;
 }
 
 export default class ProjectsService implements IProjectsService {
-    constructor(private projectsRepository: IProjectsRepository) { }
+  constructor(
+    private planningService: IPlanningService,
+    private functionalAreaRepository: IFunctionalAreaRepository
+  ) {}
 
-    async getProjectsPaginated(
-        filters: IProjectFilters
-    ): Promise<ApiResponse<IPagingData<IProject>>> {
-        const res = await this.projectsRepository.getProjectsPaginated(filters);
+  async getAllProjects(): Promise<ApiResponse<IProjectAdditionList[]>> {
+    const toReturn: IProjectAdditionList[] = [];
 
-        return new ApiResponse(res, EResponseCodes.OK);
+    const allProjects =
+      await this.functionalAreaRepository.getAllProjectFunctionalArea();
+
+    if (allProjects.find((i) => i.type == EProjectTypes.investment)) {
+      const list = allProjects
+        .filter((i) => i.type == EProjectTypes.investment)
+        .map((i) => i.investmentProjectId);
+
+      const res = await this.planningService.getProjectByFilters({
+        idList: list,
+      });
+
+      allProjects.forEach((vProject) => {
+        const iProject = res.data.find(
+          (i) => i.id == vProject.investmentProjectId
+        );
+
+        if (vProject.type == EProjectTypes.investment && iProject)
+          toReturn.push({
+            id: Number(vProject.id),
+            functionalAreaId: vProject.functionalAreaId,
+            projectId: iProject.projectCode,
+            budgetValue: iProject.plannedValue,
+            linked: vProject.linked,
+            areaFuntional: vProject.areaFuntional,
+            conceptProject: iProject.name,
+            assignmentValue: iProject.assignmentValue,
+            type: vProject.type,
+          });
+      });
     }
 
-    async getAllProjects(): Promise<ApiResponse<IProject[]>> {
-        const res = await this.projectsRepository.getAllProjects();
-        return new ApiResponse(res, EResponseCodes.OK);
-    }
+    return new ApiResponse(toReturn, EResponseCodes.OK);
+  }
+
+  async getUnrelatedProjects(
+    filters: IProjectFilters
+  ): Promise<ApiResponse<IPagingData<IProject>>> {
+    const proyectsIds =
+      await this.functionalAreaRepository.getAllInvestmentProjectIds();
+
+    return await this.planningService.getProjectInvestmentPaginated({
+      nameOrCode: filters.id,
+      page: filters.page,
+      perPage: filters.perPage,
+      xcludeIds: proyectsIds,
+    });
+  }
 }

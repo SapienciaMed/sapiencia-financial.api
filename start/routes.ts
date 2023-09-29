@@ -100,13 +100,17 @@ Route.group(() => {
 Route.group(() => {
   Route.post("/get-paginated", "ProjectsController.getProjectsPaginated");
   Route.get("/get-all", "ProjectsController.getAllProjects");
+  Route.post("/get-unrelated-projects", "ProjectsController.getUnrelatedProjects");
 
+  
   //New
   //TODO: Lo nuevo para ajustar todo el tema de proyectos de inversión
   Route.post("/get-projects-api-planning", "ProjectsController.getProjectsUpdateV2");
 
 }).prefix("/api/v1/projects");
 // .middleware("auth");
+
+
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "ManagementCenterController.getManagementCenterById");
@@ -129,7 +133,6 @@ Route.group(() => {
 
 Route.group(() => {
   Route.post("/get-paginated", "AdditionsController.getAdditionsPaginated");
-  Route.post("/get-projects", "AdditionsController.getProjectsList");
   Route.post("/get-funds", "AdditionsController.getFundsList");
   Route.post("/get-pospre", "AdditionsController.getPosPreList");
   Route.post("/get-pospre-sapiencia", "AdditionsController.getPosPreSapienciaList");

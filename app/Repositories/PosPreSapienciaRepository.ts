@@ -1,7 +1,6 @@
-import { IPosPreSapiencia, IFiltersPosPreSapiencia } from "App/Interfaces/PosPreSapienciaInterfaces";
+import { IPosPreSapiencia } from "App/Interfaces/PosPreSapienciaInterfaces";
 import PosPreSapiencia from "App/Models/PosPreSapiencia";
 import { IPagingData } from "App/Utils/ApiResponses";
-import { DateTime } from "luxon";
 import { IProjectAdditionFilters, IPosPreSapienciaAdditionList } from '../Interfaces/AdditionsInterfaces';
 import { IFiltersPosPreSapienciaMix, IPosPreOrigen } from '../Interfaces/PosPreSapienciaInterfaces';
 import Budgets from '../Models/Budgets';

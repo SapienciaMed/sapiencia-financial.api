@@ -24,8 +24,8 @@ export interface IApiPlanningProject {
   id: number;
   user: string;
   status: boolean;
-  bpin: string | null;
-  project: string | null;
+  bpin: string;
+  project: string;
   dateFrom: string | null;
   dateTo: string | null;
   process: number | null;

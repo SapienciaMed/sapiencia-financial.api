@@ -1,13 +1,19 @@
 import { DateTime } from "luxon";
+import { IFunctionalArea } from "./FunctionalAreaInterfaces";
 
 export interface IProjectsVinculation {
   id?: number;
-  functionalAreaId?: number,
-  projectId: string,
+  functionalAreaId: number;
+  projectId: string;
   budgetValue: number;
   linked: boolean;
+  type: string;
+  investmentProjectId: number;
+  operationProjectId: number;
   userCreate?: string;
   dateCreate?: DateTime;
+
+  areaFuntional?: IFunctionalArea
 }
 
 export interface IProjectsVinculate {

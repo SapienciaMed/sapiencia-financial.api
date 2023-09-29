@@ -61,11 +61,16 @@ export interface IProjectAddition {
 export interface IProjectAdditionList {
   id : number;
   functionalAreaId : number;
-  projectId : number;
+  projectId : string;
   budgetValue : number;
   linked : boolean;
   areaFuntional?: IFunctionalAreaAddition
+  conceptProject?: string;
+  assignmentValue: number
+  type?: string;
 }
+
+
 
 export interface IEntitiesAddition {
   id: number;

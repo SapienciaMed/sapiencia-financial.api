@@ -1,3 +1,4 @@
+import { EProjectTypes } from "App/Constants/ProjectsEnums";
 import {
   IFunctionalArea,
   IFunctionalAreaFilters,
@@ -23,12 +24,18 @@ export interface IFunctionalAreaRepository {
   ): Promise<IPagingData<IProjectsVinculation>>;
   getAllFunctionalAreas():Promise<IFunctionalArea[]>;
   getFunctionalAreaByNumber(number: string): Promise<IPagingData<IFunctionalArea>>;
+  getAllInvestmentProjectIds(): Promise<number[]>
 
 }
 
 export default class FunctionalAreaRepository
   implements IFunctionalAreaRepository {
   constructor() { }
+
+  async getAllInvestmentProjectIds(): Promise<number[]> {
+    const res = await ProjectsVinculation.query().where('type', EProjectTypes.investment)
+    return res.map(i=> i.investmentProjectId)
+  }
 
   async getFunctionalAreaById(id: number): Promise<IFunctionalArea | null> {
     const res = await FunctionalArea.find(id);
@@ -123,7 +130,7 @@ export default class FunctionalAreaRepository
   }
 
   async getAllProjectFunctionalArea():Promise<IProjectsVinculation[]> {
-    const res = await ProjectsVinculation.query();
+    const res = await ProjectsVinculation.query().preload("areaFuntional");
     return res as IProjectsVinculation[];
   }
 
