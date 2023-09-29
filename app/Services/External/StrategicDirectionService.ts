@@ -398,4 +398,15 @@ export default class StrategicDirectionService implements IPlanningService {
 
   }
 
+  //?Obtengamos listado de todos los proyectos (Incluyendo Proyectos Funcionales).
+
+
+  //?Obtengamos listado de proyectos que estén vinculados al área funcional (Incluyendo Proyectos Funcionales).
+
+
+  //?Obtengamos listado de proyectos que no estén vinculadas al área funcional (Incluyendo Proyectos Funcionales).
+
+
+
+
 }

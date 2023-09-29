@@ -102,8 +102,11 @@ Route.group(() => {
   Route.get("/get-all", "ProjectsController.getAllProjects");
 
   //New
-  //TODO: Lo nuevo para ajustar todo el tema de proyectos de inversión
+  //TODO: Lo nuevo para ajustar todo el tema de proyectos de inversión desde API Externa
   Route.post("/get-projects-api-planning", "ProjectsController.getProjectsUpdateV2");
+
+  Route.post("/get-projects-api-planning-no-functionalarea", "ProjectsController.getProjectsNoUseOnFunctionalArea");
+  Route.post("/get-projects-api-planning-yes-functionalarea", "ProjectsController.getProjectsYesUseOnFunctionalArea");
 
 }).prefix("/api/v1/projects");
 // .middleware("auth");
