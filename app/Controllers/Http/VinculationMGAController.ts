@@ -1,92 +1,150 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+
 import VinculationMGAProvider from "@ioc:core.VinculationMGAProvider";
-import { IFiltersVinculationMGA } from "App/Interfaces/VinculationMGAInterfaces";
+
+import {
+  IFiltersVinculationMGA,
+  IVinculationMgaWithMultipleV2
+} from "App/Interfaces/VinculationMGAInterfaces";
+
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { ApiResponse } from "App/Utils/ApiResponses";
-import VinculationMGAValidator from "App/Validators/VinculationMGAValidator";
+// import VinculationMGAValidator from "App/Validators/VinculationMGAValidator";
 import PlanningProvider from "@ioc:core.PlanningProvider";
-import { IVinculationMgaV2 } from '../../Interfaces/VinculationMGAInterfaces';
+import { IDesvinculationMgaWithMultipleV2 } from '../../Interfaces/VinculationMGAInterfaces';
 
 export default class VinculationMGAController {
 
-    public async getVinculationMGAById({ request, response }: HttpContextContract) {
-        try {
-          const { id } = request.params();
-          return response.send(await VinculationMGAProvider.getVinculationMGAById(id));
-        } catch (err) {
-          return response.badRequest(
-            new ApiResponse(null, EResponseCodes.FAIL, String(err))
-          );
-        }
-      }
+  public async getVinculationMGAById({ request, response }: HttpContextContract) {
+    try {
+      const { id } = request.params();
+      return response.send(await VinculationMGAProvider.getVinculationMGAById(id));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
 
-      public async getVinculationMGAPaginated({ request, response }: HttpContextContract) {
-        try {
-          const data = request.body() as IFiltersVinculationMGA;
-          return response.send(await VinculationMGAProvider.getVinculationMGAPaginated(data));
-        } catch (err) {
-          return response.badRequest(
-            new ApiResponse(null, EResponseCodes.FAIL, String(err))
-          );
-        }
-      }
+  public async getVinculationMGAPaginated({ request, response }: HttpContextContract) {
+    try {
+      const data = request.body() as IFiltersVinculationMGA;
+      return response.send(await VinculationMGAProvider.getVinculationMGAPaginated(data));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
 
-      // public async createVinculationMGA({ request, response }: HttpContextContract) {
-      //   try {
-      //     const data = await request.validate(VinculationMGAValidator);
-      //     return response.send(await VinculationMGAProvider.createVinculationMGA(data));
-      //   } catch (err) {
-      //     return response.badRequest(
-      //       new ApiResponse(null, EResponseCodes.FAIL, String(err))
-      //     );
-      //   }
-      // }
+  //? -------------------------------------------------------------------------
+  //? --------- RE ESTRUCTURACIÓN DE TODO EL TEMA DE VINCULACIÓN MGA ----------
+  //? -------------------------------------------------------------------------
 
-      public async deleteVinculationMGA({ request, response }: HttpContextContract) {
-        try {
-          const data = await request.validate(VinculationMGAValidator);
-          return response.send(await VinculationMGAProvider.deleteVinculationMGA(data));
-        } catch (err) {
-          return response.badRequest(
-            new ApiResponse(null, EResponseCodes.FAIL, String(err))
-          );
-        }
-      }
+  //? Obtenga todas las actividades detallas de planeación
+  public async getDetailedActivitiesV2({ request, response }: HttpContextContract) {
 
-      //? -------------------------------------------------------------------------
-      //? --------- RE ESTRUCTURACIÓN DE TODO EL TEMA DE VINCULACIÓN MGA ----------
-      //? -------------------------------------------------------------------------
+    try {
 
-      public async getDetailedActivitiesV2({ request, response }: HttpContextContract) {
+      const data = request.body() as Array<number>
+      return response.send(await PlanningProvider.getDetailedActivitiesByIds(data))
 
-        try {
+    } catch (error) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(error))
+      );
+    }
 
-          const data = request.body() as Array<number>
-          return response.send( await PlanningProvider.getDetailedActivitiesByIds(data))
+  }
 
-        } catch (error) {
-          return response.badRequest(
-            new ApiResponse(null, EResponseCodes.FAIL, String(error))
-          );
-        }
+  //? Obtenga actividades detalladas de Planación << NO >> asociadas al PosPre Origen proporcionado
+  public async getDetailedActivitiesNoUseOnPosPre({ request, response }: HttpContextContract) {
 
-      }
+    try {
 
-      public async createVinculationWithPlanningV2({ request, response }: HttpContextContract){
+      const { pospreorgid } = request.params();
+      const data = request.body() as Array<number>
+      return response.send(await PlanningProvider.getDetailedActivitiesNoUseOnPosPre(data, pospreorgid))
 
-        try {
+    } catch (error) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(error))
+      );
+    }
 
-          const data = request.body() as IVinculationMgaV2;
-          return response.send(await VinculationMGAProvider.createVinculationWithPlanningV2(data));
+  }
 
-        } catch (err) {
+  //? Obtenga actividades detalladas de Planación << SI >> asociadas al PosPre Origen proporcionado
+  public async getDetailedActivitiesYesUseOnPosPre({ request, response }: HttpContextContract) {
 
-          return response.badRequest(
-            new ApiResponse(null, EResponseCodes.FAIL, String(err))
-          );
+    try {
 
-        }
+      const { pospreorgid } = request.params();
+      const data = request.body() as Array<number>
+      return response.send(await PlanningProvider.getDetailedActivitiesYesUseOnPosPre(data, pospreorgid))
 
-      }
+    } catch (error) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(error))
+      );
+    }
+
+  }
+
+  //? Creación de vinculación MGA
+  public async createVinculationWithPlanningV2({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = request.body() as IVinculationMgaWithMultipleV2;
+      return response.send(await VinculationMGAProvider.createVinculationWithPlanningV2(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  //? Eliminación de vinculación MGA
+  public async deleteVinculationWithPlanningV2({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = request.body() as IDesvinculationMgaWithMultipleV2;
+      return response.send(await VinculationMGAProvider.deleteVinculationWithPlanningV2(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  //? Obtener Vinculación MGA por ID
+  public async getVinculationDetailedActivitiesV2ById({ request, response }: HttpContextContract) {
+
+    try {
+
+      const { id } = request.params();
+      return response.send(await PlanningProvider.getVinculationDetailedActivitiesV2ById(id));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+
 
 }

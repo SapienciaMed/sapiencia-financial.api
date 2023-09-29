@@ -2,12 +2,15 @@ import { DateTime } from "luxon";
 
 
 export interface IActivityMGA {
-  id: number;
-  description: string;
-  unit: string;
-  quantity: number;
-  cost: number;
-  vinculation:IVinculationMGA|null;
+
+  id?: number;
+  budgetId: number;
+  activityId: number;
+  consecutiveActivityDetailed: string;
+  detailedActivityId: number;
+  userCreate?: string;
+  dateCreate?: Date;
+
 }
 
 export interface IVinculationMGA {
@@ -41,5 +44,29 @@ export interface IVinculationMgaV2 {
   consecutiveActivityDetailed: string;
   detailedActivityId: number;
   userCreate?: string;
+
+}
+
+export interface IVinculationMgaWithMultipleV2 {
+
+  id?: number;
+  elementsDetail: IVinculationMgaV2[]
+
+}
+
+export interface IDesvinculationMgaV2 {
+
+  id: number;
+  budgetId?: number;
+  activityId?: number;
+  consecutiveActivityDetailed?: string;
+  detailedActivityId?: number;
+
+}
+
+export interface IDesvinculationMgaWithMultipleV2 {
+
+  id?: number;
+  elementsDetail: IDesvinculationMgaV2[]
 
 }
