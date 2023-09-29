@@ -5,18 +5,20 @@ import { IPosPreSapienciaRepository } from "App/Repositories/PosPreSapienciaRepo
 import { IFiltersPosPreSapienciaMix } from '../Interfaces/PosPreSapienciaInterfaces';
 
 export interface IPosPreSapienciaService {
-  getPosPreSapienciaById(id: number): Promise<ApiResponse<IPosPreSapiencia>>;
-  getPosPreSapienciaPaginated(filters: IFiltersPosPreSapiencia): Promise<ApiResponse<IPagingData<IPosPreSapiencia>>>;
-  createPosPreSapiencia(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia>>;
-  updatePosPreSapiencia(posPreSapiencia: IPosPreSapiencia, id: number): Promise<ApiResponse<IPosPreSapiencia>>;
-  getAllPosPreSapiencia(): Promise<ApiResponse<IPosPreSapiencia[]>>;
+  // getPosPreSapienciaPaginated(filters: IFiltersPosPreSapiencia): Promise<ApiResponse<IPagingData<IPosPreSapiencia>>>;
+  // createPosPreSapiencia(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia>>;
+  // updatePosPreSapiencia(posPreSapiencia: IPosPreSapiencia, id: number): Promise<ApiResponse<IPosPreSapiencia>>;
 
   //TODO: Nuevos
+  getPosPreSapienciaById(id: number): Promise<ApiResponse<IPosPreSapiencia>>;
   getListPosPreSapVinculationPaginated(filters: IFiltersPosPreSapienciaMix): Promise<ApiResponse<IPagingData<IPosPreSapiencia>>>;
   createPosPreSapVinculation(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia | null>>;
+  updatePosPreSapVinculation(posPreSapiencia: IPosPreSapiencia , id: number): Promise<ApiResponse<IPosPreSapiencia | null>>;
+  getAllPosPreSapiencia(): Promise<ApiResponse<IPosPreSapiencia[]>>;
 }
 
 export default class PosPreSapienciaService implements IPosPreSapienciaService {
+
   constructor(private posPreSapienciaRepository: IPosPreSapienciaRepository) { }
 
   async getPosPreSapienciaById(id: number): Promise<ApiResponse<IPosPreSapiencia>> {
@@ -33,42 +35,42 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
     return new ApiResponse(res, EResponseCodes.OK);
   }
 
-  async getPosPreSapienciaPaginated(
-    filters: IFiltersPosPreSapiencia
-  ): Promise<ApiResponse<IPagingData<IPosPreSapiencia>>> {
-    const res = await this.posPreSapienciaRepository.getPosPreSapienciaPaginated(filters);
+  // async getPosPreSapienciaPaginated(
+  //   filters: IFiltersPosPreSapiencia
+  // ): Promise<ApiResponse<IPagingData<IPosPreSapiencia>>> {
+  //   const res = await this.posPreSapienciaRepository.getPosPreSapienciaPaginated(filters);
 
-    return new ApiResponse(res, EResponseCodes.OK);
-  }
+  //   return new ApiResponse(res, EResponseCodes.OK);
+  // }
 
-  async createPosPreSapiencia(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia>> {
+  // async createPosPreSapiencia(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia>> {
 
-    const res = await this.posPreSapienciaRepository.createPosPreSapiencia(posPreSapiencia);
+  //   const res = await this.posPreSapienciaRepository.createPosPreSapiencia(posPreSapiencia);
 
-    if (!res) {
-      return new ApiResponse(
-        {} as IPosPreSapiencia,
-        EResponseCodes.FAIL,
-        "Se ha encontrado un error, el código sapiencia ya existe en el sistema"
-      );
-    }
+  //   if (!res) {
+  //     return new ApiResponse(
+  //       {} as IPosPreSapiencia,
+  //       EResponseCodes.FAIL,
+  //       "Se ha encontrado un error, el código sapiencia ya existe en el sistema"
+  //     );
+  //   }
 
-    return new ApiResponse(res, EResponseCodes.OK);
-  }
+  //   return new ApiResponse(res, EResponseCodes.OK);
+  // }
 
-  async updatePosPreSapiencia(posPreSapiencia: IPosPreSapiencia, id: number): Promise<ApiResponse<IPosPreSapiencia>> {
-    const res = await this.posPreSapienciaRepository.updatePosPreSapiencia(posPreSapiencia, id);
+  // async updatePosPreSapiencia(posPreSapiencia: IPosPreSapiencia, id: number): Promise<ApiResponse<IPosPreSapiencia>> {
+  //   const res = await this.posPreSapienciaRepository.updatePosPreSapiencia(posPreSapiencia, id);
 
-    if (!res) {
-      return new ApiResponse(
-        {} as IPosPreSapiencia,
-        EResponseCodes.FAIL,
-        "Se ha encontrado un error, el código sapiencia ya existe en el sistema"
-      );
-    }
+  //   if (!res) {
+  //     return new ApiResponse(
+  //       {} as IPosPreSapiencia,
+  //       EResponseCodes.FAIL,
+  //       "Se ha encontrado un error, el código sapiencia ya existe en el sistema"
+  //     );
+  //   }
 
-    return new ApiResponse(res, EResponseCodes.OK);
-  }
+  //   return new ApiResponse(res, EResponseCodes.OK);
+  // }
 
   async getAllPosPreSapiencia(): Promise<ApiResponse<IPosPreSapiencia[]>> {
     const res = await this.posPreSapienciaRepository.getAllPosPreSapiencia();
@@ -110,6 +112,22 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
       EResponseCodes.FAIL,
       "Se ha encontrado un error, el código sapiencia ya existe en el sistema"
     );
+
+  }
+
+  async updatePosPreSapVinculation(posPreSapiencia: IPosPreSapiencia , id: number): Promise<ApiResponse<IPosPreSapiencia | null>> {
+
+    const res = await this.posPreSapienciaRepository.updatePosPreSapVinculation(posPreSapiencia, id);
+
+    if (!res) {
+      return new ApiResponse(
+        {} as IPosPreSapiencia,
+        EResponseCodes.FAIL,
+        "El registro indicado no existe o el número asignado ya se encuentra registrado"
+      );
+    }
+
+    return new ApiResponse(res, EResponseCodes.OK);
 
   }
 

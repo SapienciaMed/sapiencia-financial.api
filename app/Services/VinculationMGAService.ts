@@ -1,19 +1,24 @@
-import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
+import { ApiResponse,
+         IPagingData } from "App/Utils/ApiResponses";
+
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
-import { IActivityMGA } from "App/Interfaces/VinculationMGAInterfaces";
-import { IFiltersVinculationMGA/*, IVinculationMGA*/, ICrudVinculation } from "App/Interfaces/VinculationMGAInterfaces";
+
+import { IActivityMGA,
+         IVinculationMgaWithMultipleV2 } from "App/Interfaces/VinculationMGAInterfaces";
+
+import { IFiltersVinculationMGA } from "App/Interfaces/VinculationMGAInterfaces";
+
 import { IVinculationMGARepository } from "App/Repositories/VinculationMGARepository";
-import { IVinculationMgaV2 } from '../Interfaces/VinculationMGAInterfaces';
+import { IDesvinculationMgaWithMultipleV2 } from '../Interfaces/VinculationMGAInterfaces';
 
 export interface IVinculationMGAService {
 
   getVinculationMGAById(id: number): Promise<ApiResponse<IActivityMGA>>;
   getVinculationMGAPaginated(filters: IFiltersVinculationMGA): Promise<ApiResponse<IPagingData<IActivityMGA>>>;
-  // createVinculationMGA(vinculationMGA: ICrudVinculation): Promise<ApiResponse<IVinculationMGA[]>>;
-  deleteVinculationMGA(id: ICrudVinculation): Promise<ApiResponse<boolean>>;
 
   //? Nuevo
-  createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaV2): Promise<ApiResponse<IVinculationMgaV2>>;
+  createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaWithMultipleV2): Promise<ApiResponse<IVinculationMgaWithMultipleV2>>;
+  deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaWithMultipleV2): Promise<ApiResponse<IDesvinculationMgaWithMultipleV2>>;
 
 }
 
@@ -42,30 +47,29 @@ export default class VinculationMGAService implements IVinculationMGAService {
     return new ApiResponse(res, EResponseCodes.OK);
   }
 
-  // async createVinculationMGA(vinculationMGA: ICrudVinculation): Promise<ApiResponse<IVinculationMGA[]>> {
-  //   const res = await this.vinculationMGARepository.createVinculationMGA(vinculationMGA);
-  //   return new ApiResponse(res, EResponseCodes.OK);
-  // }
+  //?Nuevo
+  async createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaWithMultipleV2): Promise<ApiResponse<IVinculationMgaWithMultipleV2>> {
 
-  async deleteVinculationMGA(vinculationMGA: ICrudVinculation): Promise<ApiResponse<boolean>> {
-    const res = await this.vinculationMGARepository.deleteVinculationMGA(vinculationMGA);
 
-    if (!res) {
-      return new ApiResponse(
-        false,
-        EResponseCodes.FAIL,
-        "El registro indicado no existe"
-      );
+    for( let i of vinculationMGA.elementsDetail ){
+
+      await this.vinculationMGARepository.createVinculationWithPlanningV2(i);
+
     }
 
-    return new ApiResponse(true, EResponseCodes.OK);
+    return new ApiResponse(vinculationMGA, EResponseCodes.OK, "Vinculaciones realizadas.");
+
   }
 
-  //?Nuevo
-  async createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaV2): Promise<ApiResponse<IVinculationMgaV2>> {
+  async deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaWithMultipleV2): Promise<ApiResponse<IDesvinculationMgaWithMultipleV2>> {
 
-    const res = await this.vinculationMGARepository.createVinculationWithPlanningV2(vinculationMGA);
-    return new ApiResponse(res, EResponseCodes.OK);
+    for( let i of vinculationMGA.elementsDetail ){
+
+      await this.vinculationMGARepository.deleteVinculationWithPlanningV2(i);
+
+    }
+
+    return new ApiResponse(vinculationMGA, EResponseCodes.OK, "Desvinculaciones realizadas.");
 
   }
 

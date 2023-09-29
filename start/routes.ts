@@ -48,7 +48,6 @@ Route.group(() => {
 // .middleware("auth");
 
 Route.group(() => {
-  Route.get("/get-by-id/:id", "PosPreSapienciaController.getPosPreSapienciaById");
   Route.post("/get-paginated", "PosPreSapienciaController.getPosPreSapienciaPaginated");
   Route.post("/create", "PosPreSapienciaController.createPosPreSapiencia");
   Route.put("/update/:id", "PosPreSapienciaController.updatePosPreSapiencia");
@@ -56,8 +55,10 @@ Route.group(() => {
 
   //New
   //TODO: Lo nuevo para ajustar todo el tema de los PosPre Sapiencia
+  Route.get("/get-posprevinculation-by-id/:id", "PosPreSapienciaController.getPosPreSapienciaById");
   Route.post("/get-list-pospresap-vinculation-paginated" , "PosPreSapienciaController.getListPosPreSapVinculationPaginated");
   Route.post("/create-pospresap-vinculation" , "PosPreSapienciaController.createPosPreSapVinculation");
+  Route.post("/update-pospresap-vinculation/:id" , "PosPreSapienciaController.updatePosPreSapVinculation");
 
 }).prefix("/api/v1/pospre-sapiencia");
 // .middleware("auth");
@@ -72,6 +73,10 @@ Route.group(() => {
   //TODO: Lo nuevo para ajustar todo el tema de las vinculaciones
   Route.post("/get-detailed-activities-api-planning", "VinculationMGAController.getDetailedActivitiesV2");
   Route.post("/create-vinculation-api-planning", "VinculationMGAController.createVinculationWithPlanningV2");
+  Route.post("/delete-vinculation-api-planning", "VinculationMGAController.deleteVinculationWithPlanningV2");
+  Route.post("/get-detailed-activities-api-planning-nouseonpospre/:pospreorgid", "VinculationMGAController.getDetailedActivitiesNoUseOnPosPre");
+  Route.post("/get-detailed-activities-api-planning-yesuseonpospre/:pospreorgid", "VinculationMGAController.getDetailedActivitiesYesUseOnPosPre");
+  Route.get("/get-detailed-activities-api-planning-by-id/:id", "VinculationMGAController.getVinculationDetailedActivitiesV2ById");
 
 
 
@@ -97,8 +102,11 @@ Route.group(() => {
   Route.get("/get-all", "ProjectsController.getAllProjects");
 
   //New
-  //TODO: Lo nuevo para ajustar todo el tema de proyectos de inversión
+  //TODO: Lo nuevo para ajustar todo el tema de proyectos de inversión desde API Externa
   Route.post("/get-projects-api-planning", "ProjectsController.getProjectsUpdateV2");
+
+  Route.post("/get-projects-api-planning-no-functionalarea", "ProjectsController.getProjectsNoUseOnFunctionalArea");
+  Route.post("/get-projects-api-planning-yes-functionalarea", "ProjectsController.getProjectsYesUseOnFunctionalArea");
 
 }).prefix("/api/v1/projects");
 // .middleware("auth");
