@@ -67,7 +67,7 @@ export default class ProjectsService implements IProjectsService {
       nameOrCode: filters.id,
       page: filters.page,
       perPage: filters.perPage,
-      xcludeIds: proyectsIds,
+      excludeIds: proyectsIds,
     });
   }
 }

@@ -29,11 +29,11 @@ export default class ProjectsVinculation  extends BaseModel {
   @column({ columnName: "VPY_TIPO", serializeAs: "type" })
   public type: string;
 
-  @column({ columnName: "VPY_CODPFU_PROYECTO_FUNCIONAMIENTO", serializeAs: "investmentProjectId" })
-  public investmentProjectId: number;
-
-  @column({ columnName: "VPY_CODINV_PROYECTO_INVERSION", serializeAs: "operationProjectId" })
+  @column({ columnName: "VPY_CODPFU_PROYECTO_FUNCIONAMIENTO", serializeAs: "operationProjectId" })
   public operationProjectId: number;
+
+  @column({ columnName: "VPY_CODINV_PROYECTO_INVERSION", serializeAs: "investmentProjectId" })
+  public investmentProjectId: number;
 
 
   @column({ columnName: "VPY_USUARIO_CREO", serializeAs: "userCreate" })

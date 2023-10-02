@@ -14,7 +14,7 @@ import { EProjectTypes } from "App/Constants/ProjectsEnums";
 
 export interface IProjectPaginated {
   nameOrCode: string;
-  xcludeIds?: number[];
+  excludeIds?: number[];
   page: number;
   perPage: number;
 }
@@ -70,6 +70,8 @@ export default class StrategicDirectionService implements IPlanningService {
         Authorization: process.env.CURRENT_AUTHORIZATION,
       },
     });
+
+    console.log(dataUser)
 
     const requestResult: IProject[] = [];
     const result: IApiPlanningProject | any = dataUser;
