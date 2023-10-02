@@ -152,18 +152,26 @@ export default class VinculationMGAController {
       pospreorig = await BudgetsProvider.updateBudgets(dataPosPreOrg, Number(dataPosPreOrg.id));
       const res_pospreorig = pospreorig.data;
 
-      //* Actualizamos estados del PosPre Sapiencia (PENDIENTE !)
-      for (const w of dataPosPreSap) {
+      //* Actualizamos estados del PosPre Sapiencia
+      if( dataPosPreOrg && dataPosPreOrg != null && dataPosPreOrg != undefined){
 
-        await PosPreSapienciaProvider.updatePosPreSapVinculation(w, w.id);
-        res_pospresapi.push(w)
+        for (const w of dataPosPreSap) {
+
+          await PosPreSapienciaProvider.updatePosPreSapVinculation(w, w.id);
+          res_pospresapi.push(w)
+
+        }
 
       }
 
-      for (const x of dataVinculMga) {
+      if( dataVinculMga && dataVinculMga != null && dataVinculMga != undefined){
 
-        await VinculationMGAProvider.deleteVinculationWithPlanningV2(x, x.id);
-        res_vinculationmga.push(x);
+        for (const x of dataVinculMga) {
+
+          await VinculationMGAProvider.deleteVinculationWithPlanningV2(x, x.id);
+          res_vinculationmga.push(x);
+
+        }
 
       }
 

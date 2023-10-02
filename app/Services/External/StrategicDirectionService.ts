@@ -259,16 +259,29 @@ export default class StrategicDirectionService implements IPlanningService {
     //* Traemos vinculaciones con ese pospre:
     const myPosPre: number = Number(posPreOrig);
     let arrayActivtyDetailedOnPosPre: number[] = [];
+    let arrayIdActivtyDetailedOnPosPre: number[] = [];
+
     const vinculationsOfPosPre: IActivityMGA[] = await this.vinculationMGARepository.getVinculationMGAByPosPreOrg(myPosPre);
 
+
+
+
     //* Guardo los códigos de actividad detallada en un Array<number>
-    vinculationsOfPosPre.forEach(resVinculation => arrayActivtyDetailedOnPosPre.push(Number(resVinculation.detailedActivityId)));
+    vinculationsOfPosPre.forEach(resVinculation => {
+      arrayActivtyDetailedOnPosPre.push(Number(resVinculation.detailedActivityId));
+      arrayIdActivtyDetailedOnPosPre.push(Number(resVinculation.id));
+    });
+
+    console.log(arrayActivtyDetailedOnPosPre);
+    console.log(arrayIdActivtyDetailedOnPosPre);
+
+    let cont: number = 0;
 
     dataI.forEach(resDetailtedActitivyList => {
 
       if (arrayActivtyDetailedOnPosPre.includes(resDetailtedActitivyList.id)) {
 
-        const objResult: IApiPlanningDetailedActivitiesSpecify = {
+        const objResult: IApiPlanningDetailedActivitiesSpecify | any = {
 
           //* Info Actividad General
           activityId: resDetailtedActitivyList.activity.id,
@@ -287,8 +300,12 @@ export default class StrategicDirectionService implements IPlanningService {
           unitCostActivityDetailed: resDetailtedActitivyList.unitCost,
           totalCostActivityDetailed: (Number(resDetailtedActitivyList.unitCost) * Number(resDetailtedActitivyList.amount)),
 
+          //* Interacción de ocurrencia para obtener ID vinculación
+          idVinculation: arrayIdActivtyDetailedOnPosPre[cont]
+
         }
 
+        cont ++;
         requestResult.push(objResult);
 
       }

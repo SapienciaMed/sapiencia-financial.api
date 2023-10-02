@@ -78,15 +78,10 @@ export default class VinculationMGARepository implements IVinculationMGAReposito
 
   async deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<IDesvinculationMgaV2 | boolean> {
 
-    const action: string | any = vinculationMGA.status; //I - Borrar , A - Mantener
     const vinculation: IDesvinculationMgaV2 = vinculationMGA;
 
-    if( action === "I" ){
-
-      const vinculation = VinculationMGA.query().where("id" , id).delete();
-      await vinculation;
-
-    }
+    const deleteVinculation = VinculationMGA.query().where("id" , id).delete();
+    await deleteVinculation;
 
     return vinculation;
 
@@ -98,7 +93,5 @@ export default class VinculationMGARepository implements IVinculationMGAReposito
     return query;
 
   }
-
-
 
 }
