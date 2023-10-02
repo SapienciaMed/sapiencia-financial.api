@@ -5,20 +5,17 @@ import { EResponseCodes } from "../Constants/ResponseCodesEnum";
 
 import { IActivityMGA,
          IVinculationMgaWithMultipleV2 } from "App/Interfaces/VinculationMGAInterfaces";
-
 import { IFiltersVinculationMGA } from "App/Interfaces/VinculationMGAInterfaces";
+import { IDesvinculationMgaV2 } from '../Interfaces/VinculationMGAInterfaces';
 
 import { IVinculationMGARepository } from "App/Repositories/VinculationMGARepository";
-import { IDesvinculationMgaWithMultipleV2 } from '../Interfaces/VinculationMGAInterfaces';
 
 export interface IVinculationMGAService {
 
   getVinculationMGAById(id: number): Promise<ApiResponse<IActivityMGA>>;
   getVinculationMGAPaginated(filters: IFiltersVinculationMGA): Promise<ApiResponse<IPagingData<IActivityMGA>>>;
-
-  //? Nuevo
   createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaWithMultipleV2): Promise<ApiResponse<IVinculationMgaWithMultipleV2>>;
-  deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaWithMultipleV2): Promise<ApiResponse<IDesvinculationMgaWithMultipleV2>>;
+  deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<ApiResponse<IDesvinculationMgaV2 | boolean>>;
 
 }
 
@@ -61,15 +58,11 @@ export default class VinculationMGAService implements IVinculationMGAService {
 
   }
 
-  async deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaWithMultipleV2): Promise<ApiResponse<IDesvinculationMgaWithMultipleV2>> {
+  async deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<ApiResponse<IDesvinculationMgaV2 | boolean>>{
 
-    for( let i of vinculationMGA.elementsDetail ){
+    const res = await this.vinculationMGARepository.deleteVinculationWithPlanningV2(vinculationMGA, id);
 
-      await this.vinculationMGARepository.deleteVinculationWithPlanningV2(i);
-
-    }
-
-    return new ApiResponse(vinculationMGA, EResponseCodes.OK, "Desvinculaciones realizadas.");
+    return new ApiResponse(res, EResponseCodes.OK);
 
   }
 

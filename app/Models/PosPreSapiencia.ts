@@ -13,7 +13,7 @@ export default class PosPreSapiencia extends BaseModel {
 
   @column({ columnName: "PPS_CODPPR_POSICION_PRESUPUESTAL", serializeAs: "budgetId" })
   public budgetId: number;
-  
+
   @column({ columnName: "PPS_EJERCICIO", serializeAs: "ejercise" })
   public ejercise: number;
 
@@ -21,7 +21,7 @@ export default class PosPreSapiencia extends BaseModel {
   public description: string;
 
   @column({ columnName: "PPS_CONSECUTIVO", serializeAs: "consecutive" })
-  public consecutive: number;
+  public consecutive: string;
 
   @column({ columnName: "PPS_ASIGNADO_A", serializeAs: "assignedTo" })
   public assignedTo: string;

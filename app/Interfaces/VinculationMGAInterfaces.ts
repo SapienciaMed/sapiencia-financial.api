@@ -1,4 +1,6 @@
 import { DateTime } from "luxon";
+import { IBudgets } from './BudgetsInterfaces';
+import { IPosPreSapiencia } from './PosPreSapienciaInterfaces';
 
 
 export interface IActivityMGA {
@@ -56,17 +58,26 @@ export interface IVinculationMgaWithMultipleV2 {
 
 export interface IDesvinculationMgaV2 {
 
-  id: number;
+  id?: number;
   budgetId?: number;
   activityId?: number;
   consecutiveActivityDetailed?: string;
   detailedActivityId?: number;
+  status?: string;
 
 }
 
 export interface IDesvinculationMgaWithMultipleV2 {
 
   id?: number;
-  elementsDetail: IDesvinculationMgaV2[]
+  elementsDetail: IDesvinculationMgaV2;
+
+}
+
+export interface IUpdateVinculationMultiple {
+
+  pospreorig: IBudgets;
+  pospresapi?: IPosPreSapiencia[];
+  vinculationmga: IDesvinculationMgaWithMultipleV2[];
 
 }

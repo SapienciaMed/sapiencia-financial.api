@@ -1,5 +1,6 @@
-import { BaseModel, column } from "@ioc:Adonis/Lucid/Orm";
+import { BaseModel, column, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm';
 import { DateTime } from "luxon";
+import Budgets from './Budgets';
 
 export default class VinculationMGA extends BaseModel {
   public static table = "VMG_VINCULACIONES_MGA";
@@ -35,4 +36,12 @@ export default class VinculationMGA extends BaseModel {
     serializeAs: "dateCreate",
   })
   public dateCreate: DateTime;
+
+  @hasOne(() => Budgets, {
+    localKey: "budgetId",
+    foreignKey: "id",
+    serializeAs: "budget",
+  })
+  public budget: HasOne<typeof Budgets>;
+
 }

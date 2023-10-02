@@ -28,7 +28,7 @@ export default class extends BaseSchema {
         .notNullable()
         .comment("Descripcion");
       table
-        .integer("PPS_CONSECUTIVO")
+        .string("PPS_CONSECUTIVO", 3)
         .notNullable()
         .comment("Numero consecutivo");
       table

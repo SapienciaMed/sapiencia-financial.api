@@ -2,6 +2,7 @@ import { BaseModel, HasOne, column, hasOne, hasMany, HasMany } from '@ioc:Adonis
 import { DateTime } from "luxon";
 import Entities from "./Entities";
 import PosPreSapiencia from './PosPreSapiencia';
+import VinculationMGA from './VinculationMGA';
 
 export default class Budgets extends BaseModel {
   public static table = "PPR_POSICIONES_PRESUPUESTARIAS";
@@ -55,5 +56,11 @@ export default class Budgets extends BaseModel {
     serializeAs: "pospresap",
   })
   public pospresap: HasMany<typeof PosPreSapiencia>;
+
+  @hasMany(() => VinculationMGA, {
+    foreignKey: "budgetId",
+    serializeAs: "vinculationmga",
+  })
+  public vinculationmga: HasMany<typeof VinculationMGA>;
 
 }
