@@ -42,7 +42,8 @@ export default class AdditionsRepository implements IAdditionsRepository{
       query.where("typeMovement", 'LIKE', `%${criterial}%`);
     }
     
-    query.orderBy("id", "desc");
+    query.orderBy("actAdminSapiencia", "desc");
+    query.orderBy("id", "asc");
     
     const res = await query.paginate(filters.page, filters.perPage);
     const { data, meta } = res.serialize();    
