@@ -175,11 +175,19 @@ export default class VinculationMGAController {
 
       }
 
-      return response.send({
+      const objResult = {
         res_pospreorig,
         res_pospresapi,
         res_vinculationmga
-      })
+      }
+
+      return response.send(
+        new ApiResponse(
+          objResult,
+          EResponseCodes.OK,
+          "Actualización Exitosa"
+        )
+      )
 
     } catch (err) {
 
