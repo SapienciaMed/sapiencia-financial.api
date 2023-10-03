@@ -19,7 +19,8 @@ export interface IProjectsVinculation {
 export interface IProjectsVinculate {
   idFunctionalArea: number;
   projects: {
-    id: any;
+    id: number;
+    type: string;
     linked: boolean;
   }[];
   userCreate?: string;

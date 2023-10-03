@@ -45,7 +45,7 @@ export default class FunctionalAreaRepository
     query.orderBy("number", "asc");
 
     if (filters.number) {
-      await query.where("number", filters.number);
+      await query.whereILike("number", `%${filters.number}%`);
     }
 
     const res = await query.paginate(filters.page, filters.perPage);
@@ -82,14 +82,20 @@ export default class FunctionalAreaRepository
   async createProjectFunctionalArea(projectsVinculate: IProjectsVinculate): Promise<IProjectsVinculation[]> {
     const vinculations: IProjectsVinculation[] = [];
     await Promise.all(projectsVinculate.projects.map(async (project) => {
-      const toCreateProjectsVinculation = new ProjectsVinculation();
-      toCreateProjectsVinculation.functionalAreaId = projectsVinculate.idFunctionalArea;
-      toCreateProjectsVinculation.projectId = project.id;
-      toCreateProjectsVinculation.budgetValue = 0;
-      toCreateProjectsVinculation.linked = project.linked;
-      if (projectsVinculate.userCreate) toCreateProjectsVinculation.userCreate = projectsVinculate.userCreate;
-      await toCreateProjectsVinculation.save();
-      vinculations.push(toCreateProjectsVinculation.serialize() as IProjectsVinculation);
+      const toCreate = new ProjectsVinculation();
+      toCreate.functionalAreaId = projectsVinculate.idFunctionalArea;
+      toCreate.type = project.type
+
+      if(project.type == EProjectTypes.investment) {
+        toCreate.investmentProjectId = project.id
+      }
+      else {
+        toCreate.operationProjectId = project.id
+      }
+      toCreate.linked = project.linked;
+      if (projectsVinculate.userCreate) toCreate.userCreate = projectsVinculate.userCreate;
+      await toCreate.save();
+      vinculations.push(toCreate.serialize() as IProjectsVinculation);
     }));
     return vinculations;
   }
