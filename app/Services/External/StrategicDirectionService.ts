@@ -40,6 +40,12 @@ export interface IPlanningService {
   getVinculationDetailedActivitiesV2ById(
     id: number
   ): Promise<ApiResponse<IApiPlanningDetailedActivitiesSpecify | any>>;
+  getProjectInvestmentPaginated(
+    filter: IProjectPaginated
+  ): Promise<ApiResponse<IPagingData<IProject>>>;
+  getProjectByFilters(
+    filter: IProjectFilters
+  ): Promise<ApiResponse<IProject[]>>;
 }
 
 export default class StrategicDirectionService implements IPlanningService {
