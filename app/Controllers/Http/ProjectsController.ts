@@ -1,9 +1,8 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import ProjectsProvider from "@ioc:core.ProjectsProvider";
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
-import { IProjectFilters } from "App/Interfaces/ProjectsInterfaces";
 import { ApiResponse } from "App/Utils/ApiResponses";
-
+import { IProjectFilters } from "App/Services/External/StrategicDirectionService";
 export default class ProjectsController {
   public async getAllProjects({ response }: HttpContextContract) {
     try {

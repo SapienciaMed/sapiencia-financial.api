@@ -15,10 +15,8 @@ export interface IVinculationMGARepository {
   getInitialResource(): Promise<string>;
   getVinculationMGAById(id: number): Promise<IActivityMGA | null>;
   getVinculationMGAPaginated(filters: IFiltersVinculationMGA): Promise<IPagingData<IActivityMGA>>;
-
-  //TODO: Lo nuevo
   createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaV2): Promise<IVinculationMgaV2>;
-  deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2): Promise<IDesvinculationMgaV2 | boolean>;
+  deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<IDesvinculationMgaV2 | boolean>;
   getVinculationMGAByPosPreOrg(id: number): Promise<IActivityMGA[] | any>;
 
 }
@@ -78,13 +76,14 @@ export default class VinculationMGARepository implements IVinculationMGAReposito
 
   }
 
-  async deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2): Promise<IDesvinculationMgaV2 | boolean> {
+  async deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<IDesvinculationMgaV2 | boolean> {
 
-    const id: number = Number(vinculationMGA.id);
-    const vinculation = VinculationMGA.query().where("id" , id).delete();
-    await vinculation;
+    const vinculation: IDesvinculationMgaV2 = vinculationMGA;
 
-    return true;
+    const deleteVinculation = VinculationMGA.query().where("id" , id).delete();
+    await deleteVinculation;
+
+    return vinculation;
 
   }
 
@@ -94,7 +93,5 @@ export default class VinculationMGARepository implements IVinculationMGAReposito
     return query;
 
   }
-
-
 
 }

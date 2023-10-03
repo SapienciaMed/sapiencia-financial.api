@@ -8,7 +8,7 @@ export interface IPosPreSapiencia {
   budgetId: number;
   ejercise: number;
   description: string;
-  consecutive: number;
+  consecutive: string;
   assignedTo: string;
   userModify?: string;
   dateModify?: Date;

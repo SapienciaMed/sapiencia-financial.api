@@ -42,7 +42,8 @@ export default class AdditionsRepository implements IAdditionsRepository{
       query.where("typeMovement", 'LIKE', `%${criterial}%`);
     }
     
-    query.orderBy("id", "desc");
+    query.orderBy("actAdminSapiencia", "desc");
+    query.orderBy("id", "asc");
     
     const res = await query.paginate(filters.page, filters.perPage);
     const { data, meta } = res.serialize();    
@@ -88,7 +89,8 @@ export default class AdditionsRepository implements IAdditionsRepository{
                                 .where("id", id)
                                 .select("id",
                                         "actAdminDistrict",
-                                        "actAdminSapiencia");
+                                        "actAdminSapiencia",
+                                        "typeMovement");
 
     const details = await AdditionsMovement.query().where("additionId", id)
       .preload("budgetRoute", (q1) => {

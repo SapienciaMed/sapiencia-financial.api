@@ -12,8 +12,13 @@ export interface IFunctionalProject {
   budgetValue?: number;
   assignmentValue?: number;
   userModify?: string;
-  dateModify: string;
+  dateModify?: string;
   userCreate?: string;
-  dateCreate: string;
+  dateCreate?: string;
 
+}
+
+export interface IFunctionalProjectFilters {
+  page: number;
+  perPage: number;
 }
