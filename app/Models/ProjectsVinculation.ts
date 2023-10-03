@@ -26,6 +26,15 @@ export default class ProjectsVinculation  extends BaseModel {
   @column({ columnName: "VPY_VINCULADO", serializeAs: "linked" })
   public linked: boolean;
 
+  @column({ columnName: "VPY_TIPO", serializeAs: "type" })
+  public type: string;
+
+  @column({ columnName: "VPY_CODPFU_PROYECTO_FUNCIONAMIENTO", serializeAs: "idFunctional" })
+  public idFunctional: number;
+
+  @column({ columnName: "VPY_CODINV_PROYECTO_INVERSION", serializeAs: "idInvestment" })
+  public idInvestment: number;
+
   @column({ columnName: "VPY_USUARIO_CREO", serializeAs: "userCreate" })
   public userCreate: string;
 

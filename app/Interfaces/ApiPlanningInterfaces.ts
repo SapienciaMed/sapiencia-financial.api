@@ -62,6 +62,8 @@ export interface IApiSpecificPlanningProjectData {
   dateTo: string | null;
   user: string;
 
+  meta?: IInternalPagination
+
 }
 
 export interface Activity {
@@ -105,6 +107,7 @@ export interface IApiPlanningDetailedActivitiesSpecify {
   measurementActivityDetailed: number;  // Medida
   unitCostActivityDetailed: number;     // Costo Unitario
   totalCostActivityDetailed: number;    // Costo Total
+
   //*Actividad MGA GENERAL
   activityId: number;                   // PK Actividad General
   codeMga: number;                      // Código General de Actividad MGA

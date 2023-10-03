@@ -8,19 +8,16 @@ import ProjectsVinculation from "App/Models/ProjectsVinculation";
 import { IPagingData } from "App/Utils/ApiResponses";
 
 export interface IFunctionalAreaRepository {
+
   getFunctionalAreaById(id: number): Promise<IFunctionalArea | null>;
-  getFunctionalAreaPaginated(
-    filters: IFunctionalAreaFilters
-  ): Promise<IPagingData<IFunctionalArea>>;
+  getFunctionalAreaPaginated(filters: IFunctionalAreaFilters): Promise<IPagingData<IFunctionalArea>>;
   createFunctionalArea(functionalArea: IFunctionalArea): Promise<IFunctionalArea>;
   updateFunctionalArea(functionalArea: IFunctionalArea, id: number): Promise<IFunctionalArea | null>;
   createProjectFunctionalArea(projectsVinculate: IProjectsVinculate): Promise<IProjectsVinculation[]>;
   updateProjectFunctionalArea(projectsVinculate: IProjectsVinculate): Promise<IProjectsVinculation[] | null>;
   deleteProjectFunctionalArea(projectVinculate: number): Promise<boolean>;
   getAllProjectFunctionalArea():Promise<IProjectsVinculation[]>;
-  getProjectFunctionalAreaPaginated(
-    filters: IProjectsVinculateFilters
-  ): Promise<IPagingData<IProjectsVinculation>>;
+  getProjectFunctionalAreaPaginated(filters: IProjectsVinculateFilters): Promise<IPagingData<IProjectsVinculation>>;
   getAllFunctionalAreas():Promise<IFunctionalArea[]>;
   getFunctionalAreaByNumber(number: string): Promise<IPagingData<IFunctionalArea>>;
 
