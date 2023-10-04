@@ -41,7 +41,7 @@ export default class FunctionalAreaRepository
 
   async getFunctionalAreaPaginated(filters: IFunctionalAreaFilters): Promise<IPagingData<IFunctionalArea>> {
 
-    const query = FunctionalArea.query();
+    const query = FunctionalArea.query().preload("projectsVinculation");
     query.orderBy("number", "asc");
 
     if (filters.number) {
@@ -84,6 +84,7 @@ export default class FunctionalAreaRepository
     await Promise.all(projectsVinculate.projects.map(async (project) => {
       const toCreate = new ProjectsVinculation();
       toCreate.functionalAreaId = projectsVinculate.idFunctionalArea;
+      if(project.type)
       toCreate.type = project.type
 
       if(project.type == EProjectTypes.investment) {
@@ -133,12 +134,13 @@ export default class FunctionalAreaRepository
   }
 
   async getAllProjectFunctionalArea():Promise<IProjectsVinculation[]> {
-    const res = await ProjectsVinculation.query().preload("areaFuntional");
-    return res as IProjectsVinculation[];
+    const res = await ProjectsVinculation.query().preload("areaFuntional").preload("functionalProject");
+    return res.map(i => i.serialize() as IProjectsVinculation)
   }
 
+
   async getProjectFunctionalAreaPaginated(filters: IProjectsVinculateFilters): Promise<IPagingData<IProjectsVinculation>> {
-    const query = ProjectsVinculation.query();
+    const query = ProjectsVinculation.query().preload("functionalProject");
     if (filters.id) {
       await query.where("functionalAreaId", filters.id);
     }

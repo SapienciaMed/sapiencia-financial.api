@@ -25,7 +25,7 @@ export interface IProjectFilters {
   status?: boolean;
 }
 
-export interface IPlanningService {
+export interface IStrategicDirectionService {
   getDetailedActivitiesByIds(
     ids: Array<number>
   ): Promise<ApiResponse<IApiPlanningDetailedActivitiesSpecify[]>>;
@@ -49,7 +49,7 @@ export interface IPlanningService {
   ): Promise<ApiResponse<IProject[]>>;
 }
 
-export default class StrategicDirectionService implements IPlanningService {
+export default class StrategicDirectionService implements IStrategicDirectionService {
   private axiosInstance: AxiosInstance;
 
   constructor(private vinculationMGARepository: IVinculationMGARepository) {
@@ -441,9 +441,9 @@ export default class StrategicDirectionService implements IPlanningService {
   public async getProjectByFilters(
     filter: IProjectFilters
   ): Promise<ApiResponse<IProject[]>> {
-    const urlConsumer = `/api/v1/project//get-by-filters`;
+    const urlConsumer = `/api/v1/project/get-by-filters`;
 
-    const dataUser = await this.axiosInstance.post<
+    const res = await this.axiosInstance.post<
       ApiResponse<IApiPlanningProject[]>
     >(urlConsumer, filter, {
       headers: {
@@ -452,8 +452,7 @@ export default class StrategicDirectionService implements IPlanningService {
     });
 
     const requestResult: IProject[] = [];
-    const result: IApiPlanningProject | any = dataUser;
-    const dataI: IApiPlanningProject[] = result.data.data.array;
+    const dataI: IApiPlanningProject[] = res.data.data;
 
     dataI.forEach((res) => {
       const objResult: IProject = {

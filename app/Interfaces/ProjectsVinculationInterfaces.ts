@@ -1,11 +1,10 @@
 import { DateTime } from "luxon";
 import { IFunctionalArea } from "./FunctionalAreaInterfaces";
+import { IFunctionalProject } from "./FunctionalProjectInterfaces";
 
 export interface IProjectsVinculation {
   id?: number;
   functionalAreaId: number;
-  projectId: string;
-  budgetValue: number;
   linked: boolean;
   type: string;
   investmentProjectId: number;
@@ -14,13 +13,22 @@ export interface IProjectsVinculation {
   dateCreate?: DateTime;
 
   areaFuntional?: IFunctionalArea
+  functionalProject?: IFunctionalProject
+  
+}
+
+export interface IProjectsVinculationFull extends IProjectsVinculation {
+  projectId: string;
+  conceptProject: string;
+  plannedValue: number;
+  assignmentValue: number;
 }
 
 export interface IProjectsVinculate {
   idFunctionalArea: number;
   projects: {
     id: number;
-    type: string;
+    type?: string;
     linked: boolean;
   }[];
   userCreate?: string;

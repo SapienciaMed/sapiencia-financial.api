@@ -81,7 +81,6 @@ export class ProjectsVinculationEditValidator {
         projects: schema.array().members(schema.object().members({
             id: schema.number(), 
             linked: schema.boolean(),
-            type: schema.string()
         })),
         userCreate: schema.string.optional()
     });

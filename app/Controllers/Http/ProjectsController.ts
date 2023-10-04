@@ -28,22 +28,4 @@ export default class ProjectsController {
     }
   }
 
-  //? --------------------------------------------------------------------------------
-  //? --------- RE ESTRUCTURACIÓN DE TODO EL TEMA DE PROYECTOS DE INVERSIÓN ----------
-  //? --------------------------------------------------------------------------------
-
-  // public async getProjectsUpdateV2({ request, response }: HttpContextContract) {
-
-  //   try {
-
-  //     const data = request.body() as Array<number>
-  //     return response.send( await PlanningProvider.getProjectInvestmentByIds(data))
-
-  //   } catch (error) {
-  //     return response.badRequest(
-  //       new ApiResponse(null, EResponseCodes.FAIL, String(error))
-  //     );
-  //   }
-
-  // } akive
 }

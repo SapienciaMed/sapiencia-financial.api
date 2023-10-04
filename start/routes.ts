@@ -101,13 +101,6 @@ Route.group(() => {
   Route.post("/get-paginated", "ProjectsController.getProjectsPaginated");
   Route.get("/get-all", "ProjectsController.getAllProjects");
   Route.post("/get-unrelated-projects", "ProjectsController.getUnrelatedProjects");
-
-  
-  //New
-  //TODO: Lo nuevo para ajustar todo el tema de proyectos de inversión
-  Route.post("/get-projects-api-planning", "ProjectsController.getProjectsUpdateV2");
-  Route.post("/get-projects-api-planning-no-functionalarea", "ProjectsController.getProjectsNoUseOnFunctionalArea");
-
 }).prefix("/api/v1/projects");
 // .middleware("auth");
 

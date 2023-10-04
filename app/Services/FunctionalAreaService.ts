@@ -2,7 +2,10 @@ import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
 import { IFunctionalArea, IFunctionalAreaFilters } from "App/Interfaces/FunctionalAreaInterfaces";
 import { IFunctionalAreaRepository } from "App/Repositories/FunctionalAreaRepository";
-import { IProjectsVinculate, IProjectsVinculateFilters, IProjectsVinculation } from "App/Interfaces/ProjectsVinculationInterfaces";
+import { IProjectsVinculate, IProjectsVinculateFilters, IProjectsVinculation, IProjectsVinculationFull } from "App/Interfaces/ProjectsVinculationInterfaces";
+import StrategicDirectionService from './External/StrategicDirectionService';
+import { EProjectTypes } from "App/Constants/ProjectsEnums";
+import { IProject } from "App/Interfaces/ProjectsInterfaces";
 
 export interface IFunctionalAreaService {
     getFunctionalAreaById(id: number): Promise<ApiResponse<IFunctionalArea>>;
@@ -13,13 +16,16 @@ export interface IFunctionalAreaService {
     updateProjectFunctionalArea(projectsVinculate: IProjectsVinculate): Promise<ApiResponse<IProjectsVinculation[] | null>>;
     deleteProjectFunctionalArea(projectVinculate: number): Promise<ApiResponse<boolean>>;
     getAllProjectFunctionalArea(): Promise<ApiResponse<IProjectsVinculation[]>>;
-    getProjectFunctionalAreaPaginated(filters: IProjectsVinculateFilters): Promise<ApiResponse<IPagingData<IProjectsVinculation>>>;
+    getProjectFunctionalAreaPaginated(filters: IProjectsVinculateFilters): Promise<ApiResponse<IPagingData<IProjectsVinculationFull>>>;
     getAllFunctionalAreas(): Promise<ApiResponse<IFunctionalArea[]>>;
 }
 
 export default class FunctionalAreaService implements IFunctionalAreaService {
-    constructor(private FunctionalAreaRepository: IFunctionalAreaRepository) { }
-
+    constructor(
+        private FunctionalAreaRepository: IFunctionalAreaRepository,
+        private strategicDirectionService: StrategicDirectionService
+      ) {}
+    
     async getFunctionalAreaById(id: number): Promise<ApiResponse<IFunctionalArea>> {
         const res = await this.FunctionalAreaRepository.getFunctionalAreaById(id);
         if (!res) {
@@ -96,17 +102,79 @@ export default class FunctionalAreaService implements IFunctionalAreaService {
         return new ApiResponse(res, EResponseCodes.OK);
     }
 
+
     async getProjectFunctionalAreaPaginated(
         filters: IProjectsVinculateFilters
-    ): Promise<ApiResponse<IPagingData<IProjectsVinculation>>> {
-        const res = await this.FunctionalAreaRepository.getProjectFunctionalAreaPaginated(filters);
+      ): Promise<ApiResponse<IPagingData<IProjectsVinculationFull>>> {
+        const res =
+          await this.FunctionalAreaRepository.getProjectFunctionalAreaPaginated(
+            filters
+          );
 
-        return new ApiResponse(res, EResponseCodes.OK);
-    }
+        const toSend = await this.tranformProjectsVinculation(res.array);
+    
+        return new ApiResponse(
+          {
+            array: toSend,
+            meta: res.meta,
+          },
+          EResponseCodes.OK
+        );
+      }
 
     async getAllFunctionalAreas(): Promise<ApiResponse<IFunctionalArea[]>> {
         const res = await this.FunctionalAreaRepository.getAllFunctionalAreas();
 
         return new ApiResponse(res, EResponseCodes.OK);
     }
+
+
+    private async tranformProjectsVinculation(
+        projects: IProjectsVinculation[]
+      ): Promise<IProjectsVinculationFull[]> {
+        const toReturn: IProjectsVinculationFull[] = [];
+        let investmentProjects: IProject[] = [];
+
+        if (projects.find((i) => i.type == EProjectTypes.investment)) {
+          const res = await this.strategicDirectionService.getProjectByFilters({
+            idList: projects.map((i) => i.investmentProjectId),
+          });
+    
+
+          if (res.operation.code !== EResponseCodes.OK) {
+            throw new Error(
+              "Error al comunicarse con la api de direccion estreategica"
+            );
+          }
+    
+          investmentProjects = res.data;
+        }
+    
+        for (const project of projects) {
+          if (project.type == EProjectTypes.investment) {
+            const iProject = investmentProjects.find(
+              (j) => j.id == project.investmentProjectId
+            );
+    
+            toReturn.push({
+              ...project,
+              projectId: iProject?.projectCode || "",
+              conceptProject: iProject?.name || "",
+              plannedValue: iProject?.plannedValue || 0,
+              assignmentValue: iProject?.assignmentValue || 0,
+            });
+          }
+          else {
+            toReturn.push({
+              ...project,
+              projectId: project.functionalProject?.number || '',
+              conceptProject: project.functionalProject?.name || "",
+              plannedValue: 0,
+              assignmentValue: 0,
+            });
+          }
+        }
+    
+        return toReturn;
+      }
 }
