@@ -21,6 +21,8 @@ export default class AppProvider {
     const BudgetsRoutesService = await import ("App/Services/BudgetsRoutesService");
     const AdditionsService = await import("App/Services/AdditionsService");
     const TransfersService = await import("App/Services/TransfersService");
+    const FunctionalProjectService = await import("App/Services/FunctionalProjectService");
+    const StrategicDirectionService = await import("App/Services/External/StrategicDirectionService");
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -67,9 +69,12 @@ export default class AppProvider {
     const TransfersRepository = await import(
       "App/Repositories/TransfersRepository"
     );
-    // const MovementTransferRepository = await import(
-    //   "App/Repositories/MovementTransferRepository"
-    // );
+    const MovementTransferRepository = await import(
+      "App/Repositories/MovementTransferRepository"
+    );
+    const FunctionalProjectRepository = await import(
+      "App/Repositories/FunctionalProjectRepository"
+    );
 
     /**************************************************************************/
     /******************************** CORE  ***********************************/
@@ -116,12 +121,6 @@ export default class AppProvider {
       () => new BudgetsRoutesService.default(new BudgetsRoutesRepository.default())
     );
 
-
-    // this.app.container.singleton(
-    //   "core.AdditionsMovementsProvider",
-    //   () => new AdditionsService.default(new AdditionsRepository.default())
-    // );
-
     this.app.container.singleton(
       "core.AdditionsProvider",
       () =>
@@ -141,13 +140,28 @@ export default class AppProvider {
       () =>
           new TransfersService.default(
             new TransfersRepository.default(),
-            // new MovementTransferRepository.default(),
+            new MovementTransferRepository.default(),
             new ProjectsRepository.default(),
             new FundsRepository.default(),
             new PosPreSapienciaRepository.default(),
             new BudgetsRepository.default(),
             new BudgetsRoutesRepository.default()
           )
+    );
+
+    //API EXTERNA
+    this.app.container.singleton(
+      "core.PlanningProvider",
+      () =>
+        new StrategicDirectionService.default(
+          new ProjectsRepository.default(),
+          new VinculationMGARepository.default()
+        )
+    );
+
+    this.app.container.singleton(
+      "core.FunctionalProjectProvider",
+      () => new FunctionalProjectService.default(new FunctionalProjectRepository.default())
     );
 
   }

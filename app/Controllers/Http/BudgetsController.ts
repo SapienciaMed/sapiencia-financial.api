@@ -1,12 +1,14 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import BudgetsProvider from "@ioc:core.BudgetsProvider";
+
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { ApiResponse } from "App/Utils/ApiResponses";
+
 import { IFilterBudgets } from "App/Interfaces/BudgetsInterfaces";
-// import BudgetsValidator from "App/Validators/BudgetsValidator";
 import { IBudgets } from '../../Interfaces/BudgetsInterfaces';
 
 export default class BudgetsController {
+
   public async getBudgetsById({ request, response }: HttpContextContract) {
     try {
       const { id } = request.params();
@@ -18,18 +20,20 @@ export default class BudgetsController {
     }
   }
 
-     public async createBudgets({ request, response }: HttpContextContract) {
-      try {
+  public async createBudgets({ request, response }: HttpContextContract) {
+    try {
 
-        // const data = await request.validate(BudgetsValidator);
-        const data = request.body() as IBudgets;
-        return response.send(await BudgetsProvider.createBudgets(data));
-      } catch (err) {
-        return response.badRequest(
-          new ApiResponse(null, EResponseCodes.FAIL, String(err))
-        );
-      }
+      const data = request.body() as IBudgets;
+      return response.send(await BudgetsProvider.createBudgets(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
     }
+  }
 
   public async getBudgetsPaginated({ request, response }: HttpContextContract) {
     try {
@@ -44,24 +48,31 @@ export default class BudgetsController {
 
   public async updateBudgets({ request, response }: HttpContextContract) {
     try {
+
       const { id } = request.params();
-      // const data = await request.validate(BudgetsValidator);
       const data = request.body() as IBudgets;
       return response.send(await BudgetsProvider.updateBudgets(data, id));
+
     } catch (err) {
+
       return response.badRequest(
         new ApiResponse(null, EResponseCodes.FAIL, String(err))
       );
+
     }
   }
 
   public async getAllBudgets({ response }: HttpContextContract) {
     try {
+
       return response.send(await BudgetsProvider.getAllBudgets());
+
     } catch (err) {
+
       return response.badRequest(
         new ApiResponse(null, EResponseCodes.FAIL, String(err))
       );
+
     }
   }
 }

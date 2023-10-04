@@ -1,27 +1,35 @@
 import {
-  IVinculationMGA,
   IFiltersVinculationMGA,
-  IActivityMGA,
-  ICrudVinculation,
+  IActivityMGA
 } from "App/Interfaces/VinculationMGAInterfaces";
+
 import ActivitiesMGA from "App/Models/ActivitiesMGA";
 import VinculationMGA from "App/Models/VinculationMGA";
+
 import { IPagingData } from "App/Utils/ApiResponses";
+import { IVinculationMgaV2,
+         IDesvinculationMgaV2 } from '../Interfaces/VinculationMGAInterfaces';
 
 export interface IVinculationMGARepository {
+
+  getInitialResource(): Promise<string>;
   getVinculationMGAById(id: number): Promise<IActivityMGA | null>;
-  getVinculationMGAPaginated(
-    filters: IFiltersVinculationMGA
-  ): Promise<IPagingData<IActivityMGA>>;
-  createVinculationMGA(
-    vinculationMGA: ICrudVinculation
-  ): Promise<IVinculationMGA[]>;
-  deleteVinculationMGA(id: ICrudVinculation): Promise<boolean>;
+  getVinculationMGAPaginated(filters: IFiltersVinculationMGA): Promise<IPagingData<IActivityMGA>>;
+  createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaV2): Promise<IVinculationMgaV2>;
+  deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<IDesvinculationMgaV2 | boolean>;
+  getVinculationMGAByPosPreOrg(id: number): Promise<IActivityMGA[] | any>;
+
 }
 
-export default class VinculationMGARepository
-  implements IVinculationMGARepository {
+export default class VinculationMGARepository implements IVinculationMGARepository {
+
   constructor() { }
+
+  async getInitialResource(): Promise<string> {
+
+    return "Iniciando el Repo ...";
+
+  }
 
   async getVinculationMGAById(id: number): Promise<IActivityMGA | null> {
     const res = await ActivitiesMGA.find(id);
@@ -49,7 +57,6 @@ export default class VinculationMGARepository
     }
 
     const res = await query.paginate(filters.page, filters.perPage);
-
     const { data, meta } = res.serialize();
 
     return {
@@ -58,46 +65,33 @@ export default class VinculationMGARepository
     };
   }
 
-  async createVinculationMGA(
-    vinculationMGA: ICrudVinculation
-  ): Promise<IVinculationMGA[]> {
-    const vinculations: IVinculationMGA[] = [];
-    await Promise.all(
-      vinculationMGA.activities.map(async (activity) => {
-        const vinculation = await VinculationMGA.query()
-          .where("budgetId", vinculationMGA.budgetId)
-          .andWhere("mgaId", activity);
-        if (vinculation.length != 0) {
-          return;
-        }
-        const toCreateVinculationMGA = new VinculationMGA();
-        toCreateVinculationMGA.budgetId = vinculationMGA.budgetId;
-        if (vinculationMGA.userCreate) {
-          toCreateVinculationMGA.userCreate = vinculationMGA.userCreate;
-        }
-        toCreateVinculationMGA.mgaId = activity;
-        await toCreateVinculationMGA.save();
-        vinculations.push(toCreateVinculationMGA.serialize() as IVinculationMGA);
-      })
-    );
-    return vinculations;
+  //?Nuevo
+  async createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaV2): Promise<IVinculationMgaV2> {
+
+    const toCreate = new VinculationMGA();
+
+    toCreate.fill({ ...vinculationMGA });
+    await toCreate.save();
+    return toCreate.serialize() as IVinculationMgaV2;
+
   }
 
-  async deleteVinculationMGA(
-    vinculationMGA: ICrudVinculation
-  ): Promise<boolean> {
-    try {
-      await Promise.all(
-        vinculationMGA.activities.map(async (activity) => {
-          await VinculationMGA.query()
-            .where("budgetId", vinculationMGA.budgetId)
-            .andWhere("mgaId", activity)
-            .delete();
-        })
-      );
-      return true;
-    } catch {
-      return false;
-    }
+  async deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<IDesvinculationMgaV2 | boolean> {
+
+    const vinculation: IDesvinculationMgaV2 = vinculationMGA;
+
+    const deleteVinculation = VinculationMGA.query().where("id" , id).delete();
+    await deleteVinculation;
+
+    return vinculation;
+
   }
+
+  async getVinculationMGAByPosPreOrg(id: number): Promise<IActivityMGA[] | any> {
+
+    const query = await VinculationMGA.query().where("budgetId", id);
+    return query;
+
+  }
+
 }

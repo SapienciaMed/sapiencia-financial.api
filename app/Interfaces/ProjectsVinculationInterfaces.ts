@@ -6,6 +6,9 @@ export interface IProjectsVinculation {
   projectId: string,
   budgetValue: number;
   linked: boolean;
+  type?: string;
+  idFunctional?: number;
+  idInvestment?: number;
   userCreate?: string;
   dateCreate?: DateTime;
 }

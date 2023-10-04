@@ -1,14 +1,15 @@
 import { IPagingData } from "App/Utils/ApiResponses";
 // import { DateTime } from "luxon";
 import Transfer from '../Models/Transfer';
-import { ITransfers, ITransfersFilters } from '../Interfaces/TransfersInterfaces';
+import { ITransfers, ITransfersFilters, ITransfersWithMovements } from '../Interfaces/TransfersInterfaces';
+import TransfersMovement from '../Models/TransfersMovement';
 
 export interface ITransfersRepository {
 
   getTransfersPaginated(filters: ITransfersFilters): Promise<IPagingData<ITransfers>>;
   createTransfers(transfer: ITransfers): Promise<ITransfers>;
   // getAllAdditionsList(list: string): Promise<IAdditions[] | any>;
-  // getAdditionById(id: number): Promise<IAdditionsWithMovements | any>;
+  getTransferById(id: number): Promise<ITransfersWithMovements | any>;
 
 }
 
@@ -79,73 +80,75 @@ export default class TransfersRepository implements ITransfersRepository {
   // }
 
   //?OBTENER UNA ADICIÓN CON SUS MOVIMIENTOS EN PARALELO A TRAVÉS DE UN ID PARAM
-  // async getAdditionById(id: number): Promise<IAdditionsWithMovements | any> {
+  async getTransferById(id: number): Promise<ITransfersWithMovements | any> {
 
-  //   const head = await Additions
-  //     .query()
-  //     .where("id", id)
-  //     .select("id",
-  //       "actAdminDistrict",
-  //       "actAdminSapiencia");
+    const head = await Transfer
+      .query()
+      .where("id", id)
+      .select("id",
+        "actAdminDistrict",
+        "actAdminSapiencia",
+        "observations",
+        "value");
 
-  //   const details = await AdditionsMovement.query().where("additionId", id)
-  //     .preload("budgetRoute", (q1) => {
-  //       q1.select("id",
-  //         "managementCenter",
-  //         "div",
-  //         "idProjectVinculation",
-  //         "idFund",
-  //         "idBudget",
-  //         "idPospreSapiencia")
-  //       q1
-  //         //Preload para traer proyecto y área funcional
-  //         .preload("projectVinculation", (a) => {
-  //           a.select("id",
-  //             "functionalAreaId",
-  //             "projectId",
-  //             "conceptProject")
-  //           a.preload("areaFuntional", (aa) => {
-  //             aa.select("id",
-  //               "number",
-  //               "denomination",
-  //               "description")
-  //           })
-  //         })
+    const details = await TransfersMovement.query().where("transferId", id)
+      .preload("budgetRoute", (q1) => {
+        q1.select("id",
+          "managementCenter",
+          "div",
+          "idProjectVinculation",
+          "idFund",
+          "idBudget",
+          "idPospreSapiencia")
+        q1
+          //Preload para traer proyecto y área funcional
+          .preload("projectVinculation", (a) => {
+            a.select("id",
+              "functionalAreaId",
+              "projectId",
+              "conceptProject")
+            a.preload("areaFuntional", (aa) => {
+              aa.select("id",
+                "number",
+                "denomination",
+                "description")
+            })
+          })
 
-  //         //Preload para traer los fondos
-  //         .preload("funds", (b) => {
-  //           b.select("id",
-  //             "number",
-  //             "denomination",
-  //             "description")
-  //         })
+          //Preload para traer los fondos
+          .preload("funds", (b) => {
+            b.select("id",
+              "number",
+              "denomination",
+              "description")
+          })
 
-  //         //Preload para traer pospre origen
-  //         .preload("budget", (c) => {
-  //           c.select("id",
-  //             "number",
-  //             "ejercise",
-  //             "denomination",
-  //             "description")
-  //         })
+          //Preload para traer pospre origen
+          .preload("budget", (c) => {
+            c.select("id",
+              "number",
+              "ejercise",
+              "denomination",
+              "description")
+          })
 
-  //         //Preload para traer los pospre sapiencia asociados
-  //         .preload("pospreSapiencia", (d) => {
-  //           d.select("id",
-  //             "number",
-  //             "ejercise",
-  //             "consecutive",
-  //             "description")
-  //         })
-  //     })
+          //Preload para traer los pospre sapiencia asociados
+          .preload("pospreSapiencia", (d) => {
+            d.select("id",
+              "number",
+              "ejercise",
+              "consecutive",
+              "description")
+          })
+      })
 
-  //   const result = {
-  //     head,
-  //     details
-  //   }
+    const result = {
+      head,
+      details
+    }
 
-  //   return result;
+    return result;
 
-  // }
+  }
 
 }

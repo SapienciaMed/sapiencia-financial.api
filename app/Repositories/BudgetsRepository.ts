@@ -27,6 +27,16 @@ export default class BudgetsRepository implements IBudgetsRepository {
       q.preload("budget")
     });
 
+    query.preload("vinculationmga", (q) => {
+      q.select("id",
+               "activityId",
+               "consecutiveActivityDetailed",
+               "detailedActivityId",
+               "userCreate",
+               "dateCreate"
+              )
+    });
+
     query.orderBy("denomination", "asc");
 
     if (filters.entity) {

@@ -10,3 +10,11 @@ export interface IProjectFilters {
     perPage: number;
     id: string;
 }
+
+export interface IProjectFiltersWithPlanning {
+  page?: number;
+  perPage?: number;
+  id?: string;
+  nameOrCode?: string;
+  searchFunctionaArea?: number;
+}
