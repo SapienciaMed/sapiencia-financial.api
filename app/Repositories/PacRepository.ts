@@ -74,7 +74,7 @@ export default class PacRepository implements IPacRepository{
     validateExcelTemplate = (row:any)=>{
         
         
-        row.getCell()
+        
         const titles = [
             'CENTRO GESTOR',
             'POSICION PRESUPUESTAL',
@@ -85,57 +85,36 @@ export default class PacRepository implements IPacRepository{
             'PROYECTO',
             'PRESUPUESTO SAPIENCIA',
             'PROGRAMADO' ,
-            'ENERO',
-            'RECAUDADO',
-            'ENERO',
-            'PROGRAMADO' ,
-            'FEBRERO',
-            'RECAUDADO',
-            'FEBRERO',
-            'PROGRAMADO',
-            'MARZO',
-            'RECAUDADO',
-            'MARZO',
-            'PROGRAMADO',
-            'ABRIL',
-            'RECAUDADO',
-            'ABRIL',
-            'PROGRAMADO',
-            'MAYO',
-            'RECAUDADO',
-            'MAYO',
-            'PROGRAMADO',
-            'JUNIO',
-            'RECAUDADO',
-            'JUNIO',
-            'PROGRAMADO',
-            'JULIO',
-            'RECAUDADO',
-            'JULIO',
-            'PROGRAMADO',
-            'AGOSTO',
-            'RECAUDADO',
-            'AGOSTO',
-            'PROGRAMADO',
-            'SEPTIEMBRE',
-            'RECAUDADO',
-            'SEPTIEMBRE',
-            'PROGRAMADO',
-            'OCTUBRE',
-            'RECAUDADO',
-            'OCTUBRE'	,
-            'PROGRAMADO',
-            'NOVIEMBRE',
-            'RECAUDADO',
-            'NOVIEMBRE',
-            'PROGRAMADO' ,
-            'DICIEMBRE',
-            'RECAUDADO',
-            'DICIEMBRE'
-
+            'ENERO RECAUDADO',
+            'ENERO PROGRAMADO' ,
+            'FEBRERO RECAUDADO',
+            'FEBRERO PROGRAMADO',
+            'MARZO RECAUDADO',
+            'MARZO PROGRAMADO',
+            'ABRIL RECAUDADO',
+            'ABRIL PROGRAMADO',
+            'MAYO RECAUDADO',
+            'MAYO PROGRAMADO',
+            'JUNIO RECAUDADO',
+            'JUNIO PROGRAMADO',
+            'JULIO RECAUDADO',
+            'JULIO PROGRAMADO',
+            'AGOSTO RECAUDADO',
+            'AGOSTO PROGRAMADO',
+            'SEPTIEMBRE RECAUDADO',
+            'SEPTIEMBRE PROGRAMADO',
+            'OCTUBRE RECAUDADO',
+            'OCTUBRE PROGRAMADO',
+            'NOVIEMBRE RECAUDADO',
+            'NOVIEMBRE PROGRAMADO' ,
+            'DICIEMBRE RECAUDADO',
+            'DICIEMBRE PROGRAMADO'
         ]
 
-        /* titles.forEach()       */
+        titles.forEach((e:any,index:number)=>{
+            let d = row.getCell(index+1).value
+            console.log("===>>" ,d)
+        })      
     }
 
 }
