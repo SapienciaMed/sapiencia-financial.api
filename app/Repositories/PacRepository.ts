@@ -111,7 +111,7 @@ export default class PacRepository implements IPacRepository{
             'DICIEMBRE PROGRAMADO'
         ]
 
-        titles.forEach((e:any,index:number)=>{
+        titles.forEach((_e:any,index:number)=>{
             let d = row.getCell(index+1).value
             console.log("===>>" ,d)
         })      
