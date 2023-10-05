@@ -122,24 +122,7 @@ export default class AdditionsController {
 
   }
 
-  //?OBTENER LISTADO DE PROYECTOS CON SU ÁREA FUNCIONAL VINCULADA
-  public async getProjectsList({ request, response }: HttpContextContract) {
 
-    try {
-
-      const data = request.body() as IProjectAdditionFilters;
-
-      return response.send(await AdditionsProvider.getProjectsList(data));
-
-    } catch (err) {
-
-      return response.badRequest(
-        new ApiResponse(null, EResponseCodes.FAIL, String(err))
-      );
-
-    }
-
-  }
 
   //?OBTENER LISTADO DE FONDOS
   public async getFundsList({ request, response }: HttpContextContract) {

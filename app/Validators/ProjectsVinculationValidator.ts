@@ -30,8 +30,9 @@ export default class ProjectsVinculationValidator {
     public schema = schema.create({
         idFunctionalArea: schema.number(),
         projects: schema.array().members(schema.object().members({
-            id: schema.string(), 
-            linked: schema.boolean()
+            id: schema.number(),
+            linked: schema.boolean(), 
+            type: schema.string()
         })),
         userCreate: schema.string.optional()
     });
@@ -79,7 +80,7 @@ export class ProjectsVinculationEditValidator {
         idFunctionalArea: schema.number(),
         projects: schema.array().members(schema.object().members({
             id: schema.number(), 
-            linked: schema.boolean()
+            linked: schema.boolean(),
         })),
         userCreate: schema.string.optional()
     });

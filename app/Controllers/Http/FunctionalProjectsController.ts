@@ -64,9 +64,7 @@ export default class FunctionalProjectsController {
 
   }
 
-  public async deleteFunctionalProjec({ request, response }: HttpContextContract) {
-
-    console.log({request});
+  public async deleteFunctionalProjec({  response }: HttpContextContract) {
     return response.accepted(
       new ApiResponse(null, EResponseCodes.OK, "Hola desde deleteFunctionalProjec")
     );

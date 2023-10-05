@@ -90,7 +90,6 @@ Route.group(() => {
   Route.post("/link/create", "FunctionalAreaController.createProjectFunctionalArea");
   Route.post("/link/update", "FunctionalAreaController.updateProjectFunctionalArea");
   Route.delete("/link/delete/:id", "FunctionalAreaController.deleteProjectFunctionalArea");
-  Route.get("/link/get-all", "FunctionalAreaController.getAllProjectFunctionalArea");
   Route.post("/link/get-paginated", "FunctionalAreaController.getProjectFunctionalAreaPaginated");
 
 }).prefix("/api/v1/functional-area");
@@ -100,11 +99,11 @@ Route.group(() => {
 
   Route.post("/get-paginated", "ProjectsController.getProjectsPaginated");
   Route.get("/get-all", "ProjectsController.getAllProjects");
-  Route.post("/get-projects-api-planning", "ProjectsController.getProjectsUpdateV2");
-  Route.post("/get-projects-api-planning-no-functionalarea", "ProjectsController.getProjectsNoUseOnFunctionalArea");
-
+  Route.post("/get-unrelated-projects", "ProjectsController.getUnrelatedProjects");
 }).prefix("/api/v1/projects");
 // .middleware("auth");
+
+
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "ManagementCenterController.getManagementCenterById");
@@ -132,7 +131,6 @@ Route.group(() => {
 Route.group(() => {
 
   Route.post("/get-paginated", "AdditionsController.getAdditionsPaginated");
-  Route.post("/get-projects", "AdditionsController.getProjectsList");
   Route.post("/get-funds", "AdditionsController.getFundsList");
   Route.post("/get-pospre", "AdditionsController.getPosPreList");
   Route.post("/get-pospre-sapiencia", "AdditionsController.getPosPreSapienciaList");
@@ -150,7 +148,6 @@ Route.group(() => {
 Route.group(() => {
 
   Route.post("/get-paginated", "TransfersController.getTransfersPaginated");
-  Route.post("/get-projects", "TransfersController.getProjectsList");
   Route.post("/get-funds", "TransfersController.getFundsList");
   Route.post("/get-pospre", "TransfersController.getPosPreList");
   Route.post("/get-pospre-sapiencia", "TransfersController.getPosPreSapienciaList");
