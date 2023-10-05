@@ -23,6 +23,7 @@ export default class AppProvider {
     const TransfersService = await import("App/Services/TransfersService");
     const FunctionalProjectService = await import("App/Services/FunctionalProjectService");
     const StrategicDirectionService = await import("App/Services/External/StrategicDirectionService");
+    const PacService = await import("App/Services/PacService");
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -74,6 +75,10 @@ export default class AppProvider {
     );
     const FunctionalProjectRepository = await import(
       "App/Repositories/FunctionalProjectRepository"
+    );
+    
+    const PacRepository = await import(
+      "App/Repositories/PacRepository"
     );
 
     /**************************************************************************/
@@ -162,6 +167,11 @@ export default class AppProvider {
     this.app.container.singleton(
       "core.FunctionalProjectProvider",
       () => new FunctionalProjectService.default(new FunctionalProjectRepository.default())
+    );
+    
+    this.app.container.singleton(
+      "core.PacProvider",
+      () => new PacService.default(new PacRepository.default())
     );
 
   }

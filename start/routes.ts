@@ -171,3 +171,7 @@ Route.group(() => {
     Route.post("/create", "FunctionalProjectsController.createFunctionalProject");
     Route.post("/update-save/:id", "FunctionalProjectsController.updateFunctionalProject");
   }).prefix("/api/v1/projectOperation")
+
+  Route.group(() => {
+    Route.post('upload-pac','PacsController.uploadPac')
+  }).prefix("/api/v1/pac")
