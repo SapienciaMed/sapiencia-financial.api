@@ -87,15 +87,6 @@ export default class FunctionalAreaController {
     }
   }
 
-  public async getAllProjectFunctionalArea({ response }: HttpContextContract) {
-    try {
-      return response.send(await FuncitonalAreaProvider.getAllProjectFunctionalArea());
-    } catch (err) {
-      return response.badRequest(
-        new ApiResponse(null, EResponseCodes.FAIL, String(err))
-      );
-    }
-  }
 
   public async getProjectFunctionalAreaPaginated({ request, response }: HttpContextContract) {
     try {

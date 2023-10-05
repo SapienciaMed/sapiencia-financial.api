@@ -1,6 +1,6 @@
 declare module "@ioc:core.PlanningProvider" {
-  import { IPlanningService } from "App/Services/External/StrategicDirectionService";
+  import { IStrategicDirectionService } from "App/Services/External/StrategicDirectionService";
 
-  const PlanningProvider: IPlanningService;
+  const PlanningProvider: IStrategicDirectionService;
   export default PlanningProvider;
 }

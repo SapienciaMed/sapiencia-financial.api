@@ -128,8 +128,6 @@ export default class FundsRepository implements IFundsRepository {
     const { data, meta } = fundsPaginated.serialize();
     const dataArray = data ?? [];
 
-    console.log(dataArray as IFundsAdditionList[]);
-
     return {
       array: dataArray as IFundsAdditionList[],
       meta,

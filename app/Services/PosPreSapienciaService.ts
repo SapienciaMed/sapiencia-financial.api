@@ -19,10 +19,11 @@ export interface IPosPreSapienciaService {
 }
 
 export default class PosPreSapienciaService implements IPosPreSapienciaService {
+  constructor(private posPreSapienciaRepository: IPosPreSapienciaRepository) {}
 
-  constructor(private posPreSapienciaRepository: IPosPreSapienciaRepository) { }
-
-  async getPosPreSapienciaById(id: number): Promise<ApiResponse<IPosPreSapiencia>> {
+  async getPosPreSapienciaById(
+    id: number
+  ): Promise<ApiResponse<IPosPreSapiencia>> {
     const res = await this.posPreSapienciaRepository.getPosPreSapienciaById(id);
 
     if (!res) {
@@ -46,14 +47,14 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
 
     const res = await this.posPreSapienciaRepository.getListPosPreSapVinculationPaginated(filters);
     return new ApiResponse(res, EResponseCodes.OK);
-
   }
 
   async createPosPreSapVinculation(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia | any>> {
 
     //?Verifiquemos el PosPre Sapi con la nueva mecánica:
     const posPreSap = posPreSapiencia.number;
-    const searchPosPreSapi = await this.posPreSapienciaRepository.searchPosPreSapByNumber(posPreSap);
+    const searchPosPreSapi =
+      await this.posPreSapienciaRepository.searchPosPreSapByNumber(posPreSap);
 
     if(!searchPosPreSapi){
 
@@ -64,7 +65,6 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
         EResponseCodes.OK,
         "Pospre Sapiencia registrado correctamente."
       );
-
     }
 
     return new ApiResponse(
@@ -72,12 +72,16 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
       EResponseCodes.FAIL,
       "Se ha encontrado un error, el código sapiencia ya existe en el sistema"
     );
-
   }
 
-  async updatePosPreSapVinculation(posPreSapiencia: IPosPreSapiencia , id: number): Promise<ApiResponse<IPosPreSapiencia | null>> {
-
-    const res = await this.posPreSapienciaRepository.updatePosPreSapVinculation(posPreSapiencia, id);
+  async updatePosPreSapVinculation(
+    posPreSapiencia: IPosPreSapiencia,
+    id: number
+  ): Promise<ApiResponse<IPosPreSapiencia | null>> {
+    const res = await this.posPreSapienciaRepository.updatePosPreSapVinculation(
+      posPreSapiencia,
+      id
+    );
 
     if (!res) {
       return new ApiResponse(
@@ -88,7 +92,5 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
     }
 
     return new ApiResponse(res, EResponseCodes.OK);
-
   }
-
 }
