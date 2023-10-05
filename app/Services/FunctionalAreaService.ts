@@ -15,7 +15,6 @@ export interface IFunctionalAreaService {
     createProjectFunctionalArea(projectsVinculate: IProjectsVinculate): Promise<ApiResponse<IProjectsVinculation[]>>;
     updateProjectFunctionalArea(projectsVinculate: IProjectsVinculate): Promise<ApiResponse<IProjectsVinculation[] | null>>;
     deleteProjectFunctionalArea(projectVinculate: number): Promise<ApiResponse<boolean>>;
-    getAllProjectFunctionalArea(): Promise<ApiResponse<IProjectsVinculation[]>>;
     getProjectFunctionalAreaPaginated(filters: IProjectsVinculateFilters): Promise<ApiResponse<IPagingData<IProjectsVinculationFull>>>;
     getAllFunctionalAreas(): Promise<ApiResponse<IFunctionalArea[]>>;
 }
@@ -94,11 +93,6 @@ export default class FunctionalAreaService implements IFunctionalAreaService {
 
     async deleteProjectFunctionalArea(projectVinculate: number): Promise<ApiResponse<boolean>> {
         const res = await this.FunctionalAreaRepository.deleteProjectFunctionalArea(projectVinculate);
-        return new ApiResponse(res, EResponseCodes.OK);
-    }
-
-    async getAllProjectFunctionalArea(): Promise<ApiResponse<IProjectsVinculation[]>> {
-        const res = await this.FunctionalAreaRepository.getAllProjectFunctionalArea();
         return new ApiResponse(res, EResponseCodes.OK);
     }
 

@@ -90,7 +90,6 @@ Route.group(() => {
   Route.post("/link/create", "FunctionalAreaController.createProjectFunctionalArea");
   Route.post("/link/update", "FunctionalAreaController.updateProjectFunctionalArea");
   Route.delete("/link/delete/:id", "FunctionalAreaController.deleteProjectFunctionalArea");
-  Route.get("/link/get-all", "FunctionalAreaController.getAllProjectFunctionalArea");
   Route.post("/link/get-paginated", "FunctionalAreaController.getProjectFunctionalAreaPaginated");
 
 }).prefix("/api/v1/functional-area");
@@ -149,7 +148,6 @@ Route.group(() => {
 Route.group(() => {
 
   Route.post("/get-paginated", "TransfersController.getTransfersPaginated");
-  Route.post("/get-projects", "TransfersController.getProjectsList");
   Route.post("/get-funds", "TransfersController.getFundsList");
   Route.post("/get-pospre", "TransfersController.getPosPreList");
   Route.post("/get-pospre-sapiencia", "TransfersController.getPosPreSapienciaList");

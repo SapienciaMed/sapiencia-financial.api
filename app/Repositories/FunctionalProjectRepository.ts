@@ -43,7 +43,6 @@ export default class FunctionalProjectRepository implements IFunctionalProjectRe
       await toCreate.save();
       return toCreate.serialize() as IFunctionalProject;
     } catch (error) {
-      console.log({ error })
       return error;
     }
   }

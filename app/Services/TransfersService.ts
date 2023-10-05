@@ -9,7 +9,6 @@ import {
   IPosPreTransfer,
   IPosPreSapienciaTransferList,
   IProjectTransferFilters,
-  IProjectTransferList,
 } from "App/Interfaces/TransfersInterfaces";
 
 import { IProjectsRepository } from '../Repositories/ProjectsRepository';
@@ -30,8 +29,7 @@ export interface ITransfersService {
   executeCreateTransfers(transfer: ITransfersWithMovements): Promise<ApiResponse<ITransfersWithMovements | any>>;
   totalTransferCalculator(transfer: ITransfersWithMovements): Promise<ApiResponse<number>>;
   getTransferById(id: number): Promise<ApiResponse<ITransfersWithMovements>>;
-  getProjectsList(filters: IProjectTransferFilters): Promise<ApiResponse<IPagingData<IProjectTransferList>>>;
-  getFundsList(filters: IProjectTransferFilters): Promise<ApiResponse<IPagingData<IFundsTransferList>>>;
+   getFundsList(filters: IProjectTransferFilters): Promise<ApiResponse<IPagingData<IFundsTransferList>>>;
   getPosPreList(): Promise<IPosPreTransfer | string[]>;
   getPosPreSapienciaList(filters: IProjectTransferFilters): Promise<ApiResponse<IPagingData<IPosPreSapienciaTransferList>>>;
   updateTransferWithMov(id: number, transfer: ITransfersWithMovements): Promise<ApiResponse<ITransfersWithMovements | any>>;
@@ -200,11 +198,6 @@ export default class TransfersService implements ITransfersService {
 
       }
 
-      for (let j of i.data) {
-
-        console.log(j);
-
-      }
 
     }
 
@@ -354,13 +347,6 @@ export default class TransfersService implements ITransfersService {
 
   }
 
-  //?OBTENER LISTADO DE PROYECTOS CON SU ÁREA FUNCIONAL VINCULADA
-  async getProjectsList(filters: IProjectTransferFilters): Promise<ApiResponse<IPagingData<IProjectTransferList | any>>> {
-
-    const projects = await this.projectRepository.getProjectsList(filters);
-    return new ApiResponse(projects, EResponseCodes.OK);
-
-  }
 
   //?OBTENER LISTADO DE FONDOS
   async getFundsList(filters: IProjectTransferFilters): Promise<ApiResponse<IPagingData<IFundsTransferList>>> {
@@ -720,7 +706,6 @@ export default class TransfersService implements ITransfersService {
 
     }
 
-    console.log({bandInveProject , bandFuncProject});
 
     if(bandInveProject && bandFuncProject){
 

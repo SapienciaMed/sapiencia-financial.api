@@ -247,8 +247,6 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
       arrayIdActivtyDetailedOnPosPre.push(Number(resVinculation.id));
     });
 
-    console.log(arrayActivtyDetailedOnPosPre);
-    console.log(arrayIdActivtyDetailedOnPosPre);
 
     let cont: number = 0;
 
@@ -405,7 +403,6 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
       },
     });
 
-    console.log(dataUser);
 
     const requestResult: IProject[] = [];
     const result: IApiPlanningProject | any = dataUser;

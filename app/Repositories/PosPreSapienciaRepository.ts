@@ -95,7 +95,6 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
       queryPosPreOrig.where("number", filters.budgetNumberOrig);
       const resQueryPosPreOrig = await queryPosPreOrig.paginate(1, 10);
       const { data, meta } = resQueryPosPreOrig.serialize();
-      console.log({ meta });
       const parsingResult = data as IPosPreOrigen[];
       let idPosPreOrig: number = 0;
 
@@ -140,7 +139,6 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
 
     const res = await queryPosPreSapi.paginate(1, 10);
     const { data, meta } = res.serialize();
-    console.log({ meta });
     const element = data as IPosPreSapiencia[];
 
     if (!element || element.length <= 0) {

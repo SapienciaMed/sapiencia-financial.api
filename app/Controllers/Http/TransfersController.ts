@@ -23,18 +23,14 @@ export default class TransfersController {
 
   }
 
-  public async getAllTransfersByDistrict({request, response}: HttpContextContract) {
-
-    console.log(request);
+  public async getAllTransfersByDistrict({ response}: HttpContextContract) {
     return response.badRequest(
       new ApiResponse(null, EResponseCodes.INFO, "Hola desde getAllTransfersByDistrict")
     );
 
   }
 
-  public async getAllTransfersBySapiencia({request, response}: HttpContextContract) {
-
-    console.log(request);
+  public async getAllTransfersBySapiencia({ response}: HttpContextContract) {
     return response.badRequest(
       new ApiResponse(null, EResponseCodes.INFO, "Hola desde getAllTransfersBySapiencia")
     );
@@ -89,24 +85,6 @@ export default class TransfersController {
 
       const { id } = request.params();
       return response.send(await TransfersProvider.getTransferById(id));
-
-    } catch (err) {
-
-      return response.badRequest(
-        new ApiResponse(null, EResponseCodes.FAIL, String(err))
-      );
-
-    }
-
-  }
-
-  public async getProjectsList({request, response}: HttpContextContract) {
-
-    try {
-
-      const data = request.body() as IProjectTransferFilters;
-
-      return response.send(await TransfersProvider.getProjectsList(data));
 
     } catch (err) {
 
