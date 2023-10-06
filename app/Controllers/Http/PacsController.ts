@@ -17,7 +17,8 @@ export default class PacsController {
          })
         
         try {
-            const { id } = request.params();
+            const { id } = request.params() as {id:string};
+            id;
             return response.send(await PacProvider.uploadPac(file,body));
           } catch (err) {
             return response.badRequest(

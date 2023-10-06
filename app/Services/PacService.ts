@@ -16,10 +16,10 @@ export default class PacService implements IPacService {
 
     constructor(private pacRepository: IPacRepository) { }
 
-    uploadPac = async (file: any, body:IBody ): Promise<ApiResponse<any>> => {
+    uploadPac = async (file: any, _body:IBody ): Promise<ApiResponse<any>> => {
 
         // Obtener información y validación de excel
-        const { validTemplateStatus, data } = await this.pacRepository.uploadPac(file);
+        const { validTemplateStatus, data, rowsWithFieldsEmpty, rowsWithFieldNumberInvalid } = await this.pacRepository.uploadPac(file);
         if (validTemplateStatus.error) {
             return new ApiResponse(validTemplateStatus, EResponseCodes.FAIL, validTemplateStatus.message);
         }
@@ -182,7 +182,7 @@ export default class PacService implements IPacService {
         // metodo gardar ....
         //dataValidacion = respository.updateOrCreate()
 
-        return new ApiResponse(data, EResponseCodes.OK);
+        return new ApiResponse({validTemplateStatus, rowsWithFieldsEmpty,rowsWithFieldNumberInvalid, data}, EResponseCodes.OK);
 
     }
 
