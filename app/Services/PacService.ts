@@ -1,9 +1,13 @@
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import IPacRepository from "App/Repositories/PacRepository";
 import { ApiResponse } from "App/Utils/ApiResponses";
+import { IReviewBudgetRoute } from '../Interfaces/PacInterfaces';
 
 export default interface IPacService {
+
     uploadPac(file): Promise<ApiResponse<any>>;
+    reviewBudgetsRoute(budgetRoute: IReviewBudgetRoute): Promise<ApiResponse<any>>;
+
 }
 
 export default class PacService implements IPacService {
@@ -11,10 +15,10 @@ export default class PacService implements IPacService {
     constructor(private pacRepository: IPacRepository) { }
 
     uploadPac = async (file: any): Promise<ApiResponse<any>> => {
-       
+
         // Obtener información y validación de excel
         const dataLoadedFromExcel = await this.pacRepository.uploadPac(file);
-        
+
         /* dataLoadedFromExcel = [{
             "managementCenter": "91500000",
             "sapienciaPosition": "2340201", //sobra
@@ -34,7 +38,7 @@ export default class PacService implements IPacService {
             }],
             {
                 "arrayData": [
-                   {  
+                   {
                         "id": 1,
                         "sourceType": "Propio",
                         "budgetRouteId": 1,
@@ -62,23 +66,31 @@ export default class PacService implements IPacService {
                             "dateModify": "",
                             "dateCreate": ""
                         }
-            
+
                     }
         } */
 
 
         //dataValidacion = respository.validarNegocio(res) // Validacion de consistencia de información.
- 
-        
+
+
         //reposutory.dataStructure() // data
 
         // almacenar información
-        
+
         // metodo gardar ....
         //dataValidacion = respository.updateOrCreate()
 
 
         return new ApiResponse(dataLoadedFromExcel, EResponseCodes.OK);
+
+    }
+
+    async reviewBudgetsRoute(budgetRoute: IReviewBudgetRoute): Promise<ApiResponse<any>> {
+
+      const res = await this.pacRepository.reviewBudgetsRoute(budgetRoute);
+      return new ApiResponse(res, EResponseCodes.OK);
+
     }
 
 
