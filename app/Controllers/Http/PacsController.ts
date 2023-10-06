@@ -2,6 +2,7 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { EResponseCodes } from 'App/Constants/ResponseCodesEnum';
 import { ApiResponse } from 'App/Utils/ApiResponses';
 import PacProvider from '@ioc:core.PacProvider'
+import { IReviewBudgetRoute } from '../../Interfaces/PacInterfaces';
 
 export default class PacsController {
 
@@ -11,7 +12,7 @@ export default class PacsController {
             return response.status(400).json({ message: 'No se ha proporcionado ningún archivo' })
         }
 
-        const file = request.file('file', { 
+        const file = request.file('file', {
             size: '20mb',
             extnames: ['xlsx', 'xls'],
          })
@@ -25,6 +26,24 @@ export default class PacsController {
               new ApiResponse(null, EResponseCodes.FAIL, String(err))
             );
           }
+
+
+    }
+
+    public async reviewBudgetsRoute({request, response}:HttpContextContract){
+
+      try {
+
+        const data = request.body() as IReviewBudgetRoute;
+        return response.send(await PacProvider.reviewBudgetsRoute(data));
+
+      } catch (err) {
+
+        return response.badRequest(
+          new ApiResponse(null, EResponseCodes.FAIL, String(err))
+        );
+
+      }
 
     }
 

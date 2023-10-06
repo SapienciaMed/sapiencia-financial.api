@@ -1,8 +1,12 @@
 import fs from 'fs';
 import Excel from 'exceljs'
+import { IReviewBudgetRoute } from '../Interfaces/PacInterfaces';
 
 export default interface IPacRepository {
+
     uploadPac(file: any): Promise<any>;
+    reviewBudgetsRoute(budgetRoute: IReviewBudgetRoute): Promise<any>;
+
 }
 
 export default class PacRepository implements IPacRepository {
@@ -201,6 +205,26 @@ export default class PacRepository implements IPacRepository {
             rowError: null,
             columnError: null
         }
+    }
+
+    async reviewBudgetsRoute(budgetRoute: IReviewBudgetRoute): Promise<any> {
+
+        console.log(budgetRoute);
+        //TODO: Acá consultamos la ruta presupuestal y sus componentes
+
+        //* Paso 1. Hallar el PosPre Origen a través del PosPre Sapiencia (Y que exista)
+
+        //* Paso 2. Hallar el Proyecto a través del Código Referencia
+
+        //* Paso 3. Hallar el Fondo
+
+        //* Paso 4. Hallar la ruta presupuestal
+
+        //* Paso 5. Verificar que la ruta no esté repetida en la interacción
+
+
+        return true;
+
     }
 
 }

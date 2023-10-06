@@ -1,16 +1,20 @@
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import IPacRepository from "App/Repositories/PacRepository";
 import { ApiResponse } from "App/Utils/ApiResponses";
+import { IReviewBudgetRoute } from '../Interfaces/PacInterfaces';
 
 export default interface IPacService {
+
     uploadPac(file: any, body: IBody): Promise<ApiResponse<any>>;
+    reviewBudgetsRoute(budgetRoute: IReviewBudgetRoute): Promise<ApiResponse<any>>;
+
 }
 
-interface IBody { 
-    exercise: number;
-    typeSource: string;
-    typePac: string;
- }
+interface IBody {
+  exercise: number;
+  typeSource: string;
+  typePac: string;
+}
 
 export default class PacService implements IPacService {
 
@@ -28,7 +32,7 @@ export default class PacService implements IPacService {
 
         //Meses Meses
 
-        //RouteId ===>>> 
+        //RouteId ===>>>
 
 
         // los mismos
@@ -139,7 +143,7 @@ export default class PacService implements IPacService {
             }],
             {
                 "arrayData": [
-                   {  
+                   {
                         "id": 1,
                         "sourceType": "Propio",
                         "budgetRouteId": 1,
@@ -167,12 +171,12 @@ export default class PacService implements IPacService {
                             "dateModify": "",
                             "dateCreate": ""
                         }]
-            
+
                     }
         } */
 
 
-        //dataValidacion = respository.validarNegocio(data) // Validacion de consistencia de información.
+        //dataValidacion = respository.validarNegocio(res) // Validacion de consistencia de información.
 
 
         //reposutory.dataStructure() // data
@@ -183,6 +187,15 @@ export default class PacService implements IPacService {
         //dataValidacion = respository.updateOrCreate()
 
         return new ApiResponse({validTemplateStatus, rowsWithFieldsEmpty,rowsWithFieldNumberInvalid, data}, EResponseCodes.OK);
+
+        //return new ApiResponse(dataLoadedFromExcel, EResponseCodes.OK);
+
+    }
+
+    async reviewBudgetsRoute(budgetRoute: IReviewBudgetRoute): Promise<ApiResponse<any>> {
+
+      const res = await this.pacRepository.reviewBudgetsRoute(budgetRoute);
+      return new ApiResponse(res, EResponseCodes.OK);
 
     }
 
