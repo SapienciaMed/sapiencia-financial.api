@@ -14,7 +14,7 @@ export default class PacService implements IPacService {
        
         // Obtener información y validación de excel
         const dataLoadedFromExcel = await this.pacRepository.uploadPac(file);
-        
+        //console.log({dataLoadedFromExcel})
         /* dataLoadedFromExcel = [{
             "managementCenter": "91500000",
             "sapienciaPosition": "2340201", //sobra
@@ -67,7 +67,7 @@ export default class PacService implements IPacService {
         } */
 
 
-        //dataValidacion = respository.validarNegocio(res) // Validacion de consistencia de información.
+        //dataValidacion = respository.validarNegocio() // Validacion de consistencia de información.
  
         
         //reposutory.dataStructure() // data

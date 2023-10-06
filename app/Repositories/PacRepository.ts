@@ -24,57 +24,38 @@ export default class PacRepository implements IPacRepository{
             const workbook = new Excel.Workbook()
             await workbook.xlsx.readFile(filePath)
             const page = workbook.getWorksheet(1)
-            page.eachRow((row, rowNumber) => {
-
-                if(rowNumber == 1){
-                    this.validateExcelTemplate(row)
-                }
-                if (rowNumber >= 1 && rowNumber<3) {
-                    console.log({row:row.getCell(1).value})
-                    console.log({row:row.getCell(2).value})
-                    console.log({row:row.getCell(3).value})
-                    console.log({row:row.getCell(4).value})
-                    console.log({row:row.getCell(5).value})
-                    console.log({row:row.getCell(6).value})
-                    console.log({row:row.getCell(7).value})
-                    console.log({row:row.getCell(8).value})
-                    console.log({row:row.getCell(9).value})
-                    console.log({row:row.getCell(10).value})
-                    console.log({row:row.getCell(11).value})
-                    console.log({row:row.getCell(12).value})
-                    console.log({row:row.getCell(13).value})
-                    console.log({row:row.getCell(14).value})
-                    console.log({row:row.getCell(15).value})
-                    console.log({row:row.getCell(16).value})
-                    console.log({row:row.getCell(17).value})
-                    console.log({row:row.getCell(18).value})
-                    console.log({row:row.getCell(19).value})
-                    console.log({row:row.getCell(20).value})
-                    console.log({row:row.getCell(21).value})
-                    console.log({row:row.getCell(22).value})
-                    console.log({row:row.getCell(23).value})
-                    console.log({row:row.getCell(24).value})
-                    console.log({row:row.getCell(25).value})
-                    console.log({row:row.getCell(26).value})
-                    console.log({row:row.getCell(27).value})
-                    console.log({row:row.getCell(28).value})
-                    console.log({row:row.getCell(29).value})
-                    console.log({row:row.getCell(30).value})
-                    console.log({row:row.getCell(31).value})
-                    console.log({row:row.getCell(32).value})
-
-                }
-            })
+    
+            const dataLoadedFromExcel = this.structureDataFile(page);
 
             fs.unlinkSync(filePath);
-            return "Cargando información";
+            return dataLoadedFromExcel;
+    }
+
+    structureDataFile = (page:any)=>{
+        let dataStructureFromExcel:any[]=[];
+        page.eachRow((row, rowNumber) => {
+
+            if(rowNumber == 1){
+                this.validateExcelTemplate(row)
+            }
+
+                dataStructureFromExcel.push({
+                    managementCenter: row.getCell(1).value,
+                    sapienciaPosition: row.getCell(2).value, 
+                    sapienciaBudgetPosition: row.getCell(3).value,
+                    fundSapiencia: row.getCell(4).value,
+                    fund: row.getCell(5).value,
+                    functionArea: row.getCell(6).value,
+                    project: row.getCell(7).value,
+                })
+                
+        })
+        return dataStructureFromExcel;
+
     }
 
 
     validateExcelTemplate = (row:any)=>{
-        
-        
-        
         const titles = [
             'CENTRO GESTOR',
             'POSICION PRESUPUESTAL',
@@ -111,8 +92,9 @@ export default class PacRepository implements IPacRepository{
             'DICIEMBRE PROGRAMADO'
         ]
 
-        titles.forEach((_e:any,index:number)=>{
-            let d = row.getCell(index+1).value
+        titles.forEach((title:any,index:number)=>{
+             let d = row.getCell(index+1).value
+            console.log({title})
             console.log("===>>" ,d)
         })      
     }
