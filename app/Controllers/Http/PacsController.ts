@@ -17,7 +17,7 @@ export default class PacsController {
             extnames: ['xlsx', 'xls'],
          })
 
-        const resp = await PacProvider.uploadPac(file)
+        const resp = await PacProvider.uploadPac(file, body)
 
         return response.accepted(
           new ApiResponse(resp, EResponseCodes.OK, "¡Proyecto guardado exitosamente!")

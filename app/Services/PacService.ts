@@ -20,7 +20,7 @@ export default class PacService implements IPacService {
 
     constructor(private pacRepository: IPacRepository) { }
 
-    uploadPac = async (file: any, body:IBody ): Promise<ApiResponse<any>> => {
+    uploadPac = async (file: any, _body:IBody ): Promise<ApiResponse<any>> => {
 
         // Obtener información y validación de excel
         const { validTemplateStatus, data } = await this.pacRepository.uploadPac(file);
