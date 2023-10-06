@@ -15,21 +15,6 @@ export default class ProjectsVinculation extends BaseModel {
   })
   public functionalAreaId: number;
 
-  // @column({ columnName: "VPY_CODIGO_PROYECTO", serializeAs: "projectId" })
-  // public projectId: string;
-
-  // @column({
-  //   columnName: "VPY_CONCEPTO_PROYECTO",
-  //   serializeAs: "conceptProject",
-  // })
-  // public conceptProject: string;
-
-  // @column({ columnName: "VPY_VALOR_PRESUPUESTADO", serializeAs: "budgetValue" })
-  // public budgetValue: number;
-
-  // @column({ columnName: "VPY_VALOR_ASIGNADO", serializeAs: "assignmentValue" })
-  // public assignmentValue: number;
-
   @column({
     columnName: "VPY_VINCULADO",
     serializeAs: "linked",
