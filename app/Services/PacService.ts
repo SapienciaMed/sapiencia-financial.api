@@ -13,7 +13,12 @@ export default class PacService implements IPacService {
     uploadPac = async (file: any): Promise<ApiResponse<any>> => {
        
         // Obtener información y validación de excel
-        const dataLoadedFromExcel = await this.pacRepository.uploadPac(file);
+        const { validTemplateStatus, data } = await this.pacRepository.uploadPac(file);
+        if(validTemplateStatus.error){
+            return new ApiResponse(validTemplateStatus, EResponseCodes.FAIL,validTemplateStatus.message);
+        }
+        
+        
         //console.log({dataLoadedFromExcel})
         /* dataLoadedFromExcel = [{
             "managementCenter": "91500000",
@@ -67,7 +72,7 @@ export default class PacService implements IPacService {
         } */
 
 
-        //dataValidacion = respository.validarNegocio() // Validacion de consistencia de información.
+        //dataValidacion = respository.validarNegocio(data) // Validacion de consistencia de información.
  
         
         //reposutory.dataStructure() // data
@@ -77,8 +82,8 @@ export default class PacService implements IPacService {
         // metodo gardar ....
         //dataValidacion = respository.updateOrCreate()
 
-
-        return new ApiResponse(dataLoadedFromExcel, EResponseCodes.OK);
+        return new ApiResponse(data, EResponseCodes.OK);
+        
     }
 
 

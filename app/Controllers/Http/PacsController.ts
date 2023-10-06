@@ -6,6 +6,8 @@ import PacProvider from '@ioc:core.PacProvider'
 export default class PacsController {
 
     public async uploadPac({request, response}:HttpContextContract){
+        let data = request.body();
+        console.log({data})
         if (!request.file('file')) {
             return response.status(400).json({ message: 'No se ha proporcionado ningún archivo' })
         }
@@ -14,11 +16,16 @@ export default class PacsController {
             size: '20mb',
             extnames: ['xlsx', 'xls'],
          })
-        const resp = await PacProvider.uploadPac(file)
+        
+        try {
+            const { id } = request.params();
+            return response.send(await PacProvider.uploadPac(file));
+          } catch (err) {
+            return response.badRequest(
+              new ApiResponse(null, EResponseCodes.FAIL, String(err))
+            );
+          }
 
-        return response.accepted(
-        new ApiResponse(resp, EResponseCodes.OK, "¡Proyecto guardado exitosamente!")
-        );
     }
 
 

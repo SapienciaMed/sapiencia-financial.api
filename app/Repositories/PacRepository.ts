@@ -33,12 +33,11 @@ export default class PacRepository implements IPacRepository{
 
     structureDataFile = (page:any)=>{
         let dataStructureFromExcel:any[]=[];
+        let validTemplateStatus={};
         page.eachRow((row, rowNumber) => {
-
             if(rowNumber == 1){
-                this.validateExcelTemplate(row)
-            }
-
+                validTemplateStatus = this.validateExcelTemplate(row)
+            }else{
                 dataStructureFromExcel.push({
                     managementCenter: row.getCell(1).value,
                     sapienciaPosition: row.getCell(2).value, 
@@ -48,9 +47,12 @@ export default class PacRepository implements IPacRepository{
                     functionArea: row.getCell(6).value,
                     project: row.getCell(7).value,
                 })
-                
+            }
         })
-        return dataStructureFromExcel;
+        return {
+            data:dataStructureFromExcel,
+            validTemplateStatus
+        };
 
     }
 
@@ -65,38 +67,56 @@ export default class PacRepository implements IPacRepository{
             'AREA FUNCIONAL' ,
             'PROYECTO',
             'PRESUPUESTO SAPIENCIA',
-            'PROGRAMADO' ,
-            'ENERO RECAUDADO',
-            'ENERO PROGRAMADO' ,
-            'FEBRERO RECAUDADO',
-            'FEBRERO PROGRAMADO',
-            'MARZO RECAUDADO',
-            'MARZO PROGRAMADO',
-            'ABRIL RECAUDADO',
-            'ABRIL PROGRAMADO',
-            'MAYO RECAUDADO',
-            'MAYO PROGRAMADO',
-            'JUNIO RECAUDADO',
-            'JUNIO PROGRAMADO',
-            'JULIO RECAUDADO',
-            'JULIO PROGRAMADO',
-            'AGOSTO RECAUDADO',
-            'AGOSTO PROGRAMADO',
-            'SEPTIEMBRE RECAUDADO',
-            'SEPTIEMBRE PROGRAMADO',
-            'OCTUBRE RECAUDADO',
-            'OCTUBRE PROGRAMADO',
-            'NOVIEMBRE RECAUDADO',
-            'NOVIEMBRE PROGRAMADO' ,
-            'DICIEMBRE RECAUDADO',
-            'DICIEMBRE PROGRAMADO'
+            'PROGRAMADO ENERO' ,
+            'RECAUDADO ENERO',
+            'PROGRAMADO FEBRERO',
+            'RECAUDADO FEBRERO',
+            'PROGRAMADO MARZO',
+            'RECAUDADO MARZO',
+            'PROGRAMADO ABRIL',
+            'RECAUDADO ABRIL',
+            'PROGRAMADO MAYO',
+            'RECAUDADO MAYO',
+            'PROGRAMADO JUNIO',
+            'RECAUDADO JUNIO',
+            'PROGRAMADO JULIO',
+            'RECAUDADO JULIO',
+            'PROGRAMADO AGOSTO',
+            'RECAUDADO AGOSTO',
+            'PROGRAMADO SEPTIEMBRE',
+            'RECAUDADO SEPTIEMBRE',
+            'PROGRAMADO OCTUBRE',
+            'RECAUDADO OCTUBRE',
+            'PROGRAMADO NOVIEMBRE' ,
+            'RECAUDADO NOVIEMBRE',
+            'PROGRAMADO DICIEMBRE',
+            'RECAUDADO DICIEMBRE'
         ]
 
+        let errorTemplate = 0;
         titles.forEach((title:any,index:number)=>{
-             let d = row.getCell(index+1).value
-            console.log({title})
-            console.log("===>>" ,d)
-        })      
+             let titleExcel = row.getCell(index+1).value
+             if(titleExcel !=  title){
+                errorTemplate +=1;
+             }
+        }) 
+        if(errorTemplate>0){
+            return {
+                message:"El archivo no cumple la estructura",
+                error:true,
+                rowError:1,
+                columnError:null
+            }
+        }else{
+            return {
+                message:"Estructura cumple",
+                error:false,
+                rowError:null,
+                columnError:null
+             }
+        }
+        
+           
     }
 
 }
