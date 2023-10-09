@@ -10,16 +10,19 @@ import {
 } from "App/Interfaces/ProjectsVinculationInterfaces";
 
 export interface IProjectsService {
+
   getAllProjects(): Promise<ApiResponse<IProjectsVinculationFull[]>>;
-  getUnrelatedProjects(
-    filters: IProjectFilters
-  ): Promise<ApiResponse<IPagingData<IProject>>>;
+  getUnrelatedProjects(filters: IProjectFilters): Promise<ApiResponse<IPagingData<IProject>>>;
+
 }
 
 export default class ProjectsService implements IProjectsService {
+
   constructor(
+
     private strategicDirectionService: IStrategicDirectionService,
     private functionalAreaRepository: IFunctionalAreaRepository
+
   ) {}
 
   async getAllProjects(): Promise<ApiResponse<IProjectsVinculationFull[]>> {
@@ -28,13 +31,12 @@ export default class ProjectsService implements IProjectsService {
       await this.functionalAreaRepository.getAllProjectFunctionalArea();
 
     const res = await this.tranformProjectsVinculation(allProjects)
-    
+
     return new ApiResponse(res, EResponseCodes.OK);
   }
 
-  async getUnrelatedProjects(
-    filters: IProjectFilters
-  ): Promise<ApiResponse<IPagingData<IProject>>> {
+  async getUnrelatedProjects(filters: IProjectFilters): Promise<ApiResponse<IPagingData<IProject>>> {
+
     const proyectsIds =
       await this.functionalAreaRepository.getAllInvestmentProjectIds();
 
@@ -44,11 +46,11 @@ export default class ProjectsService implements IProjectsService {
       perPage: filters.perPage,
       excludeIds: proyectsIds,
     });
+
   }
 
-  private async tranformProjectsVinculation(
-    projects: IProjectsVinculation[]
-  ): Promise<IProjectsVinculationFull[]> {
+  private async tranformProjectsVinculation(projects: IProjectsVinculation[]): Promise<IProjectsVinculationFull[]> {
+
     const toReturn: IProjectsVinculationFull[] = [];
     let investmentProjects: IProject[] = [];
 
@@ -91,5 +93,6 @@ export default class ProjectsService implements IProjectsService {
     }
 
     return toReturn;
+
   }
 }

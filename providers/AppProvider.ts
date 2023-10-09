@@ -86,7 +86,7 @@ export default class AppProvider {
     const FunctionalProjectRepository = await import(
       "App/Repositories/FunctionalProjectRepository"
     );
-    
+
     const PacRepository = await import(
       "App/Repositories/PacRepository"
     );
@@ -125,7 +125,7 @@ export default class AppProvider {
       "core.FunctionalAreaProvider",
       () =>
         new FunctionalAreaService.default(
-          new FunctionalAreaRepository.default(), 
+          new FunctionalAreaRepository.default(),
           new StrategicDirectionService.default(
             new VinculationMGARepository.default()
           )
@@ -206,10 +206,20 @@ export default class AppProvider {
           new FunctionalProjectRepository.default()
         )
     );
-    
+
     this.app.container.singleton(
       "core.PacProvider",
-      () => new PacService.default(new PacRepository.default())
+      () => new PacService.default(
+              new PacRepository.default(),
+              new ProjectsRepository.default(),
+              new FunctionalProjectRepository.default(),
+              new FundsRepository.default(),
+              new PosPreSapienciaRepository.default(),
+              new BudgetsRoutesRepository.default(),
+              new StrategicDirectionService.default(
+                new VinculationMGARepository.default()
+              )
+        )
     );
 
   }

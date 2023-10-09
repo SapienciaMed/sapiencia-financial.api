@@ -19,6 +19,7 @@ export interface IFunctionalProject {
 }
 
 export interface IFunctionalProjectFilters {
+  active?: boolean;
   page: number;
   perPage: number;
 }

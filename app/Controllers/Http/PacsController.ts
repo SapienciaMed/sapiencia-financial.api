@@ -2,7 +2,7 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { EResponseCodes } from 'App/Constants/ResponseCodesEnum';
 import { ApiResponse } from 'App/Utils/ApiResponses';
 import PacProvider from '@ioc:core.PacProvider'
-import { IReviewBudgetRoute } from '../../Interfaces/PacInterfaces';
+// import { IReviewBudgetRoute } from '../../Interfaces/PacInterfaces';
 
 export default class PacsController {
 
@@ -16,7 +16,7 @@ export default class PacsController {
             size: '20mb',
             extnames: ['xlsx', 'xls'],
          })
-        
+
         try {
             const { id } = request.params() as {id:string};
             id;
@@ -34,8 +34,25 @@ export default class PacsController {
 
       try {
 
-        const data = request.body() as IReviewBudgetRoute;
+        const data = request.body() as any;
         return response.send(await PacProvider.reviewBudgetsRoute(data));
+
+      } catch (err) {
+
+        return response.badRequest(
+          new ApiResponse(null, EResponseCodes.FAIL, String(err))
+        );
+
+      }
+
+    }
+
+    public async transfersOnPac({request,response,}: HttpContextContract) {
+
+      try {
+
+        const data = request.body() as any; //TODO - Pendiente ajustar este any
+        return response.send(await PacProvider.transfersOnPac(data));
 
       } catch (err) {
 

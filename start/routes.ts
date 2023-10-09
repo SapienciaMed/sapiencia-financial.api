@@ -175,5 +175,6 @@ Route.group(() => {
 
     Route.post('/upload-pac','PacsController.uploadPac');
     Route.post('/review-budgetroute','PacsController.reviewBudgetsRoute');
+    Route.post('/transfers-pac','PacsController.transfersOnPac');
 
   }).prefix("/api/v1/pac")

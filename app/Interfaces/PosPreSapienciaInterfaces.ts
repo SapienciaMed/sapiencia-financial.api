@@ -41,8 +41,8 @@ export interface IFiltersPosPreSapiencia {
 export interface IFiltersPosPreSapienciaMix {
   page: number;
   perPage: number;
-  budgetIdOrig: number; //Id Pospre Origen
-  budgetNumberOrig: number; //Number Pospre Origen
-  budgetIdSapi: number; //Id Pospre Sapienica
-  budgetNumberSapi: number; //Number Pospre Sapienica
+  budgetIdOrig?: number; //Id Pospre Origen
+  budgetNumberOrig?: number; //Number Pospre Origen
+  budgetIdSapi?: number; //Id Pospre Sapienica
+  budgetNumberSapi?: number | string; //Number Pospre Sapienica
 }

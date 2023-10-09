@@ -69,9 +69,11 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
   //?Lo nuevo
 
   async getPosPreSapienciaById(id: number): Promise<IPosPreSapiencia | null> {
+
     const res = await PosPreSapiencia.find(id);
     await res?.load('budget');
     return res ? (res.serialize() as IPosPreSapiencia) : null;
+
   }
 
   async getListPosPreSapVinculationPaginated(filters: IFiltersPosPreSapienciaMix): Promise<IPagingData<IPosPreSapiencia>> {
