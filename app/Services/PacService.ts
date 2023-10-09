@@ -69,10 +69,17 @@ export default class PacService implements IPacService {
 
     async reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[]): Promise<ApiResponse<IResultProcRoutes | any>> {
 
-      //* Para terminos de pruebas, voy a trabajar solo con 12 datos de los 100
-      let workingData: IReviewBudgetRoute[] = [];
+      // let workingData: IReviewBudgetRoute[] = processBudgetRoute;
 
-      for( let i = 0; i <= 11; i++ ){
+      // Para terminos de pruebas, voy a trabajar solo con 42 datos de los 118 (Va a arrojar errores)
+      // let workingData: IReviewBudgetRoute[] = [];
+      // for( let i = 0; i <= 41; i++ ){
+      //   workingData.push(processBudgetRoute[i]);
+      // }
+
+      // Para terminos de pruebas, voy a trabajar solo con 15 datos de los 118 (Daría todo OK)
+      let workingData: IReviewBudgetRoute[] = [];
+      for( let i = 0; i <= 14; i++ ){
         workingData.push(processBudgetRoute[i]);
       }
 
