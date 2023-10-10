@@ -9,6 +9,7 @@ export interface IReviewBudgetRoute {
   fund: string, //* Opcional
   functionArea: string, //* Opcional
   project: string; //? REQUERIDO
+  totalBudget:string; // REQUERIDO
   pacAnnualization: PacAnnualization[]; //? REQUERIDO
 
 }
@@ -18,7 +19,7 @@ export interface IBody {
   exercise: number;
   typeSource: string;
   typePac: string;
-
+  version?:number;
 }
 
 //Desestructuración de interfaz final de data

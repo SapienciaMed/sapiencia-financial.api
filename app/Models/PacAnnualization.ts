@@ -50,13 +50,19 @@ export default class PacAnnualization extends BaseModel {
   @column({ columnName:'APA_M12', serializeAs:'dec'})
   public dec: number;
   
-  @column({ columnName: "APA_FECHA_MODIFICO", serializeAs: "dateModify" })
-  public dateModify: Date;
+  @column({ columnName:'APA_FECHA_CREO', serializeAs: "dateCreate" })
+  public dateCreate: string
 
-  @column.dateTime({
-    autoCreate: true,
-    columnName: "APA_FECHA_CREO",
-    serializeAs: "dateCreate",
-  })
-  public dateCreate: DateTime;
+  @column({ columnName:'APA_FECHA_MODIFICO', serializeAs: "dateModify" })
+  public dateModify: string
+
+  //@column({ columnName: "APA_FECHA_MODIFICO", serializeAs: "dateModify" })
+  //public dateModify: Date;
+//
+  //@column.dateTime({
+  //  autoCreate: true,
+  //  columnName: "APA_FECHA_CREO",
+  //  serializeAs: "dateCreate",
+  //})
+  //public dateCreate: DateTime;
 }
