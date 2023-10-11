@@ -8,7 +8,8 @@ import {
   IResultProcRoutes,
   IResultProcRoutesWithErrors,
   IProjectPaginated,
-  IFunctionalProjectPaginated
+  IFunctionalProjectPaginated,
+  IPacFilters
 } from '../Interfaces/PacInterfaces';
 import { IProjectsRepository } from '../Repositories/ProjectsRepository';
 import { IFundsFilters } from '../Interfaces/FundsInterfaces';
@@ -26,7 +27,9 @@ export default interface IPacService {
   uploadPac(file: any, body: IBody): Promise<ApiResponse<any>>;
   reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[], body?: IBody): Promise<ApiResponse<IResultProcRoutes>>;
   transfersOnPac(data: any[]): Promise<ApiResponse<any>>;
-
+  validityList(data:IPacFilters):Promise<ApiResponse<any>>;
+  resourcesTypeList(data:IPacFilters):Promise<ApiResponse<any>>;
+  listDinamicsRoutes(data:IPacFilters):Promise<ApiResponse<any>>;
 }
 
 export default class PacService implements IPacService {
