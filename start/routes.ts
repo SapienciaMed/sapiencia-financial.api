@@ -163,8 +163,21 @@ Route.group(() => {
   // .middleware("auth");
 
   Route.group(() => {
+
     Route.get("/get-by-id/:id", "FunctionalProjectsController.getFunctionalProjectById");
     Route.post("/get-paginated", "FunctionalProjectsController.getFunctionalProjectPaginated");
     Route.post("/create", "FunctionalProjectsController.createFunctionalProject");
     Route.post("/update-save/:id", "FunctionalProjectsController.updateFunctionalProject");
+
   }).prefix("/api/v1/projectOperation")
+
+  Route.group(() => {
+
+    Route.post('/upload-pac','PacsController.uploadPac');
+    Route.post('/review-budgetroute','PacsController.reviewBudgetsRoute');
+    Route.post('/transfers-pac','PacsController.transfersOnPac');
+    Route.post('/validity-list','PacsController.validityList');
+    Route.post('/resources-type-list','PacsController.resourcesTypeList');
+    Route.post('/lists-dinamics-routes','PacsController.listDinamicsRoutes');
+
+  }).prefix("/api/v1/pac")

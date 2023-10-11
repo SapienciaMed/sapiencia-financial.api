@@ -13,7 +13,7 @@ import { EResponseCodes } from "../../Constants/ResponseCodesEnum";
 import { EProjectTypes } from "App/Constants/ProjectsEnums";
 
 export interface IProjectPaginated {
-  nameOrCode: string;
+  nameOrCode?: string;
   excludeIds?: number[];
   page: number;
   perPage: number;

@@ -7,6 +7,7 @@ import { DateTime } from 'luxon';
 export interface IFunctionalProjectRepository {
   getFunctionalProjectById(id: number): Promise<IFunctionalProject | null>;
   getFunctionalProjectPaginated(filters: IFunctionalProjectFilters): Promise<IPagingData<IFunctionalProject>>;
+  getFunctionalProjectRequest(filters: IFunctionalProjectFilters): Promise<IPagingData<IFunctionalProject | number>>;
   createFunctionalProject(functionalProject: IFunctionalProject): Promise<IFunctionalProject>;
   updateFunctionalProject(fund: IFunctionalProject, id: number): Promise<IFunctionalProject | null>;
 }
@@ -23,8 +24,33 @@ export default class FunctionalProjectRepository implements IFunctionalProjectRe
 
 
   async getFunctionalProjectPaginated(filters: IFunctionalProjectFilters): Promise<IPagingData<IFunctionalProject>> {
+
     const query = FunctionalProject.query();
     query.orderBy("exercise", 'desc').preload('entity');
+
+    const res = await query.paginate(filters.page, filters.perPage);
+
+    const { data, meta } = res.serialize();
+
+    return {
+      array: data as IFunctionalProject[],
+      meta,
+    };
+
+  }
+
+  async getFunctionalProjectRequest(filters: IFunctionalProjectFilters): Promise<IPagingData<IFunctionalProject | number>> {
+
+    const query = FunctionalProject.query();
+
+    if( filters.active ){
+
+      query.where("isActivated", true);
+
+    }
+
+    query.orderBy("exercise", 'desc').preload('entity');
+
     const res = await query.paginate(filters.page, filters.perPage);
 
     const { data, meta } = res.serialize();
