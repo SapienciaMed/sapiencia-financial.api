@@ -1,5 +1,5 @@
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
-import { DateTime } from 'luxon';
+import { BaseModel, HasMany, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import PacAnnualization from './PacAnnualization';
 
 export default class Pac extends BaseModel {
   public static table = "PAC_PROGRAMACION_ANUAL_CAJA";
@@ -22,7 +22,7 @@ export default class Pac extends BaseModel {
   @column({ columnName:'PAC_ACTIVO', serializeAs:'isActive' })
   public isActive: boolean
 
-  @column({ columnName: "PAC_FECHA_MODIFICO", serializeAs: "dateModify" })
+  /* @column({ columnName: "PAC_FECHA_MODIFICO", serializeAs: "dateModify" })
   public dateModify: Date;
 
   @column.dateTime({
@@ -31,5 +31,26 @@ export default class Pac extends BaseModel {
     serializeAs: "dateCreate",
   })
   public dateCreate: DateTime;
+ */
+
+  @column({ columnName:'PAC_FECHA_CREO', serializeAs: "dateCreate" })
+  public dateCreate: string
+
+  @column({ columnName:'PAC_FECHA_MODIFICO', serializeAs: "dateModify" })
+  public dateModify: string
+
+  //@column.dateTime({ autoCreate: true, columnName:'PAC_FECHA_CREO', serializeAs: "dateCreate", })
+  //public dateCreate: DateTime
+//
+  //@column.dateTime({ autoCreate: true, autoUpdate: true, columnName:'PAC_FECHA_MODIFICO', serializeAs: "dateModify" })
+  //public dateModify: DateTime
+
+
+  @hasMany(() => PacAnnualization, {
+    localKey: "id",
+    foreignKey: "pacId",
+    serializeAs: "pacAnnualizations",
+  })
+  public pacAnnualizations: HasMany<typeof PacAnnualization>;
 
 }
