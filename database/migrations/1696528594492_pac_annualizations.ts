@@ -29,18 +29,20 @@ export default class extends BaseSchema {
       table.float('APA_M10', 15.2).nullable().comment('valor del mes 10')
       table.float('APA_M11', 15.2).nullable().comment('valor del mes 11')
       table.float('APA_M12', 15.2).nullable().comment('valor del mes 12')
-      
+      table.string('APA_FECHA_MODIFICO').nullable()
+      table.string('APA_FECHA_CREO').nullable()
+
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
        */
-      table
+      /* table
         .datetime("APA_FECHA_MODIFICO")
         .nullable()
         .comment("Fecha y hora de la última modificación");
       table
         .datetime("APA_FECHA_CREO")
         .notNullable()
-        .comment("Fecha y hora de creación del registro");
+        .comment("Fecha y hora de creación del registro"); */
     })
   }
 
