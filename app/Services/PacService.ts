@@ -122,9 +122,6 @@ export default class PacService implements IPacService {
         dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed,loadedRoutesCurrentExcersice)
         await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
 
-
-        //await this.pacRepository.updatePacExcersiceVersion(body.exercise, body.version!, Object(routesValidationRequest).data.condensed)
-
         let validateCreatedRoutes = this.validatePreviouslyCreatedExerciseRoutes(loadedRoutesCurrentExcersice, routesValidationRequest.data);
         errors.push(validateCreatedRoutes)
         break;
