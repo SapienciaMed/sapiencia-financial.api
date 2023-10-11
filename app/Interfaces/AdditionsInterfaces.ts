@@ -68,6 +68,8 @@ export interface IProjectAdditionList {
   conceptProject?: string;
   assignmentValue: number
   type?: string;
+  investmentProjectId?: number;
+  operationProjectId?: number;
 }
 
 

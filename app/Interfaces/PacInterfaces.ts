@@ -113,15 +113,79 @@ export interface IResultProcRoutesWithErrors {
 }
 
 export interface IProjectPaginated {
+
   nameOrCode?: string;
   excludeIds?: number[];
   page: number;
   perPage: number;
+
 }
 
 export interface IFunctionalProjectPaginated {
+
   active: boolean;
   page: number;
   perPage: number;
+
 }
 
+export interface IPacPrimary {
+
+  id?: number;
+  sourceType?: string;
+  budgetRouteId?: number;
+  version?: number;
+  exercise?: number;
+  isActive?: boolean;
+  dateModify?: Date;
+  dateCreate?: Date;
+
+}
+
+export interface IPacFilters {
+  page: number;
+  perPage: number;
+  pacType?: string;
+  exercise?: number;
+  resourceType?: string;
+}
+
+//! Listado dinámicos para presentar en traslados.
+//! Consultas a la inversa, de ruta -> proyecto-fondo-pospre
+export interface IDinamicListForProjects {
+
+  idVinculation: number;
+  idProjectPlanning: number;
+  projectCode: string;
+  posPreSapiRef?: string;
+  projectName: string;
+  numberFunctionalArea: string;
+
+}
+
+export interface IDinamicListForFunds {
+
+  idFund: number;
+  fundCode: string;
+
+}
+
+export interface IDinamicListForPospres {
+
+  idPosPreSapi: number;
+  numberCodeSapi: string;
+  descriptionSapi: string;
+  idPosPreOrig: number;
+  numberCodeOrig: string;
+
+}
+
+export interface IPacComplementary {
+
+  headerComposition?: IPacFilters;
+  listBudgetsRoutes?: number[];
+  listProjects?: IDinamicListForProjects[];
+  listFunds?: IDinamicListForFunds[];
+  listPospreSapi ?: IDinamicListForPospres[];
+
+}

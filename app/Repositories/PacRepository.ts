@@ -1,11 +1,17 @@
 import fs from 'fs';
 import Excel from 'exceljs'
-import { IReviewBudgetRoute } from '../Interfaces/PacInterfaces';
+import { IPacPrimary, IReviewBudgetRoute } from '../Interfaces/PacInterfaces';
+import Pac from '../Models/Pac';
+import { IPagingData } from '../Utils/ApiResponses';
+import { IPacFilters } from 'App/Interfaces/PacInterfaces';
 
 export default interface IPacRepository {
 
     uploadPac(file: any): Promise<any>;
     reviewBudgetsRoute(budgetRoute: IReviewBudgetRoute): Promise<any>;
+    validityList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>>;
+    resourcesTypeList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>>;
+    listDinamicsRoutes(filters: IPacFilters): Promise<IPagingData<IPacPrimary | number>>;
 
 }
 
@@ -224,6 +230,68 @@ export default class PacRepository implements IPacRepository {
 
 
         return true;
+
+    }
+
+    async validityList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>> {
+
+      const query = Pac.query();
+      query.distinct("exercise");
+
+      const res = await query.paginate(filters.page, filters.perPage);
+      const { data, meta } = res.serialize();
+
+      return {
+        array: data as IPacPrimary[] | string[],
+        meta,
+      };
+
+    }
+
+    async resourcesTypeList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>> {
+
+      const query = Pac.query();
+
+      if( !filters.exercise ){
+
+        query.where("exercise", ">", 0); //Técnicamente ALL
+
+      }else{
+
+        query.where("exercise", filters.exercise!); //Tiene que venir !
+
+      }
+
+      query.distinct("sourceType");
+
+      const res = await query.paginate(filters.page, filters.perPage);
+      const { data, meta } = res.serialize();
+
+      return {
+        array: data as IPacPrimary[] | string[],
+        meta,
+      };
+
+    }
+
+    async listDinamicsRoutes(filters: IPacFilters): Promise<IPagingData<IPacPrimary | number>> {
+
+      const query = Pac.query();
+
+      //? Con filters.exercise y con filters.resourceType obtenemos el grupo
+
+      if( filters.exercise ) query.where("exercise", filters.exercise);
+      if( filters.resourceType ) query.where("sourceType", filters.resourceType);
+
+      query.select("budgetRouteId");
+
+      const res = await query.paginate(filters.page, filters.perPage);
+      const { data, meta } = res.serialize();
+
+      return {
+        array: data as IPacPrimary[] | number[],
+        meta,
+      };
 
     }
 

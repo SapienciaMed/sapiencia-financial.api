@@ -16,7 +16,9 @@ export default class ProjectsRepository implements IProjectsRepository {
   async getProjectById(
     projectId: number
   ): Promise<IProjectAdditionList | null> {
+
     const res = await ProjectsVinculation.query()
+      .preload("areaFuntional")
       .where("id", projectId)
       .first();
 

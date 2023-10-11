@@ -2,6 +2,7 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { EResponseCodes } from 'App/Constants/ResponseCodesEnum';
 import { ApiResponse } from 'App/Utils/ApiResponses';
 import PacProvider from '@ioc:core.PacProvider'
+import { IPacFilters } from 'App/Interfaces/PacInterfaces';
 // import { IReviewBudgetRoute } from '../../Interfaces/PacInterfaces';
 
 export default class PacsController {
@@ -47,12 +48,63 @@ export default class PacsController {
 
     }
 
-    public async transfersOnPac({request,response,}: HttpContextContract) {
+    public async transfersOnPac({request,response}: HttpContextContract) {
 
       try {
 
         const data = request.body() as any; //TODO - Pendiente ajustar este any
         return response.send(await PacProvider.transfersOnPac(data));
+
+      } catch (err) {
+
+        return response.badRequest(
+          new ApiResponse(null, EResponseCodes.FAIL, String(err))
+        );
+
+      }
+
+    }
+
+    public async validityList({request,response}: HttpContextContract) {
+
+      try {
+
+        const data = request.body() as IPacFilters;
+        return response.send(await PacProvider.validityList(data));
+
+      } catch (err) {
+
+        return response.badRequest(
+          new ApiResponse(null, EResponseCodes.FAIL, String(err))
+        );
+
+      }
+
+    }
+
+    public async resourcesTypeList({request,response}: HttpContextContract) {
+
+      try {
+
+        const data = request.body() as IPacFilters;
+        return response.send(await PacProvider.resourcesTypeList(data));
+
+      } catch (err) {
+
+        return response.badRequest(
+          new ApiResponse(null, EResponseCodes.FAIL, String(err))
+        );
+
+      }
+
+    }
+
+    public async listDinamicsRoutes({request,response}: HttpContextContract) {
+
+      try {
+
+        const data = request.body() as IPacFilters;
+        return response.send(await PacProvider.listDinamicsRoutes(data));
 
       } catch (err) {
 
