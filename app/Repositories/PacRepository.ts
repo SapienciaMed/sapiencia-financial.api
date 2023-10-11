@@ -7,9 +7,9 @@ export default interface IPacRepository {
 
     uploadPac(file: any): Promise<any>;
     reviewBudgetsRoute(budgetRoute: IReviewBudgetRoute): Promise<any>;
-    updateOrCreatePac(routesValidationRequest:any):Promise<any>;
-    getPacByExcercise(exercise:number):Promise<Pac[]>;
-    updatePacExcersiceVersion(excersice:number,version:number, pac:any):Promise<any>;
+    updateOrCreatePac(routesValidationRequest: any): Promise<any>;
+    getPacByExcercise(exercise: number): Promise<Pac[]>;
+    updatePacExcersiceVersion(pac: any): Promise<any>;
 }
 
 export default class PacRepository implements IPacRepository {
@@ -211,7 +211,7 @@ export default class PacRepository implements IPacRepository {
         }
     }
 
-    async reviewBudgetsRoute(budgetRoute: IReviewBudgetRoute): Promise<any> {
+    async reviewBudgetsRoute(_budgetRoute: IReviewBudgetRoute): Promise<any> {
 
         //console.log(budgetRoute);
         //TODO: Acá consultamos la ruta presupuestal y sus componentes
@@ -231,9 +231,9 @@ export default class PacRepository implements IPacRepository {
 
     }
 
-    updateOrCreatePac= async(routesValidationRequest:any)=>{
-        for await (let pac of routesValidationRequest.condensed){
-            let annualizations:any[] = []
+    updateOrCreatePac = async (routesValidationRequest: any) => {
+        for await (let pac of routesValidationRequest.condensed) {
+            let annualizations: any[] = []
             delete pac.numberExcelRom
             delete pac.pacAnnualizationProgrammed.totalBudget
             delete pac.pacAnnualizationCollected.totalBudget
@@ -241,26 +241,42 @@ export default class PacRepository implements IPacRepository {
             annualizations.push(pac.pacAnnualizationCollected)
             delete pac.pacAnnualizationProgrammed;
             delete pac.pacAnnualizationCollected;
-                const toCreatePac = new Pac();
-                toCreatePac.fill({ ...pac, dateCreate: new Date('2023-09-04 17:51:46')});
-                console.log({pac, annualizations})
-                let pacCreated = await toCreatePac.save();
-                await pacCreated
+            const toCreatePac = new Pac();
+            toCreatePac.fill({ ...pac, dateCreate: new Date('2023-09-04 17:51:46') });
+            //console.log({pac, annualizations})
+            let pacCreated = await toCreatePac.save();
+            await pacCreated
                 .related('pacAnnualizations')
                 .createMany(annualizations)
         }
         return routesValidationRequest
     }
 
-    getPacByExcercise = async(exercise:number):Promise<Pac[]>=>{
-        const pacs = await Pac.query().where('exercise',exercise).preload('pacAnnualizations')
+    getPacByExcercise = async (exercise: number): Promise<Pac[]> => {
+        const pacs = await Pac.query().where('exercise', exercise).preload('pacAnnualizations')
         return pacs;
     };
 
 
-    updatePacExcersiceVersion = async(excersice:number,version:number, pac:any):Promise<any>=>{
+    updatePacExcersiceVersion = async (pac: any): Promise<any> => {
 
-        //console.log("En edit ",{excersice, version, pac})
+        for await (let row of pac) {
+            let annualization:any[] = []
+            let routePacMatch = await Pac.findOrFail(row.id)
+            let pacAnnualizationProgrammed = row.pacAnnualizationProgrammed
+            let pacAnnualizationCollected = row.pacAnnualizationCollected
+            delete row.pacAnnualizationProgrammed.totalBudget;
+            delete row.pacAnnualizationCollected.totalBudget;
+            
+            annualization.push(pacAnnualizationProgrammed)
+            annualization.push(pacAnnualizationCollected)
+
+            await routePacMatch
+                .related('pacAnnualizations')
+                .updateOrCreateMany(annualization, 'id')
+
+        }
+
         return pac;
     }
 

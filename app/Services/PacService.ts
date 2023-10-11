@@ -24,7 +24,7 @@ import { IStrategicDirectionService } from './External/StrategicDirectionService
 export default interface IPacService {
 
   uploadPac(file: any, body: IBody): Promise<ApiResponse<any>>;
-  reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[], body: IBody): Promise<ApiResponse<IResultProcRoutes>>;
+  reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[], body?: IBody): Promise<ApiResponse<IResultProcRoutes>>;
   transfersOnPac(data: any[]): Promise<ApiResponse<any>>;
 
 }
@@ -81,9 +81,9 @@ export default class PacService implements IPacService {
     body.version = body.typePac == 'Nueva versión' ? versionFixed + 1 : versionFixed;
     const routesValidationRequest: ApiResponse<IResultProcRoutes> = await this.reviewBudgetsRoute(data, body);
 
-    console.log("******************************+ ", typePac)
     let errors: any[] = [];
     let validateValuesByTypePac = this.validateValuesByTypePac(typePac, routesValidationRequest.data)
+    let dataToUpdate;
     errors.push(validateValuesByTypePac)
     let responseSave;
     switch (typePac) {
@@ -93,13 +93,14 @@ export default class PacService implements IPacService {
         }
         responseSave = await this.pacRepository.updateOrCreatePac(routesValidationRequest.data)
         break;
-      case 'adición':
+      case 'Adición':
 
         // ya debe existir una carga inicial
         if (pacsByExercise.length == 0) {
           return new ApiResponse(null, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
-        await this.pacRepository.updatePacExcersiceVersion(body.exercise, body.version!, Object(routesValidationRequest).data.condensed)
+        dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed,loadedRoutesCurrentExcersice)
+        await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
         break;
       case 'Reducción':
         // ya debe existir una carga inicial
@@ -107,16 +108,19 @@ export default class PacService implements IPacService {
           return new ApiResponse(null, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
 
-        await this.pacRepository.updatePacExcersiceVersion(body.exercise, body.version!, routesValidationRequest.data)
+        dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed,loadedRoutesCurrentExcersice)
+        await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
         break;
       case 'Recaudo':
         // ya debe existir una carga inicial
         if (pacsByExercise.length == 0) {
           return new ApiResponse(null, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
-        this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed,loadedRoutesCurrentExcersice)
+        dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed,loadedRoutesCurrentExcersice)
+        await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
 
-        await this.pacRepository.updatePacExcersiceVersion(body.exercise, body.version!, Object(routesValidationRequest).data.condensed)
+
+        //await this.pacRepository.updatePacExcersiceVersion(body.exercise, body.version!, Object(routesValidationRequest).data.condensed)
 
         let validateCreatedRoutes = this.validatePreviouslyCreatedExerciseRoutes(loadedRoutesCurrentExcersice, routesValidationRequest.data);
         errors.push(validateCreatedRoutes)
@@ -126,6 +130,7 @@ export default class PacService implements IPacService {
         if (pacsByExercise.length == 0) {
           return new ApiResponse(null, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
+
         let responseValidateNewVersion = this.validateRoutesWithCollectionInNewVersion(loadedRoutesCurrentExcersice, routesValidationRequest.data);
         errors.push(responseValidateNewVersion)
         responseSave = await this.pacRepository.updateOrCreatePac(routesValidationRequest.data)
@@ -137,7 +142,7 @@ export default class PacService implements IPacService {
 
 
     // return new ApiResponse({validTemplateStatus, rowsWithFieldsEmpty,rowsWithFieldNumberInvalid, data}, EResponseCodes.OK);
-    return new ApiResponse({ responseSave, errors }, EResponseCodes.OK, "Pac creado exitosamente");
+    return new ApiResponse({ responseSave, errors }, EResponseCodes.OK, "¡Guardado exitosamente!");
 
   }
 
@@ -212,13 +217,27 @@ export default class PacService implements IPacService {
   }
 
   structureDataPacToUpdate = (dataExcel:any,loadedRoutesCurrentExcersice:any)=>{
-    console.log({dataExcel, loadedRoutesCurrentExcersice})
-    // TODO: estructura el objeto para almacenar, tomar en reposity y actualizar.
-    //dataExcel
+    let dataExcelFixed:any[] = [];
+    dataExcel.forEach(e=>{
+      let budgetRouteMatch = loadedRoutesCurrentExcersice.find(el=>el.budgetRouteId == e.budgetRouteId)
+      if(budgetRouteMatch){
+        e['id'] = budgetRouteMatch.id;
+        e.pacAnnualizationProgrammed['id']=budgetRouteMatch.pacAnnualizations.programmed.id;
+        e.pacAnnualizationCollected['id']=budgetRouteMatch.pacAnnualizations.collected.id;
+        dataExcelFixed.push(e)
+      }else{
+        e['id']=null;
+        e.pacAnnualizationProgrammed['id']=null;
+        e.pacAnnualizationCollected['id']=null
+        dataExcelFixed.push(e)
+      }
+      
+    })
+    return dataExcelFixed;
   }
 
 
-  async reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[], body: IBody): Promise<ApiResponse<IResultProcRoutes | any>> {
+  async reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[], body?: IBody): Promise<ApiResponse<IResultProcRoutes | any>> {
 
     // Para terminos de pruebas, voy a trabajar solo con 15 datos de los 118 (Daría todo OK)
     let workingData: IReviewBudgetRoute[] = [];
@@ -381,10 +400,10 @@ export default class PacService implements IPacService {
         const finalObjProccess: IResultProcRoutes = {
 
           numberExcelRom: workingData[i].rowExcel,
-          sourceType: body.typeSource,
+          sourceType: body!.typeSource,
           budgetRouteId: pkBudgetRoute,
-          version: body.version,
-          exercise: body.exercise,
+          version: body!.version,
+          exercise: body!.exercise,
           isActive: true,
           dateModify: new Date(),
           dateCreate: new Date(),
@@ -444,7 +463,7 @@ export default class PacService implements IPacService {
 
   }
 
-  async transfersOnPac(data: any[]): Promise<ApiResponse<any>> {
+  async transfersOnPac(_data: any[]): Promise<ApiResponse<any>> {
 
     //console.log(data);
     return new ApiResponse(null, EResponseCodes.INFO, "Método para transferencias en el PAC");

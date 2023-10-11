@@ -1,5 +1,4 @@
 import { BaseModel, HasMany, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
-import { DateTime } from 'luxon';
 import PacAnnualization from './PacAnnualization';
 
 export default class Pac extends BaseModel {
