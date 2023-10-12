@@ -1,6 +1,7 @@
 import {
   IAdditions,
   IAdditionsFilters,
+  IAdditionsFull,
   IAdditionsWithMovements,
   IFundsAdditionList,
   IPosPreAddition,
@@ -19,6 +20,7 @@ import { IPosPreSapienciaRepository } from "../Repositories/PosPreSapienciaRepos
 import { IBudgetsRepository } from "../Repositories/BudgetsRepository";
 import { IBudgetsRoutesRepository } from "../Repositories/BudgetsRoutesRepository";
 import { IStrategicDirectionService } from "./External/StrategicDirectionService";
+import { tranformProjectsVinculation } from "App/Utils/sub-services";
 
 export interface IAdditionsService {
   getAdditionsPaginated(
@@ -31,7 +33,7 @@ export interface IAdditionsService {
     addition: IAdditionsWithMovements
   ): Promise<ApiResponse<IAdditionsWithMovements>>;
   getAllAdditionsList(list: string): Promise<ApiResponse<IAdditions[]>>;
-  getAdditionById(id: number): Promise<ApiResponse<IAdditionsWithMovements>>;
+  getAdditionById(id: number): Promise<ApiResponse<IAdditionsFull>>;
   getFundsList(
     filters: IProjectAdditionFilters
   ): Promise<ApiResponse<IPagingData<IFundsAdditionList>>>;
@@ -47,7 +49,7 @@ export interface IAdditionsService {
     id: number,
     addition: IAdditionsWithMovements
   ): Promise<ApiResponse<IAdditionsWithMovements>>;
-  namesAddtionsValidations(addition: IAdditionsWithMovements): Promise<Boolean>;
+  namesAddtionsValidations(addition: IAdditionsWithMovements): Promise<boolean>;
   totalsMovementsValidations(addition: IAdditionsWithMovements): Promise<any>;
   budgetPathValidations(
     idCard: string,
@@ -338,35 +340,24 @@ export default class AdditionsService implements IAdditionsService {
   }
 
   //?OBTENER UNA ADICIÓN CON SUS MOVIMIENTOS EN PARALELO A TRAVÉS DE UN ID PARAM
-  async getAdditionById(
-    id: number
-  ): Promise<ApiResponse<IAdditionsWithMovements>> {
-
-    const projectsStrategic = await this.getStrategicProyects('13')
-    console.log({projectsStrategic})
-
-    let projectVinculation= {
-      id: 11,
-      projectId:1,
-      conceptProject:"hOLAAA",
-      functionalAreaId: 13,
-      linked: false,
-      type: "Inversion",
-      operationProjectId: null,
-      investmentProjectId: 13,
-      userCreate: "123456789",
-      dateCreate: "2023-10-12T15:33:13.000-05:00"
-  }
-  projectVinculation;
+  async getAdditionById(id: number): Promise<ApiResponse<IAdditionsFull>> {
     const addition = await this.additionsRepository.getAdditionById(id);
-    //addition.details.map(e=>console.log({e:e.$attributes}))
-    //addition.details.map(e=>console.log({e:e.$preloaded}))
+
     if (!addition) {
       return new ApiResponse(
-        {} as IAdditionsWithMovements,
+        {} as IAdditionsFull,
         EResponseCodes.FAIL,
         "Registro no encontrado"
       );
+    }
+
+    for (const detail of addition.details) {
+      if (detail.budgetRoute.projectVinculation) {
+        const res = await tranformProjectsVinculation([
+          detail.budgetRoute.projectVinculation,
+        ]);
+        if (res.length > 0) detail.budgetRoute.projectVinculation = res[0];
+      }
     }
 
     return new ApiResponse(addition, EResponseCodes.OK);
@@ -416,7 +407,7 @@ export default class AdditionsService implements IAdditionsService {
   //Validador manual para que los nombres no se repitan
   async namesAddtionsValidations(
     addition: IAdditionsWithMovements
-  ): Promise<Boolean> {
+  ): Promise<boolean> {
     //Aplicando el tema del trim() y toUpperCase()
     // const band: boolean = false;
     const nameActAdminDis: string = addition
@@ -621,14 +612,13 @@ export default class AdditionsService implements IAdditionsService {
     );
   }
 
-  getStrategicProyects = async(projectId:string)=>{
-    let strategicProyects = await this.strategicDirectionRepository.getProjectInvestmentPaginated({
-      nameOrCode: projectId,
-      page: 1,
-      perPage: 1000
-    });
-    return strategicProyects.data.array
-  }
-
-
+  getStrategicProyects = async (projectId: string) => {
+    let strategicProyects =
+      await this.strategicDirectionRepository.getProjectInvestmentPaginated({
+        nameOrCode: projectId,
+        page: 1,
+        perPage: 1000,
+      });
+    return strategicProyects.data.array;
+  };
 }

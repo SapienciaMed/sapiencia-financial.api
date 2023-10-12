@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import {IBudgets} from "./BudgetsInterfaces"
 import {IFunds} from "./FundsInterfaces"
-import {IProjectsVinculate} from "./ProjectsVinculationInterfaces"
+import {IProjectsVinculate, IProjectsVinculation} from "./ProjectsVinculationInterfaces"
 import {IPosPreSapiencia} from "./PosPreSapienciaInterfaces"
 
 export interface IBudgetsRoutes {
@@ -16,7 +16,7 @@ export interface IBudgetsRoutes {
   dateModify?: Date;
   userCreate?: string;
   dateCreate?: DateTime;
-  projectVinculation?:IProjectsVinculate;
+  projectVinculation?:IProjectsVinculation;
   pospreSapiencia?:IPosPreSapiencia;  
   budget?:IBudgets;
   fund?:IFunds;

@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import { IBudgetsRoutes } from "./BudgetsRoutesInterfaces";
 
 export interface IAdditionsMovements {
   idCard? : string;
@@ -11,6 +12,16 @@ export interface IAdditionsMovements {
   budgetPosition: number;
   value: number;
   typeMovement: string;
+}
+
+export interface IAdditionsMovement
+{
+  id: number,
+  additionId: number,
+  type: string,
+  budgetRouteId: number,
+  value: string,
+  budgetRoute: IBudgetsRoutes
 }
 
 export interface IAdditions {
@@ -29,6 +40,13 @@ export interface IAdditionsWithMovements {
   headAdditon?: IAdditions,   //Opcional porque en edición no lo requerimos
   additionMove: IAdditionsMovements[]
 }
+
+
+export interface IAdditionsFull {
+  head: IAdditions,   
+  details: IAdditionsMovement[]
+}
+
 
 //Lo dejarémos genérico para todos los elementos subyacentes
 export interface IAdditionsFilters {
