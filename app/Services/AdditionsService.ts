@@ -18,6 +18,7 @@ import { IFundsRepository } from "../Repositories/FundsRepository";
 import { IPosPreSapienciaRepository } from "../Repositories/PosPreSapienciaRepository";
 import { IBudgetsRepository } from "../Repositories/BudgetsRepository";
 import { IBudgetsRoutesRepository } from "../Repositories/BudgetsRoutesRepository";
+import { IStrategicDirectionService } from "./External/StrategicDirectionService";
 
 export interface IAdditionsService {
   getAdditionsPaginated(
@@ -64,7 +65,8 @@ export default class AdditionsService implements IAdditionsService {
     private fundsRepository: IFundsRepository,
     private pospreSapRepository: IPosPreSapienciaRepository,
     private budgetRepository: IBudgetsRepository,
-    private budgetRouteRepository: IBudgetsRoutesRepository
+    private budgetRouteRepository: IBudgetsRoutesRepository,
+    private strategicDirectionRepository: IStrategicDirectionService
   ) {}
 
   //?OBTENER PAGINADO Y FILTRADO LAS ADICIONES CON SUS MOVIMIENTOS
@@ -339,6 +341,21 @@ export default class AdditionsService implements IAdditionsService {
   async getAdditionById(
     id: number
   ): Promise<ApiResponse<IAdditionsWithMovements>> {
+
+    const projectsStrategic = await this.getStrategicProyects('13')
+    console.log({projectsStrategic})
+
+    let projectVinculation= {
+      "id": 11,
+      "functionalAreaId": 13,
+      "linked": false,
+      "type": "Inversion",
+      "operationProjectId": null,
+      "investmentProjectId": 13,
+      "userCreate": "123456789",
+      "dateCreate": "2023-10-12T15:33:13.000-05:00"
+  }
+  projectVinculation;
     const addition = await this.additionsRepository.getAdditionById(id);
 
     if (!addition) {
@@ -600,4 +617,15 @@ export default class AdditionsService implements IAdditionsService {
       "¡Se ha guardado la información correctamente en el sistema!"
     );
   }
+
+  getStrategicProyects = async(projectId:string)=>{
+    let strategicProyects = await this.strategicDirectionRepository.getProjectInvestmentPaginated({
+      nameOrCode: projectId,
+      page: 1,
+      perPage: 1000
+    });
+    return strategicProyects.data.array
+  }
+
+
 }
