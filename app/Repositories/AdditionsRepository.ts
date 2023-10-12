@@ -105,25 +105,31 @@ export default class AdditionsRepository implements IAdditionsRepository {
         q1
           //Preload para traer proyecto y área funcional
           .preload("projectVinculation", async (a) => {
-            const relatedData = await a.first(); // Para obtener el primer registro relacionado
+            
+            /* const relatedData = await a.first(); // Para obtener el primer registro relacionado
+            a.select("id",
+                     "functionalAreaId",
+                     "projectId=1",
+                     "conceptProject='Holaaa'") 
+            
             relatedData.$attributes.type === 'Funcionamiento' && a.preload('areaFuntional', (aa) => {
               aa.select("id",
                 "number",
                 "denomination",
                 "description")
-            })
+            }) */
 
             //console.log({ relatedData: relatedData.$attributes.type })
-            /* a.select("id",
+            a.select("id",
                      "functionalAreaId",
                      "projectId",
-                     "conceptProject")
+                     "conceptProject") 
             a.preload("areaFuntional", (aa) => {
               aa.select("id",
                         "number",
                         "denomination",
                         "description")
-            }) */
+            })
           })
 
           //Preload para traer los fondos
