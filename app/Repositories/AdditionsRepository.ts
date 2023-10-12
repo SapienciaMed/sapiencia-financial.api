@@ -3,7 +3,6 @@ import {
   IAdditionsFilters,
   IAdditionsFull,
   IAdditionsMovement,
-  IAdditionsWithMovements,
 } from "App/Interfaces/AdditionsInterfaces";
 import Additions from "../Models/Addition";
 import { IPagingData } from "App/Utils/ApiResponses";
@@ -149,7 +148,9 @@ export default class AdditionsRepository implements IAdditionsRepository {
       details: details.map((i) => i.serialize() as IAdditionsMovement),
     };
 
-    console.log(x.details.map(i => i.budgetRoute.projectVinculation?.functionalProject))
-    return x
+    console.log(
+      x.details.map((i) => i.budgetRoute.projectVinculation?.functionalProject)
+    );
+    return x;
   }
 }
