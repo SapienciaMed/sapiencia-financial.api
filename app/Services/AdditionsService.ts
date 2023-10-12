@@ -355,7 +355,7 @@ export default class AdditionsService implements IAdditionsService {
       "userCreate": "123456789",
       "dateCreate": "2023-10-12T15:33:13.000-05:00"
   }
-
+  projectVinculation;
     const addition = await this.additionsRepository.getAdditionById(id);
 
     if (!addition) {

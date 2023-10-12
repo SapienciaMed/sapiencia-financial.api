@@ -2,7 +2,6 @@ import { HasOne } from '@ioc:Adonis/Lucid/Orm';
 import { BaseModel, column, hasOne } from '@ioc:Adonis/Lucid/Orm'
 import Addition from './Addition';
 import BudgetsRoutes from './BudgetsRoutes';
-import ProjectsVinculation from './ProjectsVinculation';
 
 export default class AdditionsMovement extends BaseModel {
 

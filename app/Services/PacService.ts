@@ -1,6 +1,6 @@
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import IPacRepository from "App/Repositories/PacRepository";
-import { ApiResponse } from "App/Utils/ApiResponses";
+import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
 
 import {
   IReviewBudgetRoute,
@@ -9,7 +9,12 @@ import {
   IResultProcRoutesWithErrors,
   IProjectPaginated,
   IFunctionalProjectPaginated,
-  IPacFilters
+  IPacFilters,
+  IPacPrimary,
+  IDinamicListForProjects,
+  IDinamicListForFunds,
+  IDinamicListForPospres,
+  IPacComplementary
 } from '../Interfaces/PacInterfaces';
 import { IProjectsRepository } from '../Repositories/ProjectsRepository';
 import { IFundsFilters } from '../Interfaces/FundsInterfaces';
@@ -181,7 +186,6 @@ export default class PacService implements IPacService {
 
   }
 
-
   // validar rutas con recaudo vengan en nueva version de excel
   validateRoutesWithCollectionInNewVersion = (loadedRoutesCurrentExcersice: any, dataExcel: any) => {
     let errors: any[] = [];
@@ -235,7 +239,6 @@ export default class PacService implements IPacService {
     })
     return dataExcelFixed;
   }
-
 
   async reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[], body?: IBody): Promise<ApiResponse<IResultProcRoutes | any>> {
 
@@ -566,5 +569,196 @@ export default class PacService implements IPacService {
     //console.log({ errorsDetected })
     return errorsDetected;
   }
+
+  async validityList(filters: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | string>>> {
+
+    const res = await this.pacRepository.validityList(filters);
+    return new ApiResponse(res, EResponseCodes.OK);
+
+  }
+
+  async resourcesTypeList(filters: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | string>>> {
+
+    const res = await this.pacRepository.resourcesTypeList(filters);
+    return new ApiResponse(res, EResponseCodes.OK);
+
+  }
+
+  async listDinamicsRoutes(filters: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | number> | IPacComplementary | IPacFilters>> {
+
+    //* Paso 0. Objeto inicial:
+    const objInitial: IPacFilters = {
+      page: filters.page,
+      perPage: filters.perPage,
+      pacType: filters.pacType,
+      exercise: filters.exercise,
+      resourceType: filters.resourceType
+    }
+
+    //* Paso 1. Hallemos las rutas presupuestales involucradas:
+    const res = await this.pacRepository.listDinamicsRoutes(filters);
+
+    if( !res || res.array.length <= 0 )return new ApiResponse(objInitial, EResponseCodes.INFO, "No se encontraron rutas presupuestales con la vigencia y el tipo de recurso proporcionados.");
+
+    //* Paso 2. Hallemos las PKs de Proyecto, Fondo y Pospre Sapi (Si pasamos la validación anterior aquí debería haber data):
+    let arrayProjects: number[] = [];  // Vinculation Project
+    let arrayFunds: number[] = [];     // Fund Number
+    let arrayPosPreOrg: number[] = []; // PosPre Orig Number
+    let arrayPosPreSap: number[] = []; // PosPre Sapi Number
+
+    let listBudgetsRoutes: number[] = [];
+
+    for (const seedAvailable of res.array) {
+
+      const res: any = seedAvailable;
+      const { budgetRouteId } = res;
+      listBudgetsRoutes.push(budgetRouteId);
+
+      const getRouteData = await this.budgetsRoutesRepository.getBudgetsRoutesById(budgetRouteId);
+
+      //* Paso 3. Llenamos los arrays de una vez con las FK -> PK
+      arrayProjects.push(getRouteData?.idProjectVinculation!);
+      arrayFunds.push(getRouteData?.idFund!);
+      arrayPosPreOrg.push(getRouteData?.idBudget!);
+      arrayPosPreSap.push(getRouteData?.idPospreSapiencia!);
+
+    }
+
+    //* Paso 4. Hallemos la data que corresponda a los array y llenemos los objetos
+    let listProjects: IDinamicListForProjects[] = [];
+    let listFunds: IDinamicListForFunds[] = [];
+    let listPospreSapi: IDinamicListForPospres[] = [];
+
+
+    //* Sub Paso, 4.1. Vamos a hallar el fondo
+    for (const fund of arrayFunds) {
+
+      const getFund = await this.fundsRepository.getFundsById(fund);
+
+      if( getFund!.id === fund ){
+
+        const myObjForProjectList: IDinamicListForFunds = {
+
+          idFund: getFund!.id,
+          fundCode: getFund!.number
+
+        }
+
+        listFunds.push(myObjForProjectList);
+
+      }
+
+    }
+
+    //* Sub Paso, 4.2. Vamos a hallar el pospre sapi
+    for (const psap of arrayPosPreSap) {
+
+      const getPosPreSapi = await this.posPreSapienciaRepository.getPosPreSapienciaById(psap);
+
+      if( getPosPreSapi!.id === psap ){
+
+        const myObjForProjectList: IDinamicListForPospres = {
+
+          idPosPreSapi: Number(getPosPreSapi?.id),
+          numberCodeSapi: getPosPreSapi?.number.toString()!,
+          descriptionSapi: getPosPreSapi?.description.toString()!,
+          idPosPreOrig: Number(getPosPreSapi?.budgetId),
+          numberCodeOrig: getPosPreSapi?.budget?.number.toString()!
+
+        }
+
+        listPospreSapi.push(myObjForProjectList);
+
+      }
+
+    }
+
+    //* Sub Paso, 4.3. Vamos a hallar el proyecto.
+    let contForFunctionalProj: number = 0;
+    for (const proj of arrayProjects) {
+
+      const vinculationPK = Number(proj);
+      let projectFunctionalName: string = "";
+
+      //Consulto vinculaciones de proyectos
+      const getVinculation = await this.projectsRepository.getProjectById(vinculationPK);
+
+      const numberFunctionalArea: string = getVinculation?.areaFuntional?.number.toString()!;
+
+      //Debo verificar si es un proyecto de funcionamiento, si es así, debo asociar al pospre sapi
+      //como estoy manejando arrays, contendre la posición auxiliar como un contador genérico:
+      //?Guardemoslo de una vez :) ... para no tener que validar más abajo
+      if( getVinculation?.operationProjectId && getVinculation?.operationProjectId != null) {
+
+        projectFunctionalName = listPospreSapi[contForFunctionalProj].descriptionSapi;
+
+        const myObjForProjectList: IDinamicListForProjects = {
+
+          idVinculation: vinculationPK,
+          idProjectPlanning: getVinculation.id,
+          projectCode: "9000000",
+          posPreSapiRef: listPospreSapi[contForFunctionalProj].numberCodeSapi,
+          projectName: projectFunctionalName,
+          numberFunctionalArea: numberFunctionalArea,
+
+        }
+
+        listProjects.push(myObjForProjectList);
+
+      }
+
+      contForFunctionalProj ++;
+      const pkInvestmentProject: number = Number(getVinculation!.investmentProjectId);
+
+      const filters: IProjectPaginated = {
+        page: 1,
+        perPage: 10000,
+      }
+
+      //Traemos por default lo que viene en la API para dibujar porque por lo general viene datos aquí
+      const getProjectPlanning = await this.strategicDirectionService.getProjectInvestmentPaginated( filters );
+
+      //Ahora consultamos respecto a la API y paneamos la data:
+      for (const xProjPlanning of getProjectPlanning.data.array) {
+
+        if( xProjPlanning.id === pkInvestmentProject ){
+
+          const myObjForProjectList: IDinamicListForProjects = {
+
+            idVinculation: vinculationPK,
+            idProjectPlanning: pkInvestmentProject,
+            projectCode: xProjPlanning.projectCode,
+            projectName: xProjPlanning.name,
+            numberFunctionalArea: numberFunctionalArea,
+
+          }
+
+          listProjects.push(myObjForProjectList);
+
+        }
+
+      }
+
+    }
+
+    // console.log(listBudgetsRoutes)
+    // console.log(listProjects);
+    // console.log(listFunds);
+    // console.log(listPospreSapi);
+
+    const resultData: IPacComplementary = {
+
+      headerComposition: objInitial,
+      listBudgetsRoutes : listBudgetsRoutes,
+      listProjects : listProjects,
+      listFunds : listFunds,
+      listPospreSapi : listPospreSapi
+
+    }
+
+    return new ApiResponse(resultData, EResponseCodes.INFO, "Listados proporcioados a través de la vigencia y el tipo de recurso.");
+
+  }
+
 
 }
