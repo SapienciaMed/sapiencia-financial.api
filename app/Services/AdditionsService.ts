@@ -346,18 +346,21 @@ export default class AdditionsService implements IAdditionsService {
     console.log({projectsStrategic})
 
     let projectVinculation= {
-      "id": 11,
-      "functionalAreaId": 13,
-      "linked": false,
-      "type": "Inversion",
-      "operationProjectId": null,
-      "investmentProjectId": 13,
-      "userCreate": "123456789",
-      "dateCreate": "2023-10-12T15:33:13.000-05:00"
+      id: 11,
+      projectId:1,
+      conceptProject:"hOLAAA",
+      functionalAreaId: 13,
+      linked: false,
+      type: "Inversion",
+      operationProjectId: null,
+      investmentProjectId: 13,
+      userCreate: "123456789",
+      dateCreate: "2023-10-12T15:33:13.000-05:00"
   }
   projectVinculation;
     const addition = await this.additionsRepository.getAdditionById(id);
-
+    //addition.details.map(e=>console.log({e:e.$attributes}))
+    //addition.details.map(e=>console.log({e:e.$preloaded}))
     if (!addition) {
       return new ApiResponse(
         {} as IAdditionsWithMovements,
