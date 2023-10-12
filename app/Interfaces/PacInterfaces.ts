@@ -1,3 +1,5 @@
+import PacAnnualization from 'App/Models/PacAnnualization';
+import { DateTime } from 'luxon';
 
 export interface IReviewBudgetRoute {
 
@@ -36,11 +38,13 @@ export interface Datum {
   fund:                    number;
   functionArea:            string;
   project:                 number | string;
-  pacAnnualization:        PacAnnualization[];
+  pacAnnualization:        IPacAnnualization[];
 }
 
 
-export interface PacAnnualization {
+export interface IPacAnnualization {
+  id?: number;
+  pacId?: number;
   type: Type;
   jan:  number | null;
   feb:  number | null;
@@ -54,6 +58,8 @@ export interface PacAnnualization {
   oct:  number | null;
   nov:  number | null;
   dec:  number | null;
+  dateModify?: Date;
+  dateCreate?: Date;
 }
 
 export enum Type {
@@ -90,8 +96,8 @@ export interface IResultProcRoutes {
   isActive?: boolean,
   dateModify?: Date,
   dateCreate?: Date,
-  pacAnnualizationProgrammed?: PacAnnualization;
-  pacAnnualizationCollected?: PacAnnualization;
+  pacAnnualizationProgrammed?: any; //IPacAnnualization;
+  pacAnnualizationCollected?: any; //IPacAnnualization;
 
   projectsError?: string[];
   fundsError?: string[];
@@ -149,6 +155,58 @@ export interface IPacFilters {
   pacType?: string;
   exercise?: number;
   resourceType?: string;
+
+  managementCenter?: string;
+  idProjectVinculation?: number;
+  idBudget?: number;
+  idPospreSapiencia?: number;
+  idFund?: number;
+  idCardTemplate?: string;
+}
+
+export interface IPacAnnualAdapter {
+
+  //Principales
+  pacType: string; //* De este dependerá si traigo Programado/Recaudado/Ambos
+  exercise: number;
+  resourceType: string;
+
+  managementCenter: string;
+  idProjectVinculation: number;
+  idBudget: number;
+  idPospreSapiencia: number;
+  idFund: number;
+  idCardTemplate: string;
+
+  //Complementarios
+  numberFunctionalArea?: number;
+  projectName?: string;
+  idRouteComplete?: number;
+
+}
+
+export interface IBudgetsRoutesSimple {
+
+  id?: number;
+  idProjectVinculation?:number;
+  managementCenter?:string;
+  div?:string;
+  idBudget?:number;
+  idPospreSapiencia?:number;
+  idFund?:number;
+  userModify?: string;
+  dateModify?: Date;
+  userCreate?: string;
+  dateCreate?: DateTime;
+
+}
+
+export interface IResultSearchAnnualizationByRoute {
+
+  headerResult: IPacFilters;
+  routeResult: IBudgetsRoutesSimple;
+  annualRoute: IPacAnnualization[] | any;
+
 }
 
 //! Listado dinámicos para presentar en traslados.

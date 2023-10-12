@@ -3,38 +3,44 @@ import IPacRepository from "App/Repositories/PacRepository";
 import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
 
 import {
-  IReviewBudgetRoute,
-  IBody,
-  IResultProcRoutes,
-  IResultProcRoutesWithErrors,
-  IProjectPaginated,
-  IFunctionalProjectPaginated,
-  IPacFilters,
-  IPacPrimary,
-  IDinamicListForProjects,
-  IDinamicListForFunds,
-  IDinamicListForPospres,
-  IPacComplementary
-} from '../Interfaces/PacInterfaces';
+         IBody,
+         IDinamicListForFunds,
+         IDinamicListForPospres,
+         IDinamicListForProjects,
+         IFunctionalProjectPaginated,
+         IPacAnnualAdapter,
+         IPacComplementary,
+         IPacFilters,
+         IPacPrimary,
+         IProjectPaginated,
+         IResultProcRoutes,
+         IResultProcRoutesWithErrors,
+         IReviewBudgetRoute,
+        } from '../Interfaces/PacInterfaces';
+
 import { IProjectsRepository } from '../Repositories/ProjectsRepository';
 import { IFundsFilters } from '../Interfaces/FundsInterfaces';
 import { IFunctionalProject } from '../Interfaces/FunctionalProjectInterfaces';
 import { IFiltersPosPreSapienciaMix } from '../Interfaces/PosPreSapienciaInterfaces';
 
-import { IFundsRepository } from '../Repositories/FundsRepository';
-import { IPosPreSapienciaRepository } from '../Repositories/PosPreSapienciaRepository';
-import { IBudgetsRoutesRepository } from '../Repositories/BudgetsRoutesRepository';
-import { IFunctionalProjectRepository } from '../Repositories/FunctionalProjectRepository';
-import { IStrategicDirectionService } from './External/StrategicDirectionService';
+import { IResultSearchAnnualizationByRoute } from '../Interfaces/PacInterfaces';
+import { DataTransferPac, TransferTransaction } from '../Interfaces/PacTransferInterface';
+import { IFunctionalProjectRepository } from "App/Repositories/FunctionalProjectRepository";
+import { IFundsRepository } from "App/Repositories/FundsRepository";
+import { IPosPreSapienciaRepository } from "App/Repositories/PosPreSapienciaRepository";
+import { IBudgetsRoutesRepository } from "App/Repositories/BudgetsRoutesRepository";
+import { IStrategicDirectionService } from "./External/StrategicDirectionService";
 
 export default interface IPacService {
 
-  uploadPac(file: any, body: IBody): Promise<ApiResponse<any>>;
-  reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[], body?: IBody): Promise<ApiResponse<IResultProcRoutes>>;
-  transfersOnPac(data: any[]): Promise<ApiResponse<any>>;
-  validityList(data:IPacFilters):Promise<ApiResponse<any>>;
-  resourcesTypeList(data:IPacFilters):Promise<ApiResponse<any>>;
-  listDinamicsRoutes(data:IPacFilters):Promise<ApiResponse<any>>;
+    uploadPac(file: any, body: IBody): Promise<ApiResponse<any>>;
+    reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[]): Promise<ApiResponse<IResultProcRoutes>>;
+    transfersOnPac(data: DataTransferPac): Promise<ApiResponse<DataTransferPac | null>>;
+    validityList(filters: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | string>>>;
+    resourcesTypeList(filters: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | string>>>;
+    listDinamicsRoutes(filters: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | number>>>;
+    searchAnnualDataRoutes(data: IPacAnnualAdapter): Promise<ApiResponse<IPagingData<IPacPrimary> | IResultSearchAnnualizationByRoute | IPacFilters | null>>;
+
 }
 
 export default class PacService implements IPacService {
@@ -240,7 +246,7 @@ export default class PacService implements IPacService {
     return dataExcelFixed;
   }
 
-  async reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[], body?: IBody): Promise<ApiResponse<IResultProcRoutes | any>> {
+  async reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[], body?: IBody): Promise<ApiResponse<IResultProcRoutes | any>> { 
 
     // Para terminos de pruebas, voy a trabajar solo con 15 datos de los 118 (Daría todo OK)
     let workingData: IReviewBudgetRoute[] = [];
@@ -411,8 +417,7 @@ export default class PacService implements IPacService {
           dateModify: new Date(),
           dateCreate: new Date(),
           pacAnnualizationProgrammed: workingData[i].pacAnnualization[0],
-          pacAnnualizationCollected: workingData[i].pacAnnualization[1],
-
+          pacAnnualizationCollected: workingData[i].pacAnnualization[1]
         }
 
         arrayResultCondensed.push(finalObjProccess);
@@ -465,14 +470,6 @@ export default class PacService implements IPacService {
     return new ApiResponse(arrayResultCondensedWithErrors, EResponseCodes.FAIL, "Se tuvieron errores, no se pasaron todas las validaciones");
 
   }
-
-  async transfersOnPac(_data: any[]): Promise<ApiResponse<any>> {
-
-    //console.log(data);
-    return new ApiResponse(null, EResponseCodes.INFO, "Método para transferencias en el PAC");
-
-  }
-
 
   validateValuesByTypePac = (typePac: string, data: any) => {
 
@@ -741,11 +738,6 @@ export default class PacService implements IPacService {
 
     }
 
-    // console.log(listBudgetsRoutes)
-    // console.log(listProjects);
-    // console.log(listFunds);
-    // console.log(listPospreSapi);
-
     const resultData: IPacComplementary = {
 
       headerComposition: objInitial,
@@ -756,7 +748,185 @@ export default class PacService implements IPacService {
 
     }
 
-    return new ApiResponse(resultData, EResponseCodes.INFO, "Listados proporcioados a través de la vigencia y el tipo de recurso.");
+    return new ApiResponse(resultData, EResponseCodes.OK, "Listados proporcioados a través de la vigencia y el tipo de recurso.");
+
+  }
+
+  async searchAnnualDataRoutes(data: IPacAnnualAdapter): Promise<ApiResponse<IPagingData<IPacPrimary> | IResultSearchAnnualizationByRoute | IPacFilters | null>> {
+
+    const {
+          pacType, //2 - Programado, 3 - Recaudado , 4 - Ambos
+          exercise,
+          resourceType,
+          managementCenter,
+          idProjectVinculation,
+          idBudget,
+          idPospreSapiencia,
+          idFund,
+          idCardTemplate
+    } = data;
+
+    const objHeaderInitial: IPacFilters = {
+      page: 1,
+      perPage: 1000000,
+      pacType,
+      exercise,
+      resourceType
+    }
+
+    const objSearchRouteAndAnnual: IPacFilters = {
+      page: 1,
+      perPage: 1000000,
+      managementCenter,
+      idProjectVinculation,
+      idBudget,
+      idPospreSapiencia,
+      idFund,
+      idCardTemplate
+    }
+
+    //* Primero encontremos las rutas que hacen parte del objHeaderInitial
+    //? Cuando hallemos la ruta con objSearchRouteAndAnnual, el idRoute será paneado con el listado disponible
+    //? si se encuentran datos, re usamos el mismo método pero para traer sus distribución anual.
+    let arrayRoutesIdOnPac: number[] = []; //Rutas
+    let arrayPacsIdOnPac: number[] = [];   //Pacs
+
+    const getPacs = await this.pacRepository.searchPacByMultiData(objHeaderInitial);
+
+    if( !getPacs || getPacs.array.length <= 0 ) return new ApiResponse(null, EResponseCodes.FAIL, "No tenemos PACs con la vigencia y/o tipo recurso dados");
+
+    for (const w of getPacs.array) {
+      arrayRoutesIdOnPac.push(w?.budgetRouteId!);
+      arrayPacsIdOnPac.push(w?.id!);
+    }
+
+    // console.log(objSearchRouteAndAnnual.idProjectVinculation);
+    // console.log(objSearchRouteAndAnnual.idBudget);
+    // console.log(objSearchRouteAndAnnual.idPospreSapiencia);
+    // console.log(objSearchRouteAndAnnual.idFund);
+
+    //* Hallamos ruta con la data proporcionada inicialmente:
+    const getRoute = await this.budgetsRoutesRepository
+                               .getBudgetForAdditions( objSearchRouteAndAnnual.idProjectVinculation!,
+                                                       objSearchRouteAndAnnual.idFund!,
+                                                       objSearchRouteAndAnnual.idBudget!,
+                                                       objSearchRouteAndAnnual.idPospreSapiencia! )
+
+    if( !getRoute ){
+      // Devolvemos con la CARD incluida para que se pinte el error si es el caso de que no encontró combinación ruta.
+      return new ApiResponse(objSearchRouteAndAnnual, EResponseCodes.FAIL, "No se encontró la ruta presupuestal");
+
+    }
+
+    //* Comparamos si la ruta proporcionada está dentro del PAC:
+    let controlBand: boolean = false;
+    let viewPac: number = 0;
+    const viewType: string = objHeaderInitial.pacType?.toString()!;
+    for (const x of getPacs.array){
+
+      if( Number(x?.budgetRouteId) === Number(getRoute.id) ){
+
+        controlBand = true;
+        viewPac = Number(x?.id);
+
+      }
+
+    }
+
+    //* Con base a lo anterior, obtenemos las anualizaciones respectivas:
+    if( !controlBand || viewPac === 0 ){
+
+      return new ApiResponse(objSearchRouteAndAnnual, EResponseCodes.FAIL, "La ruta presupuestal no se encuentra dispuesta para la vigencia y/o tipo recurso dados");
+
+    }
+
+    //* Obtengamos la anualización coincidente:
+    const getAnnualization = await this.pacRepository.getAnnualizationsByPacAndType(viewPac, viewType);
+
+    if( !getAnnualization || getAnnualization.array.length <= 0 ){
+
+      return new ApiResponse(objSearchRouteAndAnnual, EResponseCodes.FAIL, "La ruta presupuestal no tiene asociada anualización, esto es un error");
+
+    }
+
+    const objResult: IResultSearchAnnualizationByRoute = {
+
+      headerResult: objHeaderInitial,
+      routeResult: getRoute,
+      annualRoute: getAnnualization.array
+
+    }
+
+    return new ApiResponse(objResult, EResponseCodes.OK, "Obteniendo las anualizaciones");
+
+  }
+
+  async transfersOnPac(data: DataTransferPac): Promise<ApiResponse<DataTransferPac | null | any>> {
+
+    //* Vamos a calcular los totales a nivel de origenes y destinos.
+    const totalCalculates = await this.calculatedValues(data.transferTransaction, data.headTransfer.exercise);
+
+
+    return new ApiResponse(totalCalculates, EResponseCodes.INFO, "Método para transferencias en el PAC");
+
+  }
+
+  async calculatedValues(info: TransferTransaction, validity: number): Promise<string | any> {
+
+    let totalOriginProgrammig: number = 0;
+    let totalOriginCollected: number = 0;
+    let totalDestinityProgrammig: number = 0;
+    let totalDestinityCollected: number = 0;
+
+    console.log(info);
+    console.log(validity);
+
+
+
+    //* Calculamos primero origenes.
+    //? Calculamos origen (Programado)
+
+    //? Calculamos origen (Recaudado)
+
+
+
+
+
+    //* Calculamos primero destinos.
+    //? Calculamos destino (Programado)
+
+    //? Calculamos destino (Recaudado)
+
+    console.log(totalOriginProgrammig);
+    console.log(totalOriginCollected);
+    console.log(totalDestinityProgrammig);
+    console.log(totalDestinityCollected);
+
+    // for (const x of info) {
+
+      //* Consultemos la ruta primero, el objetivo es que debemos calcular los valores originales:
+      // const getRoute = await this.budgetsRoutesRepository.getBudgetForAdditions(x.idProjectVinculation, x.idFund, x.idBudget, x.idPospreSapiencia);
+      // const getValues = await this.pacRepository.getPacByRouteAndExercise(Number(getRoute?.id) , validity)
+
+      // const val: number =
+      //   Number(x.annualRoute[0].jan) +
+      //   Number(x.annualRoute[0].feb) +
+      //   Number(x.annualRoute[0].mar) +
+      //   Number(x.annualRoute[0].abr) +
+      //   Number(x.annualRoute[0].may) +
+      //   Number(x.annualRoute[0].jun) +
+      //   Number(x.annualRoute[0].jul) +
+      //   Number(x.annualRoute[0].ago) +
+      //   Number(x.annualRoute[0].sep) +
+      //   Number(x.annualRoute[0].oct) +
+      //   Number(x.annualRoute[0].nov) +
+      //   Number(x.annualRoute[0].dec);
+
+      //   total += val;
+
+    // }
+
+    return null;
 
   }
 
