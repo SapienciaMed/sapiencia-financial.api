@@ -1,6 +1,8 @@
-import { IAdditions,
-         IAdditionsFilters,
-         IAdditionsWithMovements } from "App/Interfaces/AdditionsInterfaces";
+import {
+  IAdditions,
+  IAdditionsFilters,
+  IAdditionsWithMovements
+} from "App/Interfaces/AdditionsInterfaces";
 import Additions from "../Models/Addition";
 import { IPagingData } from "App/Utils/ApiResponses";
 // import { DateTime } from "luxon";
@@ -15,18 +17,18 @@ export interface IAdditionsRepository {
 
 }
 
-export default class AdditionsRepository implements IAdditionsRepository{
+export default class AdditionsRepository implements IAdditionsRepository {
 
   //?OBTENER PAGINADO Y FILTRADO LAS ADICIONES CON SUS MOVIMIENTOS
   async getAdditionsPaginated(filters: IAdditionsFilters): Promise<IPagingData<IAdditions>> {
     const query = Additions.query();
-    query.select('id', 'actAdminDistrict', 'actAdminSapiencia','typeMovement');
-    
-    query.preload('additionMove' , (q) => {
-      q.select('id' , 'type' , 'value', 'budgetRouteId');
+    query.select('id', 'actAdminDistrict', 'actAdminSapiencia', 'typeMovement');
+
+    query.preload('additionMove', (q) => {
+      q.select('id', 'type', 'value', 'budgetRouteId');
     });
-    
-    
+
+
     if (filters.adminDistrict) {
       const criterial = filters.adminDistrict.toUpperCase();
       query.where("actAdminDistrict", 'LIKE', `%${criterial}%`);
@@ -36,18 +38,18 @@ export default class AdditionsRepository implements IAdditionsRepository{
       const criterial = filters.adminSapiencia.toUpperCase();
       query.where("actAdminSapiencia", 'LIKE', `%${criterial}%`);
     }
-    
+
     if (filters.typeMovement) {
       const criterial = filters.typeMovement.toUpperCase();
       query.where("typeMovement", 'LIKE', `%${criterial}%`);
     }
-    
+
     query.orderBy("actAdminSapiencia", "desc");
     query.orderBy("id", "asc");
-    
+
     const res = await query.paginate(filters.page, filters.perPage);
-    const { data, meta } = res.serialize();    
-   
+    const { data, meta } = res.serialize();
+
     return {
       array: data as IAdditions[],
       meta,
@@ -55,7 +57,7 @@ export default class AdditionsRepository implements IAdditionsRepository{
   }
 
   //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO
-  async createAdditions(addition: IAdditions): Promise<IAdditions | any>{
+  async createAdditions(addition: IAdditions): Promise<IAdditions | any> {
 
     const toCreate = new Additions();
 
@@ -69,11 +71,11 @@ export default class AdditionsRepository implements IAdditionsRepository{
   async getAllAdditionsList(list: string): Promise<IAdditions[] | any> {
 
     let query: Additions[] = [];
-    if(list === "district" ){
+    if (list === "district") {
       query = await Additions.query().select('id', 'actAdminDistrict');
     }
 
-    if(list === "sapiencia" ){
+    if (list === "sapiencia") {
       query = await Additions.query().select('id', 'actAdminSapiencia');
     }
 
@@ -82,29 +84,37 @@ export default class AdditionsRepository implements IAdditionsRepository{
   }
 
   //?OBTENER UNA ADICIÓN CON SUS MOVIMIENTOS EN PARALELO A TRAVÉS DE UN ID PARAM
-  async getAdditionById(id: number): Promise<IAdditionsWithMovements | any>{
-
+  async getAdditionById(id: number): Promise<IAdditionsWithMovements | any> {
     const head = await Additions
-                                .query()
-                                .where("id", id)
-                                .select("id",
-                                        "actAdminDistrict",
-                                        "actAdminSapiencia",
-                                        "typeMovement");
+      .query()
+      .where("id", id)
+      .select("id",
+        "actAdminDistrict",
+        "actAdminSapiencia",
+        "typeMovement");
 
     const details = await AdditionsMovement.query().where("additionId", id)
       .preload("budgetRoute", (q1) => {
         q1.select("id",
-                  "managementCenter",
-                  "div",
-                  "idProjectVinculation",
-                  "idFund",
-                  "idBudget",
-                  "idPospreSapiencia")
+          "managementCenter",
+          "div",
+          "idProjectVinculation",
+          "idFund",
+          "idBudget",
+          "idPospreSapiencia")
         q1
           //Preload para traer proyecto y área funcional
-          .preload("projectVinculation", (a) => {
-            a.select("id",
+          .preload("projectVinculation", async (a) => {
+            const relatedData = await a.first(); // Para obtener el primer registro relacionado
+            relatedData.$attributes.type === 'Funcionamiento' && a.preload('areaFuntional', (aa) => {
+              aa.select("id",
+                "number",
+                "denomination",
+                "description")
+            })
+
+            //console.log({ relatedData: relatedData.$attributes.type })
+            /* a.select("id",
                      "functionalAreaId",
                      "projectId",
                      "conceptProject")
@@ -113,36 +123,39 @@ export default class AdditionsRepository implements IAdditionsRepository{
                         "number",
                         "denomination",
                         "description")
-            })
+            }) */
           })
 
           //Preload para traer los fondos
+
+
+
           .preload("funds", (b) => {
             b.select("id",
-                     "number",
-                     "denomination",
-                     "description")
+              "number",
+              "denomination",
+              "description")
           })
 
           //Preload para traer pospre origen
           .preload("budget", (c) => {
             c.select("id",
-                     "number",
-                     "ejercise",
-                     "denomination",
-                     "description")
+              "number",
+              "ejercise",
+              "denomination",
+              "description")
           })
 
           //Preload para traer los pospre sapiencia asociados
           .preload("pospreSapiencia", (d) => {
             d.select("id",
-                     "number",
-                     "ejercise",
-                     "consecutive",
-                     "description")
+              "number",
+              "ejercise",
+              "consecutive",
+              "description")
           })
       })
-
+    console.log("*************************3")
     const result = {
       head,
       details
