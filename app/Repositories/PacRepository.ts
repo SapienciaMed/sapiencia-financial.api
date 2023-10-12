@@ -1,13 +1,17 @@
 import fs from 'fs';
 import Excel from 'exceljs'
-import { IPacPrimary, IReviewBudgetRoute } from '../Interfaces/PacInterfaces';
+import { IPacAnnualization, IPacPrimary, IReviewBudgetRoute } from '../Interfaces/PacInterfaces';
 import Pac from '../Models/Pac';
 import { IPagingData } from '../Utils/ApiResponses';
 import { IPacFilters } from 'App/Interfaces/PacInterfaces';
+import PacAnnualization from 'App/Models/PacAnnualization';
 
 export default interface IPacRepository {
 
     uploadPac(file: any): Promise<any>;
+    searchPacByMultiData(filters: IPacFilters): Promise<IPagingData<IPacPrimary | null>>;
+    getPacByRouteAndExercise(route: number, validity: number): Promise<IPagingData<IPacAnnualization | null>>;
+    getAnnualizationsByPacAndType(pac: number, type: string): Promise<IPagingData<IPacAnnualization | null>>;
     reviewBudgetsRoute(budgetRoute: IReviewBudgetRoute): Promise<any>;
     validityList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>>;
     resourcesTypeList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>>;
@@ -290,6 +294,67 @@ export default class PacRepository implements IPacRepository {
 
       return {
         array: data as IPacPrimary[] | number[],
+        meta,
+      };
+
+    }
+
+    async searchPacByMultiData(filters: IPacFilters): Promise<IPagingData<IPacPrimary | null>> {
+
+      const query = Pac.query();
+
+      query.where("exercise", filters.exercise!)
+           .andWhere("sourceType", filters.resourceType!);
+
+      const res = await query.paginate(filters.page, filters.perPage);
+      const { data, meta } = res.serialize();
+
+      return {
+        array: data as IPacPrimary[] | null[],
+        meta,
+      };
+
+    }
+
+    async getAnnualizationsByPacAndType(pac: number, type: string): Promise<IPagingData<IPacAnnualization | null>> {
+
+      const query = PacAnnualization.query();
+
+      //Si es ambos entonces traería ambos grupos de datos.
+      if( type !== "Ambos" ){
+
+        query.where("pacId", pac)
+             .andWhere("type", type);
+
+      }else{
+
+        query.where("pacId", pac);
+
+      }
+
+      const res = await query.paginate(1, 100);
+      const { data, meta } = res.serialize();
+
+      return {
+        array: data as IPacAnnualization[] | null[],
+        meta,
+      };
+
+    }
+
+    async getPacByRouteAndExercise(route: number, validity: number): Promise<IPagingData<IPacAnnualization | null>> {
+
+      const query = Pac.query()
+                       .where("budgetRouteId" , route)
+                       .andWhere("exercise", validity);
+
+      query.preload("annualizations");
+
+      const res = await query.paginate(1, 100);
+      const { data, meta } = res.serialize();
+
+      return {
+        array: data as IPacAnnualization[] | null[],
         meta,
       };
 

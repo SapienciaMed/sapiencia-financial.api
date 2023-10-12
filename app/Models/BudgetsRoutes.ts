@@ -1,6 +1,6 @@
 import { BaseModel, HasOne, column, hasOne } from "@ioc:Adonis/Lucid/Orm";
 import { DateTime } from "luxon";
-import ProjectsVinculation from "./ProjectsVinculation"; 
+import ProjectsVinculation from "./ProjectsVinculation";
 import Budgets from "./Budgets";
 import PosPreSapiencia from "./PosPreSapiencia";
 import Funds from "./Funds";
@@ -13,9 +13,9 @@ export default class BudgetsRoutes  extends BaseModel {
 
   @column({ columnName: "RPP_CODVPY_PROYECTO", serializeAs: "idProjectVinculation" })
   public idProjectVinculation: number;
-  
+
   @column({ columnName: "RPP_CENTRO_GESTOR", serializeAs: "managementCenter" })
-  public managementCenter: string; 
+  public managementCenter: string;
 
   @column({ columnName: "RPP_DIV", serializeAs: "div" })
   public div: string;
@@ -28,13 +28,16 @@ export default class BudgetsRoutes  extends BaseModel {
 
   @column({ columnName: "RPP_CODFND_FONDO", serializeAs: "idFund" })
   public idFund: number;
-  
+
+  @column({ columnName: "RPP_SALDO", serializeAs: "balance" })
+  public balance: number;
+
   @column({ columnName: "RPP_USUARIO_MODIFICO", serializeAs: "userModify" })
   public userModify: string;
 
   @column({ columnName: "RPP_FECHA_MODIFICO", serializeAs: "dateModify" })
   public dateModify: Date;
-  
+
   @column({ columnName: "RPP_USUARIO_CREO", serializeAs: "userCreate" })
   public userCreate: string;
 

@@ -179,5 +179,6 @@ Route.group(() => {
     Route.post('/validity-list','PacsController.validityList');
     Route.post('/resources-type-list','PacsController.resourcesTypeList');
     Route.post('/lists-dinamics-routes','PacsController.listDinamicsRoutes');
+    Route.post('/search-annualdata-routes','PacsController.searchAnnualDataRoutes');
 
   }).prefix("/api/v1/pac")
