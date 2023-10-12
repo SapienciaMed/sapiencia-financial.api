@@ -13,6 +13,9 @@ export default interface IPacRepository {
     getPacByRouteAndExercise(route: number, validity: number): Promise<IPagingData<IPacAnnualization | null>>;
     getAnnualizationsByPacAndType(pac: number, type: string): Promise<IPagingData<IPacAnnualization | null>>;
     reviewBudgetsRoute(budgetRoute: IReviewBudgetRoute): Promise<any>;
+    updateOrCreatePac(routesValidationRequest: any): Promise<any>;
+    getPacByExcercise(exercise: number): Promise<Pac[]>;
+    updatePacExcersiceVersion(pac: any): Promise<any>;
     validityList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>>;
     resourcesTypeList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>>;
     listDinamicsRoutes(filters: IPacFilters): Promise<IPagingData<IPacPrimary | number>>;
@@ -79,36 +82,37 @@ export default class PacRepository implements IPacRepository {
                     fund: row.getCell(5).value,
                     functionArea: row.getCell(6).value,
                     project: row.getCell(7).value,
+                    totalBudget: row.getCell(8).value,
                     pacAnnualization: [
                         {
                             type: "Programado",
-                            jan: row.getCell(9).value,
-                            feb: row.getCell(11).value,
-                            mar: row.getCell(13).value,
-                            abr: row.getCell(15).value,
-                            may: row.getCell(17).value,
-                            jun: row.getCell(19).value,
-                            jul: row.getCell(21).value,
-                            ago: row.getCell(23).value,
-                            sep: row.getCell(25).value,
-                            oct: row.getCell(27).value,
-                            nov: row.getCell(29).value,
-                            dec: row.getCell(31).value
+                            jan: row.getCell(9).value ?? 0,
+                            feb: row.getCell(11).value ?? 0,
+                            mar: row.getCell(13).value ?? 0,
+                            abr: row.getCell(15).value ?? 0,
+                            may: row.getCell(17).value ?? 0,
+                            jun: row.getCell(19).value ?? 0,
+                            jul: row.getCell(21).value ?? 0,
+                            ago: row.getCell(23).value ?? 0,
+                            sep: row.getCell(25).value ?? 0,
+                            oct: row.getCell(27).value ?? 0,
+                            nov: row.getCell(29).value ?? 0,
+                            dec: row.getCell(31).value ?? 0
                         },
                         {
                             type: "Recaudado",
-                            jan: row.getCell(10).value,
-                            feb: row.getCell(12).value,
-                            mar: row.getCell(14).value,
-                            abr: row.getCell(16).value,
-                            may: row.getCell(18).value,
-                            jun: row.getCell(20).value,
-                            jul: row.getCell(22).value,
-                            ago: row.getCell(24).value,
-                            sep: row.getCell(26).value,
-                            oct: row.getCell(28).value,
-                            nov: row.getCell(30).value,
-                            dec: row.getCell(32).value
+                            jan: row.getCell(10).value ?? 0,
+                            feb: row.getCell(12).value ?? 0,
+                            mar: row.getCell(14).value ?? 0,
+                            abr: row.getCell(16).value ?? 0,
+                            may: row.getCell(18).value ?? 0,
+                            jun: row.getCell(20).value ?? 0,
+                            jul: row.getCell(22).value ?? 0,
+                            ago: row.getCell(24).value ?? 0,
+                            sep: row.getCell(26).value ?? 0,
+                            oct: row.getCell(28).value ?? 0,
+                            nov: row.getCell(30).value ?? 0,
+                            dec: row.getCell(32).value ?? 0
                         }
                     ]
                 })
@@ -217,9 +221,9 @@ export default class PacRepository implements IPacRepository {
         }
     }
 
-    async reviewBudgetsRoute(budgetRoute: IReviewBudgetRoute): Promise<any> {
+    async reviewBudgetsRoute(_budgetRoute: IReviewBudgetRoute): Promise<any> {
 
-        console.log(budgetRoute);
+        //console.log(budgetRoute);
         //TODO: Acá consultamos la ruta presupuestal y sus componentes
 
         //* Paso 1. Hallar el PosPre Origen a través del PosPre Sapiencia (Y que exista)
@@ -237,6 +241,55 @@ export default class PacRepository implements IPacRepository {
 
     }
 
+    updateOrCreatePac = async (routesValidationRequest: any) => {
+        for await (let pac of routesValidationRequest.condensed) {
+            let annualizations: any[] = []
+            delete pac.numberExcelRom
+            delete pac.pacAnnualizationProgrammed.totalBudget
+            delete pac.pacAnnualizationCollected.totalBudget
+            annualizations.push(pac.pacAnnualizationProgrammed)
+            annualizations.push(pac.pacAnnualizationCollected)
+            delete pac.pacAnnualizationProgrammed;
+            delete pac.pacAnnualizationCollected;
+            const toCreatePac = new Pac();
+            toCreatePac.fill({ ...pac, dateCreate: new Date('2023-09-04 17:51:46') });
+            //console.log({pac, annualizations})
+            let pacCreated = await toCreatePac.save();
+            await pacCreated
+                .related('pacAnnualizations')
+                .createMany(annualizations)
+        }
+        return routesValidationRequest
+    }
+
+    getPacByExcercise = async (exercise: number): Promise<Pac[]> => {
+        const pacs = await Pac.query().where('exercise', exercise).preload('pacAnnualizations')
+        return pacs;
+    };
+
+
+    updatePacExcersiceVersion = async (pac: any): Promise<any> => {
+
+        for await (let row of pac) {
+            let annualization:any[] = []
+            let routePacMatch = await Pac.findOrFail(row.id)
+            let pacAnnualizationProgrammed = row.pacAnnualizationProgrammed
+            let pacAnnualizationCollected = row.pacAnnualizationCollected
+            delete row.pacAnnualizationProgrammed.totalBudget;
+            delete row.pacAnnualizationCollected.totalBudget;
+            
+            annualization.push(pacAnnualizationProgrammed)
+            annualization.push(pacAnnualizationCollected)
+
+            await routePacMatch
+                .related('pacAnnualizations')
+                .updateOrCreateMany(annualization, 'id')
+
+        }
+
+        return pac;
+
+    }
     async validityList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>> {
 
       const query = Pac.query();

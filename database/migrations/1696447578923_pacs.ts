@@ -19,16 +19,18 @@ export default class extends BaseSchema {
       table.integer('PAC_VERSION').notNullable().comment('Numero de la version cargada')
       table.integer('PAC_VIGENCIA').notNullable().comment('Año de vigencia del PAC')
       table.boolean('PAC_ACTIVO').defaultTo(true).notNullable().comment('Version vigente del presupupuesto')
-      table
-        .datetime("PAC_FECHA_MODIFICO")
+      /* table
+        .timestamp("PAC_FECHA_MODIFICO")
         .nullable()
         .comment("Fecha y hora de la última modificación");
       table
-        .datetime("PAC_FECHA_CREO")
+        .timestamp("PAC_FECHA_CREO")
         .notNullable()
         .comment("Fecha y hora de creación del registro");
-
-    })
+ */
+        table.string('PAC_FECHA_MODIFICO').nullable()
+        table.string('PAC_FECHA_CREO').nullable()
+      })
   }
 
   public async down() {

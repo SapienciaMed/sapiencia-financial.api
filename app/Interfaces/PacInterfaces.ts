@@ -1,3 +1,4 @@
+import PacAnnualization from 'App/Models/PacAnnualization';
 import { DateTime } from 'luxon';
 
 export interface IReviewBudgetRoute {
@@ -10,7 +11,8 @@ export interface IReviewBudgetRoute {
   fund: string, //* Opcional
   functionArea: string, //* Opcional
   project: string; //? REQUERIDO
-  pacAnnualization: IPacAnnualization[]; //? REQUERIDO
+  totalBudget:string; // REQUERIDO
+  pacAnnualization: PacAnnualization[]; //? REQUERIDO
 
 }
 
@@ -19,7 +21,7 @@ export interface IBody {
   exercise: number;
   typeSource: string;
   typePac: string;
-
+  version?:number;
 }
 
 //Desestructuración de interfaz final de data
@@ -94,8 +96,8 @@ export interface IResultProcRoutes {
   isActive?: boolean,
   dateModify?: Date,
   dateCreate?: Date,
-  pacAnnualizationProgrammed?: IPacAnnualization;
-  pacAnnualizationCollected?: IPacAnnualization;
+  pacAnnualizationProgrammed?: any; //IPacAnnualization;
+  pacAnnualizationCollected?: any; //IPacAnnualization;
 
   projectsError?: string[];
   fundsError?: string[];
