@@ -102,19 +102,9 @@ export default class TransfersRepository implements ITransfersRepository {
           "idPospreSapiencia")
         q1
           //Preload para traer proyecto y área funcional
-          .preload("projectVinculation", (a) => {
-            a.select("id",
-              "functionalAreaId",
-              "projectId",
-              "conceptProject")
-            a.preload("areaFuntional", (aa) => {
-              aa.select("id",
-                "number",
-                "denomination",
-                "description")
-            })
-          })
-
+          q1.preload("projectVinculation", (subq) =>
+          subq.preload("areaFuntional").preload("functionalProject")
+        )
           //Preload para traer los fondos
           .preload("funds", (b) => {
             b.select("id",

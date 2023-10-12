@@ -33,8 +33,12 @@ export default class AppProvider {
     );
     const AdditionsService = await import("App/Services/AdditionsService");
     const TransfersService = await import("App/Services/TransfersService");
-    const FunctionalProjectService = await import("App/Services/FunctionalProjectService");
-    const StrategicDirectionService = await import("App/Services/External/StrategicDirectionService");
+    const FunctionalProjectService = await import(
+      "App/Services/FunctionalProjectService"
+    );
+    const StrategicDirectionService = await import(
+      "App/Services/External/StrategicDirectionService"
+    );
     const PacService = await import("App/Services/PacService");
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
@@ -87,9 +91,7 @@ export default class AppProvider {
       "App/Repositories/FunctionalProjectRepository"
     );
 
-    const PacRepository = await import(
-      "App/Repositories/PacRepository"
-    );
+    const PacRepository = await import("App/Repositories/PacRepository");
 
     /**************************************************************************/
     /******************************** CORE  ***********************************/
@@ -125,10 +127,7 @@ export default class AppProvider {
       "core.FunctionalAreaProvider",
       () =>
         new FunctionalAreaService.default(
-          new FunctionalAreaRepository.default(),
-          new StrategicDirectionService.default(
-            new VinculationMGARepository.default()
-          )
+          new FunctionalAreaRepository.default()
         )
     );
     this.app.container.singleton(
@@ -212,19 +211,19 @@ export default class AppProvider {
 
     this.app.container.singleton(
       "core.PacProvider",
-      () => new PacService.default(
-              new PacRepository.default(),
-              new ProjectsRepository.default(),
-              new FunctionalProjectRepository.default(),
-              new FundsRepository.default(),
-              new PosPreSapienciaRepository.default(),
-              new BudgetsRoutesRepository.default(),
-              new StrategicDirectionService.default(
-                new VinculationMGARepository.default()
-              )
+      () =>
+        new PacService.default(
+          new PacRepository.default(),
+          new ProjectsRepository.default(),
+          new FunctionalProjectRepository.default(),
+          new FundsRepository.default(),
+          new PosPreSapienciaRepository.default(),
+          new BudgetsRoutesRepository.default(),
+          new StrategicDirectionService.default(
+            new VinculationMGARepository.default()
+          )
         )
     );
-
   }
 
   public async boot() {

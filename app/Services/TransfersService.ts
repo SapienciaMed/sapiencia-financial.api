@@ -21,6 +21,7 @@ import { ITransfersRepository } from '../Repositories/TransfersRepository';
 import { IMovementTransferRepository } from '../Repositories/MovementTransferRepository';
 import Transfer from '../Models/Transfer';
 import TransfersMovement from '../Models/TransfersMovement';
+import { tranformProjectsVinculation } from "App/Utils/sub-services";
 
 export interface ITransfersService {
 
@@ -330,7 +331,6 @@ export default class TransfersService implements ITransfersService {
 
   //?OBTENER UNA ADICIÓN CON SUS MOVIMIENTOS EN PARALELO A TRAVÉS DE UN ID PARAM
   async getTransferById(id: number): Promise<ApiResponse<ITransfersWithMovements>> {
-
     const transfer = await this.transfersRepository.getTransferById(id);
 
     if (!transfer) {
@@ -342,6 +342,17 @@ export default class TransfersService implements ITransfersService {
       );
 
     }
+
+
+    for (const detail of transfer.details) {
+      if (detail.budgetRoute.projectVinculation) {
+        const res = await tranformProjectsVinculation([
+          detail.budgetRoute.projectVinculation,
+        ]);
+        if (res.length > 0) detail.budgetRoute.projectVinculation = res[0];
+      }
+    }
+
 
     return new ApiResponse(transfer, EResponseCodes.OK);
 
