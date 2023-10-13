@@ -3,20 +3,20 @@ import IPacRepository from "App/Repositories/PacRepository";
 import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
 
 import {
-         IBody,
-         IDinamicListForFunds,
-         IDinamicListForPospres,
-         IDinamicListForProjects,
-         IFunctionalProjectPaginated,
-         IPacAnnualAdapter,
-         IPacComplementary,
-         IPacFilters,
-         IPacPrimary,
-         IProjectPaginated,
-         IResultProcRoutes,
-         IResultProcRoutesWithErrors,
-         IReviewBudgetRoute,
-        } from '../Interfaces/PacInterfaces';
+  IBody,
+  IDinamicListForFunds,
+  IDinamicListForPospres,
+  IDinamicListForProjects,
+  IFunctionalProjectPaginated,
+  IPacAnnualAdapter,
+  IPacComplementary,
+  IPacFilters,
+  IPacPrimary,
+  IProjectPaginated,
+  IResultProcRoutes,
+  IResultProcRoutesWithErrors,
+  IReviewBudgetRoute,
+} from '../Interfaces/PacInterfaces';
 
 import { IProjectsRepository } from '../Repositories/ProjectsRepository';
 import { IFundsFilters } from '../Interfaces/FundsInterfaces';
@@ -33,14 +33,21 @@ import { IStrategicDirectionService } from "./External/StrategicDirectionService
 
 export default interface IPacService {
 
-    uploadPac(file: any, body: IBody): Promise<ApiResponse<any>>;
-    reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[]): Promise<ApiResponse<IResultProcRoutes>>;
-    transfersOnPac(data: DataTransferPac): Promise<ApiResponse<DataTransferPac | null>>;
-    validityList(filters: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | string>>>;
-    resourcesTypeList(filters: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | string>>>;
-    listDinamicsRoutes(filters: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | number>>>;
-    searchAnnualDataRoutes(data: IPacAnnualAdapter): Promise<ApiResponse<IPagingData<IPacPrimary> | IResultSearchAnnualizationByRoute | IPacFilters | null>>;
+  uploadPac(file: any, body: IBody): Promise<ApiResponse<any>>;
+  reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[]): Promise<ApiResponse<IResultProcRoutes>>;
+  transfersOnPac(data: DataTransferPac): Promise<ApiResponse<DataTransferPac | null>>;
+  validityList(filters: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | string>>>;
+  resourcesTypeList(filters: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | string>>>;
+  listDinamicsRoutes(filters: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | number>>>;
+  searchAnnualDataRoutes(data: IPacAnnualAdapter): Promise<ApiResponse<IPagingData<IPacPrimary> | IResultSearchAnnualizationByRoute | IPacFilters | null>>;
 
+}
+
+interface IErrosPac {
+  message: string;
+  error: boolean;
+  rowError: number;
+  columnError?: number | null;
 }
 
 export default class PacService implements IPacService {
@@ -95,10 +102,10 @@ export default class PacService implements IPacService {
     body.version = body.typePac == 'Nueva versión' ? versionFixed + 1 : versionFixed;
     const routesValidationRequest: ApiResponse<IResultProcRoutes> = await this.reviewBudgetsRoute(data, body);
 
-    let errors: any[] = [];
+    let errors: IErrosPac[] = [];
     let validateValuesByTypePac = this.validateValuesByTypePac(typePac, routesValidationRequest.data)
     let dataToUpdate;
-    errors.push(validateValuesByTypePac)
+    errors.push(...validateValuesByTypePac)
     let responseSave;
     switch (typePac) {
       case 'Carga inicial':
@@ -113,7 +120,7 @@ export default class PacService implements IPacService {
         if (pacsByExercise.length == 0) {
           return new ApiResponse(null, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
-        dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed,loadedRoutesCurrentExcersice)
+        dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed, loadedRoutesCurrentExcersice)
         await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
         break;
       case 'Reducción':
@@ -122,7 +129,7 @@ export default class PacService implements IPacService {
           return new ApiResponse(null, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
 
-        dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed,loadedRoutesCurrentExcersice)
+        dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed, loadedRoutesCurrentExcersice)
         await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
         break;
       case 'Recaudo':
@@ -130,11 +137,11 @@ export default class PacService implements IPacService {
         if (pacsByExercise.length == 0) {
           return new ApiResponse(null, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
-        dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed,loadedRoutesCurrentExcersice)
+        dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed, loadedRoutesCurrentExcersice)
         await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
 
         let validateCreatedRoutes = this.validatePreviouslyCreatedExerciseRoutes(loadedRoutesCurrentExcersice, routesValidationRequest.data);
-        errors.push(validateCreatedRoutes)
+        errors.push(...validateCreatedRoutes)
         break;
       case 'Nueva versión':
         // ya debe existir una carga inicial
@@ -143,7 +150,7 @@ export default class PacService implements IPacService {
         }
 
         let responseValidateNewVersion = this.validateRoutesWithCollectionInNewVersion(loadedRoutesCurrentExcersice, routesValidationRequest.data);
-        errors.push(responseValidateNewVersion)
+        errors.push(...responseValidateNewVersion)
         responseSave = await this.pacRepository.updateOrCreatePac(routesValidationRequest.data)
         break;
       default:
@@ -168,7 +175,7 @@ export default class PacService implements IPacService {
 
     // Si es recaudo, no pueden existir rutas en el excel y que estas no esten creadas
 
-    const errors: any[] = [];
+    const errors: IErrosPac[] = [];
 
     dataExcel.condensed.forEach((excelItem, index) => {
       const budgetRouteId = excelItem.budgetRouteId;
@@ -194,7 +201,7 @@ export default class PacService implements IPacService {
 
   // validar rutas con recaudo vengan en nueva version de excel
   validateRoutesWithCollectionInNewVersion = (loadedRoutesCurrentExcersice: any, dataExcel: any) => {
-    let errors: any[] = [];
+    let errors: IErrosPac[] = [];
     loadedRoutesCurrentExcersice.forEach((e: any, index: number) => {
       if (
         (e.pacAnnualizations.collected?.jan +
@@ -223,30 +230,30 @@ export default class PacService implements IPacService {
       }
 
     })
-
+    return errors;
   }
 
-  structureDataPacToUpdate = (dataExcel:any,loadedRoutesCurrentExcersice:any)=>{
-    let dataExcelFixed:any[] = [];
-    dataExcel.forEach(e=>{
-      let budgetRouteMatch = loadedRoutesCurrentExcersice.find(el=>el.budgetRouteId == e.budgetRouteId)
-      if(budgetRouteMatch){
+  structureDataPacToUpdate = (dataExcel: any, loadedRoutesCurrentExcersice: any) => {
+    let dataExcelFixed: any[] = [];
+    dataExcel.forEach(e => {
+      let budgetRouteMatch = loadedRoutesCurrentExcersice.find(el => el.budgetRouteId == e.budgetRouteId)
+      if (budgetRouteMatch) {
         e['id'] = budgetRouteMatch.id;
-        e.pacAnnualizationProgrammed['id']=budgetRouteMatch.pacAnnualizations.programmed.id;
-        e.pacAnnualizationCollected['id']=budgetRouteMatch.pacAnnualizations.collected.id;
+        e.pacAnnualizationProgrammed['id'] = budgetRouteMatch.pacAnnualizations.programmed.id;
+        e.pacAnnualizationCollected['id'] = budgetRouteMatch.pacAnnualizations.collected.id;
         dataExcelFixed.push(e)
-      }else{
-        e['id']=null;
-        e.pacAnnualizationProgrammed['id']=null;
-        e.pacAnnualizationCollected['id']=null
+      } else {
+        e['id'] = null;
+        e.pacAnnualizationProgrammed['id'] = null;
+        e.pacAnnualizationCollected['id'] = null
         dataExcelFixed.push(e)
       }
-      
+
     })
     return dataExcelFixed;
   }
 
-  async reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[], body?: IBody): Promise<ApiResponse<IResultProcRoutes | any>> { 
+  async reviewBudgetsRoute(processBudgetRoute: IReviewBudgetRoute[], body?: IBody): Promise<ApiResponse<IResultProcRoutes | any>> {
 
     // Para terminos de pruebas, voy a trabajar solo con 15 datos de los 118 (Daría todo OK)
     let workingData: IReviewBudgetRoute[] = [];
@@ -275,9 +282,8 @@ export default class PacService implements IPacService {
       let pkPosPreSap: number = 0;
       let pkBudgetRoute: number = 0;
 
-
       //? >>>>> VALIDACIÓN DE PROYECTO <<<<<<< ?//
-      const dataProject: string = workingData[i].project.toString();
+      const dataProject: string = workingData[i].project?.toString();
 
       if (dataProject !== "9000000") {
 
@@ -290,7 +296,7 @@ export default class PacService implements IPacService {
 
         for (const x of getProject.data.array) {
 
-          if (x.projectCode === workingData[i].project.toString()) {
+          if (x.projectCode === workingData[i].project?.toString()) {
 
             const res = await this.projectsRepository.getProjectByInvestmentProjectId(x.id);
             pkProject = res!.id;
@@ -301,7 +307,7 @@ export default class PacService implements IPacService {
 
         if (pkProject === 0) {
 
-          projectsError.push(`Error en la fila de excel # ${workingData[i].rowExcel}, no se encontró el proyecto ${workingData[i].project.toString()}`);
+          projectsError.push(`Error en la fila de excel # ${workingData[i].rowExcel}, no se encontró el proyecto ${workingData[i].project?.toString()}`);
 
         }
 
@@ -320,14 +326,14 @@ export default class PacService implements IPacService {
 
         if (!pkProject || pkProject === null || pkProject === undefined) {
 
-          projectsError.push(`Error en la fila de excel # ${workingData[i].rowExcel}, no se encontró el proyecto ${workingData[i].project.toString()}`);
+          projectsError.push(`Error en la fila de excel # ${workingData[i].rowExcel}, no se encontró el proyecto ${workingData[i].project?.toString()}`);
 
         }
 
       }
 
       //? >>>>> VALIDACIÓN DE FONDO <<<<<<< ?//
-      const dataFund: string = workingData[i].fundSapiencia.toString();
+      const dataFund: string = workingData[i].fundSapiencia?.toString();
 
       const filtersFunds: IFundsFilters = {
         page: 1,
@@ -354,7 +360,7 @@ export default class PacService implements IPacService {
       }
 
       //? >>>>> VALIDACIÓN DE POSPRE SAPIENCIA Y POSPRE ORIGEN <<<<<<< ?//
-      const dataPosPreSapi: string = workingData[i].sapienciaBudgetPosition.toString();
+      const dataPosPreSapi: string = workingData[i].sapienciaBudgetPosition?.toString();
 
       const filtersPosPreSapi: IFiltersPosPreSapienciaMix = {
         page: 1,
@@ -377,7 +383,7 @@ export default class PacService implements IPacService {
 
       if (pkPosPreOrg === 0 || pkPosPreSap === 0) {
 
-        posPreSapiError.push(`Error en la fila de excel # ${workingData[i].rowExcel}, no se encontró el PosPre Sapiencia ${workingData[i].sapienciaBudgetPosition.toString()}`);
+        posPreSapiError.push(`Error en la fila de excel # ${workingData[i].rowExcel}, no se encontró el PosPre Sapiencia ${workingData[i].sapienciaBudgetPosition?.toString()}`);
 
       }
 
@@ -473,7 +479,7 @@ export default class PacService implements IPacService {
 
   validateValuesByTypePac = (typePac: string, data: any) => {
 
-    let errorsDetected: any[] = []
+    let errorsDetected: IErrosPac[] = []
 
     data.condensed.forEach((e: any, index: number) => {
 
@@ -595,7 +601,7 @@ export default class PacService implements IPacService {
     //* Paso 1. Hallemos las rutas presupuestales involucradas:
     const res = await this.pacRepository.listDinamicsRoutes(filters);
 
-    if( !res || res.array.length <= 0 )return new ApiResponse(objInitial, EResponseCodes.INFO, "No se encontraron rutas presupuestales con la vigencia y el tipo de recurso proporcionados.");
+    if (!res || res.array.length <= 0) return new ApiResponse(objInitial, EResponseCodes.INFO, "No se encontraron rutas presupuestales con la vigencia y el tipo de recurso proporcionados.");
 
     //* Paso 2. Hallemos las PKs de Proyecto, Fondo y Pospre Sapi (Si pasamos la validación anterior aquí debería haber data):
     let arrayProjects: number[] = [];  // Vinculation Project
@@ -632,7 +638,7 @@ export default class PacService implements IPacService {
 
       const getFund = await this.fundsRepository.getFundsById(fund);
 
-      if( getFund!.id === fund ){
+      if (getFund!.id === fund) {
 
         const myObjForProjectList: IDinamicListForFunds = {
 
@@ -652,15 +658,15 @@ export default class PacService implements IPacService {
 
       const getPosPreSapi = await this.posPreSapienciaRepository.getPosPreSapienciaById(psap);
 
-      if( getPosPreSapi!.id === psap ){
+      if (getPosPreSapi!.id === psap) {
 
         const myObjForProjectList: IDinamicListForPospres = {
 
           idPosPreSapi: Number(getPosPreSapi?.id),
-          numberCodeSapi: getPosPreSapi?.number.toString()!,
-          descriptionSapi: getPosPreSapi?.description.toString()!,
+          numberCodeSapi: getPosPreSapi?.number?.toString()!,
+          descriptionSapi: getPosPreSapi?.description?.toString()!,
           idPosPreOrig: Number(getPosPreSapi?.budgetId),
-          numberCodeOrig: getPosPreSapi?.budget?.number.toString()!
+          numberCodeOrig: getPosPreSapi?.budget?.number?.toString()!
 
         }
 
@@ -680,12 +686,12 @@ export default class PacService implements IPacService {
       //Consulto vinculaciones de proyectos
       const getVinculation = await this.projectsRepository.getProjectById(vinculationPK);
 
-      const numberFunctionalArea: string = getVinculation?.areaFuntional?.number.toString()!;
+      const numberFunctionalArea: string = getVinculation?.areaFuntional?.number?.toString()!;
 
       //Debo verificar si es un proyecto de funcionamiento, si es así, debo asociar al pospre sapi
       //como estoy manejando arrays, contendre la posición auxiliar como un contador genérico:
       //?Guardemoslo de una vez :) ... para no tener que validar más abajo
-      if( getVinculation?.operationProjectId && getVinculation?.operationProjectId != null) {
+      if (getVinculation?.operationProjectId && getVinculation?.operationProjectId != null) {
 
         projectFunctionalName = listPospreSapi[contForFunctionalProj].descriptionSapi;
 
@@ -704,7 +710,7 @@ export default class PacService implements IPacService {
 
       }
 
-      contForFunctionalProj ++;
+      contForFunctionalProj++;
       const pkInvestmentProject: number = Number(getVinculation!.investmentProjectId);
 
       const filters: IProjectPaginated = {
@@ -713,12 +719,12 @@ export default class PacService implements IPacService {
       }
 
       //Traemos por default lo que viene en la API para dibujar porque por lo general viene datos aquí
-      const getProjectPlanning = await this.strategicDirectionService.getProjectInvestmentPaginated( filters );
+      const getProjectPlanning = await this.strategicDirectionService.getProjectInvestmentPaginated(filters);
 
       //Ahora consultamos respecto a la API y paneamos la data:
       for (const xProjPlanning of getProjectPlanning.data.array) {
 
-        if( xProjPlanning.id === pkInvestmentProject ){
+        if (xProjPlanning.id === pkInvestmentProject) {
 
           const myObjForProjectList: IDinamicListForProjects = {
 
@@ -741,10 +747,10 @@ export default class PacService implements IPacService {
     const resultData: IPacComplementary = {
 
       headerComposition: objInitial,
-      listBudgetsRoutes : listBudgetsRoutes,
-      listProjects : listProjects,
-      listFunds : listFunds,
-      listPospreSapi : listPospreSapi
+      listBudgetsRoutes: listBudgetsRoutes,
+      listProjects: listProjects,
+      listFunds: listFunds,
+      listPospreSapi: listPospreSapi
 
     }
 
@@ -755,15 +761,15 @@ export default class PacService implements IPacService {
   async searchAnnualDataRoutes(data: IPacAnnualAdapter): Promise<ApiResponse<IPagingData<IPacPrimary> | IResultSearchAnnualizationByRoute | IPacFilters | null>> {
 
     const {
-          pacType, //2 - Programado, 3 - Recaudado , 4 - Ambos
-          exercise,
-          resourceType,
-          managementCenter,
-          idProjectVinculation,
-          idBudget,
-          idPospreSapiencia,
-          idFund,
-          idCardTemplate
+      pacType, //2 - Programado, 3 - Recaudado , 4 - Ambos
+      exercise,
+      resourceType,
+      managementCenter,
+      idProjectVinculation,
+      idBudget,
+      idPospreSapiencia,
+      idFund,
+      idCardTemplate
     } = data;
 
     const objHeaderInitial: IPacFilters = {
@@ -793,7 +799,7 @@ export default class PacService implements IPacService {
 
     const getPacs = await this.pacRepository.searchPacByMultiData(objHeaderInitial);
 
-    if( !getPacs || getPacs.array.length <= 0 ) return new ApiResponse(null, EResponseCodes.FAIL, "No tenemos PACs con la vigencia y/o tipo recurso dados");
+    if (!getPacs || getPacs.array.length <= 0) return new ApiResponse(null, EResponseCodes.FAIL, "No tenemos PACs con la vigencia y/o tipo recurso dados");
 
     for (const w of getPacs.array) {
       arrayRoutesIdOnPac.push(w?.budgetRouteId!);
@@ -807,12 +813,12 @@ export default class PacService implements IPacService {
 
     //* Hallamos ruta con la data proporcionada inicialmente:
     const getRoute = await this.budgetsRoutesRepository
-                               .getBudgetForAdditions( objSearchRouteAndAnnual.idProjectVinculation!,
-                                                       objSearchRouteAndAnnual.idFund!,
-                                                       objSearchRouteAndAnnual.idBudget!,
-                                                       objSearchRouteAndAnnual.idPospreSapiencia! )
+      .getBudgetForAdditions(objSearchRouteAndAnnual.idProjectVinculation!,
+        objSearchRouteAndAnnual.idFund!,
+        objSearchRouteAndAnnual.idBudget!,
+        objSearchRouteAndAnnual.idPospreSapiencia!)
 
-    if( !getRoute ){
+    if (!getRoute) {
       // Devolvemos con la CARD incluida para que se pinte el error si es el caso de que no encontró combinación ruta.
       return new ApiResponse(objSearchRouteAndAnnual, EResponseCodes.FAIL, "No se encontró la ruta presupuestal");
 
@@ -822,9 +828,9 @@ export default class PacService implements IPacService {
     let controlBand: boolean = false;
     let viewPac: number = 0;
     const viewType: string = objHeaderInitial.pacType?.toString()!;
-    for (const x of getPacs.array){
+    for (const x of getPacs.array) {
 
-      if( Number(x?.budgetRouteId) === Number(getRoute.id) ){
+      if (Number(x?.budgetRouteId) === Number(getRoute.id)) {
 
         controlBand = true;
         viewPac = Number(x?.id);
@@ -834,7 +840,7 @@ export default class PacService implements IPacService {
     }
 
     //* Con base a lo anterior, obtenemos las anualizaciones respectivas:
-    if( !controlBand || viewPac === 0 ){
+    if (!controlBand || viewPac === 0) {
 
       return new ApiResponse(objSearchRouteAndAnnual, EResponseCodes.FAIL, "La ruta presupuestal no se encuentra dispuesta para la vigencia y/o tipo recurso dados");
 
@@ -843,7 +849,7 @@ export default class PacService implements IPacService {
     //* Obtengamos la anualización coincidente:
     const getAnnualization = await this.pacRepository.getAnnualizationsByPacAndType(viewPac, viewType);
 
-    if( !getAnnualization || getAnnualization.array.length <= 0 ){
+    if (!getAnnualization || getAnnualization.array.length <= 0) {
 
       return new ApiResponse(objSearchRouteAndAnnual, EResponseCodes.FAIL, "La ruta presupuestal no tiene asociada anualización, esto es un error");
 
@@ -904,25 +910,25 @@ export default class PacService implements IPacService {
 
     // for (const x of info) {
 
-      //* Consultemos la ruta primero, el objetivo es que debemos calcular los valores originales:
-      // const getRoute = await this.budgetsRoutesRepository.getBudgetForAdditions(x.idProjectVinculation, x.idFund, x.idBudget, x.idPospreSapiencia);
-      // const getValues = await this.pacRepository.getPacByRouteAndExercise(Number(getRoute?.id) , validity)
+    //* Consultemos la ruta primero, el objetivo es que debemos calcular los valores originales:
+    // const getRoute = await this.budgetsRoutesRepository.getBudgetForAdditions(x.idProjectVinculation, x.idFund, x.idBudget, x.idPospreSapiencia);
+    // const getValues = await this.pacRepository.getPacByRouteAndExercise(Number(getRoute?.id) , validity)
 
-      // const val: number =
-      //   Number(x.annualRoute[0].jan) +
-      //   Number(x.annualRoute[0].feb) +
-      //   Number(x.annualRoute[0].mar) +
-      //   Number(x.annualRoute[0].abr) +
-      //   Number(x.annualRoute[0].may) +
-      //   Number(x.annualRoute[0].jun) +
-      //   Number(x.annualRoute[0].jul) +
-      //   Number(x.annualRoute[0].ago) +
-      //   Number(x.annualRoute[0].sep) +
-      //   Number(x.annualRoute[0].oct) +
-      //   Number(x.annualRoute[0].nov) +
-      //   Number(x.annualRoute[0].dec);
+    // const val: number =
+    //   Number(x.annualRoute[0].jan) +
+    //   Number(x.annualRoute[0].feb) +
+    //   Number(x.annualRoute[0].mar) +
+    //   Number(x.annualRoute[0].abr) +
+    //   Number(x.annualRoute[0].may) +
+    //   Number(x.annualRoute[0].jun) +
+    //   Number(x.annualRoute[0].jul) +
+    //   Number(x.annualRoute[0].ago) +
+    //   Number(x.annualRoute[0].sep) +
+    //   Number(x.annualRoute[0].oct) +
+    //   Number(x.annualRoute[0].nov) +
+    //   Number(x.annualRoute[0].dec);
 
-      //   total += val;
+    //   total += val;
 
     // }
 
