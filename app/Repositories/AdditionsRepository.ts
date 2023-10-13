@@ -99,45 +99,12 @@ export default class AdditionsRepository implements IAdditionsRepository {
         q1.preload("projectVinculation", (subq) =>
           subq.preload("areaFuntional").preload("functionalProject")
         )
-          //Preload para traer proyecto y área funcional
-          // .preload("projectVinculation", async (a) => {
-
-          //   const relatedData = await a.first(); // Para obtener el primer registro relacionado
-          //   a.select("id",
-          //            "functionalAreaId")
-
-          //   relatedData.$attributes.type === 'Funcionamiento' && a.preload('areaFuntional', (aa) => {
-          //     aa.select("id",
-          //       "number",
-          //       "denomination",
-          //       "description")
-          //   })
-
-          //   //console.log({ relatedData: relatedData.$attributes.type })
-          // //   a.select("id",
-          // //            "functionalAreaId",
-          // //            "projectId",
-          // //            "conceptProject")
-          // //   a.preload("areaFuntional", (aa) => {
-          // //     aa.select("id",
-          // //               "number",
-          // //               "denomination",
-          // //               "description")
-          // //   })
-          // })
-
-          //Preload para traer los fondos
-
           .preload("funds", (b) => {
             b.select("id", "number", "denomination", "description");
           })
-
-          //Preload para traer pospre origen
           .preload("budget", (c) => {
             c.select("id", "number", "ejercise", "denomination", "description");
           })
-
-          //Preload para traer los pospre sapiencia asociados
           .preload("pospreSapiencia", (d) => {
             d.select("id", "number", "ejercise", "consecutive", "description");
           });
