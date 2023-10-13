@@ -143,14 +143,12 @@ export default class AdditionsRepository implements IAdditionsRepository {
           });
       });
 
-    const x = {
+      return {
       head: head.serialize() as IAdditions,
       details: details.map((i) => i.serialize() as IAdditionsMovement),
     };
 
-    console.log(
-      x.details.map((i) => i.budgetRoute.projectVinculation?.functionalProject)
-    );
-    return x;
+
+
   }
 }
