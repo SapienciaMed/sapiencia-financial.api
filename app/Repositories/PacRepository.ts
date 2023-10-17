@@ -54,6 +54,7 @@ export default class PacRepository implements IPacRepository {
         let rowsWithFieldNumberInvalid: any[] = [];
         let validTemplateStatus = {};
         page.eachRow((row, rowNumber) => {
+            if(rowNumber==0){rowNumber+=1}
             if (rowNumber == 1) {
                 validTemplateStatus = this.validateExcelTemplate(row)
             } else {
