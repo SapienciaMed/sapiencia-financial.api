@@ -338,7 +338,7 @@ export default class PacRepository implements IPacRepository {
       const query = Pac.query();
 
       query.where("exercise", filters.exercise!)
-           .andWhere("sourceType", filters.resourceType!);
+            .andWhere("sourceType", filters.resourceType!);
 
       const res = await query.paginate(filters.page, filters.perPage);
       const { data, meta } = res.serialize();
