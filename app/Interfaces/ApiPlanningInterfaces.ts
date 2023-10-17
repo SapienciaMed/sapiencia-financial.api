@@ -99,6 +99,9 @@ export interface IApiPlanningDetailedActivities {
 
 export interface IApiPlanningDetailedActivitiesSpecify {
 
+  //* Vinculación MGA
+  id?: number;
+
   //*Actividad Detallada MGA
   activityDetailedId: number;           // PK Actividad Detallada
   consecutiveActivityDetailed: string;  // Código Consecuetivo Actividad Detallada #.#.# ...

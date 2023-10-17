@@ -133,7 +133,7 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
     async getDetailedActivitiesByIds(ids: Array<number>): Promise<ApiResponse<IApiPlanningDetailedActivitiesSpecify[] | any>> {
 
       const urlConsumer = `/api/v1/activities/get-paginated`;
-  
+
       const dataUser = await this.axiosInstance
         .post<ApiResponse<IApiPlanningDetailedActivities[]>>
         (urlConsumer, ids, {
@@ -141,16 +141,16 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
             Authorization: process.env.CURRENT_AUTHORIZATION,
           }
         });
-  
+
       const requestResult: IApiPlanningDetailedActivitiesSpecify[] = [];
       const result: IApiPlanningDetailedActivities | any = dataUser;
       const dataI: IApiPlanningDetailedActivities[] = result.data.data.array;
       const dataJ: IInternalPagination = result.data.data.meta;
-  
+
       dataI.forEach(res => {
-  
+
         const objResult: IApiPlanningDetailedActivitiesSpecify = {
-  
+
           //* Info Actividad General
           activityId: res.activity.id,
           codeMga: res.activity.objetiveActivity,
@@ -158,7 +158,7 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
           productDescriptionMGA: res.activity.productDescriptionMGA,
           codeConsecutiveActivityMga: res.activity.activityMGA,
           activityDescriptionMGA: res.activity.activityDescriptionMGA,
-  
+
           //* Info Actividad Detallada
           activityDetailedId: res.id,
           consecutiveActivityDetailed: res.consecutive,
@@ -167,32 +167,32 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
           measurementActivityDetailed: res.measurement,
           unitCostActivityDetailed: res.unitCost,
           totalCostActivityDetailed: (Number(res.unitCost) * Number(res.amount)),
-  
+
         }
-  
+
         requestResult.push(objResult);
-  
+
       })
-  
+
       const paginationResult = {
         array: requestResult,
         meta: dataJ
       }
-  
+
       return new ApiResponse(
         paginationResult,
         EResponseCodes.OK,
         "Listado de Actividades Detalladas con su Actividad General desde Planeación."
       );
-  
+
     }
-  
+
     //? Obtengo las actividades detalladas de planeación que no estén vinculadas a un pospre específico
     async getDetailedActivitiesNoUseOnPosPre(ids: Array<number>, posPreOrig: number): Promise<ApiResponse<IApiPlanningDetailedActivitiesSpecify[] | any>> {
-  
+
       const urlConsumer = `/api/v1/activities/get-paginated`;
       const requestResult: IApiPlanningDetailedActivitiesSpecify[] = [];
-  
+
       //* Petición a la API
       const dataUser = await this.axiosInstance
         .post<ApiResponse<IApiPlanningDetailedActivities[]>>
@@ -201,27 +201,27 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
             Authorization: process.env.CURRENT_AUTHORIZATION,
           }
         });
-  
+
       //* Para consultar el listado de actividades detalladas
       const result: IApiPlanningDetailedActivities | any = dataUser;
       const dataI: IApiPlanningDetailedActivities[] = result.data.data.array;
       const dataJ: IInternalPagination = result.data.data.meta;
       let datak: IInternalPagination | any = null;
-  
+
       //* Traemos vinculaciones con ese pospre:
       const myPosPre: number = Number(posPreOrig);
       let arrayActivtyDetailedOnPosPre: number[] = [];
       const vinculationsOfPosPre: IActivityMGA[] = await this.vinculationMGARepository.getVinculationMGAByPosPreOrg(myPosPre);
-  
+
       //* Guardo los códigos de actividad detallada en un Array<number>
       vinculationsOfPosPre.forEach(resVinculation => arrayActivtyDetailedOnPosPre.push(Number(resVinculation.detailedActivityId)));
-  
+
       dataI.forEach(resDetailtedActitivyList => {
-  
+
         if (!arrayActivtyDetailedOnPosPre.includes(resDetailtedActitivyList.id)) {
-  
+
           const objResult: IApiPlanningDetailedActivitiesSpecify = {
-  
+
             //* Info Actividad General
             activityId: resDetailtedActitivyList.activity.id,
             codeMga: resDetailtedActitivyList.activity.objetiveActivity,
@@ -229,7 +229,7 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
             productDescriptionMGA: resDetailtedActitivyList.activity.productDescriptionMGA,
             codeConsecutiveActivityMga: resDetailtedActitivyList.activity.activityMGA,
             activityDescriptionMGA: resDetailtedActitivyList.activity.activityDescriptionMGA,
-  
+
             //* Info Actividad Detallada
             activityDetailedId: resDetailtedActitivyList.id,
             consecutiveActivityDetailed: resDetailtedActitivyList.consecutive,
@@ -238,15 +238,15 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
             measurementActivityDetailed: resDetailtedActitivyList.measurement,
             unitCostActivityDetailed: resDetailtedActitivyList.unitCost,
             totalCostActivityDetailed: (Number(resDetailtedActitivyList.unitCost) * Number(resDetailtedActitivyList.amount)),
-  
+
           }
-  
+
           requestResult.push(objResult);
-  
+
         }
-  
+
       })
-  
+
       //* Reorganización de datos de paginación
       datak = {
         total: (dataJ.total - Number(arrayActivtyDetailedOnPosPre.length)),
@@ -259,26 +259,26 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
         next_page_url: dataJ.next_page_url,
         previous_page_url: dataJ.previous_page_url
       }
-  
+
       const paginationResult = {
         array: requestResult,
         meta: datak
       }
-  
+
       return new ApiResponse(
         paginationResult,
         EResponseCodes.OK,
         "Listado de Actividades Detalladas con su Actividad General desde Planeación."
       );
-  
+
     }
-  
+
     //? Obtengo las actividades detalladas de planeación que esté vinculadas a un pospre específico
     async getDetailedActivitiesYesUseOnPosPre(ids: Array<number>, posPreOrig: number): Promise<ApiResponse<IApiPlanningDetailedActivitiesSpecify[] | any>> {
-  
+
       const urlConsumer = `/api/v1/activities/get-paginated`;
       const requestResult: IApiPlanningDetailedActivitiesSpecify[] = [];
-  
+
       //* Petición a la API
       const dataUser = await this.axiosInstance
         .post<ApiResponse<IApiPlanningDetailedActivities[]>>
@@ -287,27 +287,37 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
             Authorization: process.env.CURRENT_AUTHORIZATION,
           }
         });
-  
+
       //* Para consultar el listado de actividades detalladas
       const result: IApiPlanningDetailedActivities | any = dataUser;
       const dataI: IApiPlanningDetailedActivities[] = result.data.data.array;
       const dataJ: IInternalPagination = result.data.data.meta;
       let datak: IInternalPagination | any = null;
-  
+
       //* Traemos vinculaciones con ese pospre:
       const myPosPre: number = Number(posPreOrig);
       let arrayActivtyDetailedOnPosPre: number[] = [];
+      let arrayActivityMGAGenerated: number[] = [];
       const vinculationsOfPosPre: IActivityMGA[] = await this.vinculationMGARepository.getVinculationMGAByPosPreOrg(myPosPre);
-  
+
       //* Guardo los códigos de actividad detallada en un Array<number>
-      vinculationsOfPosPre.forEach(resVinculation => arrayActivtyDetailedOnPosPre.push(Number(resVinculation.detailedActivityId)));
-  
+      vinculationsOfPosPre.forEach(resVinculation => {
+        arrayActivityMGAGenerated.push(Number(resVinculation.id));
+        arrayActivtyDetailedOnPosPre.push(Number(resVinculation.detailedActivityId));
+      });
+
+      let regisContMga: number = 0;
       dataI.forEach(resDetailtedActitivyList => {
-  
+
         if (arrayActivtyDetailedOnPosPre.includes(resDetailtedActitivyList.id)) {
-  
+
+          const vinculationMga: number = arrayActivityMGAGenerated[regisContMga];
+
           const objResult: IApiPlanningDetailedActivitiesSpecify = {
-  
+
+            //* Info Vinculación MGA
+            id: vinculationMga,
+
             //* Info Actividad General
             activityId: resDetailtedActitivyList.activity.id,
             codeMga: resDetailtedActitivyList.activity.objetiveActivity,
@@ -315,7 +325,7 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
             productDescriptionMGA: resDetailtedActitivyList.activity.productDescriptionMGA,
             codeConsecutiveActivityMga: resDetailtedActitivyList.activity.activityMGA,
             activityDescriptionMGA: resDetailtedActitivyList.activity.activityDescriptionMGA,
-  
+
             //* Info Actividad Detallada
             activityDetailedId: resDetailtedActitivyList.id,
             consecutiveActivityDetailed: resDetailtedActitivyList.consecutive,
@@ -324,15 +334,16 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
             measurementActivityDetailed: resDetailtedActitivyList.measurement,
             unitCostActivityDetailed: resDetailtedActitivyList.unitCost,
             totalCostActivityDetailed: (Number(resDetailtedActitivyList.unitCost) * Number(resDetailtedActitivyList.amount)),
-  
+
           }
-  
+
           requestResult.push(objResult);
-  
+          regisContMga ++;
+
         }
-  
+
       })
-  
+
       //* Reorganización de datos de paginación
       datak = {
         total: (Number(arrayActivtyDetailedOnPosPre.length)),
@@ -345,27 +356,27 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
         next_page_url: dataJ.next_page_url,
         previous_page_url: dataJ.previous_page_url
       }
-  
+
       const paginationResult = {
         array: requestResult,
         meta: datak
       }
-  
+
       return new ApiResponse(
         paginationResult,
         EResponseCodes.OK,
         "Listado de Actividades Detalladas con su Actividad General desde Planeación."
       );
-  
+
     }
-  
+
     //? Obtener la actividad detallada específica de una vinculación dentro del listado
     async getVinculationDetailedActivitiesV2ById(id: number): Promise<ApiResponse<IApiPlanningDetailedActivitiesSpecify | any>> {
-  
+
       const urlConsumer = `/api/v1/activities/get-paginated`;
       const requestResult: IApiPlanningDetailedActivitiesSpecify[] = [];
       const ids: number[] = [];
-  
+
       //* Petición a la API
       const dataUser = await this.axiosInstance
         .post<ApiResponse<IApiPlanningDetailedActivities[]>>
@@ -374,19 +385,19 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
             Authorization: process.env.CURRENT_AUTHORIZATION,
           }
         });
-  
+
       //* Para consultar el listado de actividades detalladas
       const result: IApiPlanningDetailedActivities | any = dataUser;
       const dataI: IApiPlanningDetailedActivities[] = result.data.data.array;
       const dataJ: IInternalPagination = result.data.data.meta;
       let datak: IInternalPagination | any = null;
-  
+
       dataI.forEach(resDetailtedActitivyList => {
-  
+
         if (resDetailtedActitivyList.id === Number(id)) {
-  
+
           const objResult: IApiPlanningDetailedActivitiesSpecify = {
-  
+
             //* Info Actividad General
             activityId: resDetailtedActitivyList.activity.id,
             codeMga: resDetailtedActitivyList.activity.objetiveActivity,
@@ -394,7 +405,7 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
             productDescriptionMGA: resDetailtedActitivyList.activity.productDescriptionMGA,
             codeConsecutiveActivityMga: resDetailtedActitivyList.activity.activityMGA,
             activityDescriptionMGA: resDetailtedActitivyList.activity.activityDescriptionMGA,
-  
+
             //* Info Actividad Detallada
             activityDetailedId: resDetailtedActitivyList.id,
             consecutiveActivityDetailed: resDetailtedActitivyList.consecutive,
@@ -403,15 +414,15 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
             measurementActivityDetailed: resDetailtedActitivyList.measurement,
             unitCostActivityDetailed: resDetailtedActitivyList.unitCost,
             totalCostActivityDetailed: (Number(resDetailtedActitivyList.unitCost) * Number(resDetailtedActitivyList.amount)),
-  
+
           }
-  
+
           requestResult.push(objResult);
-  
+
         }
-  
+
       })
-  
+
       //* Reorganización de datos de paginación
       datak = {
         total: (Number(requestResult.length)),
@@ -424,19 +435,19 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
         next_page_url: dataJ.next_page_url,
         previous_page_url: dataJ.previous_page_url
       }
-  
+
       const paginationResult = {
         array: requestResult,
         meta: datak
       }
-  
+
       return new ApiResponse(
         paginationResult,
         EResponseCodes.OK,
         "Actividad Detallada Encontrada."
       );
-  
+
     }
-  
-  
+
+
 }
