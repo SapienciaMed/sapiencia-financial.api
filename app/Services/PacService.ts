@@ -119,7 +119,7 @@ export default class PacService implements IPacService {
         await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
         break;
       case 'Reducción':
-        // ya debe existir una carga inicial
+        /* ya debe existir una carga inicial */
         if (pacsByExercise.length == 0) {
           return new ApiResponse(null, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
@@ -133,7 +133,7 @@ export default class PacService implements IPacService {
           return new ApiResponse(null, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
         dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed, loadedRoutesCurrentExcersice)
-        await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
+        //await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
 
         let validateCreatedRoutes = this.validatePreviouslyCreatedExerciseRoutes(loadedRoutesCurrentExcersice, routesValidationRequest.data);
         errors.push(...validateCreatedRoutes)
@@ -146,14 +146,15 @@ export default class PacService implements IPacService {
 
         let responseValidateNewVersion = this.validateRoutesWithCollectionInNewVersion(loadedRoutesCurrentExcersice, routesValidationRequest.data);
         errors.push(...responseValidateNewVersion)
-        responseSave = await this.pacRepository.updateOrCreatePac(routesValidationRequest.data)
+        responseSave = errors.length==0 && await this.pacRepository.updateOrCreatePac(routesValidationRequest.data)
         break;
       default:
         break;
     }
 
-
-
+    if(errors.length>0){
+      return new ApiResponse({ responseSave, errors }, EResponseCodes.OK, "El archivo no pudo ser cargado, revisa las validaciones.");
+    }
     // return new ApiResponse({validTemplateStatus, rowsWithFieldsEmpty,rowsWithFieldNumberInvalid, data}, EResponseCodes.OK);
     return new ApiResponse({ responseSave, errors }, EResponseCodes.OK, "¡Guardado exitosamente!");
 
@@ -173,6 +174,7 @@ export default class PacService implements IPacService {
     const errors: IErrosPac[] = [];
 
     dataExcel.condensed.forEach((excelItem, index) => {
+      if(index==0){index+=1}
       const budgetRouteId = excelItem.budgetRouteId;
       const matchingRoute = loadedRoutesCurrentExcersice.find((route) => route.budgetRouteId === budgetRouteId);
 
@@ -213,6 +215,7 @@ export default class PacService implements IPacService {
           e.pacAnnualizations.collected?.dec) > 0
       ) {
         let budgetRouteIdMatch = dataExcel.condensed.find(el => el.budgetRouteId == e.budgetRouteId)
+        if(index==0){index+=1}
         if (!budgetRouteIdMatch) {
           errors.push({
             message: "Existen registros en el PAC con recaudos que no están en la nueva carga de archivo",
@@ -477,10 +480,8 @@ export default class PacService implements IPacService {
     let errorsDetected: IErrosPac[] = []
 
     data.condensed.forEach((e: any, index: number) => {
-
-      if (typePac == 'Carga inicial' || typePac == 'adición' || typePac == 'Reducción' || typePac == 'Nueva versión') {
-
-        let bugetPrgrammed = e.pacAnnualizationProgrammed.jan +
+      if(index==0){index+=1}
+      let bugetPrgrammed = e.pacAnnualizationProgrammed.jan +
           e.pacAnnualizationProgrammed.feb +
           e.pacAnnualizationProgrammed.mar +
           e.pacAnnualizationProgrammed.abr +
@@ -492,7 +493,7 @@ export default class PacService implements IPacService {
           e.pacAnnualizationProgrammed.oct +
           e.pacAnnualizationProgrammed.nov +
           e.pacAnnualizationProgrammed.dec
-
+      if (typePac == 'Carga inicial' || typePac == 'adición' || typePac == 'Reducción' || typePac == 'Nueva versión') {
 
         // Valida que el valor total presupuestado coincida con el total programado de los meses
         if (bugetPrgrammed != e.pacAnnualizationProgrammed.totalBudget) {
@@ -521,17 +522,24 @@ export default class PacService implements IPacService {
           e.pacAnnualizationCollected.nov +
           e.pacAnnualizationCollected.dec
 
-
-        // Valida que el valor total presupuestado coincida con el total programado de los meses
-        if (bugetCollectec != e.pacAnnualizationCollected.totalBudget) {
+        // Valida que el valor total presupuestado coincida con el total programado de los meses  
+        if (typePac == 'Recaudo' && bugetCollectec != e.pacAnnualizationCollected.totalBudget) {
           errorsDetected.push({
-            message: typePac == 'Recaudo'
-              ? "La suma de los recaudos a incluir es mayor al presupuesto sapiencia"
-              : "El recaudo previamente guardado en el PAC es mayor al presupuesto sapiencia que va a ingresar",
+            message: "La suma de los recaudos a incluir es mayor al presupuesto sapiencia",
             error: true,
             rowError: index + 1,
             columnError: null
           })
+        }else if(typePac != 'Recaudo' && bugetPrgrammed != e.pacAnnualizationProgrammed.totalBudget){
+
+          errorsDetected.push({
+            message: "El recaudo previamente guardado en el PAC es mayor al presupuesto sapiencia que va a ingresar",
+            error: true,
+            rowError: index + 1,
+            columnError: null
+          })
+
+
         }
 
       }
