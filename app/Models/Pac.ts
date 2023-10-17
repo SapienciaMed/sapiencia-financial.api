@@ -22,29 +22,11 @@ export default class Pac extends BaseModel {
   @column({ columnName:'PAC_ACTIVO', serializeAs:'isActive' })
   public isActive: boolean
 
-  /* @column({ columnName: "PAC_FECHA_MODIFICO", serializeAs: "dateModify" })
-  public dateModify: Date;
-
-  @column.dateTime({
-    autoCreate: true,
-    columnName: "PAC_FECHA_CREO",
-    serializeAs: "dateCreate",
-  })
-  public dateCreate: DateTime;
- */
-
   @column({ columnName:'PAC_FECHA_CREO', serializeAs: "dateCreate" })
   public dateCreate: string
 
   @column({ columnName:'PAC_FECHA_MODIFICO', serializeAs: "dateModify" })
   public dateModify: string
-
-  //@column.dateTime({ autoCreate: true, columnName:'PAC_FECHA_CREO', serializeAs: "dateCreate", })
-  //public dateCreate: DateTime
-//
-  //@column.dateTime({ autoCreate: true, autoUpdate: true, columnName:'PAC_FECHA_MODIFICO', serializeAs: "dateModify" })
-  //public dateModify: DateTime
-
 
   @hasMany(() => PacAnnualization, {
     localKey: "id",
@@ -52,11 +34,5 @@ export default class Pac extends BaseModel {
     serializeAs: "pacAnnualizations",
   })
   public pacAnnualizations: HasMany<typeof PacAnnualization>;
-
-  @hasMany(() => PacAnnualization, {
-    foreignKey: "pacId",
-    serializeAs: "annualizations",
-  })
-  public annualizations: HasMany<typeof PacAnnualization>;
 
 }
