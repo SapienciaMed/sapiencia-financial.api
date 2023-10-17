@@ -97,6 +97,8 @@ export default class PacService implements IPacService {
     body.version = body.typePac == 'Nueva versión' ? versionFixed + 1 : versionFixed;
     const routesValidationRequest: ApiResponse<IResultProcRoutes> = await this.reviewBudgetsRoute(data, body);
 
+    console.log({routesValidationRequest})
+
     let errors: IErrosPac[] = [];
     let validateValuesByTypePac = this.validateValuesByTypePac(typePac, routesValidationRequest.data)
     let dataToUpdate;
@@ -546,11 +548,16 @@ export default class PacService implements IPacService {
 
       if (typePac == 'Carga inicial' || typePac == 'Recaudo') {
         // Valida que el valor presupuesto Sapiensa sea mayo que cero
-        if (parseFloat(e.pacAnnualizationProgrammed.totalBudget) > 0) {
+        if (parseFloat(e.pacAnnualizationProgrammed.totalBudget) > 0 && typePac =='Carga inicial') {
           errorsDetected.push({
-            message: typePac == 'Carga inicial'
-              ? "Debe tener dato en presupuesto sapiencia y en lo programado del mes"
-              : "El recaudo no tiene presupuesto sapiencia",
+            message: "Debe tener dato en presupuesto sapiencia y en lo programado del mes",
+            error: true,
+            rowError: index + 1,
+            columnError: null
+          })
+        }else if(parseFloat(e.pacAnnualizationCollected.totalBudget) > 0 && typePac =='Recaudo'){
+          errorsDetected.push({
+            message: "El recaudo no tiene presupuesto sapiencia",
             error: true,
             rowError: index + 1,
             columnError: null
