@@ -103,13 +103,14 @@ export interface IApiPlanningDetailedActivitiesSpecify {
   id?: number;
 
   //*Actividad Detallada MGA
-  activityDetailedId: number;           // PK Actividad Detallada
-  consecutiveActivityDetailed: string;  // Código Consecuetivo Actividad Detallada #.#.# ...
-  detailActivityDetailed: string;       // Descripción Actividad Detallada
-  amountActivityDetailed: number;       // Cantidad
-  measurementActivityDetailed: number;  // Medida
-  unitCostActivityDetailed: number;     // Costo Unitario
-  totalCostActivityDetailed: number;    // Costo Total
+  activityDetailedId: number;             // PK Actividad Detallada
+  consecutiveActivityDetailed: string;    // Código Consecuetivo Actividad Detallada #.#.# ...
+  detailActivityDetailed: string;         // Descripción Actividad Detallada
+  amountActivityDetailed: number;         // Cantidad
+  measurementActivityDetailed: number;    // Medida
+  measurementActivityDetailedName: string // Unidad medida traducida
+  unitCostActivityDetailed: number;       // Costo Unitario
+  totalCostActivityDetailed: number;      // Costo Total
 
   //*Actividad MGA GENERAL
   activityId: number;                   // PK Actividad General

@@ -149,6 +149,22 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
 
       dataI.forEach(res => {
 
+        //* Calculo peso con la medida dada de lista core.
+        let unity: string = "";
+        switch( res.measurement ){
+          case 0 : unity = "Hectáreas"; break;
+          case 1 : unity = "Horas"; break;
+          case 2 : unity = "Mes"; break;
+          case 3 : unity = "Millones"; break;
+          case 4 : unity = "Minuto"; break;
+          case 5 : unity = "Número"; break;
+          case 6 : unity = "Pesos"; break;
+          case 7 : unity = "Porcentajes"; break;
+          case 8 : unity = "Puntaje"; break;
+          case 9 : unity = "Unidad"; break;
+          case 10 : unity = "Volumen"; break;
+        }
+
         const objResult: IApiPlanningDetailedActivitiesSpecify = {
 
           //* Info Actividad General
@@ -165,6 +181,7 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
           detailActivityDetailed: res.detailActivity,
           amountActivityDetailed: res.amount,
           measurementActivityDetailed: res.measurement,
+          measurementActivityDetailedName : unity,
           unitCostActivityDetailed: res.unitCost,
           totalCostActivityDetailed: (Number(res.unitCost) * Number(res.amount)),
 
@@ -220,6 +237,22 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
 
         if (!arrayActivtyDetailedOnPosPre.includes(resDetailtedActitivyList.id)) {
 
+          //* Calculo peso con la medida dada de lista core.
+          let unity: string = "";
+          switch( resDetailtedActitivyList.measurement ){
+            case 0 : unity = "Hectáreas"; break;
+            case 1 : unity = "Horas"; break;
+            case 2 : unity = "Mes"; break;
+            case 3 : unity = "Millones"; break;
+            case 4 : unity = "Minuto"; break;
+            case 5 : unity = "Número"; break;
+            case 6 : unity = "Pesos"; break;
+            case 7 : unity = "Porcentajes"; break;
+            case 8 : unity = "Puntaje"; break;
+            case 9 : unity = "Unidad"; break;
+            case 10 : unity = "Volumen"; break;
+          }
+
           const objResult: IApiPlanningDetailedActivitiesSpecify = {
 
             //* Info Actividad General
@@ -236,6 +269,7 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
             detailActivityDetailed: resDetailtedActitivyList.detailActivity,
             amountActivityDetailed: resDetailtedActitivyList.amount,
             measurementActivityDetailed: resDetailtedActitivyList.measurement,
+            measurementActivityDetailedName: unity,
             unitCostActivityDetailed: resDetailtedActitivyList.unitCost,
             totalCostActivityDetailed: (Number(resDetailtedActitivyList.unitCost) * Number(resDetailtedActitivyList.amount)),
 
@@ -313,6 +347,22 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
 
           const vinculationMga: number = arrayActivityMGAGenerated[regisContMga];
 
+          //* Calculo peso con la medida dada de lista core.
+          let unity: string = "";
+          switch( resDetailtedActitivyList.measurement ){
+            case 0 : unity = "Hectáreas"; break;
+            case 1 : unity = "Horas"; break;
+            case 2 : unity = "Mes"; break;
+            case 3 : unity = "Millones"; break;
+            case 4 : unity = "Minuto"; break;
+            case 5 : unity = "Número"; break;
+            case 6 : unity = "Pesos"; break;
+            case 7 : unity = "Porcentajes"; break;
+            case 8 : unity = "Puntaje"; break;
+            case 9 : unity = "Unidad"; break;
+            case 10 : unity = "Volumen"; break;
+          }
+
           const objResult: IApiPlanningDetailedActivitiesSpecify = {
 
             //* Info Vinculación MGA
@@ -332,6 +382,9 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
             detailActivityDetailed: resDetailtedActitivyList.detailActivity,
             amountActivityDetailed: resDetailtedActitivyList.amount,
             measurementActivityDetailed: resDetailtedActitivyList.measurement,
+
+            measurementActivityDetailedName: unity.toString(),
+
             unitCostActivityDetailed: resDetailtedActitivyList.unitCost,
             totalCostActivityDetailed: (Number(resDetailtedActitivyList.unitCost) * Number(resDetailtedActitivyList.amount)),
 
@@ -396,6 +449,22 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
 
         if (resDetailtedActitivyList.id === Number(id)) {
 
+          //* Calculo peso con la medida dada de lista core.
+          let unity: string = "";
+          switch( resDetailtedActitivyList.measurement ){
+            case 0 : unity = "Hectáreas"; break;
+            case 1 : unity = "Horas"; break;
+            case 2 : unity = "Mes"; break;
+            case 3 : unity = "Millones"; break;
+            case 4 : unity = "Minuto"; break;
+            case 5 : unity = "Número"; break;
+            case 6 : unity = "Pesos"; break;
+            case 7 : unity = "Porcentajes"; break;
+            case 8 : unity = "Puntaje"; break;
+            case 9 : unity = "Unidad"; break;
+            case 10 : unity = "Volumen"; break;
+          }
+
           const objResult: IApiPlanningDetailedActivitiesSpecify = {
 
             //* Info Actividad General
@@ -411,6 +480,7 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
             consecutiveActivityDetailed: resDetailtedActitivyList.consecutive,
             detailActivityDetailed: resDetailtedActitivyList.detailActivity,
             amountActivityDetailed: resDetailtedActitivyList.amount,
+            measurementActivityDetailedName: unity,
             measurementActivityDetailed: resDetailtedActitivyList.measurement,
             unitCostActivityDetailed: resDetailtedActitivyList.unitCost,
             totalCostActivityDetailed: (Number(resDetailtedActitivyList.unitCost) * Number(resDetailtedActitivyList.amount)),
