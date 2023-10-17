@@ -12,13 +12,13 @@ export default class IcdAmountsCdp extends BaseModel {
   public cdpCode: number;
 
   @column({ columnName: 'ICD_CODRPP_RUTA_PRESUPUESTAL', serializeAs: 'idRppCode' })
-  public rppCode: number;
+  public idRppCode: number;
 
   @column({ columnName: 'ICD_POSICION', serializeAs: 'cdpPosition' })
-  public position: number;
+  public cdpPosition: number;
 
   @column({ columnName: 'ICD_VALOR', serializeAs: 'amount' })
-  public value: number;
+  public amount: number;
 
   @hasOne(() => CertificateBudgetAvailability, {
     localKey: 'id',
