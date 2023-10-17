@@ -1,6 +1,6 @@
 export interface DataTransferPac {
   headTransfer:        HeadTransfer;
-  transferTransaction: TransferTransaction;
+  transferTransaction: ITransferTransaction;
 }
 
 export interface HeadTransfer {
@@ -9,7 +9,7 @@ export interface HeadTransfer {
   resourceType: string;
 }
 
-export interface TransferTransaction {
+export interface ITransferTransaction {
   origins:     IDestinity[];
   destinities: IDestinity[];
 }

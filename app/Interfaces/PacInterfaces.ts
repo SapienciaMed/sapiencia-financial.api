@@ -152,9 +152,9 @@ export interface IPacPrimary {
 export interface IPacFilters {
   page: number;
   perPage: number;
-  pacType?: string;
-  exercise?: number;
-  resourceType?: string;
+  pacType: string;
+  exercise: number;
+  resourceType: string;
 
   managementCenter?: string;
   idProjectVinculation?: number;
@@ -246,5 +246,48 @@ export interface IPacComplementary {
   listProjects?: IDinamicListForProjects[];
   listFunds?: IDinamicListForFunds[];
   listPospreSapi ?: IDinamicListForPospres[];
+
+}
+
+export interface ITotalsByTransfers {
+
+  idPac?: number;
+  idRoute?: number;
+  managementCenter?: string,
+  idProjectVinculation?: number,
+  idBudget?: number,
+  idPospreSapiencia?: number,
+  idFund?: number,
+  idCardTemplate?: string,
+  totalProgrammig: number;
+  totalCollected: number;
+
+}
+
+export interface IPac {
+
+  id?: number,
+  sourceType?: string,
+  budgetRouteId?: number,
+  version?: number,
+  exercise?: number,
+  isActive?: boolean,
+  dateModify?: Date,
+  dateCreate?: Date,
+  pacAnnualizations: IPacAnnualization[]
+
+}
+
+export interface IResponseTransferPac {
+
+  origins: IResponseSub;
+  destinities: IResponseSub[];
+
+}
+
+export interface IResponseSub {
+
+  original: ITotalsByTransfers[] | null;
+  request: ITotalsByTransfers[] | null;
 
 }
