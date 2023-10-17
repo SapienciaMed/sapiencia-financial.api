@@ -7,6 +7,7 @@ import {
   IDinamicListForFunds,
   IDinamicListForPospres,
   IDinamicListForProjects,
+  IErrosPac,
   IFunctionalProjectPaginated,
   IPacAnnualAdapter,
   IPacComplementary,
@@ -16,6 +17,7 @@ import {
   IResultProcRoutes,
   IResultProcRoutesWithErrors,
   IReviewBudgetRoute,
+  ITotalsByTransfers,
 } from '../Interfaces/PacInterfaces';
 
 import { IProjectsRepository } from '../Repositories/ProjectsRepository';
@@ -24,7 +26,7 @@ import { IFunctionalProject } from '../Interfaces/FunctionalProjectInterfaces';
 import { IFiltersPosPreSapienciaMix } from '../Interfaces/PosPreSapienciaInterfaces';
 
 import { IResultSearchAnnualizationByRoute } from '../Interfaces/PacInterfaces';
-import { DataTransferPac, TransferTransaction } from '../Interfaces/PacTransferInterface';
+import { DataTransferPac, IDestinity } from '../Interfaces/PacTransferInterface';
 import { IFunctionalProjectRepository } from "App/Repositories/FunctionalProjectRepository";
 import { IFundsRepository } from "App/Repositories/FundsRepository";
 import { IPosPreSapienciaRepository } from "App/Repositories/PosPreSapienciaRepository";
@@ -41,13 +43,6 @@ export default interface IPacService {
   listDinamicsRoutes(filters: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | number>>>;
   searchAnnualDataRoutes(data: IPacAnnualAdapter): Promise<ApiResponse<IPagingData<IPacPrimary> | IResultSearchAnnualizationByRoute | IPacFilters | null>>;
 
-}
-
-interface IErrosPac {
-  message: string;
-  error: boolean;
-  rowError: number;
-  columnError?: number | null;
 }
 
 export default class PacService implements IPacService {
@@ -500,7 +495,7 @@ export default class PacService implements IPacService {
           e.pacAnnualizationProgrammed.dec
       if (typePac == 'Carga inicial' || typePac == 'adición' || typePac == 'Reducción' || typePac == 'Nueva versión') {
 
-        // Valida que el valor total presupuestado coincida con el total programado de los meses  
+        // Valida que el valor total presupuestado coincida con el total programado de los meses
         if (bugetPrgrammed != e.pacAnnualizationProgrammed.totalBudget) {
           errorsDetected.push({
             message: "No coincide valor programado con valor presupuesto sapiencia",
@@ -768,6 +763,8 @@ export default class PacService implements IPacService {
 
   async searchAnnualDataRoutes(data: IPacAnnualAdapter): Promise<ApiResponse<IPagingData<IPacPrimary> | IResultSearchAnnualizationByRoute | IPacFilters | null>> {
 
+    // console.log(data);
+
     const {
       pacType, //2 - Programado, 3 - Recaudado , 4 - Ambos
       exercise,
@@ -785,12 +782,16 @@ export default class PacService implements IPacService {
       perPage: 1000000,
       pacType,
       exercise,
-      resourceType
+      resourceType,
+      idCardTemplate
     }
 
     const objSearchRouteAndAnnual: IPacFilters = {
       page: 1,
       perPage: 1000000,
+      pacType,
+      exercise: data.exercise,
+      resourceType,
       managementCenter,
       idProjectVinculation,
       idBudget,
@@ -815,9 +816,9 @@ export default class PacService implements IPacService {
     }
 
     // console.log(objSearchRouteAndAnnual.idProjectVinculation);
+    // console.log(objSearchRouteAndAnnual.idFund);
     // console.log(objSearchRouteAndAnnual.idBudget);
     // console.log(objSearchRouteAndAnnual.idPospreSapiencia);
-    // console.log(objSearchRouteAndAnnual.idFund);
 
     //* Hallamos ruta con la data proporcionada inicialmente:
     const getRoute = await this.budgetsRoutesRepository
@@ -875,72 +876,338 @@ export default class PacService implements IPacService {
 
   }
 
-  async transfersOnPac(data: DataTransferPac): Promise<ApiResponse<DataTransferPac | null | any>> {
+  async transfersOnPac(data: DataTransferPac): Promise<ApiResponse<DataTransferPac | null>> {
 
-    //* Vamos a calcular los totales a nivel de origenes y destinos.
-    const totalCalculates = await this.calculatedValues(data.transferTransaction, data.headTransfer.exercise);
+    //* PASO 1.1 (Origen). Calculo tanto lo programado como lo recaudado ¡ ORIGINAL ! y aparte el ¡ QUE LLEGA EN LA PETICIÓN !
+    const originsGetCalculatedOriginal: ApiResponse<ITotalsByTransfers[] | null> = await this.calculatedValuesOriginal(data, "origin");
+    const originsGetCalculatedOfRequestTransfer: ApiResponse<ITotalsByTransfers | null> = await this.getCalculatedOfRequestTransfer(data, "origin");
+
+    //* PASO 2.1 (Destino). Calculo tanto lo programado como lo recaudado ¡ ORIGINAL ! y aparte el ¡ QUE LLEGA EN LA PETICIÓN !
+    const destinitiesGetCalculatedOriginal: ApiResponse<ITotalsByTransfers[] | null> = await this.calculatedValuesOriginal(data, "destinities");
+    const destinitiesGetCalculatedOfRequestTransfer: ApiResponse<ITotalsByTransfers | null> = await this.getCalculatedOfRequestTransfer(data, "destinities");
+
+    //? ************************************************************************************
+    //? Validación 5
+    //? ************************************************************************************
+    if( data.headTransfer.pacType == "Recaudado" || data.headTransfer.pacType == "Ambos"){
+
+      //Obtengo valor recaudado original del origen (Recordemos que viene como un array en sumatoria)
+      const origenOriginalResultCall: ITotalsByTransfers[] | null = originsGetCalculatedOriginal.data;
+      const origenOriginalValueCollectec: number | null = origenOriginalResultCall![origenOriginalResultCall?.length! - 1].totalCollected;
+      // console.log({origenOriginalValueCollectec});
+
+      //Obtengo valor recaudado original del destino (Recordemos que viene como un array en sumatoria)
+      const destinityOriginalResultCall: ITotalsByTransfers[] | null = destinitiesGetCalculatedOriginal.data;
+      const destinityOriginalValueCollectec: number | null = destinityOriginalResultCall![destinityOriginalResultCall?.length! - 1].totalCollected;
+      // console.log({destinityOriginalValueCollectec});
+
+      //Guardo la suma del valor recaudado entre origen y destino ORIGINAL.
+      const plusCollectedOriginal: number = origenOriginalValueCollectec + destinityOriginalValueCollectec;
+      // console.log({plusCollectedOriginal});
+
+      //Calcular el valor extraído del recaudo desde el origen
+      // const extractValue: number = origenOriginalValueCollectec - originsGetCalculatedOfRequestTransfer.data?.totalCollected!;
+      // console.log({extractValue});
+
+      //Calcular el nuevo valor recaudado origen y el nuevo valor recaudado destino
+      const newCollectedOriginalOrigin: number = originsGetCalculatedOfRequestTransfer.data?.totalCollected!;
+      // console.log({newCollectedOriginalOrigin});
+      const newCollectedOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalCollected!;
+      // console.log({newCollectedOriginalDestinity});
+
+      //Ahora sumo los nuevos valores y debería obtener la sumatoria original de recaudo
+      const plusCollectedsWithTransfer: number = newCollectedOriginalOrigin + newCollectedOriginalDestinity;
+      // console.log({plusCollectedsWithTransfer});
+
+      //* Validación 5
+      if(plusCollectedsWithTransfer !== plusCollectedOriginal){
+
+        return new ApiResponse(null, EResponseCodes.FAIL, "No puede aumentar o reducir el valor del recaudo, solo moverlo entre rutas");
+
+      }
+
+      //? ******************************************************************************************************************************
+      //? Validación 6.
+      //? ******************************************************************************************************************************
+      //Calculamos lo que será el nuevo valor programado para validar
+      const newProgrammingOriginalOrigin: number = originsGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
+      // console.log({newProgrammingOriginalOrigin});
+      // const newProgrammingOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
+      // console.log({newProgrammingOriginalDestinity});
+
+      if( newCollectedOriginalOrigin > newProgrammingOriginalOrigin){
+
+        return new ApiResponse(null, EResponseCodes.FAIL, "El recaudo es mayor al presupuesto sapiencia del PAC");
+
+      }
+
+    }
+
+    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
+    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
+    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
+
+    //? *****************************************************************************************************************
+    //? Validación 3
+    //? *****************************************************************************************************************
+
+    if( data.headTransfer.pacType == "Programado" || data.headTransfer.pacType == "Ambos"){
+
+      //Obtengo valor programado original del origen (Recordemos que viene como un array en sumatoria)
+      const origenOriginalResultCall: ITotalsByTransfers[] | null = originsGetCalculatedOriginal.data;
+      const origenOriginalValueProgramming: number | null = origenOriginalResultCall![origenOriginalResultCall?.length! - 1].totalProgrammig;
+      // console.log({origenOriginalValueProgramming});
+
+      //Obtengo valor programado original del destino (Recordemos que viene como un array en sumatoria)
+      const destinityOriginalResultCall: ITotalsByTransfers[] | null = destinitiesGetCalculatedOriginal.data;
+      const destinityOriginalValueProgramming: number | null = destinityOriginalResultCall![destinityOriginalResultCall?.length! - 1].totalProgrammig;
+      // console.log({destinityOriginalValueProgramming});
+
+      //Guardo la suma del valor programado entre origen y destino ORIGINAL.
+      const plusProgrammingOriginal: number = origenOriginalValueProgramming + destinityOriginalValueProgramming;
+      // console.log({plusProgrammingOriginal});
+
+      //Calcular el valor extraído del programado desde el origen
+      // const extractValue: number = origenOriginalValueProgramming - originsGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
+      // console.log({extractValue});
+
+      //Calcular el nuevo valor programado origen y el nuevo valor programado destino
+      const newProgrammingOriginalOrigin: number = originsGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
+      // console.log({newProgrammingOriginalOrigin});
+      const newProgrammingOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
+      // console.log({newProgrammingOriginalDestinity});
+
+      //Ahora sumo los nuevos valores y debería obtener la sumatoria original de programado
+      const plusProgrammingsWithTransfer: number = newProgrammingOriginalOrigin + newProgrammingOriginalDestinity;
+      // console.log({plusProgrammingsWithTransfer});
 
 
-    return new ApiResponse(totalCalculates, EResponseCodes.INFO, "Método para transferencias en el PAC");
+      //*Validación 3
+      if(plusProgrammingsWithTransfer !== plusProgrammingOriginal){
+
+        return new ApiResponse(null, EResponseCodes.FAIL, "No puede aumentar o reducir el valor del presupuesto, solo moverlo entre rutas");
+
+      }
+
+      //? ******************************************************************************************************************************
+      //? Validación 4.
+      //? ******************************************************************************************************************************
+      //Calculamos lo que será el nuevo valor recaudado para validar
+      const newCollectedOriginalOrigin: number = originsGetCalculatedOfRequestTransfer.data?.totalCollected!;
+      // console.log({newCollectedOriginalOrigin});
+      // const newCollectedOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalCollected!;
+      // console.log({newCollectedOriginalDestinity});
+
+      if( newProgrammingOriginalOrigin < newCollectedOriginalOrigin){
+
+        return new ApiResponse(null, EResponseCodes.FAIL, "El recaudo previamente guardado en el PAC es mayor que lo programado a ingresar");
+
+      }
+
+    }
+
+    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
+    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
+    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
+
+    //* Se pasaron los filtros, entonces procedemos a justar los meses a nivel de programado y recaudado
+    //* de las rutas involucradas.
+    const updateOrigins = await this.updateOriginsWithNewData(data);
+    const updateDestinities = await this.updateDestinitiesWithNewData(data);
+
+    //TODO: Buscar alternativa de any, debemos dejarlo por ahora mientras ajustamos validaciones
+    const primaryObject: any = {
+
+      origins: {
+        original: originsGetCalculatedOriginal.data,
+        request: originsGetCalculatedOfRequestTransfer.data
+      },
+      destinities: {
+        original: destinitiesGetCalculatedOriginal.data,
+        request: destinitiesGetCalculatedOfRequestTransfer.data
+      },
+      resultsTransfer: {
+        updateOrigins,
+        updateDestinities
+      }
+
+    }
+
+    return new ApiResponse(primaryObject, EResponseCodes.INFO, "¡Guardado exitosamente!");
 
   }
 
-  async calculatedValues(info: TransferTransaction, validity: number): Promise<string | any> {
+  async getCalculatedOfRequestTransfer(info: DataTransferPac, space: string): Promise<ApiResponse<ITotalsByTransfers | null>>{
 
-    let totalOriginProgrammig: number = 0;
-    let totalOriginCollected: number = 0;
-    let totalDestinityProgrammig: number = 0;
-    let totalDestinityCollected: number = 0;
+    let totalProgrammig: number = 0;
+    let totalCollected: number = 0;
+    let method: IDestinity[];
 
-    console.log(info);
-    console.log(validity);
-
-
+    if(space === "origin"){
+      method = info.transferTransaction.origins;
+    }else{
+      method = info.transferTransaction.destinities;
+    }
 
     //* Calculamos primero origenes.
-    //? Calculamos origen (Programado)
+    for (const x of method) {
 
-    //? Calculamos origen (Recaudado)
+      for (const xx of x.annualRoute) {
 
+        const val: number =
+          Number(xx.jan) +
+          Number(xx.feb) +
+          Number(xx.mar) +
+          Number(xx.abr) +
+          Number(xx.may) +
+          Number(xx.jun) +
+          Number(xx.jul) +
+          Number(xx.ago) +
+          Number(xx.sep) +
+          Number(xx.oct) +
+          Number(xx.nov) +
+          Number(xx.dec);
 
+        if (xx.type === "Programado") totalProgrammig += val;
+        if (xx.type === "Recaudado") totalCollected += val;
 
+      }
 
+    }
 
-    //* Calculamos primero destinos.
-    //? Calculamos destino (Programado)
+    const objResult: ITotalsByTransfers = {
 
-    //? Calculamos destino (Recaudado)
+      totalProgrammig: totalProgrammig,
+      totalCollected: totalCollected
 
-    console.log(totalOriginProgrammig);
-    console.log(totalOriginCollected);
-    console.log(totalDestinityProgrammig);
-    console.log(totalDestinityCollected);
+    }
 
-    // for (const x of info) {
+    return new ApiResponse(objResult, EResponseCodes.OK, 'Cálculos de la request para origen.');
 
-    //* Consultemos la ruta primero, el objetivo es que debemos calcular los valores originales:
-    // const getRoute = await this.budgetsRoutesRepository.getBudgetForAdditions(x.idProjectVinculation, x.idFund, x.idBudget, x.idPospreSapiencia);
-    // const getValues = await this.pacRepository.getPacByRouteAndExercise(Number(getRoute?.id) , validity)
+  }
 
-    // const val: number =
-    //   Number(x.annualRoute[0].jan) +
-    //   Number(x.annualRoute[0].feb) +
-    //   Number(x.annualRoute[0].mar) +
-    //   Number(x.annualRoute[0].abr) +
-    //   Number(x.annualRoute[0].may) +
-    //   Number(x.annualRoute[0].jun) +
-    //   Number(x.annualRoute[0].jul) +
-    //   Number(x.annualRoute[0].ago) +
-    //   Number(x.annualRoute[0].sep) +
-    //   Number(x.annualRoute[0].oct) +
-    //   Number(x.annualRoute[0].nov) +
-    //   Number(x.annualRoute[0].dec);
+  async calculatedValuesOriginal(info: DataTransferPac, space: string): Promise<ApiResponse<ITotalsByTransfers[] | null>> {
 
-    //   total += val;
+    let totalProgrammig: number = 0;
+    let totalCollected: number = 0;
+    let exercise: number = info.headTransfer.exercise;
+    let arrayResult: ITotalsByTransfers[] = [];
+    let method: IDestinity[];
 
-    // }
+    if(space === "origin"){
+      method = info.transferTransaction.origins;
+    }else{
+      method = info.transferTransaction.destinities;
+    }
 
-    return null;
+    for (const x of method) {
+
+      //A. Valido Ruta
+      const getMyRoute = await this.budgetsRoutesRepository.getBudgetForAdditions(x.idProjectVinculation, x.idFund, x.idBudget, x.idPospreSapiencia);
+      if (!getMyRoute)
+        return new ApiResponse(null, EResponseCodes.FAIL, `No se encontro la ruta con V.Proyecto:${x.idProjectVinculation}, Fondo:${x.idFund}, PosPreOrigen:${x.idBudget} y PosPreSapi:${x.idPospreSapiencia}. Revise la combinación de datos.`);
+
+      //B. Valido PAC
+      const getPacWithAnnual = await this.pacRepository.getPacByRouteAndExercise(Number(getMyRoute.id), Number(exercise));
+      if (!getPacWithAnnual)
+        return new ApiResponse(null, EResponseCodes.FAIL, `No se encontró un PAC con la ruta: ${getMyRoute.id} que está compuesta por V.Proyecto:${x.idProjectVinculation}, Fondo:${x.idFund}, PosPreOrigen:${x.idBudget} y PosPreSapi:${x.idPospreSapiencia}. No se hizo match con la vigencia que es ${exercise}`);
+
+      //C. Obtengo programado y recaudado (así traigan 0 alguna columna), [0]: Programado - [1]: Recaudado
+      const valProgramming: number =
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[0].jan) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[0].feb) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[0].mar) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[0].abr) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[0].may) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[0].jun) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[0].jul) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[0].ago) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[0].sep) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[0].oct) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[0].nov) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[0].dec);
+
+      const valCollected: number =
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[1].jan) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[1].feb) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[1].mar) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[1].abr) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[1].may) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[1].jun) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[1].jul) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[1].ago) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[1].sep) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[1].oct) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[1].nov) +
+        Number(getPacWithAnnual.array[0]?.pacAnnualizations[1].dec);
+
+      totalProgrammig += valProgramming;
+      totalCollected += valCollected;
+
+      const objResult: ITotalsByTransfers = {
+
+        idPac: Number(getPacWithAnnual.array[0]?.id),
+        idRoute: Number(getMyRoute.id),
+        managementCenter: x.managementCenter,
+        idProjectVinculation: x.idProjectVinculation,
+        idBudget: x.idBudget,
+        idPospreSapiencia: x.idPospreSapiencia,
+        idFund: x.idFund,
+        idCardTemplate: x.idCardTemplate,
+        totalProgrammig: totalProgrammig,
+        totalCollected: totalCollected
+
+      }
+
+      arrayResult.push(objResult);
+
+    }
+
+    return new ApiResponse(arrayResult, EResponseCodes.OK, 'Primeros cálculos para origen.');
+
+  }
+
+  async updateOriginsWithNewData(data: DataTransferPac): Promise<ApiResponse<boolean | IDestinity[]>>{
+
+    const arrayProccessGeneral: IDestinity[] = data.transferTransaction.origins;
+    let band: boolean = false;
+
+    for (const x of arrayProccessGeneral) {
+
+      for (const y of x.annualRoute) {
+
+        const update = await this.pacRepository.updateTransfer(y);
+        if( update == null ) return new ApiResponse(false, EResponseCodes.FAIL, "Error al actualizar anualizaciones");
+        band = true;
+
+      }
+
+    }
+
+    if( !band ) return new ApiResponse(false, EResponseCodes.FAIL, 'No se actualizaron origenes, errores');
+    return new ApiResponse(arrayProccessGeneral, EResponseCodes.OK, 'Origenes actualizados');
+
+  }
+
+  async updateDestinitiesWithNewData(data: DataTransferPac): Promise<ApiResponse<boolean | IDestinity[]>>{
+
+    const arrayProccessGeneral: IDestinity[] = data.transferTransaction.destinities;
+    let band: boolean = false;
+
+    for (const x of arrayProccessGeneral) {
+
+      for (const y of x.annualRoute) {
+
+        const update = await this.pacRepository.updateTransfer(y);
+        if( update == null ) return new ApiResponse(false, EResponseCodes.FAIL, "Error al actualizar anualizaciones");
+        band = true;
+
+      }
+
+    }
+
+    if( !band ) return new ApiResponse(false, EResponseCodes.FAIL, 'No se actualizaron destinos, errores');
+    return new ApiResponse(arrayProccessGeneral, EResponseCodes.OK, 'Destinos actualizados');
 
   }
 

@@ -1,24 +1,25 @@
 import fs from 'fs';
 import Excel from 'exceljs'
-import { IPacAnnualization, IPacPrimary, IReviewBudgetRoute } from '../Interfaces/PacInterfaces';
+import { IPacAnnualization, IPacPrimary, IPac } from '../Interfaces/PacInterfaces';
 import Pac from '../Models/Pac';
 import { IPagingData } from '../Utils/ApiResponses';
 import { IPacFilters } from 'App/Interfaces/PacInterfaces';
 import PacAnnualization from 'App/Models/PacAnnualization';
+import { IAnnualRoute } from '../Interfaces/PacTransferInterface';
 
 export default interface IPacRepository {
 
     uploadPac(file: any): Promise<any>;
     searchPacByMultiData(filters: IPacFilters): Promise<IPagingData<IPacPrimary | null>>;
-    getPacByRouteAndExercise(route: number, validity: number): Promise<IPagingData<IPacAnnualization | null>>;
+    getPacByRouteAndExercise(route: number, validity: number): Promise<IPagingData<IPac | null>>;
     getAnnualizationsByPacAndType(pac: number, type: string): Promise<IPagingData<IPacAnnualization | null>>;
-    reviewBudgetsRoute(budgetRoute: IReviewBudgetRoute): Promise<any>;
     updateOrCreatePac(routesValidationRequest: any): Promise<any>;
     getPacByExcercise(exercise: number): Promise<Pac[]>;
     updatePacExcersiceVersion(pac: any): Promise<any>;
     validityList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>>;
     resourcesTypeList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>>;
     listDinamicsRoutes(filters: IPacFilters): Promise<IPagingData<IPacPrimary | number>>;
+    updateTransfer(data: IAnnualRoute): Promise<IAnnualRoute | null>;
 
 }
 
@@ -222,26 +223,6 @@ export default class PacRepository implements IPacRepository {
         }
     }
 
-    async reviewBudgetsRoute(_budgetRoute: IReviewBudgetRoute): Promise<any> {
-
-        //console.log(budgetRoute);
-        //TODO: Acá consultamos la ruta presupuestal y sus componentes
-
-        //* Paso 1. Hallar el PosPre Origen a través del PosPre Sapiencia (Y que exista)
-
-        //* Paso 2. Hallar el Proyecto a través del Código Referencia
-
-        //* Paso 3. Hallar el Fondo
-
-        //* Paso 4. Hallar la ruta presupuestal
-
-        //* Paso 5. Verificar que la ruta no esté repetida en la interacción
-
-
-        return true;
-
-    }
-
     updateOrCreatePac = async (routesValidationRequest: any) => {
         for await (let pac of routesValidationRequest.condensed) {
             let annualizations: any[] = []
@@ -278,7 +259,7 @@ export default class PacRepository implements IPacRepository {
             let pacAnnualizationCollected = row.pacAnnualizationCollected
             delete row.pacAnnualizationProgrammed.totalBudget;
             delete row.pacAnnualizationCollected.totalBudget;
-            
+
             annualization.push(pacAnnualizationProgrammed)
             annualization.push(pacAnnualizationCollected)
 
@@ -396,21 +377,48 @@ export default class PacRepository implements IPacRepository {
 
     }
 
-    async getPacByRouteAndExercise(route: number, validity: number): Promise<IPagingData<IPacAnnualization | null>> {
+    async getPacByRouteAndExercise(route: number, validity: number): Promise<IPagingData<IPac | null>> {
 
       const query = Pac.query()
                        .where("budgetRouteId" , route)
                        .andWhere("exercise", validity);
 
-      query.preload("annualizations");
+      query.preload("pacAnnualizations");
 
       const res = await query.paginate(1, 100);
       const { data, meta } = res.serialize();
 
       return {
-        array: data as IPacAnnualization[] | null[],
+        array: data as IPac[] | null[],
         meta,
       };
+
+    }
+
+    async updateTransfer(data: IAnnualRoute): Promise<IAnnualRoute | null> {
+
+      const { id } = data;
+      const toUpdate = await PacAnnualization.find(id);
+
+      if (!toUpdate) {
+        return null;
+      }
+
+      toUpdate.jan = data.jan;
+      toUpdate.feb = data.feb;
+      toUpdate.mar = data.mar;
+      toUpdate.abr = data.abr;
+      toUpdate.may = data.may;
+      toUpdate.jun = data.jun;
+      toUpdate.jul = data.jul;
+      toUpdate.ago = data.ago;
+      toUpdate.sep = data.sep;
+      toUpdate.oct = data.oct;
+      toUpdate.nov = data.nov;
+      toUpdate.dec = data.dec;
+
+      await toUpdate.save();
+      return toUpdate.serialize() as IAnnualRoute;
 
     }
 

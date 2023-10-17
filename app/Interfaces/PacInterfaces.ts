@@ -248,3 +248,53 @@ export interface IPacComplementary {
   listPospreSapi ?: IDinamicListForPospres[];
 
 }
+
+export interface IErrosPac {
+  message: string;
+  error: boolean;
+  rowError: number;
+  columnError?: number | null;
+}
+
+export interface ITotalsByTransfers {
+
+  idPac?: number;
+  idRoute?: number;
+  managementCenter?: string,
+  idProjectVinculation?: number,
+  idBudget?: number,
+  idPospreSapiencia?: number,
+  idFund?: number,
+  idCardTemplate?: string,
+  totalProgrammig: number;
+  totalCollected: number;
+
+}
+
+export interface IPac {
+
+  id?: number,
+  sourceType?: string,
+  budgetRouteId?: number,
+  version?: number,
+  exercise?: number,
+  isActive?: boolean,
+  dateModify?: Date,
+  dateCreate?: Date,
+  pacAnnualizations: IPacAnnualization[]
+
+}
+
+export interface IResponseTransferPac {
+
+  origins: IResponseSub;
+  destinities: IResponseSub[];
+
+}
+
+export interface IResponseSub {
+
+  original: ITotalsByTransfers[] | null;
+  request: ITotalsByTransfers[] | null;
+
+}
