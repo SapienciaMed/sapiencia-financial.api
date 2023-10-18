@@ -7,10 +7,10 @@ export interface ICdpsService {
 }
 
 export default class CdpsService implements ICdpsService {
-    constructor(private CdpsRepository: ICdpsRepository) { }
+    constructor(private cdpsRepository: ICdpsRepository) { }
 
     async getAllCdps(): Promise<ApiResponse<any[]>> {
-        const res = await this.CdpsRepository.getAllCdps();
+        const res = await this.cdpsRepository.getAllCdps();
 
         return new ApiResponse(res, EResponseCodes.OK);
     }
