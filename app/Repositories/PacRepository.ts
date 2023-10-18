@@ -132,7 +132,7 @@ export default class PacRepository implements IPacRepository {
     validateFieldsEmpty = (row: any, rowNumber: number) => {
         let rowsWithValuesEmpty = 0;
         for (let i = 1; i <= 7; i++) {
-            if (row.getCell(i).value == "") {
+            if (row.getCell(i).value == null) {
                 rowsWithValuesEmpty += 1
 
             }
@@ -148,7 +148,7 @@ export default class PacRepository implements IPacRepository {
     validateFieldNumberValid = (row: any, rowNumber: number) => {
         let rowsWithValuesInvalid = 0;
         for (let i = 8; i <= 32; i++) {
-            if (row.getCell(i).value != "" && parseFloat(row.getCell(i).value) < 0) {
+            if (row.getCell(i).value != null && parseFloat(row.getCell(i).value) < 0) {
                 rowsWithValuesInvalid += 1
             }
         }

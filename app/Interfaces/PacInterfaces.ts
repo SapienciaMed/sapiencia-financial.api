@@ -104,6 +104,7 @@ export interface IResultProcRoutes {
   posPreSapiError?: string[];
   routesError?: string[];
   routesNotFound?: string[];
+  errors?: IErrosPac[];
 
 }
 
@@ -116,6 +117,7 @@ export interface IResultProcRoutesWithErrors {
   posPreSapiError?: string[];
   routesError?: string[];
   routesNotFound?: string[];
+  errors?: IErrosPac[];
 
 }
 

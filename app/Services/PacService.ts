@@ -96,10 +96,15 @@ export default class PacService implements IPacService {
     //* Validaciones de existencia de fondo, proyecto, pospre, ruta existente y ruta repetida
     body.version = body.typePac == 'Nueva versión' ? versionFixed + 1 : versionFixed;
     const routesValidationRequest: ApiResponse<IResultProcRoutes> = await this.reviewBudgetsRoute(data, body);
-
-    console.log({routesValidationRequest})
-
+    
     let errors: IErrosPac[] = [];
+ 
+    routesValidationRequest?.data?.errors?.length!>0 && errors.push(...routesValidationRequest.data.errors!)
+    
+    /* routesValidationRequest.data.errors?.forEach((err:IErrosPac, index:number)=>{
+      errors.push(err)
+    }) */
+    
     let validateValuesByTypePac = this.validateValuesByTypePac(typePac, routesValidationRequest.data)
     let dataToUpdate;
     errors.push(...validateValuesByTypePac)
@@ -153,7 +158,9 @@ export default class PacService implements IPacService {
       default:
         break;
     }
-
+    //console.log({routesError:routesValidationRequest.data.routesError})
+    //console.log({routesNotFound:routesValidationRequest.data.routesNotFound})
+    
     if(errors.length>0){
       return new ApiResponse({ responseSave, errors }, EResponseCodes.OK, "El archivo no pudo ser cargado, revisa las validaciones.");
     }
@@ -169,8 +176,7 @@ export default class PacService implements IPacService {
   }
 
   validatePreviouslyCreatedExerciseRoutes = (loadedRoutesCurrentExcersice: any, dataExcel: any) => {
-    //console.log({ loadedRoutesCurrentExcersice, dataExcel: dataExcel.condensed })
-
+    
     // Si es recaudo, no pueden existir rutas en el excel y que estas no esten creadas
 
     const errors: IErrosPac[] = [];
@@ -260,7 +266,7 @@ export default class PacService implements IPacService {
     for (let i = 0; i <= 14; i++) {
       workingData.push(processBudgetRoute[i]);
     }
-
+    let errors: IErrosPac[] = [];
     let projectsError: string[] = [];
     let fundsError: string[] = [];
     let posPreSapiError: string[] = [];
@@ -284,7 +290,6 @@ export default class PacService implements IPacService {
 
       //? >>>>> VALIDACIÓN DE PROYECTO <<<<<<< ?//
       const dataProject: string = workingData[i].project?.toString();
-
       if (dataProject !== "9000000") {
 
         const filters: IProjectPaginated = {
@@ -342,7 +347,7 @@ export default class PacService implements IPacService {
       }
 
       const getFund = await this.fundsRepository.getFundsPaginated(filtersFunds);
-
+      
       for (const y of getFund.array) {
 
         if (y.number === dataFund) {
@@ -369,7 +374,6 @@ export default class PacService implements IPacService {
       }
 
       const getPosPres = await this.posPreSapienciaRepository.getListPosPreSapVinculationPaginated(filtersPosPreSapi);
-
       for (const z of getPosPres.array) {
 
         if (z.number === dataPosPreSapi) {
@@ -392,9 +396,12 @@ export default class PacService implements IPacService {
       const concactRouteInitial = `[${workingData[i].project}.${workingData[i].fundSapiencia}.${workingData[i].sapienciaBudgetPosition}]`
 
       if (repeatRoutesErrors.includes(concatRouteDef)) {
-
         routesError.push(`Error en la fila de excel # ${workingData[i].rowExcel}, ruta presupuestal repetida con [Proyecto.Fondo.PosPreSapiencia] = ${concactRouteInitial}`);
-
+        errors.push({
+          message:'Tiene rutas duplicadas en el archivo',
+          error:true,
+          rowError:workingData[i].rowExcel
+        })
       }
 
       repeatRoutesErrors.push(concatRouteDef);
@@ -404,9 +411,12 @@ export default class PacService implements IPacService {
       pkBudgetRoute = Number(getBudgetRoute?.id);
 
       if (!pkBudgetRoute || pkBudgetRoute == null) {
-
         routesNotFound.push(`Error en la fila de excel # ${workingData[i].rowExcel}, ruta presupuestal con [Proyecto.Fondo.PosPreSapiencia] = ${concactRouteInitial} no fue encontrada en la base de datos`);
-
+        errors.push({
+          message:'La ruta presupuestal no existe',
+          error:true,
+          rowError:workingData[i].rowExcel
+        })
       } else {
         //* ***** ARMAMOS EL OBJETO RESPUESTA, SI TENEMOS RUTA, ES PORQUE EL OBJETO SE PUEDE ARMAR ***** *//
 
@@ -432,19 +442,14 @@ export default class PacService implements IPacService {
 
     } //* FOR GENERAL
 
-    // console.log({ErroresProyectos: projectsError});
-    // console.log({ErroresFondos: fundsError});
-    // console.log({ErroresPosPreSapi: posPreSapiError});
-    // console.log({ErroresRutasRepetidas: routesError});
-    // console.log({ErroresRutasNoEncontradas: routesNotFound});
-
     //? >>>>> FINALMENTE DEBERÍAMOS ARMAR EL OBJETO DE RESPUESTA <<<<<<< ?//
-    //TODO: Si tenemos errores, ¿Lo deberíamos armar o no?, NO DEBERÍAMOS, entonce ...
     if (projectsError.length <= 0 ||
       fundsError.length <= 0 ||
       posPreSapiError.length <= 0 ||
       routesError.length <= 0 ||
-      routesNotFound.length <= 0) {
+      routesNotFound.length <= 0 ||
+      errors.length<=0
+      ) {
 
       const objOk: IResultProcRoutesWithErrors | IResultProcRoutes = {
 
@@ -454,7 +459,7 @@ export default class PacService implements IPacService {
         posPreSapiError: posPreSapiError,
         routesError: routesError,
         routesNotFound: routesNotFound,
-
+        errors
       }
 
       arrayResultCondensedWithErrors = objOk;
@@ -463,13 +468,12 @@ export default class PacService implements IPacService {
     }
 
     const objErrors: IResultProcRoutesWithErrors | IResultProcRoutes = {
-
       projectsError: projectsError,
       fundsError: fundsError,
       posPreSapiError: posPreSapiError,
       routesError: routesError,
       routesNotFound: routesNotFound,
-
+      errors
     }
 
     arrayResultCondensedWithErrors = objErrors;
