@@ -1,5 +1,6 @@
-import { BaseModel, column } from "@ioc:Adonis/Lucid/Orm";
+import { BaseModel, HasMany, column, hasMany } from "@ioc:Adonis/Lucid/Orm";
 import { DateTime } from "luxon";
+import IcdAmountsCdp from "./IcdAmountsCdp";
 
 export default class CdpCertificadoDisponibilidadPresupuestal extends BaseModel {
   public static table = "CDP_CERTIFICADO_DISPONIBILIDAD_PRESUPUESTAL";
@@ -19,5 +20,12 @@ export default class CdpCertificadoDisponibilidadPresupuestal extends BaseModel 
 
   @column({ columnName: "CDP_CONSECUTIVO", serializeAs: "consecutive" })
   public consecutive: number;
+
+  @hasMany(() => IcdAmountsCdp, {
+    localKey: 'id',
+    foreignKey: 'cdpCode',
+    serializeAs: "icdAmounts",
+  })
+  public icdAmounts: HasMany<typeof IcdAmountsCdp>;
 
 }
