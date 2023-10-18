@@ -91,6 +91,7 @@ export interface IResultProcRoutes {
   numberExcelRom?: number;
   sourceType?: string,
   budgetRouteId?: number,
+  balance?:number,
   version?: number,
   exercise?: number,
   isActive?: boolean,

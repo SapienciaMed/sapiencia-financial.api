@@ -96,7 +96,7 @@ export default class PacService implements IPacService {
     //* Validaciones de existencia de fondo, proyecto, pospre, ruta existente y ruta repetida
     body.version = body.typePac == 'Nueva versión' ? versionFixed + 1 : versionFixed;
     const routesValidationRequest: ApiResponse<IResultProcRoutes> = await this.reviewBudgetsRoute(data, body);
-    
+    console.log({routesValidationRequest:Object(routesValidationRequest).data.condensed})  
     let errors: IErrosPac[] = [];
  
     routesValidationRequest?.data?.errors?.length!>0 && errors.push(...routesValidationRequest.data.errors!)
@@ -287,6 +287,7 @@ export default class PacService implements IPacService {
       let pkPosPreOrg: number = 0;
       let pkPosPreSap: number = 0;
       let pkBudgetRoute: number = 0;
+      let balanceRoute: number = 0;
 
       //? >>>>> VALIDACIÓN DE PROYECTO <<<<<<< ?//
       const dataProject: string = workingData[i].project?.toString();
@@ -409,6 +410,7 @@ export default class PacService implements IPacService {
       //? >>>>> VALIDACIÓN DE RUTA PRESUPUESTAL <<<<<<< ?//
       const getBudgetRoute = await this.budgetsRoutesRepository.getBudgetForAdditions(pkProject, pkFund, pkPosPreOrg, pkPosPreSap)
       pkBudgetRoute = Number(getBudgetRoute?.id);
+      balanceRoute = Number(getBudgetRoute?.balance);
 
       if (!pkBudgetRoute || pkBudgetRoute == null) {
         routesNotFound.push(`Error en la fila de excel # ${workingData[i].rowExcel}, ruta presupuestal con [Proyecto.Fondo.PosPreSapiencia] = ${concactRouteInitial} no fue encontrada en la base de datos`);
@@ -427,6 +429,7 @@ export default class PacService implements IPacService {
           numberExcelRom: workingData[i].rowExcel,
           sourceType: body!.typeSource,
           budgetRouteId: pkBudgetRoute,
+          balance:balanceRoute,
           version: body!.version,
           exercise: body!.exercise,
           isActive: true,
