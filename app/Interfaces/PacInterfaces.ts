@@ -91,6 +91,7 @@ export interface IResultProcRoutes {
   numberExcelRom?: number;
   sourceType?: string,
   budgetRouteId?: number,
+  balance?:number,
   version?: number,
   exercise?: number,
   isActive?: boolean,
@@ -104,6 +105,7 @@ export interface IResultProcRoutes {
   posPreSapiError?: string[];
   routesError?: string[];
   routesNotFound?: string[];
+  errors?: IErrosPac[];
 
 }
 
@@ -116,6 +118,7 @@ export interface IResultProcRoutesWithErrors {
   posPreSapiError?: string[];
   routesError?: string[];
   routesNotFound?: string[];
+  errors?: IErrosPac[];
 
 }
 
