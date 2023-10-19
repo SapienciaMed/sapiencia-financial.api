@@ -20,6 +20,7 @@ export default interface IPacRepository {
     resourcesTypeList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>>;
     listDinamicsRoutes(filters: IPacFilters): Promise<IPagingData<IPacPrimary | number>>;
     updateTransfer(data: IAnnualRoute): Promise<IAnnualRoute | null>;
+    inactivateVersionPac(versionFixed:number,pacsByExerciseFixed: any): Promise<any>;
 
 }
 
@@ -229,6 +230,7 @@ export default class PacRepository implements IPacRepository {
             delete pac.numberExcelRom
             delete pac.pacAnnualizationProgrammed.totalBudget
             delete pac.pacAnnualizationCollected.totalBudget
+            delete pac.balance;
             annualizations.push(pac.pacAnnualizationProgrammed)
             annualizations.push(pac.pacAnnualizationCollected)
             delete pac.pacAnnualizationProgrammed;
@@ -421,5 +423,27 @@ export default class PacRepository implements IPacRepository {
       return toUpdate.serialize() as IAnnualRoute;
 
     }
+
+    inactivateVersionPac = async(versionFixed:number,pacsByExerciseFixed: any): Promise<any>=>{
+        console.log("Inactivando ....")
+        const pacsByExerciseFilter = pacsByExerciseFixed.filter(e=>e.version==versionFixed);
+
+        try {
+            for await (let pac of pacsByExerciseFilter) {
+                let pacRoute = await Pac.findOrFail(pac.id)
+                pacRoute.isActive = false;
+                await pacRoute.save()    
+            }    
+            return "Actualización correcta"
+        } catch (error) {
+        throw new Error("Error en la edición de estado en el pac");
+        
+        }
+        
+        
+
+
+    }
+
 
 }
