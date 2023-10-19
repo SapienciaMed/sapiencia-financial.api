@@ -3,7 +3,7 @@ import IcdAmountsCdp from "../Models/IcdAmountsCdp";
 // import BudgetsRoutes from "../Models/BudgetsRoutes";
 
 
-export interface ICdpsRepository {
+export default interface ICdpsRepository {
     getAllCdps(): Promise<any[]>;
     createCdps(cdpData: any, icdData: any, date:any): Promise<any>;
 }
@@ -12,9 +12,8 @@ export interface ICdpsRepository {
 //     { title: "Datos falsos", value: "Prueba" }
 // ]
 
-class CdpsRepository implements ICdpsRepository {
-    constructor() { }
-
+export default class CdpsRepository implements ICdpsRepository {
+    
     async getAllCdps(): Promise<any[]> {
         const res = await CdpCertificadoDisponibilidadPresupuestal.query()
             .preload("icdAmounts", (query) => {
@@ -66,11 +65,4 @@ class CdpsRepository implements ICdpsRepository {
     
         return { cdp, icd };
     }
-    
-
-    
-
 }
-
-
-module.exports = CdpsRepository

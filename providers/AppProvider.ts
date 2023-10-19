@@ -40,7 +40,9 @@ export default class AppProvider {
       "App/Services/External/StrategicDirectionService"
     );
     const PacService = await import("App/Services/PacService");
-    const CdpService = await import("App/Services/CdpsService")
+    const CdpService = await import("App/Services/CdpsService")  
+    
+
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -227,15 +229,14 @@ export default class AppProvider {
         )
     );
 
-/*    
+   
     this.app.container.singleton(
       "core.CdpsProvider",
       () =>
         new CdpService.default(
-          new CdpRepository
-           //cdpRepository.getAllCdps()
+          new CdpRepository.default()
         )
-    ); */
+    );
   }
 
   public async boot() {
