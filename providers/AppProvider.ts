@@ -227,13 +227,15 @@ export default class AppProvider {
         )
     );
 
+/*    
     this.app.container.singleton(
       "core.CdpsProvider",
       () =>
         new CdpService.default(
-          new CdpRepository.default()
+          new CdpRepository
+           //cdpRepository.getAllCdps()
         )
-    );
+    ); */
   }
 
   public async boot() {

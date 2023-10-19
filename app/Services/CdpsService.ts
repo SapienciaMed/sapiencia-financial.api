@@ -14,4 +14,14 @@ export default class CdpsService implements ICdpsService {
 
         return new ApiResponse(res, EResponseCodes.OK);
     }
+
+    async createCdps(cdpData: any, icdData: any, date:any): Promise<ApiResponse<any>> {
+        try {
+            const createdData = await this.cdpsRepository.createCdps(cdpData, icdData,date);
+            return new ApiResponse(createdData, EResponseCodes.OK, 'CDP e ICD creados exitosamente');
+        } catch (error) {
+            console.error('Error en CdpsService al crear CDP e ICD:', error);
+            return new ApiResponse(null, EResponseCodes.FAIL, 'Error al crear CDP e ICD');
+        }
+    }
 }

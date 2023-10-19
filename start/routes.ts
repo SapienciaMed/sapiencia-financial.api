@@ -185,5 +185,6 @@ Route.group(() => {
 
 Route.group(() => {
   Route.get("/get-all", "CdpsController.getAllCdpsCertificationBudgetAvailability");
+  Route.post("/create-cdp", "CdpsController.createCdpsCertificationBudgetAvailability");
 }).prefix("/api/v1/cdp")
 // .middleware("auth");
