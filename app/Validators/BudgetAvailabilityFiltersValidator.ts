@@ -28,6 +28,8 @@ export default class BudgetAvailabilityFiltersValidator {
     dateOfCdp: schema.string(),
     page: schema.number(),
     perPage: schema.number(),
+    consecutiveSap: schema.string.optional(),
+    consecutiveAurora: schema.string.optional(),
     initialDate: schema.string.optional(),
     endDate: schema.string.optional(),
     pospreId: schema.number.optional(),

@@ -26,10 +26,31 @@ export default class BudgetAvailabilityRepository
       });
     });
 
+    if (filter.initialDate && filter.endDate) {
+      query.where("date", ">=", filter.initialDate);
+      query.where("date", "<=", filter.endDate);
+    }
+
     if (filter.pospreId) {
       query.whereHas("amounts", (sub) =>
         sub.whereHas("budgetRoute", (sub2) =>
           sub2.where("idPospreSapiencia", Number(filter.pospreId))
+        )
+      );
+    }
+
+    if (filter.fundId) {
+      query.whereHas("amounts", (sub) =>
+        sub.whereHas("budgetRoute", (sub2) =>
+          sub2.where("idFund", Number(filter.fundId))
+        )
+      );
+    }
+
+    if (filter.projectId) {
+      query.whereHas("amounts", (sub) =>
+        sub.whereHas("budgetRoute", (sub2) =>
+          sub2.where("idProjectVinculation", Number(filter.projectId))
         )
       );
     }

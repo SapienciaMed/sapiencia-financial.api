@@ -110,12 +110,9 @@ export default class AdditionsRepository implements IAdditionsRepository {
           });
       });
 
-      return {
+    return {
       head: head.serialize() as IAdditions,
       details: details.map((i) => i.serialize() as IAdditionsMovement),
     };
-
-
-
   }
 }
