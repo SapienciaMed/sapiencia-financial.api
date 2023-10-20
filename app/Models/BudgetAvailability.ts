@@ -15,7 +15,10 @@ export default class BudgetAvailability extends BaseModel {
   })
   public date: DateTime;
 
-  @column({ columnName: "CDP_OBJETO_CONTRACTUAL", serializeAs: "contractObject" })
+  @column({
+    columnName: "CDP_OBJETO_CONTRACTUAL",
+    serializeAs: "contractObject",
+  })
   public contractObject: string;
 
   @column({ columnName: "CDP_CONSECUTIVO", serializeAs: "consecutive" })
@@ -25,10 +28,9 @@ export default class BudgetAvailability extends BaseModel {
   public sapConsecutive: number;
 
   @hasMany(() => AmountBudgetAvailability, {
-    localKey: 'id',
-    foreignKey: 'cdpCode',
+    localKey: "id",
+    foreignKey: "cdpCode",
     serializeAs: "amounts",
   })
   public amounts: HasMany<typeof AmountBudgetAvailability>;
-
 }
