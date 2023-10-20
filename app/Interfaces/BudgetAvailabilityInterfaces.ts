@@ -27,5 +27,6 @@ export interface IBudgetAvailability {
   date: string;
   contractObject: string;
   consecutive: number;
+  sapConsecutive: number;
   icdAmounts: IAmountBudgetAvailability[];
 }
