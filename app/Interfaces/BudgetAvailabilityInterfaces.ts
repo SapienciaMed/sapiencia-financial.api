@@ -9,8 +9,9 @@ export interface IBudgetAvailabilityFilters {
   pospreId?: number;
   fundId?: number;
   projectId?: number;
-  consecutiveSap?: string;
-  consecutiveAurora?: string;
+  consecutiveSap?: number;
+  consecutiveAurora?: number;
+  contractObject?: string;
 }
 
 export interface IAmountBudgetAvailability {
