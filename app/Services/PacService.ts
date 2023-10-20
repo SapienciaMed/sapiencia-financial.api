@@ -25,8 +25,8 @@ import { IFundsFilters } from '../Interfaces/FundsInterfaces';
 import { IFunctionalProject } from '../Interfaces/FunctionalProjectInterfaces';
 import { IFiltersPosPreSapienciaMix } from '../Interfaces/PosPreSapienciaInterfaces';
 
-import { IResultSearchAnnualizationByRoute } from '../Interfaces/PacInterfaces';
-import { DataTransferPac, IDestinity } from '../Interfaces/PacTransferInterface';
+import { IResultSearchAnnualizationByRoute, ITotalsSimple } from '../Interfaces/PacInterfaces';
+import { DataTransferPac, IDestinity, IDestinityNoAnnual } from '../Interfaces/PacTransferInterface';
 import { IFunctionalProjectRepository } from "App/Repositories/FunctionalProjectRepository";
 import { IFundsRepository } from "App/Repositories/FundsRepository";
 import { IPosPreSapienciaRepository } from "App/Repositories/PosPreSapienciaRepository";
@@ -524,7 +524,7 @@ export default class PacService implements IPacService {
           e.pacAnnualizationCollected.nov +
           e.pacAnnualizationCollected.dec
 
-        // Valida que el valor total presupuestado coincida con el total programado de los meses  
+        // Valida que el valor total presupuestado coincida con el total programado de los meses
         if (typePac == 'Recaudo' && bugetCollectec != e.pacAnnualizationCollected.totalBudget) {
           errorsDetected.push({
             message: "La suma de los recaudos a incluir es mayor al presupuesto sapiencia",
@@ -770,8 +770,6 @@ export default class PacService implements IPacService {
 
   async searchAnnualDataRoutes(data: IPacAnnualAdapter): Promise<ApiResponse<IPagingData<IPacPrimary> | IResultSearchAnnualizationByRoute | IPacFilters | null>> {
 
-    // console.log(data);
-
     const {
       pacType, //2 - Programado, 3 - Recaudado , 4 - Ambos
       exercise,
@@ -871,15 +869,63 @@ export default class PacService implements IPacService {
 
     }
 
+    //* Calculemos los totales programado y recaudado
+    let totalProgramming: number = 0;
+    let totalCollected: number = 0;
+
+    for (const annualizations of getAnnualization.array) {
+
+      if( annualizations?.type == "Programado" ){
+
+        totalProgramming += (Number(annualizations!.jan) +
+                             Number(annualizations!.feb) +
+                             Number(annualizations!.mar) +
+                             Number(annualizations!.abr) +
+                             Number(annualizations!.may) +
+                             Number(annualizations!.jun) +
+                             Number(annualizations!.jul) +
+                             Number(annualizations!.ago) +
+                             Number(annualizations!.sep) +
+                             Number(annualizations!.oct) +
+                             Number(annualizations!.nov) +
+                             Number(annualizations!.dec))
+
+      }else{
+
+        totalCollected += (Number(annualizations!.jan) +
+                           Number(annualizations!.feb) +
+                           Number(annualizations!.mar) +
+                           Number(annualizations!.abr) +
+                           Number(annualizations!.may) +
+                           Number(annualizations!.jun) +
+                           Number(annualizations!.jul) +
+                           Number(annualizations!.ago) +
+                           Number(annualizations!.sep) +
+                           Number(annualizations!.oct) +
+                           Number(annualizations!.nov) +
+                           Number(annualizations!.dec))
+
+      }
+
+    }
+
+    const objTotals: ITotalsSimple = {
+
+      totalProgramming,
+      totalCollected
+
+    }
+
     const objResult: IResultSearchAnnualizationByRoute = {
 
       headerResult: objHeaderInitial,
       routeResult: getRoute,
-      annualRoute: getAnnualization.array
+      annualRoute: getAnnualization.array,
+      totalsRes: objTotals
 
     }
 
-    return new ApiResponse(objResult, EResponseCodes.OK, "Obteniendo las anualizaciones");
+    return new ApiResponse(objResult, EResponseCodes.OK, "Obteniendo las anualizaciones e información de ruta");
 
   }
 
@@ -894,6 +940,15 @@ export default class PacService implements IPacService {
     const destinitiesGetCalculatedOfRequestTransfer: ApiResponse<ITotalsByTransfers | null> = await this.getCalculatedOfRequestTransfer(data, "destinities");
 
     //? ************************************************************************************
+    //? Validación 2
+    //? ************************************************************************************
+    if( originsGetCalculatedOfRequestTransfer.data == null || destinitiesGetCalculatedOfRequestTransfer == null){
+
+      return new ApiResponse(null, EResponseCodes.FAIL, 'El valor del presupuesto sapiencia es diferente al valor del presupuesto.');
+
+    }
+
+    //? ************************************************************************************
     //? Validación 5
     //? ************************************************************************************
     if( data.headTransfer.pacType == "Recaudado" || data.headTransfer.pacType == "Ambos"){
@@ -901,30 +956,24 @@ export default class PacService implements IPacService {
       //Obtengo valor recaudado original del origen (Recordemos que viene como un array en sumatoria)
       const origenOriginalResultCall: ITotalsByTransfers[] | null = originsGetCalculatedOriginal.data;
       const origenOriginalValueCollectec: number | null = origenOriginalResultCall![origenOriginalResultCall?.length! - 1].totalCollected;
-      // console.log({origenOriginalValueCollectec});
 
       //Obtengo valor recaudado original del destino (Recordemos que viene como un array en sumatoria)
       const destinityOriginalResultCall: ITotalsByTransfers[] | null = destinitiesGetCalculatedOriginal.data;
       const destinityOriginalValueCollectec: number | null = destinityOriginalResultCall![destinityOriginalResultCall?.length! - 1].totalCollected;
-      // console.log({destinityOriginalValueCollectec});
 
       //Guardo la suma del valor recaudado entre origen y destino ORIGINAL.
       const plusCollectedOriginal: number = origenOriginalValueCollectec + destinityOriginalValueCollectec;
-      // console.log({plusCollectedOriginal});
 
       //Calcular el valor extraído del recaudo desde el origen
-      // const extractValue: number = origenOriginalValueCollectec - originsGetCalculatedOfRequestTransfer.data?.totalCollected!;
-      // console.log({extractValue});
+      const extractValue: number = origenOriginalValueCollectec - originsGetCalculatedOfRequestTransfer.data?.totalCollected!;
+      console.log({extractValue});
 
       //Calcular el nuevo valor recaudado origen y el nuevo valor recaudado destino
       const newCollectedOriginalOrigin: number = originsGetCalculatedOfRequestTransfer.data?.totalCollected!;
-      // console.log({newCollectedOriginalOrigin});
       const newCollectedOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalCollected!;
-      // console.log({newCollectedOriginalDestinity});
 
       //Ahora sumo los nuevos valores y debería obtener la sumatoria original de recaudo
       const plusCollectedsWithTransfer: number = newCollectedOriginalOrigin + newCollectedOriginalDestinity;
-      // console.log({plusCollectedsWithTransfer});
 
       //* Validación 5
       if(plusCollectedsWithTransfer !== plusCollectedOriginal){
@@ -938,9 +987,8 @@ export default class PacService implements IPacService {
       //? ******************************************************************************************************************************
       //Calculamos lo que será el nuevo valor programado para validar
       const newProgrammingOriginalOrigin: number = originsGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
-      // console.log({newProgrammingOriginalOrigin});
-      // const newProgrammingOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
-      // console.log({newProgrammingOriginalDestinity});
+      const newProgrammingOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
+      console.log({newProgrammingOriginalDestinity});
 
       if( newCollectedOriginalOrigin > newProgrammingOriginalOrigin){
 
@@ -949,10 +997,6 @@ export default class PacService implements IPacService {
       }
 
     }
-
-    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
-    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
-    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
 
     //? *****************************************************************************************************************
     //? Validación 3
@@ -963,35 +1007,28 @@ export default class PacService implements IPacService {
       //Obtengo valor programado original del origen (Recordemos que viene como un array en sumatoria)
       const origenOriginalResultCall: ITotalsByTransfers[] | null = originsGetCalculatedOriginal.data;
       const origenOriginalValueProgramming: number | null = origenOriginalResultCall![origenOriginalResultCall?.length! - 1].totalProgrammig;
-      // console.log({origenOriginalValueProgramming});
 
       //Obtengo valor programado original del destino (Recordemos que viene como un array en sumatoria)
       const destinityOriginalResultCall: ITotalsByTransfers[] | null = destinitiesGetCalculatedOriginal.data;
       const destinityOriginalValueProgramming: number | null = destinityOriginalResultCall![destinityOriginalResultCall?.length! - 1].totalProgrammig;
-      // console.log({destinityOriginalValueProgramming});
 
       //Guardo la suma del valor programado entre origen y destino ORIGINAL.
       const plusProgrammingOriginal: number = origenOriginalValueProgramming + destinityOriginalValueProgramming;
-      // console.log({plusProgrammingOriginal});
 
       //Calcular el valor extraído del programado desde el origen
-      // const extractValue: number = origenOriginalValueProgramming - originsGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
-      // console.log({extractValue});
+      const extractValue: number = origenOriginalValueProgramming - originsGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
+      console.log({extractValue});
 
       //Calcular el nuevo valor programado origen y el nuevo valor programado destino
       const newProgrammingOriginalOrigin: number = originsGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
-      // console.log({newProgrammingOriginalOrigin});
       const newProgrammingOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
-      // console.log({newProgrammingOriginalDestinity});
 
       //Ahora sumo los nuevos valores y debería obtener la sumatoria original de programado
       const plusProgrammingsWithTransfer: number = newProgrammingOriginalOrigin + newProgrammingOriginalDestinity;
-      // console.log({plusProgrammingsWithTransfer});
-
 
       //*Validación 3
       if(plusProgrammingsWithTransfer !== plusProgrammingOriginal){
-
+        console.log("Me estoy yendo por acá ...")
         return new ApiResponse(null, EResponseCodes.FAIL, "No puede aumentar o reducir el valor del presupuesto, solo moverlo entre rutas");
 
       }
@@ -1001,9 +1038,8 @@ export default class PacService implements IPacService {
       //? ******************************************************************************************************************************
       //Calculamos lo que será el nuevo valor recaudado para validar
       const newCollectedOriginalOrigin: number = originsGetCalculatedOfRequestTransfer.data?.totalCollected!;
-      // console.log({newCollectedOriginalOrigin});
-      // const newCollectedOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalCollected!;
-      // console.log({newCollectedOriginalDestinity});
+      const newCollectedOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalCollected!;
+      console.log({newCollectedOriginalDestinity});
 
       if( newProgrammingOriginalOrigin < newCollectedOriginalOrigin){
 
@@ -1012,10 +1048,6 @@ export default class PacService implements IPacService {
       }
 
     }
-
-    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
-    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
-    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
 
     //* Se pasaron los filtros, entonces procedemos a justar los meses a nivel de programado y recaudado
     //* de las rutas involucradas.
@@ -1040,7 +1072,7 @@ export default class PacService implements IPacService {
 
     }
 
-    return new ApiResponse(primaryObject, EResponseCodes.INFO, "¡Guardado exitosamente!");
+    return new ApiResponse(primaryObject, EResponseCodes.OK, "¡Guardado exitosamente!");
 
   }
 
@@ -1049,6 +1081,7 @@ export default class PacService implements IPacService {
     let totalProgrammig: number = 0;
     let totalCollected: number = 0;
     let method: IDestinity[];
+    let arrayProgramming: IDestinityNoAnnual[] = [];
 
     if(space === "origin"){
       method = info.transferTransaction.origins;
@@ -1075,8 +1108,31 @@ export default class PacService implements IPacService {
           Number(xx.nov) +
           Number(xx.dec);
 
-        if (xx.type === "Programado") totalProgrammig += val;
-        if (xx.type === "Recaudado") totalCollected += val;
+        //? ******************************************************************************************************************************
+        //? Validación 2.
+        //TODO: !
+        //? ******************************************************************************************************************************
+        if (xx.type === "Programado"){
+
+          totalProgrammig += val;
+
+          const obj: IDestinityNoAnnual = {
+            idProjectVinculation: x.idProjectVinculation,
+            idBudget: x.idBudget,
+            idPospreSapiencia: x.idPospreSapiencia,
+            idFund: x.idFund,
+            idCardTemplate: x.idCardTemplate
+          }
+
+          arrayProgramming.push(obj);
+
+        }
+
+        if (xx.type === "Recaudado"){
+
+          totalCollected += val;
+
+        }
 
       }
 
@@ -1088,6 +1144,43 @@ export default class PacService implements IPacService {
       totalCollected: totalCollected
 
     }
+
+    //? Vamos a validar que este nuevo valor programado nos de menor o igual al saldo de la ruta
+    //? esto es importante para mantener la homoneneidad entre los datos.
+    //TODO: !
+    // for (const complement of arrayProgramming) {
+
+    //   const getRoute = await this.budgetsRoutesRepository
+    //                              .getBudgetForAdditions(complement.idProjectVinculation,
+    //                                                     complement.idFund,
+    //                                                     complement.idBudget,
+    //                                                     complement.idPospreSapiencia);
+
+    //   const getBalanceOfRoute: number = Number(getRoute?.balance);
+
+    //   if( !getRoute ||
+    //       getRoute == null ||
+    //       getRoute == undefined ||
+    //       getBalanceOfRoute == null ||
+    //       getBalanceOfRoute == undefined ||
+    //       getBalanceOfRoute == 0 ){
+
+    //     return new ApiResponse(null, EResponseCodes.FAIL, 'No se encontró saldo en la ruta presupuesta. Error general.');
+
+    //   }
+
+    //   console.log({totalProgrammig});
+    //   console.log({getBalanceOfRoute});
+
+
+    //   if( getBalanceOfRoute >= totalProgrammig  ){
+    //     console.log("Aca °°°°°°°°°°°°°°°°°°")
+    //     return new ApiResponse(null, EResponseCodes.FAIL, 'El valor del presupuesto sapiencia es diferente al valor del presupuesto.');
+
+    //   }
+
+    // }
+
 
     return new ApiResponse(objResult, EResponseCodes.OK, 'Cálculos de la request para origen.');
 
@@ -1115,7 +1208,7 @@ export default class PacService implements IPacService {
         return new ApiResponse(null, EResponseCodes.FAIL, `No se encontro la ruta con V.Proyecto:${x.idProjectVinculation}, Fondo:${x.idFund}, PosPreOrigen:${x.idBudget} y PosPreSapi:${x.idPospreSapiencia}. Revise la combinación de datos.`);
 
       //B. Valido PAC
-      const getPacWithAnnual = await this.pacRepository.getPacByRouteAndExercise(Number(getMyRoute.id), Number(exercise));
+      const getPacWithAnnual = await this.pacRepository.getPacByRouteAndExercise(Number(getMyRoute.id), Number(exercise), 0, "no");
       if (!getPacWithAnnual)
         return new ApiResponse(null, EResponseCodes.FAIL, `No se encontró un PAC con la ruta: ${getMyRoute.id} que está compuesta por V.Proyecto:${x.idProjectVinculation}, Fondo:${x.idFund}, PosPreOrigen:${x.idBudget} y PosPreSapi:${x.idPospreSapiencia}. No se hizo match con la vigencia que es ${exercise}`);
 

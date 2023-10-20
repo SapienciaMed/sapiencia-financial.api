@@ -181,4 +181,9 @@ Route.group(() => {
     Route.post('/lists-dinamics-routes','PacsController.listDinamicsRoutes');
     Route.post('/search-annualdata-routes','PacsController.searchAnnualDataRoutes');
 
+    Route.post('/get-routes-by-validity','PacsController.getRoutesByValidity');
+    Route.get('/get-ultimate-version','PacsController.getUltimateVersion');
+    Route.post('/search-pacs','PacsController.searchPacs');
+    Route.post('/lists-dinamics-association','PacsController.listDinamicsAssociations');
+
   }).prefix("/api/v1/pac")

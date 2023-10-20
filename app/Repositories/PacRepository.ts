@@ -1,17 +1,17 @@
 import fs from 'fs';
 import Excel from 'exceljs'
 import { IPacAnnualization, IPacPrimary, IPac } from '../Interfaces/PacInterfaces';
-import Pac from '../Models/Pac';
 import { IPagingData } from '../Utils/ApiResponses';
 import { IPacFilters } from 'App/Interfaces/PacInterfaces';
 import PacAnnualization from 'App/Models/PacAnnualization';
+import Pac from 'App/Models/Pac';
 import { IAnnualRoute } from '../Interfaces/PacTransferInterface';
 
 export default interface IPacRepository {
 
     uploadPac(file: any): Promise<any>;
     searchPacByMultiData(filters: IPacFilters): Promise<IPagingData<IPacPrimary | null>>;
-    getPacByRouteAndExercise(route: number, validity: number): Promise<IPagingData<IPac | null>>;
+    getPacByRouteAndExercise(route: number, validity: number, version: number, type: string): Promise<IPagingData<IPac | null>>;
     getAnnualizationsByPacAndType(pac: number, type: string): Promise<IPagingData<IPacAnnualization | null>>;
     updateOrCreatePac(routesValidationRequest: any): Promise<any>;
     getPacByExcercise(exercise: number): Promise<Pac[]>;
@@ -20,6 +20,7 @@ export default interface IPacRepository {
     resourcesTypeList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>>;
     listDinamicsRoutes(filters: IPacFilters): Promise<IPagingData<IPacPrimary | number>>;
     updateTransfer(data: IAnnualRoute): Promise<IAnnualRoute | null>;
+    getUltimateVersion(): Promise<number | null>;
 
 }
 
@@ -338,8 +339,21 @@ export default class PacRepository implements IPacRepository {
 
       const query = Pac.query();
 
-      query.where("exercise", filters.exercise!)
-            .andWhere("sourceType", filters.resourceType!);
+      if( !filters.version ) {
+
+        query.where("exercise", filters.exercise!)
+             .andWhere("sourceType", filters.resourceType!);
+            //  .andWhere("isActive", true);
+
+      }else{
+
+        query.where("exercise", filters.exercise!)
+             .andWhere("sourceType", filters.resourceType!)
+             .andWhere("version", filters.version);
+            //  .andWhere("isActive", true);
+
+      }
+
 
       const res = await query.paginate(filters.page, filters.perPage);
       const { data, meta } = res.serialize();
@@ -377,11 +391,41 @@ export default class PacRepository implements IPacRepository {
 
     }
 
-    async getPacByRouteAndExercise(route: number, validity: number): Promise<IPagingData<IPac | null>> {
+    async getPacByRouteAndExercise(route: number, validity: number, version:number, type: string): Promise<IPagingData<IPac | null>> {
 
-      const query = Pac.query()
-                       .where("budgetRouteId" , route)
-                       .andWhere("exercise", validity);
+      const query = Pac.query();
+
+      if(version === 0 && type === "no"){
+
+        query.where("budgetRouteId" , route)
+             .andWhere("exercise", validity);
+
+      }
+
+      if(version === 0 && type !== "no"){
+
+        query.where("budgetRouteId" , route)
+             .andWhere("exercise", validity)
+             .andWhere("sourceType", type);
+
+      }
+
+      if( version !== 0 && type === "no" ){
+
+        query.where("budgetRouteId" , route)
+             .andWhere("exercise", validity)
+             .andWhere("version", version)
+
+      }
+
+      if( version !== 0 && type !== "no" ){
+
+        query.where("budgetRouteId" , route)
+             .andWhere("exercise", validity)
+             .andWhere("version", version)
+             .andWhere("sourceType", type);
+
+      }
 
       query.preload("pacAnnualizations");
 
@@ -419,6 +463,18 @@ export default class PacRepository implements IPacRepository {
 
       await toUpdate.save();
       return toUpdate.serialize() as IAnnualRoute;
+
+    }
+
+    async getUltimateVersion(): Promise<Pac | null | unknown> {
+
+      const search = Pac.query();
+      search.where("isActive", true);
+      search.orderBy("version", "desc");
+      search.select("version");
+      search.first()
+
+      return search as unknown | Pac[];
 
     }
 
