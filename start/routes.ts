@@ -184,5 +184,5 @@ Route.group(() => {
 }).prefix("/api/v1/pac")
 
 Route.group(() => {
-  Route.post("/search-cdps", "CdpsController.searchCdpsCertificationBudgetAvailability");
+  Route.post("/search-cdps", "BudgetAvailabilityController.searchBudgetAvailability");
 }).prefix("/api/v1/cdp")

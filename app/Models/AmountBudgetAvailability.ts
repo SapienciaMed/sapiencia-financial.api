@@ -1,8 +1,8 @@
 import { BaseModel, BelongsTo, HasOne, belongsTo, column, hasOne } from '@ioc:Adonis/Lucid/Orm';
-import CertificateBudgetAvailability from './CertificateBudgetAvailability';
+import BudgetAvailability from './BudgetAvailability';
 import BudgetsRoutes from './BudgetsRoutes';
 
-export default class IcdAmountsCdp extends BaseModel {
+export default class AmountBudgetAvailability extends BaseModel {
   public static table = 'ICD_IMPORTES_CDP';
 
   @column({ isPrimary: true, columnName: 'ICD_CODIGO', serializeAs: 'id' })
@@ -20,12 +20,12 @@ export default class IcdAmountsCdp extends BaseModel {
   @column({ columnName: 'ICD_VALOR', serializeAs: 'amount' })
   public amount: number;
 
-  @hasOne(() => CertificateBudgetAvailability, {
+  @hasOne(() => BudgetAvailability, {
     localKey: 'id',
     foreignKey: 'ICD_CODCDP',
-    serializeAs: "certificateBudgetAvailability",
+    serializeAs: "budgetAvailability",
   })
-  public certificateBudgetAvailability: HasOne<typeof CertificateBudgetAvailability>; /* Preguntar si esta relacion esta bien */
+  public budgetAvailability: HasOne<typeof BudgetAvailability>; /* Preguntar si esta relacion esta bien */
 
   @belongsTo(() => BudgetsRoutes, {
     localKey: 'id',

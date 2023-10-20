@@ -40,7 +40,7 @@ export default class AppProvider {
       "App/Services/External/StrategicDirectionService"
     );
     const PacService = await import("App/Services/PacService");
-    const CdpService = await import("App/Services/CdpsService")
+    const CdpService = await import("App/Services/BudgetAvailabilityService")
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -93,7 +93,7 @@ export default class AppProvider {
     );
 
     const PacRepository = await import("App/Repositories/PacRepository");
-    const CdpRepository = await import("App/Repositories/CdpsRepository")
+    const CdpRepository = await import("App/Repositories/BudgetAvailabilityRepository")
 
     /**************************************************************************/
     /******************************** CORE  ***********************************/
@@ -228,7 +228,7 @@ export default class AppProvider {
     );
 
     this.app.container.singleton(
-      "core.CdpsProvider",
+      "core.BudgetAvailabilityProvider",
       () =>
         new CdpService.default(
           new CdpRepository.default()
