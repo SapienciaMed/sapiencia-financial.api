@@ -21,6 +21,9 @@ export default class CdpCertificadoDisponibilidadPresupuestal extends BaseModel 
   @column({ columnName: "CDP_CONSECUTIVO", serializeAs: "consecutive" })
   public consecutive: number;
 
+  @column({ columnName: "CDP_CONSECUTIVO_SAP", serializeAs: "sapConsecutive" })
+  public sapConsecutive: number;
+
   @hasMany(() => IcdAmountsCdp, {
     localKey: 'id',
     foreignKey: 'cdpCode',

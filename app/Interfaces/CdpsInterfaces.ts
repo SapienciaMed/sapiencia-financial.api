@@ -5,6 +5,7 @@ export interface ICertificateBudgetAvailability {
     id?: number;
     contractObject: string;
     consecutive: number;
+    sapConsecutive: number;
     date: DateTime;
 }
 
