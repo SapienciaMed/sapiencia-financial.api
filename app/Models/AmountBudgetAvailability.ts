@@ -1,8 +1,8 @@
 import { BaseModel, BelongsTo, HasOne, belongsTo, column, hasOne } from '@ioc:Adonis/Lucid/Orm';
-import CertificateBudgetAvailability from './CertificateBudgetAvailability';
+import CertificateBudgetAvailability from './BudgetAvailability';
 import BudgetsRoutes from './BudgetsRoutes';
 
-export default class IcdAmountsCdp extends BaseModel {
+export default class AmountBudgetAvailability extends BaseModel {
   public static table = 'ICD_IMPORTES_CDP';
 
   @column({ isPrimary: true, columnName: 'ICD_CODIGO', serializeAs: 'id' })
