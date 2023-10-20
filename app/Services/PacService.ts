@@ -88,31 +88,31 @@ export default class PacService implements IPacService {
       data,
       rowsWithFieldsEmpty,
       rowsWithFieldNumberInvalid } = await this.pacRepository.uploadPac(file);
-
-    console.log({ rowsWithFieldsEmpty })
-    if (validTemplateStatus.error) {
+    
+      if (validTemplateStatus.error) {
       return new ApiResponse({ validTemplateStatus, rowsWithFieldsEmpty, rowsWithFieldNumberInvalid }, EResponseCodes.FAIL, validTemplateStatus.message);
     }
 
     //* Validaciones de existencia de fondo, proyecto, pospre, ruta existente y ruta repetida
     body.version = body.typePac == 'Nueva versión' ? versionFixed + 1 : versionFixed;
-    console.log("****** 1")/*  */
     if (rowsWithFieldsEmpty.length > 0) {
       return new ApiResponse({ responseSave: false, errors: rowsWithFieldsEmpty }, EResponseCodes.OK, "Algún dato de la ruta está vacío");
       //return new ApiResponse({errors:validTemplateStatus.concat(rowsWithFieldsEmpty).concat(rowsWithFieldNumberInvalid)} , EResponseCodes.FAIL, "Algún dato de la ruta está vacío");
     }
     const routesValidationRequest: ApiResponse<IResultProcRoutes> = await this.reviewBudgetsRoute(data, body);
 
-
-    console.log("****** 2")
     let errors: IErrosPac[] = [];
+
+    if (rowsWithFieldNumberInvalid.length > 0) {
+      errors.push(...rowsWithFieldNumberInvalid)
+    }
 
     routesValidationRequest?.data?.errors?.length! > 0 && errors.push(...routesValidationRequest.data.errors!)
 
     /* routesValidationRequest.data.errors?.forEach((err:IErrosPac, index:number)=>{
       errors.push(err)
     }) */
-    let validateValuesByTypePac = this.validateValuesByTypePac(typePac, routesValidationRequest.data)
+    let validateValuesByTypePac = this.validateValuesByTypePac(typePac, routesValidationRequest.data, loadedRoutesCurrentExcersice, versionFixed)
     let dataToUpdate;
     errors.push(...validateValuesByTypePac)
     let responseSave;
@@ -124,7 +124,6 @@ export default class PacService implements IPacService {
         responseSave = errors.length == 0 && await this.pacRepository.updateOrCreatePac(routesValidationRequest.data)
         break;
       case 'Adición':
-
         // ya debe existir una carga inicial
         if (pacsByExercise.length == 0) {
           return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
@@ -216,7 +215,7 @@ export default class PacService implements IPacService {
     let errors: IErrosPac[] = [];
     loadedRoutesCurrentExcersice.forEach((e: any, index: number) => {
       let totalCollected = e.pacAnnualizations.collected?.jan +
-      e.pacAnnualizations.collected?.feb +
+        e.pacAnnualizations.collected?.feb +
         e.pacAnnualizations.collected?.mar +
         e.pacAnnualizations.collected?.abr +
         e.pacAnnualizations.collected?.may +
@@ -227,9 +226,9 @@ export default class PacService implements IPacService {
         e.pacAnnualizations.collected?.oct +
         e.pacAnnualizations.collected?.nov +
         e.pacAnnualizations.collected?.dec
-      
-       if (totalCollected >= 0 ) {
-         let budgetRouteIdMatch = dataExcel.condensed.find(el => el.budgetRouteId == e.budgetRouteId)
+
+      if (totalCollected >= 0) {
+        let budgetRouteIdMatch = dataExcel.condensed.find(el => el.budgetRouteId == e.budgetRouteId)
         if (index == 0) { index += 1 }
         if (!budgetRouteIdMatch) {
           errors.push({
@@ -317,7 +316,7 @@ export default class PacService implements IPacService {
         }
         if (pkProject === 0) {
           projectsError.push(`Error en la fila de excel # ${workingData[i].rowExcel}, no se encontró el proyecto ${workingData[i].project?.toString()}`);
-         
+
         }
 
       } else {
@@ -478,11 +477,11 @@ export default class PacService implements IPacService {
 
   }
 
-  validateValuesByTypePac = (typePac: string, data: any) => {
+  validateValuesByTypePac = (typePac: string, data: any, loadedRoutesCurrentExcersice: any, version: any) => {
 
     let errorsDetected: IErrosPac[] = []
-
     data.condensed.forEach((e: any, index: number) => {
+      let balance = e.balance;
       if (index == 0) { index += 1 }
       let bugetPrgrammed = e.pacAnnualizationProgrammed.jan +
         e.pacAnnualizationProgrammed.feb +
@@ -496,6 +495,17 @@ export default class PacService implements IPacService {
         e.pacAnnualizationProgrammed.oct +
         e.pacAnnualizationProgrammed.nov +
         e.pacAnnualizationProgrammed.dec
+
+      if (balance <= 0 || balance != e.pacAnnualizationProgrammed.totalBudget) {
+        errorsDetected.push({
+          message: "El valor del presupuesto no es correcto",
+          error: true,
+          rowError: index + 1,
+          columnError: null
+        })
+      }
+
+
       if (typePac == 'Carga inicial' || typePac == 'adición' || typePac == 'Reducción' || typePac == 'Nueva versión') {
 
         // Valida que el valor total presupuestado coincida con el total programado de los meses
@@ -510,7 +520,21 @@ export default class PacService implements IPacService {
 
       }
       //
+      let lastCollected = loadedRoutesCurrentExcersice.filter(el => el.version == version && el.sourceType == e.sourceType && el.budgetRouteId == e.budgetRouteId);
 
+      let lastCollectedTotal = lastCollected[0].pacAnnualizations.collected.jan
+      + lastCollected[0].pacAnnualizations.collected.feb
+      + lastCollected[0].pacAnnualizations.collected.mar
+      + lastCollected[0].pacAnnualizations.collected.abr
+      + lastCollected[0].pacAnnualizations.collected.may
+      + lastCollected[0].pacAnnualizations.collected.jun
+      + lastCollected[0].pacAnnualizations.collected.jul
+      + lastCollected[0].pacAnnualizations.collected.ago
+      + lastCollected[0].pacAnnualizations.collected.sep
+      + lastCollected[0].pacAnnualizations.collected.oct
+      + lastCollected[0].pacAnnualizations.collected.nov
+      + lastCollected[0].pacAnnualizations.collected.dec
+      
       if (typePac != 'Carga inicial') {
         let bugetCollectec = e.pacAnnualizationCollected.jan +
           e.pacAnnualizationCollected.feb +
@@ -526,6 +550,7 @@ export default class PacService implements IPacService {
           e.pacAnnualizationCollected.dec
 
         // Valida que el valor total presupuestado coincida con el total programado de los meses  
+
         if (typePac == 'Recaudo' && bugetCollectec > e.pacAnnualizationCollected.totalBudget) {
           errorsDetected.push({
             message: "La suma de los recaudos a incluir es mayor al presupuesto sapiencia",
@@ -533,9 +558,7 @@ export default class PacService implements IPacService {
             rowError: index + 1,
             columnError: null
           })
-          //}else if(typePac != 'Recaudo' && bugetPrgrammed != e.pacAnnualizationProgrammed.totalBudget){
-        } else if (typePac != 'Recaudo' && bugetPrgrammed < e.pacAnnualizationCollected.totalBudget) {
-
+        } else if (typePac != 'Recaudo' && lastCollectedTotal > e.pacAnnualizationCollected.totalBudget) {
           errorsDetected.push({
             message: "El recaudo previamente guardado en el PAC es mayor al presupuesto sapiencia que va a ingresar",
             error: true,
@@ -550,7 +573,7 @@ export default class PacService implements IPacService {
 
       if (typePac == 'Carga inicial' || typePac == 'Recaudo') {
         // Valida que el valor presupuesto Sapiensa sea mayo que cero
-        
+
         if (parseFloat(e.pacAnnualizationProgrammed.totalBudget) <= 0 && typePac == 'Carga inicial') {
           errorsDetected.push({
             message: "Debe tener dato en presupuesto sapiencia y en lo programado del mes",

@@ -237,7 +237,6 @@ export default class PacRepository implements IPacRepository {
             delete pac.pacAnnualizationCollected;
             const toCreatePac = new Pac();
             toCreatePac.fill({ ...pac, dateCreate: new Date('2023-09-04 17:51:46') });
-            //console.log({pac, annualizations})
             let pacCreated = await toCreatePac.save();
             await pacCreated
                 .related('pacAnnualizations')
@@ -425,7 +424,6 @@ export default class PacRepository implements IPacRepository {
     }
 
     inactivateVersionPac = async(versionFixed:number,pacsByExerciseFixed: any): Promise<any>=>{
-        console.log("Inactivando ....")
         const pacsByExerciseFilter = pacsByExerciseFixed.filter(e=>e.version==versionFixed);
 
         try {
