@@ -1,20 +1,15 @@
 import { DateTime } from 'luxon';
 
 
-export interface ICertificateBudgetAvailability {
-    id?: number;
+export interface ICreateCdp {
+    date: DateTime;
     contractObject: string;
     consecutive: number;
     sapConsecutive: number;
-    date: DateTime;
-}
-
-export interface IIcdAmountsCdp {
-    id?: number;
-    cdpCode: number;
-    idRppCode: number;
-    cdpPosition: number;
-    amount: number;
-    certificateBudgetAvailability: number;
-    budgetRoute: number;
-}
+    icdArr: {
+      idRppCode: number;
+      cdpPosition: number;
+      amount: number;
+    }[];
+    type: number;
+  }

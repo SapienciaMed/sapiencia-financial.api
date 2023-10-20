@@ -1,10 +1,10 @@
 import ICdpsRepository from "App/Repositories/CdpsRepository";
 import { ApiResponse } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
-
+import { ICreateCdp } from "App/Interfaces/CdpsInterfaces";
 export default interface ICdpsService {
     getAllCdps(): Promise<ApiResponse<any[]>>;
-    createCdps(cdpData: any, icdData: any, date:any): Promise<ApiResponse<any>>
+    createCdps(cdpData: ICreateCdp): Promise<ApiResponse<any>>
 }
 
 export default class CdpsService implements ICdpsService {
@@ -16,7 +16,7 @@ export default class CdpsService implements ICdpsService {
         return new ApiResponse(res, EResponseCodes.OK);
     }
 
-    async createCdps(cdpData: any): Promise<ApiResponse<any>> {
+    async createCdps(cdpData: ICreateCdp): Promise<ApiResponse<any>> {
         try {
             const createdData = await this.cdpsRepository.createCdps(cdpData);
             return new ApiResponse(createdData, EResponseCodes.OK, 'CDP e ICD creados exitosamente');

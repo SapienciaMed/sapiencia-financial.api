@@ -65,10 +65,7 @@ export default class CdpsRepository implements ICdpsRepository {
         cdp.consecutive = consecutive;
         cdp.sapConsecutive = sapConsecutive;
         await cdp.save();
-        const icd = await cdp.related('icdAmounts').createMany(icdArr);
-        if (!icd) { alert = "Error al guardar los importes"; }
-        alert = "Se guardó correctamente la información";
-        return { message: alert, cdp, icd };
+        await cdp.related('icdAmounts').createMany(icdArr);
     }
 
 
