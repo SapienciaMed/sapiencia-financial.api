@@ -3,6 +3,7 @@ import { EResponseCodes } from 'App/Constants/ResponseCodesEnum';
 import { ApiResponse } from 'App/Utils/ApiResponses';
 
 import PacProvider from '@ioc:core.PacProvider';
+import PacSubImplementsProvider from '@ioc:core.PacSubImplementsProvider';
 import { DataTransferPac } from '../../Interfaces/PacTransferInterface';
 
 import {
@@ -136,6 +137,78 @@ export default class PacsController {
     }
 
   }
+
+  //* Vamos a devovler los diferentes listados para rellenar consultar PAC
+  public async getRoutesByValidity({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = request.body() as IPacFilters;
+      return response.send(await PacSubImplementsProvider.getRoutesByValidity(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  //* Obtener última versión activa
+  public async getUltimateVersion({ response }: HttpContextContract) {
+
+    try {
+
+      return response.send(await PacSubImplementsProvider.getUltimateVersion());
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  //* Realizar la búsqueda del PAC
+  public async searchPacs({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = request.body() as IPacFilters;
+      return response.send(await PacSubImplementsProvider.searchPacs(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  //* Listado dinámico para asociaciones
+  public async listDinamicsAssociations({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = request.body() as IPacFilters;
+      return response.send(await PacSubImplementsProvider.listDinamicsAssociations(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
 
 
 }

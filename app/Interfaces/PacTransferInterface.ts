@@ -24,6 +24,14 @@ export interface IDestinity {
   annualRoute:          IAnnualRoute[];
 }
 
+export interface IDestinityNoAnnual {
+  idProjectVinculation: number;
+  idBudget:             number;
+  idPospreSapiencia:    number;
+  idFund:               number;
+  idCardTemplate:       string;
+}
+
 export interface IAnnualRoute {
   id:         number;
   pacId:      number;
