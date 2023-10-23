@@ -34,6 +34,14 @@ export default class BudgetAvailabilityRepository
       query.where("date", "<=", filter.endDate);
     }
 
+    if (filter.consecutiveSap) {
+      query.where("sapConsecutive", filter.consecutiveSap);
+    }
+
+    if (filter.contractObject) {
+      query.whereILike("contractObject", `%${filter.contractObject}%`);
+    }
+
     if (filter.pospreId) {
       query.whereHas("amounts", (sub) =>
         sub.whereHas("budgetRoute", (sub2) =>
