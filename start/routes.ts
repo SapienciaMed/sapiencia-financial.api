@@ -185,4 +185,14 @@ Route.group(() => {
 
 Route.group(() => {
   Route.post("/search-cdps", "BudgetAvailabilityController.searchBudgetAvailability");
+  Route.post("/create-cdp", "BudgetAvailabilityController.createCdpsCertificationBudgetAvailability");
+
 }).prefix("/api/v1/cdp")
+
+Route.group(() => {
+  Route.post('/get-routes-by-validity', 'PacsController.getRoutesByValidity');
+  Route.get('/get-ultimate-version', 'PacsController.getUltimateVersion');
+  Route.post('/search-pacs', 'PacsController.searchPacs');
+  Route.post('/lists-dinamics-association', 'PacsController.listDinamicsAssociations');
+
+}).prefix("/api/v1/pac")

@@ -31,18 +31,17 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
      query.preload("funds");
      query.preload("pospreSapiencia");
 
-    if (filters.idProjectVinculation) {
-      query.where("idProjectVinculation", filters.idProjectVinculation);
-    }
+    if (filters.idProjectVinculation) query.where("idProjectVinculation", filters.idProjectVinculation);
+    if( filters.idRoute ) query.where("id", filters.idRoute);
 
     const res = await query.paginate(filters.page, filters.perPage);
-
     const { data, meta } = res.serialize();
 
     return {
       array: data as IBudgetsRoutes[],
       meta,
     };
+
   }
 
   async createBudgetsRoutes(budgetsRoutes: IBudgetsRoutes): Promise<IBudgetsRoutes> {

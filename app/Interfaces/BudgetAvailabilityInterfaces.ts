@@ -1,4 +1,5 @@
 import { IBudgetsRoutes } from "./BudgetsRoutesInterfaces";
+import { DateTime } from 'luxon';
 
 export interface IBudgetAvailabilityFilters {
   dateOfCdp: string;
@@ -30,4 +31,17 @@ export interface IBudgetAvailability {
   consecutive: number;
   sapConsecutive: number;
   icdAmounts: IAmountBudgetAvailability[];
+}
+
+
+export interface ICreateCdp {
+  date: DateTime;
+  contractObject: string;
+  consecutive: number;
+  sapConsecutive: number;
+  icdArr: {
+    idRppCode: number;
+    cdpPosition: number;
+    amount: number;
+  }[];
 }
