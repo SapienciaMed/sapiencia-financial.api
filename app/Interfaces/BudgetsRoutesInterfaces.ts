@@ -12,6 +12,7 @@ export interface IBudgetsRoutes {
   idBudget: number;
   idPospreSapiencia: number;
   idFund: number;
+  balance: number;
   userModify?: string;
   dateModify?: Date;
   userCreate?: string;
@@ -26,4 +27,5 @@ export interface IBudgetsRoutesFilters {
   page: number;
   perPage: number;
   idProjectVinculation?: number;
+  idRoute?: number;
 }

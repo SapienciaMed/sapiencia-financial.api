@@ -91,6 +91,7 @@ export interface IResultProcRoutes {
   numberExcelRom?: number;
   sourceType?: string,
   budgetRouteId?: number,
+  balance?:number,
   version?: number,
   exercise?: number,
   isActive?: boolean,
@@ -104,6 +105,7 @@ export interface IResultProcRoutes {
   posPreSapiError?: string[];
   routesError?: string[];
   routesNotFound?: string[];
+  errors?: IErrosPac[];
 
 }
 
@@ -116,6 +118,7 @@ export interface IResultProcRoutesWithErrors {
   posPreSapiError?: string[];
   routesError?: string[];
   routesNotFound?: string[];
+  errors?: IErrosPac[];
 
 }
 
@@ -154,6 +157,7 @@ export interface IPacFilters {
   perPage: number;
   pacType?: string;
   exercise?: number;
+  version?: number;
   resourceType?: string;
 
   managementCenter?: string;
@@ -201,11 +205,19 @@ export interface IBudgetsRoutesSimple {
 
 }
 
+export interface ITotalsSimple {
+
+  totalProgramming: number;
+  totalCollected: number;
+
+}
+
 export interface IResultSearchAnnualizationByRoute {
 
   headerResult: IPacFilters;
   routeResult: IBudgetsRoutesSimple;
   annualRoute: IPacAnnualization[] | any;
+  totalsRes: ITotalsSimple;
 
 }
 
@@ -218,7 +230,7 @@ export interface IDinamicListForProjects {
   projectCode: string;
   posPreSapiRef?: string;
   projectName: string;
-  numberFunctionalArea: string;
+  numberFunctionalArea?: string;
 
 }
 
@@ -298,3 +310,38 @@ export interface IResponseSub {
   request: ITotalsByTransfers[] | null;
 
 }
+
+export interface IPacSecondary {
+
+  id?: number;
+  sourceType?: string;
+  budgetRouteId?: number;
+  version?: number;
+  exercise?: number;
+  isActive?: boolean;
+  dateModify?: Date;
+  dateCreate?: Date;
+
+}
+
+export interface ISearchGeneralPac {
+
+  projectName: string;
+  numberFund: string | number;
+  posPreSapi: string | number;
+  budgetSapi: string | number;
+  budgetCollected: string | number;
+  percentExecute: number;
+
+  pacId?: number;
+  routeId?: number;
+  posPreOrig?: string | number;
+
+  projectVinculationId?: number;
+  fundId?: number;
+  posPreSapiId?: number;
+  posPreOrigId?: number;
+
+}
+
+

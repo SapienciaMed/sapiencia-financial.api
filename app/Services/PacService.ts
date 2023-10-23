@@ -25,8 +25,8 @@ import { IFundsFilters } from '../Interfaces/FundsInterfaces';
 import { IFunctionalProject } from '../Interfaces/FunctionalProjectInterfaces';
 import { IFiltersPosPreSapienciaMix } from '../Interfaces/PosPreSapienciaInterfaces';
 
-import { IResultSearchAnnualizationByRoute } from '../Interfaces/PacInterfaces';
-import { DataTransferPac, IDestinity } from '../Interfaces/PacTransferInterface';
+import { IResultSearchAnnualizationByRoute, ITotalsSimple } from '../Interfaces/PacInterfaces';
+import { DataTransferPac, IDestinity, IDestinityNoAnnual } from '../Interfaces/PacTransferInterface';
 import { IFunctionalProjectRepository } from "App/Repositories/FunctionalProjectRepository";
 import { IFundsRepository } from "App/Repositories/FundsRepository";
 import { IPosPreSapienciaRepository } from "App/Repositories/PosPreSapienciaRepository";
@@ -80,7 +80,7 @@ export default class PacService implements IPacService {
     )
 
     let version = this.getMajorVersion(pacsByExerciseFixed);
-    let versionFixed = version ? version : 1;
+    let versionFixed: number = version ? version : 1;
 
     let loadedRoutesCurrentExcersice = pacsByExerciseFixed.filter(e => e.version == versionFixed)
 
@@ -88,52 +88,65 @@ export default class PacService implements IPacService {
       data,
       rowsWithFieldsEmpty,
       rowsWithFieldNumberInvalid } = await this.pacRepository.uploadPac(file);
-
-    if (validTemplateStatus.error) {
+    
+      if (validTemplateStatus.error) {
       return new ApiResponse({ validTemplateStatus, rowsWithFieldsEmpty, rowsWithFieldNumberInvalid }, EResponseCodes.FAIL, validTemplateStatus.message);
     }
 
     //* Validaciones de existencia de fondo, proyecto, pospre, ruta existente y ruta repetida
     body.version = body.typePac == 'Nueva versión' ? versionFixed + 1 : versionFixed;
+    if (rowsWithFieldsEmpty.length > 0) {
+      return new ApiResponse({ responseSave: false, errors: rowsWithFieldsEmpty }, EResponseCodes.OK, "Algún dato de la ruta está vacío");
+      //return new ApiResponse({errors:validTemplateStatus.concat(rowsWithFieldsEmpty).concat(rowsWithFieldNumberInvalid)} , EResponseCodes.FAIL, "Algún dato de la ruta está vacío");
+    }
     const routesValidationRequest: ApiResponse<IResultProcRoutes> = await this.reviewBudgetsRoute(data, body);
 
     let errors: IErrosPac[] = [];
-    let validateValuesByTypePac = this.validateValuesByTypePac(typePac, routesValidationRequest.data)
+
+    if (rowsWithFieldNumberInvalid.length > 0) {
+      errors.push(...rowsWithFieldNumberInvalid)
+    }
+
+    routesValidationRequest?.data?.errors?.length! > 0 && errors.push(...routesValidationRequest.data.errors!)
+
+    /* routesValidationRequest.data.errors?.forEach((err:IErrosPac, index:number)=>{
+      errors.push(err)
+    }) */
+    let validateValuesByTypePac = this.validateValuesByTypePac(typePac, routesValidationRequest.data, loadedRoutesCurrentExcersice, versionFixed)
     let dataToUpdate;
     errors.push(...validateValuesByTypePac)
     let responseSave;
     switch (typePac) {
       case 'Carga inicial':
         if (pacsByExercise.length > 0) {
-          return new ApiResponse(null, EResponseCodes.FAIL, "La carga inicial ya fue cargada, debe seleccionar Nueva versión");
+          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "La carga inicial ya fue cargada, debe seleccionar Nueva versión");
         }
-        responseSave = await this.pacRepository.updateOrCreatePac(routesValidationRequest.data)
+        responseSave = errors.length == 0 && await this.pacRepository.updateOrCreatePac(routesValidationRequest.data)
         break;
       case 'Adición':
-
         // ya debe existir una carga inicial
         if (pacsByExercise.length == 0) {
-          return new ApiResponse(null, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
+          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
         dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed, loadedRoutesCurrentExcersice)
-        await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
+        errors.length == 0 && await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
         break;
       case 'Reducción':
-        // ya debe existir una carga inicial
+        /* ya debe existir una carga inicial */
         if (pacsByExercise.length == 0) {
-          return new ApiResponse(null, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
+          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
 
         dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed, loadedRoutesCurrentExcersice)
-        await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
+        errors.length == 0 && await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
         break;
       case 'Recaudo':
         // ya debe existir una carga inicial
         if (pacsByExercise.length == 0) {
-          return new ApiResponse(null, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
+          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
         dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed, loadedRoutesCurrentExcersice)
-        await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
+        errors.length == 0 && await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
 
         let validateCreatedRoutes = this.validatePreviouslyCreatedExerciseRoutes(loadedRoutesCurrentExcersice, routesValidationRequest.data);
         errors.push(...validateCreatedRoutes)
@@ -141,19 +154,22 @@ export default class PacService implements IPacService {
       case 'Nueva versión':
         // ya debe existir una carga inicial
         if (pacsByExercise.length == 0) {
-          return new ApiResponse(null, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
+          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
-
         let responseValidateNewVersion = this.validateRoutesWithCollectionInNewVersion(loadedRoutesCurrentExcersice, routesValidationRequest.data);
         errors.push(...responseValidateNewVersion)
-        responseSave = await this.pacRepository.updateOrCreatePac(routesValidationRequest.data)
+        responseSave = errors.length == 0 && await this.pacRepository.updateOrCreatePac(routesValidationRequest.data)
+        errors.length == 0 && await this.pacRepository.inactivateVersionPac(versionFixed, pacsByExerciseFixed)
         break;
       default:
         break;
     }
+    //console.log({routesError:routesValidationRequest.data.routesError})
+    //console.log({routesNotFound:routesValidationRequest.data.routesNotFound})
 
-
-
+    if (errors.length > 0) {
+      return new ApiResponse({ responseSave, errors }, EResponseCodes.OK, "El archivo no pudo ser cargado, revisa las validaciones.");
+    }
     // return new ApiResponse({validTemplateStatus, rowsWithFieldsEmpty,rowsWithFieldNumberInvalid, data}, EResponseCodes.OK);
     return new ApiResponse({ responseSave, errors }, EResponseCodes.OK, "¡Guardado exitosamente!");
 
@@ -166,13 +182,13 @@ export default class PacService implements IPacService {
   }
 
   validatePreviouslyCreatedExerciseRoutes = (loadedRoutesCurrentExcersice: any, dataExcel: any) => {
-    //console.log({ loadedRoutesCurrentExcersice, dataExcel: dataExcel.condensed })
 
     // Si es recaudo, no pueden existir rutas en el excel y que estas no esten creadas
 
     const errors: IErrosPac[] = [];
 
     dataExcel.condensed.forEach((excelItem, index) => {
+      if (index == 0) { index += 1 }
       const budgetRouteId = excelItem.budgetRouteId;
       const matchingRoute = loadedRoutesCurrentExcersice.find((route) => route.budgetRouteId === budgetRouteId);
 
@@ -198,21 +214,22 @@ export default class PacService implements IPacService {
   validateRoutesWithCollectionInNewVersion = (loadedRoutesCurrentExcersice: any, dataExcel: any) => {
     let errors: IErrosPac[] = [];
     loadedRoutesCurrentExcersice.forEach((e: any, index: number) => {
-      if (
-        (e.pacAnnualizations.collected?.jan +
-          e.pacAnnualizations.collected?.feb +
-          e.pacAnnualizations.collected?.mar +
-          e.pacAnnualizations.collected?.abr +
-          e.pacAnnualizations.collected?.may +
-          e.pacAnnualizations.collected?.jun +
-          e.pacAnnualizations.collected?.jul +
-          e.pacAnnualizations.collected?.ago +
-          e.pacAnnualizations.collected?.sep +
-          e.pacAnnualizations.collected?.oct +
-          e.pacAnnualizations.collected?.nov +
-          e.pacAnnualizations.collected?.dec) > 0
-      ) {
+      let totalCollected = e.pacAnnualizations.collected?.jan +
+        e.pacAnnualizations.collected?.feb +
+        e.pacAnnualizations.collected?.mar +
+        e.pacAnnualizations.collected?.abr +
+        e.pacAnnualizations.collected?.may +
+        e.pacAnnualizations.collected?.jun +
+        e.pacAnnualizations.collected?.jul +
+        e.pacAnnualizations.collected?.ago +
+        e.pacAnnualizations.collected?.sep +
+        e.pacAnnualizations.collected?.oct +
+        e.pacAnnualizations.collected?.nov +
+        e.pacAnnualizations.collected?.dec
+
+      if (totalCollected >= 0) {
         let budgetRouteIdMatch = dataExcel.condensed.find(el => el.budgetRouteId == e.budgetRouteId)
+        if (index == 0) { index += 1 }
         if (!budgetRouteIdMatch) {
           errors.push({
             message: "Existen registros en el PAC con recaudos que no están en la nueva carga de archivo",
@@ -252,10 +269,10 @@ export default class PacService implements IPacService {
 
     // Para terminos de pruebas, voy a trabajar solo con 15 datos de los 118 (Daría todo OK)
     let workingData: IReviewBudgetRoute[] = [];
-    for (let i = 0; i <= 14; i++) {
+    for (let i = 0; i < processBudgetRoute.length; i++) {
       workingData.push(processBudgetRoute[i]);
     }
-
+    let errors: IErrosPac[] = [];
     let projectsError: string[] = [];
     let fundsError: string[] = [];
     let posPreSapiError: string[] = [];
@@ -276,21 +293,19 @@ export default class PacService implements IPacService {
       let pkPosPreOrg: number = 0;
       let pkPosPreSap: number = 0;
       let pkBudgetRoute: number = 0;
+      let balanceRoute: number = 0;
 
       //? >>>>> VALIDACIÓN DE PROYECTO <<<<<<< ?//
-      const dataProject: string = workingData[i].project?.toString();
-
+      /* console.log({workingData:workingData[i],i}) */
+      const dataProject: string = workingData[i]?.project?.toString();
       if (dataProject !== "9000000") {
 
         const filters: IProjectPaginated = {
           page: 1,
           perPage: 100,
         }
-
         const getProject = await this.strategicDirectionService.getProjectInvestmentPaginated(filters);
-
         for (const x of getProject.data.array) {
-
           if (x.projectCode === workingData[i].project?.toString()) {
 
             const res = await this.projectsRepository.getProjectByInvestmentProjectId(x.id);
@@ -299,15 +314,12 @@ export default class PacService implements IPacService {
           }
 
         }
-
         if (pkProject === 0) {
-
           projectsError.push(`Error en la fila de excel # ${workingData[i].rowExcel}, no se encontró el proyecto ${workingData[i].project?.toString()}`);
 
         }
 
       } else {
-
         //Vamos a traernos el último proyecto funcional registrado y activo
         const filters: IFunctionalProjectPaginated = {
           active: true,
@@ -320,13 +332,11 @@ export default class PacService implements IPacService {
         pkProject = Number(aVar);
 
         if (!pkProject || pkProject === null || pkProject === undefined) {
-
           projectsError.push(`Error en la fila de excel # ${workingData[i].rowExcel}, no se encontró el proyecto ${workingData[i].project?.toString()}`);
 
         }
 
       }
-
       //? >>>>> VALIDACIÓN DE FONDO <<<<<<< ?//
       const dataFund: string = workingData[i].fundSapiencia?.toString();
 
@@ -362,9 +372,7 @@ export default class PacService implements IPacService {
         perPage: 100,
         budgetNumberSapi: dataPosPreSapi,
       }
-
       const getPosPres = await this.posPreSapienciaRepository.getListPosPreSapVinculationPaginated(filtersPosPreSapi);
-
       for (const z of getPosPres.array) {
 
         if (z.number === dataPosPreSapi) {
@@ -387,24 +395,29 @@ export default class PacService implements IPacService {
       const concactRouteInitial = `[${workingData[i].project}.${workingData[i].fundSapiencia}.${workingData[i].sapienciaBudgetPosition}]`
 
       if (repeatRoutesErrors.includes(concatRouteDef)) {
-
         routesError.push(`Error en la fila de excel # ${workingData[i].rowExcel}, ruta presupuestal repetida con [Proyecto.Fondo.PosPreSapiencia] = ${concactRouteInitial}`);
-
+        errors.push({
+          message: 'Tiene rutas duplicadas en el archivo',
+          error: true,
+          rowError: workingData[i].rowExcel
+        })
       }
-
       repeatRoutesErrors.push(concatRouteDef);
 
       //? >>>>> VALIDACIÓN DE RUTA PRESUPUESTAL <<<<<<< ?//
       const getBudgetRoute = await this.budgetsRoutesRepository.getBudgetForAdditions(pkProject, pkFund, pkPosPreOrg, pkPosPreSap)
       pkBudgetRoute = Number(getBudgetRoute?.id);
+      balanceRoute = Number(getBudgetRoute?.balance);
 
       if (!pkBudgetRoute || pkBudgetRoute == null) {
-
         routesNotFound.push(`Error en la fila de excel # ${workingData[i].rowExcel}, ruta presupuestal con [Proyecto.Fondo.PosPreSapiencia] = ${concactRouteInitial} no fue encontrada en la base de datos`);
-
+        errors.push({
+          message: 'La ruta presupuestal no existe',
+          error: true,
+          rowError: workingData[i].rowExcel
+        })
       } else {
         //* ***** ARMAMOS EL OBJETO RESPUESTA, SI TENEMOS RUTA, ES PORQUE EL OBJETO SE PUEDE ARMAR ***** *//
-
         workingData[i].pacAnnualization[0]['totalBudget'] = workingData[i].totalBudget;
         workingData[i].pacAnnualization[1]['totalBudget'] = workingData[i].totalBudget;
         const finalObjProccess: IResultProcRoutes = {
@@ -412,6 +425,7 @@ export default class PacService implements IPacService {
           numberExcelRom: workingData[i].rowExcel,
           sourceType: body!.typeSource,
           budgetRouteId: pkBudgetRoute,
+          balance: balanceRoute,
           version: body!.version,
           exercise: body!.exercise,
           isActive: true,
@@ -424,22 +438,15 @@ export default class PacService implements IPacService {
         arrayResultCondensed.push(finalObjProccess);
 
       }
-
     } //* FOR GENERAL
-
-    // console.log({ErroresProyectos: projectsError});
-    // console.log({ErroresFondos: fundsError});
-    // console.log({ErroresPosPreSapi: posPreSapiError});
-    // console.log({ErroresRutasRepetidas: routesError});
-    // console.log({ErroresRutasNoEncontradas: routesNotFound});
-
     //? >>>>> FINALMENTE DEBERÍAMOS ARMAR EL OBJETO DE RESPUESTA <<<<<<< ?//
-    //TODO: Si tenemos errores, ¿Lo deberíamos armar o no?, NO DEBERÍAMOS, entonce ...
     if (projectsError.length <= 0 ||
       fundsError.length <= 0 ||
       posPreSapiError.length <= 0 ||
       routesError.length <= 0 ||
-      routesNotFound.length <= 0) {
+      routesNotFound.length <= 0 ||
+      errors.length <= 0
+    ) {
 
       const objOk: IResultProcRoutesWithErrors | IResultProcRoutes = {
 
@@ -449,22 +456,20 @@ export default class PacService implements IPacService {
         posPreSapiError: posPreSapiError,
         routesError: routesError,
         routesNotFound: routesNotFound,
-
+        errors
       }
-
       arrayResultCondensedWithErrors = objOk;
       return new ApiResponse(arrayResultCondensedWithErrors, EResponseCodes.OK, "Validaciones pasadas con éxito!");
 
     }
 
     const objErrors: IResultProcRoutesWithErrors | IResultProcRoutes = {
-
       projectsError: projectsError,
       fundsError: fundsError,
       posPreSapiError: posPreSapiError,
       routesError: routesError,
       routesNotFound: routesNotFound,
-
+      errors
     }
 
     arrayResultCondensedWithErrors = objErrors;
@@ -472,27 +477,36 @@ export default class PacService implements IPacService {
 
   }
 
-  validateValuesByTypePac = (typePac: string, data: any) => {
+  validateValuesByTypePac = (typePac: string, data: any, loadedRoutesCurrentExcersice: any, version: any) => {
 
     let errorsDetected: IErrosPac[] = []
-
     data.condensed.forEach((e: any, index: number) => {
+      let balance = e.balance;
+      if (index == 0) { index += 1 }
+      let bugetPrgrammed = e.pacAnnualizationProgrammed.jan +
+        e.pacAnnualizationProgrammed.feb +
+        e.pacAnnualizationProgrammed.mar +
+        e.pacAnnualizationProgrammed.abr +
+        e.pacAnnualizationProgrammed.may +
+        e.pacAnnualizationProgrammed.jun +
+        e.pacAnnualizationProgrammed.jul +
+        e.pacAnnualizationProgrammed.ago +
+        e.pacAnnualizationProgrammed.sep +
+        e.pacAnnualizationProgrammed.oct +
+        e.pacAnnualizationProgrammed.nov +
+        e.pacAnnualizationProgrammed.dec
+
+      if (balance <= 0 || balance != e.pacAnnualizationProgrammed.totalBudget) {
+        errorsDetected.push({
+          message: "El valor del presupuesto no es correcto",
+          error: true,
+          rowError: index + 1,
+          columnError: null
+        })
+      }
+
 
       if (typePac == 'Carga inicial' || typePac == 'adición' || typePac == 'Reducción' || typePac == 'Nueva versión') {
-
-        let bugetPrgrammed = e.pacAnnualizationProgrammed.jan +
-          e.pacAnnualizationProgrammed.feb +
-          e.pacAnnualizationProgrammed.mar +
-          e.pacAnnualizationProgrammed.abr +
-          e.pacAnnualizationProgrammed.may +
-          e.pacAnnualizationProgrammed.jun +
-          e.pacAnnualizationProgrammed.jul +
-          e.pacAnnualizationProgrammed.ago +
-          e.pacAnnualizationProgrammed.sep +
-          e.pacAnnualizationProgrammed.oct +
-          e.pacAnnualizationProgrammed.nov +
-          e.pacAnnualizationProgrammed.dec
-
 
         // Valida que el valor total presupuestado coincida con el total programado de los meses
         if (bugetPrgrammed != e.pacAnnualizationProgrammed.totalBudget) {
@@ -506,7 +520,21 @@ export default class PacService implements IPacService {
 
       }
       //
+      let lastCollected = loadedRoutesCurrentExcersice.filter(el => el.version == version && el.sourceType == e.sourceType && el.budgetRouteId == e.budgetRouteId);
 
+      let lastCollectedTotal = lastCollected[0].pacAnnualizations.collected.jan
+      + lastCollected[0].pacAnnualizations.collected.feb
+      + lastCollected[0].pacAnnualizations.collected.mar
+      + lastCollected[0].pacAnnualizations.collected.abr
+      + lastCollected[0].pacAnnualizations.collected.may
+      + lastCollected[0].pacAnnualizations.collected.jun
+      + lastCollected[0].pacAnnualizations.collected.jul
+      + lastCollected[0].pacAnnualizations.collected.ago
+      + lastCollected[0].pacAnnualizations.collected.sep
+      + lastCollected[0].pacAnnualizations.collected.oct
+      + lastCollected[0].pacAnnualizations.collected.nov
+      + lastCollected[0].pacAnnualizations.collected.dec
+      
       if (typePac != 'Carga inicial') {
         let bugetCollectec = e.pacAnnualizationCollected.jan +
           e.pacAnnualizationCollected.feb +
@@ -521,28 +549,41 @@ export default class PacService implements IPacService {
           e.pacAnnualizationCollected.nov +
           e.pacAnnualizationCollected.dec
 
+        // Valida que el valor total presupuestado coincida con el total programado de los meses  
 
-        // Valida que el valor total presupuestado coincida con el total programado de los meses
-        if (bugetCollectec != e.pacAnnualizationCollected.totalBudget) {
+        if (typePac == 'Recaudo' && bugetCollectec > e.pacAnnualizationCollected.totalBudget) {
           errorsDetected.push({
-            message: typePac == 'Recaudo'
-              ? "La suma de los recaudos a incluir es mayor al presupuesto sapiencia"
-              : "El recaudo previamente guardado en el PAC es mayor al presupuesto sapiencia que va a ingresar",
+            message: "La suma de los recaudos a incluir es mayor al presupuesto sapiencia",
             error: true,
             rowError: index + 1,
             columnError: null
           })
+        } else if (typePac != 'Recaudo' && lastCollectedTotal > e.pacAnnualizationCollected.totalBudget) {
+          errorsDetected.push({
+            message: "El recaudo previamente guardado en el PAC es mayor al presupuesto sapiencia que va a ingresar",
+            error: true,
+            rowError: index + 1,
+            columnError: null
+          })
+
+
         }
 
       }
 
       if (typePac == 'Carga inicial' || typePac == 'Recaudo') {
         // Valida que el valor presupuesto Sapiensa sea mayo que cero
-        if (parseFloat(e.pacAnnualizationProgrammed.totalBudget) > 0) {
+
+        if (parseFloat(e.pacAnnualizationProgrammed.totalBudget) <= 0 && typePac == 'Carga inicial') {
           errorsDetected.push({
-            message: typePac == 'Carga inicial'
-              ? "Debe tener dato en presupuesto sapiencia y en lo programado del mes"
-              : "El recaudo no tiene presupuesto sapiencia",
+            message: "Debe tener dato en presupuesto sapiencia y en lo programado del mes",
+            error: true,
+            rowError: index + 1,
+            columnError: null
+          })
+        } else if (parseFloat(e.pacAnnualizationCollected.totalBudget) < 0 && typePac == 'Recaudo') {
+          errorsDetected.push({
+            message: "El recaudo no tiene presupuesto sapiencia",
             error: true,
             rowError: index + 1,
             columnError: null
@@ -552,7 +593,7 @@ export default class PacService implements IPacService {
 
       if (typePac == 'Carga inicial') {
         // Valida que el valor presupuesto Sapiensa sea mayo que cero
-        if (parseFloat(e.pacAnnualizationProgrammed.totalBudget) > 0) {
+        if (parseFloat(e.pacAnnualizationProgrammed.totalBudget) <= 0) {
           errorsDetected.push({
             message: "Debe tener dato en presupuesto sapiencia y en lo programado del mes",
             error: true,
@@ -755,8 +796,6 @@ export default class PacService implements IPacService {
 
   async searchAnnualDataRoutes(data: IPacAnnualAdapter): Promise<ApiResponse<IPagingData<IPacPrimary> | IResultSearchAnnualizationByRoute | IPacFilters | null>> {
 
-    // console.log(data);
-
     const {
       pacType, //2 - Programado, 3 - Recaudado , 4 - Ambos
       exercise,
@@ -856,15 +895,63 @@ export default class PacService implements IPacService {
 
     }
 
+    //* Calculemos los totales programado y recaudado
+    let totalProgramming: number = 0;
+    let totalCollected: number = 0;
+
+    for (const annualizations of getAnnualization.array) {
+
+      if( annualizations?.type == "Programado" ){
+
+        totalProgramming += (Number(annualizations!.jan) +
+                             Number(annualizations!.feb) +
+                             Number(annualizations!.mar) +
+                             Number(annualizations!.abr) +
+                             Number(annualizations!.may) +
+                             Number(annualizations!.jun) +
+                             Number(annualizations!.jul) +
+                             Number(annualizations!.ago) +
+                             Number(annualizations!.sep) +
+                             Number(annualizations!.oct) +
+                             Number(annualizations!.nov) +
+                             Number(annualizations!.dec))
+
+      }else{
+
+        totalCollected += (Number(annualizations!.jan) +
+                           Number(annualizations!.feb) +
+                           Number(annualizations!.mar) +
+                           Number(annualizations!.abr) +
+                           Number(annualizations!.may) +
+                           Number(annualizations!.jun) +
+                           Number(annualizations!.jul) +
+                           Number(annualizations!.ago) +
+                           Number(annualizations!.sep) +
+                           Number(annualizations!.oct) +
+                           Number(annualizations!.nov) +
+                           Number(annualizations!.dec))
+
+      }
+
+    }
+
+    const objTotals: ITotalsSimple = {
+
+      totalProgramming,
+      totalCollected
+
+    }
+
     const objResult: IResultSearchAnnualizationByRoute = {
 
       headerResult: objHeaderInitial,
       routeResult: getRoute,
-      annualRoute: getAnnualization.array
+      annualRoute: getAnnualization.array,
+      totalsRes: objTotals
 
     }
 
-    return new ApiResponse(objResult, EResponseCodes.OK, "Obteniendo las anualizaciones");
+    return new ApiResponse(objResult, EResponseCodes.OK, "Obteniendo las anualizaciones e información de ruta");
 
   }
 
@@ -879,40 +966,43 @@ export default class PacService implements IPacService {
     const destinitiesGetCalculatedOfRequestTransfer: ApiResponse<ITotalsByTransfers | null> = await this.getCalculatedOfRequestTransfer(data, "destinities");
 
     //? ************************************************************************************
+    //? Validación 2
+    //? ************************************************************************************
+    if( originsGetCalculatedOfRequestTransfer.data == null || destinitiesGetCalculatedOfRequestTransfer == null){
+
+      return new ApiResponse(null, EResponseCodes.FAIL, 'El valor del presupuesto sapiencia es diferente al valor del presupuesto.');
+
+    }
+
+    //? ************************************************************************************
     //? Validación 5
     //? ************************************************************************************
-    if( data.headTransfer.pacType == "Recaudado" || data.headTransfer.pacType == "Ambos"){
+    if (data.headTransfer.pacType == "Recaudado" || data.headTransfer.pacType == "Ambos") {
 
       //Obtengo valor recaudado original del origen (Recordemos que viene como un array en sumatoria)
       const origenOriginalResultCall: ITotalsByTransfers[] | null = originsGetCalculatedOriginal.data;
       const origenOriginalValueCollectec: number | null = origenOriginalResultCall![origenOriginalResultCall?.length! - 1].totalCollected;
-      // console.log({origenOriginalValueCollectec});
 
       //Obtengo valor recaudado original del destino (Recordemos que viene como un array en sumatoria)
       const destinityOriginalResultCall: ITotalsByTransfers[] | null = destinitiesGetCalculatedOriginal.data;
       const destinityOriginalValueCollectec: number | null = destinityOriginalResultCall![destinityOriginalResultCall?.length! - 1].totalCollected;
-      // console.log({destinityOriginalValueCollectec});
 
       //Guardo la suma del valor recaudado entre origen y destino ORIGINAL.
       const plusCollectedOriginal: number = origenOriginalValueCollectec + destinityOriginalValueCollectec;
-      // console.log({plusCollectedOriginal});
 
       //Calcular el valor extraído del recaudo desde el origen
-      // const extractValue: number = origenOriginalValueCollectec - originsGetCalculatedOfRequestTransfer.data?.totalCollected!;
-      // console.log({extractValue});
+      const extractValue: number = origenOriginalValueCollectec - originsGetCalculatedOfRequestTransfer.data?.totalCollected!;
+      console.log({extractValue});
 
       //Calcular el nuevo valor recaudado origen y el nuevo valor recaudado destino
       const newCollectedOriginalOrigin: number = originsGetCalculatedOfRequestTransfer.data?.totalCollected!;
-      // console.log({newCollectedOriginalOrigin});
       const newCollectedOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalCollected!;
-      // console.log({newCollectedOriginalDestinity});
 
       //Ahora sumo los nuevos valores y debería obtener la sumatoria original de recaudo
       const plusCollectedsWithTransfer: number = newCollectedOriginalOrigin + newCollectedOriginalDestinity;
-      // console.log({plusCollectedsWithTransfer});
 
       //* Validación 5
-      if(plusCollectedsWithTransfer !== plusCollectedOriginal){
+      if (plusCollectedsWithTransfer !== plusCollectedOriginal) {
 
         return new ApiResponse(null, EResponseCodes.FAIL, "No puede aumentar o reducir el valor del recaudo, solo moverlo entre rutas");
 
@@ -923,11 +1013,10 @@ export default class PacService implements IPacService {
       //? ******************************************************************************************************************************
       //Calculamos lo que será el nuevo valor programado para validar
       const newProgrammingOriginalOrigin: number = originsGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
-      // console.log({newProgrammingOriginalOrigin});
-      // const newProgrammingOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
-      // console.log({newProgrammingOriginalDestinity});
+      const newProgrammingOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
+      console.log({newProgrammingOriginalDestinity});
 
-      if( newCollectedOriginalOrigin > newProgrammingOriginalOrigin){
+      if (newCollectedOriginalOrigin > newProgrammingOriginalOrigin) {
 
         return new ApiResponse(null, EResponseCodes.FAIL, "El recaudo es mayor al presupuesto sapiencia del PAC");
 
@@ -935,47 +1024,36 @@ export default class PacService implements IPacService {
 
     }
 
-    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
-    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
-    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
-
     //? *****************************************************************************************************************
     //? Validación 3
     //? *****************************************************************************************************************
 
-    if( data.headTransfer.pacType == "Programado" || data.headTransfer.pacType == "Ambos"){
+    if (data.headTransfer.pacType == "Programado" || data.headTransfer.pacType == "Ambos") {
 
       //Obtengo valor programado original del origen (Recordemos que viene como un array en sumatoria)
       const origenOriginalResultCall: ITotalsByTransfers[] | null = originsGetCalculatedOriginal.data;
       const origenOriginalValueProgramming: number | null = origenOriginalResultCall![origenOriginalResultCall?.length! - 1].totalProgrammig;
-      // console.log({origenOriginalValueProgramming});
 
       //Obtengo valor programado original del destino (Recordemos que viene como un array en sumatoria)
       const destinityOriginalResultCall: ITotalsByTransfers[] | null = destinitiesGetCalculatedOriginal.data;
       const destinityOriginalValueProgramming: number | null = destinityOriginalResultCall![destinityOriginalResultCall?.length! - 1].totalProgrammig;
-      // console.log({destinityOriginalValueProgramming});
 
       //Guardo la suma del valor programado entre origen y destino ORIGINAL.
       const plusProgrammingOriginal: number = origenOriginalValueProgramming + destinityOriginalValueProgramming;
-      // console.log({plusProgrammingOriginal});
 
       //Calcular el valor extraído del programado desde el origen
-      // const extractValue: number = origenOriginalValueProgramming - originsGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
-      // console.log({extractValue});
+      const extractValue: number = origenOriginalValueProgramming - originsGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
+      console.log({extractValue});
 
       //Calcular el nuevo valor programado origen y el nuevo valor programado destino
       const newProgrammingOriginalOrigin: number = originsGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
-      // console.log({newProgrammingOriginalOrigin});
       const newProgrammingOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalProgrammig!;
-      // console.log({newProgrammingOriginalDestinity});
 
       //Ahora sumo los nuevos valores y debería obtener la sumatoria original de programado
       const plusProgrammingsWithTransfer: number = newProgrammingOriginalOrigin + newProgrammingOriginalDestinity;
-      // console.log({plusProgrammingsWithTransfer});
-
 
       //*Validación 3
-      if(plusProgrammingsWithTransfer !== plusProgrammingOriginal){
+      if (plusProgrammingsWithTransfer !== plusProgrammingOriginal) {
 
         return new ApiResponse(null, EResponseCodes.FAIL, "No puede aumentar o reducir el valor del presupuesto, solo moverlo entre rutas");
 
@@ -986,21 +1064,16 @@ export default class PacService implements IPacService {
       //? ******************************************************************************************************************************
       //Calculamos lo que será el nuevo valor recaudado para validar
       const newCollectedOriginalOrigin: number = originsGetCalculatedOfRequestTransfer.data?.totalCollected!;
-      // console.log({newCollectedOriginalOrigin});
-      // const newCollectedOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalCollected!;
-      // console.log({newCollectedOriginalDestinity});
+      const newCollectedOriginalDestinity: number = destinitiesGetCalculatedOfRequestTransfer.data?.totalCollected!;
+      console.log({newCollectedOriginalDestinity});
 
-      if( newProgrammingOriginalOrigin < newCollectedOriginalOrigin){
+      if (newProgrammingOriginalOrigin < newCollectedOriginalOrigin) {
 
         return new ApiResponse(null, EResponseCodes.FAIL, "El recaudo previamente guardado en el PAC es mayor que lo programado a ingresar");
 
       }
 
     }
-
-    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
-    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
-    // console.log(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ");
 
     //* Se pasaron los filtros, entonces procedemos a justar los meses a nivel de programado y recaudado
     //* de las rutas involucradas.
@@ -1025,19 +1098,20 @@ export default class PacService implements IPacService {
 
     }
 
-    return new ApiResponse(primaryObject, EResponseCodes.INFO, "¡Guardado exitosamente!");
+    return new ApiResponse(primaryObject, EResponseCodes.OK, "¡Guardado exitosamente!");
 
   }
 
-  async getCalculatedOfRequestTransfer(info: DataTransferPac, space: string): Promise<ApiResponse<ITotalsByTransfers | null>>{
+  async getCalculatedOfRequestTransfer(info: DataTransferPac, space: string): Promise<ApiResponse<ITotalsByTransfers | null>> {
 
     let totalProgrammig: number = 0;
     let totalCollected: number = 0;
     let method: IDestinity[];
+    let arrayProgramming: IDestinityNoAnnual[] = [];
 
-    if(space === "origin"){
+    if (space === "origin") {
       method = info.transferTransaction.origins;
-    }else{
+    } else {
       method = info.transferTransaction.destinities;
     }
 
@@ -1060,8 +1134,31 @@ export default class PacService implements IPacService {
           Number(xx.nov) +
           Number(xx.dec);
 
-        if (xx.type === "Programado") totalProgrammig += val;
-        if (xx.type === "Recaudado") totalCollected += val;
+        //? ******************************************************************************************************************************
+        //? Validación 2.
+        //TODO: !
+        //? ******************************************************************************************************************************
+        if (xx.type === "Programado"){
+
+          totalProgrammig += val;
+
+          const obj: IDestinityNoAnnual = {
+            idProjectVinculation: x.idProjectVinculation,
+            idBudget: x.idBudget,
+            idPospreSapiencia: x.idPospreSapiencia,
+            idFund: x.idFund,
+            idCardTemplate: x.idCardTemplate
+          }
+
+          arrayProgramming.push(obj);
+
+        }
+
+        if (xx.type === "Recaudado"){
+
+          totalCollected += val;
+
+        }
 
       }
 
@@ -1073,6 +1170,43 @@ export default class PacService implements IPacService {
       totalCollected: totalCollected
 
     }
+
+    //? Vamos a validar que este nuevo valor programado nos de menor o igual al saldo de la ruta
+    //? esto es importante para mantener la homoneneidad entre los datos.
+    //TODO: !
+    // for (const complement of arrayProgramming) {
+
+    //   const getRoute = await this.budgetsRoutesRepository
+    //                              .getBudgetForAdditions(complement.idProjectVinculation,
+    //                                                     complement.idFund,
+    //                                                     complement.idBudget,
+    //                                                     complement.idPospreSapiencia);
+
+    //   const getBalanceOfRoute: number = Number(getRoute?.balance);
+
+    //   if( !getRoute ||
+    //       getRoute == null ||
+    //       getRoute == undefined ||
+    //       getBalanceOfRoute == null ||
+    //       getBalanceOfRoute == undefined ||
+    //       getBalanceOfRoute == 0 ){
+
+    //     return new ApiResponse(null, EResponseCodes.FAIL, 'No se encontró saldo en la ruta presupuesta. Error general.');
+
+    //   }
+
+    //   console.log({totalProgrammig});
+    //   console.log({getBalanceOfRoute});
+
+
+    //   if( getBalanceOfRoute >= totalProgrammig  ){
+    //     console.log("Aca °°°°°°°°°°°°°°°°°°")
+    //     return new ApiResponse(null, EResponseCodes.FAIL, 'El valor del presupuesto sapiencia es diferente al valor del presupuesto.');
+
+    //   }
+
+    // }
+
 
     return new ApiResponse(objResult, EResponseCodes.OK, 'Cálculos de la request para origen.');
 
@@ -1086,9 +1220,9 @@ export default class PacService implements IPacService {
     let arrayResult: ITotalsByTransfers[] = [];
     let method: IDestinity[];
 
-    if(space === "origin"){
+    if (space === "origin") {
       method = info.transferTransaction.origins;
-    }else{
+    } else {
       method = info.transferTransaction.destinities;
     }
 
@@ -1100,7 +1234,7 @@ export default class PacService implements IPacService {
         return new ApiResponse(null, EResponseCodes.FAIL, `No se encontro la ruta con V.Proyecto:${x.idProjectVinculation}, Fondo:${x.idFund}, PosPreOrigen:${x.idBudget} y PosPreSapi:${x.idPospreSapiencia}. Revise la combinación de datos.`);
 
       //B. Valido PAC
-      const getPacWithAnnual = await this.pacRepository.getPacByRouteAndExercise(Number(getMyRoute.id), Number(exercise));
+      const getPacWithAnnual = await this.pacRepository.getPacByRouteAndExercise(Number(getMyRoute.id), Number(exercise), 0, "no");
       if (!getPacWithAnnual)
         return new ApiResponse(null, EResponseCodes.FAIL, `No se encontró un PAC con la ruta: ${getMyRoute.id} que está compuesta por V.Proyecto:${x.idProjectVinculation}, Fondo:${x.idFund}, PosPreOrigen:${x.idBudget} y PosPreSapi:${x.idPospreSapiencia}. No se hizo match con la vigencia que es ${exercise}`);
 
@@ -1159,7 +1293,7 @@ export default class PacService implements IPacService {
 
   }
 
-  async updateOriginsWithNewData(data: DataTransferPac): Promise<ApiResponse<boolean | IDestinity[]>>{
+  async updateOriginsWithNewData(data: DataTransferPac): Promise<ApiResponse<boolean | IDestinity[]>> {
 
     const arrayProccessGeneral: IDestinity[] = data.transferTransaction.origins;
     let band: boolean = false;
@@ -1169,19 +1303,19 @@ export default class PacService implements IPacService {
       for (const y of x.annualRoute) {
 
         const update = await this.pacRepository.updateTransfer(y);
-        if( update == null ) return new ApiResponse(false, EResponseCodes.FAIL, "Error al actualizar anualizaciones");
+        if (update == null) return new ApiResponse(false, EResponseCodes.FAIL, "Error al actualizar anualizaciones");
         band = true;
 
       }
 
     }
 
-    if( !band ) return new ApiResponse(false, EResponseCodes.FAIL, 'No se actualizaron origenes, errores');
+    if (!band) return new ApiResponse(false, EResponseCodes.FAIL, 'No se actualizaron origenes, errores');
     return new ApiResponse(arrayProccessGeneral, EResponseCodes.OK, 'Origenes actualizados');
 
   }
 
-  async updateDestinitiesWithNewData(data: DataTransferPac): Promise<ApiResponse<boolean | IDestinity[]>>{
+  async updateDestinitiesWithNewData(data: DataTransferPac): Promise<ApiResponse<boolean | IDestinity[]>> {
 
     const arrayProccessGeneral: IDestinity[] = data.transferTransaction.destinities;
     let band: boolean = false;
@@ -1191,14 +1325,14 @@ export default class PacService implements IPacService {
       for (const y of x.annualRoute) {
 
         const update = await this.pacRepository.updateTransfer(y);
-        if( update == null ) return new ApiResponse(false, EResponseCodes.FAIL, "Error al actualizar anualizaciones");
+        if (update == null) return new ApiResponse(false, EResponseCodes.FAIL, "Error al actualizar anualizaciones");
         band = true;
 
       }
 
     }
 
-    if( !band ) return new ApiResponse(false, EResponseCodes.FAIL, 'No se actualizaron destinos, errores');
+    if (!band) return new ApiResponse(false, EResponseCodes.FAIL, 'No se actualizaron destinos, errores');
     return new ApiResponse(arrayProccessGeneral, EResponseCodes.OK, 'Destinos actualizados');
 
   }

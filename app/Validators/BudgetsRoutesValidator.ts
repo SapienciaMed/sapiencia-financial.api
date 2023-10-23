@@ -34,6 +34,7 @@ export default class BudgetsRoutesValidator {
     idBudget: schema.number(),
     idPospreSapiencia: schema.number(),
     idFund:schema.number(),
+    balance:schema.number(),
     userCreate: schema.string.optional(),
     userModify: schema.string.optional(),
   });

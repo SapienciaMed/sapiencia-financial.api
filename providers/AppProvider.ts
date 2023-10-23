@@ -41,6 +41,7 @@ export default class AppProvider {
     );
     const PacService = await import("App/Services/PacService");
     const CdpService = await import("App/Services/BudgetAvailabilityService")
+    const PacSubImplementsService = await import("App/Services/PacSubImplementsService");
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -234,6 +235,23 @@ export default class AppProvider {
           new CdpRepository.default()
         )
     );
+
+    this.app.container.singleton(
+      "core.PacSubImplementsProvider",
+      () =>
+        new PacSubImplementsService.default(
+          new PacRepository.default(),
+          new ProjectsRepository.default(),
+          new FunctionalProjectRepository.default(),
+          new FundsRepository.default(),
+          new PosPreSapienciaRepository.default(),
+          new BudgetsRoutesRepository.default(),
+          new StrategicDirectionService.default(
+            new VinculationMGARepository.default()
+          )
+        )
+    );
+
   }
 
   public async boot() {
