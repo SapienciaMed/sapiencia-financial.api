@@ -5,7 +5,7 @@ import { IPagingData } from 'App/Utils/ApiResponses';
 
 
 export class BudgetAvailabilityRepositoryFake implements IBudgetAvailabilityRepository {
-    searchBudgetAvailability(filter: IBudgetAvailabilityFilters): Promise<IPagingData<IBudgetAvailability>> {
+    searchBudgetAvailability(_filter: IBudgetAvailabilityFilters): Promise<IPagingData<IBudgetAvailability>> {
         throw new Error('Method not implemented.');
     }
     async getAllCdps(): Promise<any[]> {
@@ -20,11 +20,11 @@ export class BudgetAvailabilityRepositoryFake implements IBudgetAvailabilityRepo
         });
     }
 
-    async filterCdpsByDateAndContractObject(date: string, contractObject: string): Promise<any[]> {
+    async filterCdpsByDateAndContractObject(_date: string, _contractObject: string): Promise<any[]> {
         return Promise.resolve([]);
     }
 
-    async deleteCdpById(cdpId: number): Promise<void> {
+    async deleteCdpById(_cdpId: number): Promise<void> {
         return Promise.resolve();
     }
 }
