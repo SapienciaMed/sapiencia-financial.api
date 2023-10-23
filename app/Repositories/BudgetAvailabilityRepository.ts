@@ -13,11 +13,14 @@ export interface IBudgetAvailabilityRepository {
   ): Promise<IPagingData<IBudgetAvailability>>;
   createCdps(cdpDataTotal: ICreateCdp): Promise<any>;
   getAllCdps(): Promise<any[]>;
+  getById(id:string): Promise<BudgetAvailability>
+  deleteAmountCdp(id:string): Promise<BudgetAvailability>
 }
 
 export default class BudgetAvailabilityRepository
   implements IBudgetAvailabilityRepository
 {
+  
   async searchBudgetAvailability(
     filter: IBudgetAvailabilityFilters
   ): Promise<IPagingData<IBudgetAvailability>> {
@@ -128,4 +131,16 @@ async createCdps(cdpDataTotal: any) {
     await cdp.save();
     await cdp.related('amounts').createMany(icdArr);
 }
+
+
+getById = async(id: string): Promise<any>=> {
+  return await BudgetAvailability.query().where('id',Number(id)).preload('amounts')
+}
+
+deleteAmountCdp = async(id: string): Promise<any>=> {
+  return await BudgetAvailability.query().where('id',Number(id)).preload('amounts')
+}
+
+
+
 }

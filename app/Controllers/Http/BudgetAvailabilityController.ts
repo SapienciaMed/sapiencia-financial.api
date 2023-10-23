@@ -24,14 +24,42 @@ export default class BudgetAvailabilityController {
 
   public async createCdpsCertificationBudgetAvailability({ request, response }: HttpContextContract) {
     try {
-        let data = await request.validate(BudgetAvailabilityValidator)
-        return response.send(await BudgetAvailabilityProvider.createCdps(data));
+      let data = await request.validate(BudgetAvailabilityValidator)
+      return response.send(await BudgetAvailabilityProvider.createCdps(data));
     } catch (err) {
-        return response.badRequest(
-            new ApiResponse(null, EResponseCodes.FAIL, String(err))
-        );
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
     }
 
-}
+  }
+
+  public async getById({ request, response }: HttpContextContract) {
+    try {
+
+      const { id } = request.params() as { id: string}
+
+      return response.send(await BudgetAvailabilityProvider.getById(id));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+
+  }
+  
+  public async deleteAmountCdp({ request, response }: HttpContextContract) {
+    try {
+
+      const { id } = request.params() as { id: string}
+
+      return response.send(await BudgetAvailabilityProvider.deleteAmountCdp(id));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+
+  }
 
 }
