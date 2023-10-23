@@ -522,18 +522,18 @@ export default class PacService implements IPacService {
       //
       let lastCollected = loadedRoutesCurrentExcersice.filter(el => el.version == version && el.sourceType == e.sourceType && el.budgetRouteId == e.budgetRouteId);
 
-      let lastCollectedTotal = lastCollected[0].pacAnnualizations.collected.jan
-      + lastCollected[0].pacAnnualizations.collected.feb
-      + lastCollected[0].pacAnnualizations.collected.mar
-      + lastCollected[0].pacAnnualizations.collected.abr
-      + lastCollected[0].pacAnnualizations.collected.may
-      + lastCollected[0].pacAnnualizations.collected.jun
-      + lastCollected[0].pacAnnualizations.collected.jul
-      + lastCollected[0].pacAnnualizations.collected.ago
-      + lastCollected[0].pacAnnualizations.collected.sep
-      + lastCollected[0].pacAnnualizations.collected.oct
-      + lastCollected[0].pacAnnualizations.collected.nov
-      + lastCollected[0].pacAnnualizations.collected.dec
+      let lastCollectedTotal = lastCollected[0]?.pacAnnualizations.collected.jan
+      + lastCollected[0]?.pacAnnualizations.collected.feb
+      + lastCollected[0]?.pacAnnualizations.collected.mar
+      + lastCollected[0]?.pacAnnualizations.collected.abr
+      + lastCollected[0]?.pacAnnualizations.collected.may
+      + lastCollected[0]?.pacAnnualizations.collected.jun
+      + lastCollected[0]?.pacAnnualizations.collected.jul
+      + lastCollected[0]?.pacAnnualizations.collected.ago
+      + lastCollected[0]?.pacAnnualizations.collected.sep
+      + lastCollected[0]?.pacAnnualizations.collected.oct
+      + lastCollected[0]?.pacAnnualizations.collected.nov
+      + lastCollected[0]?.pacAnnualizations.collected.dec ?? 0;
       
       if (typePac != 'Carga inicial') {
         let bugetCollectec = e.pacAnnualizationCollected.jan +

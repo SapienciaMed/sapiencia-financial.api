@@ -59,9 +59,9 @@ Route.group(() => {
   Route.put("/update/:id", "PosPreSapienciaController.updatePosPreSapiencia");
   Route.get("/get-all", "PosPreSapienciaController.getAllPosPreSapiencia");
   Route.get("/get-posprevinculation-by-id/:id", "PosPreSapienciaController.getPosPreSapienciaById");
-  Route.post("/get-list-pospresap-vinculation-paginated" , "PosPreSapienciaController.getListPosPreSapVinculationPaginated");
-  Route.post("/create-pospresap-vinculation" , "PosPreSapienciaController.createPosPreSapVinculation");
-  Route.post("/update-pospresap-vinculation/:id" , "PosPreSapienciaController.updatePosPreSapVinculation");
+  Route.post("/get-list-pospresap-vinculation-paginated", "PosPreSapienciaController.getListPosPreSapVinculationPaginated");
+  Route.post("/create-pospresap-vinculation", "PosPreSapienciaController.createPosPreSapVinculation");
+  Route.post("/update-pospresap-vinculation/:id", "PosPreSapienciaController.updatePosPreSapVinculation");
 
 }).prefix("/api/v1/pospre-sapiencia");
 // .middleware("auth");
@@ -126,7 +126,7 @@ Route.group(() => {
   Route.put("/update/:id", "BudgetsRoutesController.updateBudgetsRoutes");
 
 }).prefix("/api/v1/budget-routes")
-  // .middleware("auth");
+// .middleware("auth");
 
 Route.group(() => {
 
@@ -143,7 +143,7 @@ Route.group(() => {
   Route.post("/update-save/:id", "AdditionsController.executeUpdateAdditionWithMov"); //Como acción de guardado/actualizado
 
 }).prefix("/api/v1/additions")
-  // .middleware("auth");
+// .middleware("auth");
 
 Route.group(() => {
 
@@ -160,30 +160,39 @@ Route.group(() => {
   Route.post("/update-save/:id", "TransfersController.executeUpdateTransferWithMov"); //Como acción de guardado/actualizado
 
 }).prefix("/api/v1/transfers")
-  // .middleware("auth");
+// .middleware("auth");
 
-  Route.group(() => {
+Route.group(() => {
 
-    Route.get("/get-by-id/:id", "FunctionalProjectsController.getFunctionalProjectById");
-    Route.post("/get-paginated", "FunctionalProjectsController.getFunctionalProjectPaginated");
-    Route.post("/create", "FunctionalProjectsController.createFunctionalProject");
-    Route.post("/update-save/:id", "FunctionalProjectsController.updateFunctionalProject");
+  Route.get("/get-by-id/:id", "FunctionalProjectsController.getFunctionalProjectById");
+  Route.post("/get-paginated", "FunctionalProjectsController.getFunctionalProjectPaginated");
+  Route.post("/create", "FunctionalProjectsController.createFunctionalProject");
+  Route.post("/update-save/:id", "FunctionalProjectsController.updateFunctionalProject");
 
-  }).prefix("/api/v1/projectOperation")
+}).prefix("/api/v1/projectOperation")
 
-  Route.group(() => {
+Route.group(() => {
 
-    Route.post('/upload-pac','PacsController.uploadPac');
-    Route.post('/review-budgetroute','PacsController.reviewBudgetsRoute');
-    Route.post('/transfers-pac','PacsController.transfersOnPac');
-    Route.post('/validity-list','PacsController.validityList');
-    Route.post('/resources-type-list','PacsController.resourcesTypeList');
-    Route.post('/lists-dinamics-routes','PacsController.listDinamicsRoutes');
-    Route.post('/search-annualdata-routes','PacsController.searchAnnualDataRoutes');
+  Route.post('/upload-pac', 'PacsController.uploadPac');
+  Route.post('/review-budgetroute', 'PacsController.reviewBudgetsRoute');
+  Route.post('/transfers-pac', 'PacsController.transfersOnPac');
+  Route.post('/validity-list', 'PacsController.validityList');
+  Route.post('/resources-type-list', 'PacsController.resourcesTypeList');
+  Route.post('/lists-dinamics-routes', 'PacsController.listDinamicsRoutes');
+  Route.post('/search-annualdata-routes', 'PacsController.searchAnnualDataRoutes');
 
-    Route.post('/get-routes-by-validity','PacsController.getRoutesByValidity');
-    Route.get('/get-ultimate-version','PacsController.getUltimateVersion');
-    Route.post('/search-pacs','PacsController.searchPacs');
-    Route.post('/lists-dinamics-association','PacsController.listDinamicsAssociations');
+}).prefix("/api/v1/pac")
 
-  }).prefix("/api/v1/pac")
+Route.group(() => {
+  Route.post("/search-cdps", "BudgetAvailabilityController.searchBudgetAvailability");
+  Route.post("/create-cdp", "BudgetAvailabilityController.createCdpsCertificationBudgetAvailability");
+
+}).prefix("/api/v1/cdp")
+
+Route.group(() => {
+  Route.post('/get-routes-by-validity', 'PacsController.getRoutesByValidity');
+  Route.get('/get-ultimate-version', 'PacsController.getUltimateVersion');
+  Route.post('/search-pacs', 'PacsController.searchPacs');
+  Route.post('/lists-dinamics-association', 'PacsController.listDinamicsAssociations');
+
+}).prefix("/api/v1/pac")

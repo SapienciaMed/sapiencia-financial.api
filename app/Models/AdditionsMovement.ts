@@ -15,6 +15,7 @@ export default class AdditionsMovement extends BaseModel {
 
   @column({ columnName: "MAD_TIPO", serializeAs: "type" })
   public type: string;
+  
 
   @column({ columnName: "MAD_CODRPP_RUTA_PRESUPUESTAL", serializeAs: "budgetRouteId" })
   public budgetRouteId: number;

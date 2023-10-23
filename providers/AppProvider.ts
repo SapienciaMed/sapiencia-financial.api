@@ -1,7 +1,7 @@
 import type { ApplicationContract } from "@ioc:Adonis/Core/Application";
 
 export default class AppProvider {
-  constructor(protected app: ApplicationContract) {}
+  constructor(protected app: ApplicationContract) { }
 
   public async register() {
     // Register your own bindings
@@ -40,6 +40,7 @@ export default class AppProvider {
       "App/Services/External/StrategicDirectionService"
     );
     const PacService = await import("App/Services/PacService");
+    const CdpService = await import("App/Services/BudgetAvailabilityService")
     const PacSubImplementsService = await import("App/Services/PacSubImplementsService");
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
@@ -93,6 +94,7 @@ export default class AppProvider {
     );
 
     const PacRepository = await import("App/Repositories/PacRepository");
+    const CdpRepository = await import("App/Repositories/BudgetAvailabilityRepository")
 
     /**************************************************************************/
     /******************************** CORE  ***********************************/
@@ -223,6 +225,14 @@ export default class AppProvider {
           new StrategicDirectionService.default(
             new VinculationMGARepository.default()
           )
+        )
+    );
+
+    this.app.container.singleton(
+      "core.BudgetAvailabilityProvider",
+      () =>
+        new CdpService.default(
+          new CdpRepository.default()
         )
     );
 
