@@ -187,6 +187,8 @@ Route.group(() => {
 Route.group(() => {
   Route.post("/search-cdps", "BudgetAvailabilityController.searchBudgetAvailability");
   Route.post("/create-cdp", "BudgetAvailabilityController.createCdpsCertificationBudgetAvailability");
+  Route.get("/get-by-id/:id", "BudgetAvailabilityController.getById");
+  Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
 
 }).prefix("/api/v1/cdp")
 

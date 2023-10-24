@@ -1,10 +1,22 @@
 import { IBudgetAvailabilityFilters, IBudgetAvailability } from 'App/Interfaces/BudgetAvailabilityInterfaces';
+import BudgetAvailability from 'App/Models/BudgetAvailability';
 import { IBudgetAvailabilityRepository } from 'App/Repositories/BudgetAvailabilityRepository';
 import { IPagingData } from 'App/Utils/ApiResponses';
 
 
 
 export class BudgetAvailabilityRepositoryFake implements IBudgetAvailabilityRepository {
+    cancelAmountCdp(_id: number, _reasonCancellation: string): Promise<BudgetAvailability> {
+        throw new Error('Method not implemented.');
+    }
+    
+    getById(_id: string): Promise<BudgetAvailability> {
+        let oneRegister = new Array<BudgetAvailability>();
+        oneRegister.push(new BudgetAvailability());
+        return new Promise((res) => {
+            res(oneRegister[0]);
+        });
+    }
     searchBudgetAvailability(_filter: IBudgetAvailabilityFilters): Promise<IPagingData<IBudgetAvailability>> {
         throw new Error('Method not implemented.');
     }

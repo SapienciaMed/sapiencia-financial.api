@@ -17,7 +17,7 @@ export default class AmountBudgetAvailability extends BaseModel {
 
   @column({ columnName: "ICD_CODCDP", serializeAs: "cdpCode" })
   public cdpCode: number;
-
+  
   @column({
     columnName: "ICD_CODRPP_RUTA_PRESUPUESTAL",
     serializeAs: "idRppCode",
@@ -29,6 +29,12 @@ export default class AmountBudgetAvailability extends BaseModel {
 
   @column({ columnName: "ICD_VALOR", serializeAs: "amount" })
   public amount: number;
+
+  @column({ columnName: "ICD_ACTIVO", serializeAs: "isActive" })
+  public isActive: boolean;
+  
+  @column({ columnName: "ICD_MOTIVO_ANULACION", serializeAs: "reasonCancellation" })
+  public reasonCancellation: string;
 
   @hasOne(() => BudgetAvailability, {
     localKey: "id",
