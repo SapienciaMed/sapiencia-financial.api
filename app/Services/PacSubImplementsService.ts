@@ -8,15 +8,17 @@ import { IFundsRepository } from '../Repositories/FundsRepository';
 import { IPosPreSapienciaRepository } from '../Repositories/PosPreSapienciaRepository';
 import { IBudgetsRoutesRepository } from '../Repositories/BudgetsRoutesRepository';
 import { IStrategicDirectionService } from './External/StrategicDirectionService';
-import { IProjectPaginated, ISearchGeneralPac } from '../Interfaces/PacInterfaces';
+import { IProjectPaginated, ISearchGeneralPac, IPac } from '../Interfaces/PacInterfaces';
 import { IBudgetsRoutesFilters } from '../Interfaces/BudgetsRoutesInterfaces';
 
-import { IPacFilters,
-         IPacComplementary,
-         IPacPrimary,
-         IDinamicListForProjects,
-         IDinamicListForFunds,
-         IDinamicListForPospres } from '../Interfaces/PacInterfaces';
+import {
+  IPacFilters,
+  IPacComplementary,
+  IPacPrimary,
+  IDinamicListForProjects,
+  IDinamicListForFunds,
+  IDinamicListForPospres
+} from '../Interfaces/PacInterfaces';
 
 export default interface IPacSubImplementsService {
 
@@ -45,13 +47,13 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
   async getHellow(): Promise<ApiResponse<string | null>> {
 
-    console.log({pacRepository: this.pacRepository});
-    console.log({projectsRepository: this.projectsRepository});
-    console.log({functionalProjectRepository: this.functionalProjectRepository});
-    console.log({fundsRepository: this.fundsRepository});
-    console.log({posPreSapienciaRepository: this.posPreSapienciaRepository});
-    console.log({budgetsRoutesRepository: this.budgetsRoutesRepository});
-    console.log({strategicDirectionService: this.strategicDirectionService});
+    console.log({ pacRepository: this.pacRepository });
+    console.log({ projectsRepository: this.projectsRepository });
+    console.log({ functionalProjectRepository: this.functionalProjectRepository });
+    console.log({ fundsRepository: this.fundsRepository });
+    console.log({ posPreSapienciaRepository: this.posPreSapienciaRepository });
+    console.log({ budgetsRoutesRepository: this.budgetsRoutesRepository });
+    console.log({ strategicDirectionService: this.strategicDirectionService });
 
     return new ApiResponse(null, EResponseCodes.INFO, "Se estableció la conexión.");
 
@@ -61,7 +63,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
     const getVersion = await this.pacRepository.getUltimateVersion();
 
-    if( !getVersion || getVersion == null || getVersion == undefined )
+    if (!getVersion || getVersion == null || getVersion == undefined)
       return new ApiResponse(null, EResponseCodes.FAIL, "No se pudo encontrar una versión.");
 
     const getData: number[] = getVersion as number[];
@@ -76,7 +78,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     //* Consultamos PACs y traemos los PACs asociados para extraer sus rutas presupuestales.
     const getPacs = await this.pacRepository.searchPacByMultiData(data);
 
-    if( getPacs.array.length <= 0 || !getPacs.array ){
+    if (getPacs.array.length <= 0 || !getPacs.array) {
 
       return new ApiResponse(null, EResponseCodes.FAIL, "No se encontraron PACs ni Rutas Presupuestales con la vigencia, versión y tipo de recursos proporcionados.");
 
@@ -89,7 +91,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     let arrayPosPreSap: number[] = [];    // PK -> PosPre Sapi Number
     let listBudgetsRoutes: number[] = []; // PK -> Rutas Presupuestales
 
-    for (const routes of getPacs.array){
+    for (const routes of getPacs.array) {
 
       listBudgetsRoutes.push(Number(routes?.budgetRouteId));
       const getRoute = await this.budgetsRoutesRepository.getBudgetsRoutesById(Number(routes?.budgetRouteId));
@@ -108,7 +110,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     let listPospreSapi: IDinamicListForPospres[] = [];
 
     //* Organizo los Fondos
-    for (const fund of arrayFunds){
+    for (const fund of arrayFunds) {
 
       const getFund = await this.fundsRepository.getFundsById(fund);
 
@@ -127,7 +129,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
     //! Para eliminar elementos repetidos del array resultado
     let hash = {};
-    listFunds = listFunds.filter(function(current: IDinamicListForFunds) {
+    listFunds = listFunds.filter(function (current: IDinamicListForFunds) {
       let exists = !hash[current.idFund];
       hash[current.idFund] = true;
       return exists;
@@ -158,7 +160,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
     //! Para eliminar elementos repetidos del array resultado
     let dash = {};
-    listPospreSapi = listPospreSapi.filter(function(current: IDinamicListForPospres) {
+    listPospreSapi = listPospreSapi.filter(function (current: IDinamicListForPospres) {
       let exists = !dash[current.idPosPreSapi];
       dash[current.idPosPreSapi] = true;
       return exists;
@@ -228,7 +230,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
     //! Para eliminar elementos repetidos del array resultado
     let bash = {};
-    listProjects = listProjects.filter(function(current: IDinamicListForProjects) {
+    listProjects = listProjects.filter(function (current: IDinamicListForProjects) {
       let exists = !bash[current.idVinculation];
       bash[current.idVinculation] = true;
       return exists;
@@ -248,48 +250,88 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
   }
 
-  async searchPacs(data: IPacFilters): Promise<ApiResponse<ISearchGeneralPac[] | null>> {
+  async searchPacs(data: IPacFilters): Promise<ApiResponse<ISearchGeneralPac[] | IPac[] | null | any>> {
 
-    const { exercise,
-            version,
-            resourceType,
+    const { page, //Debe llegar obligatorio
+            perPage, //Debe llegar obligatorio
+            exercise, //Debe llegar obligatorio
+            version, //Debe llegar obligatorio
+            resourceType, //Debe llegar obligatorio
             idProjectVinculation,
             idBudget,
             idPospreSapiencia,
-            idFund } = data;
+            idFund
+          } = data;
 
     let resultTransaction: ISearchGeneralPac[] = [];
+    let getPac: IPagingData<IPac | null>;
 
-    //* Obtengamos la ruta primero:
-    const getRoute = await this.budgetsRoutesRepository
-                               .getBudgetForAdditions( Number(idProjectVinculation),
-                                                       Number(idFund),
-                                                       Number(idBudget),
-                                                       Number(idPospreSapiencia) );
+    //? ***********************************************************************************************
+    //? Primero debemos verificar si buscaré respecto a la ruta o si será un agrupador PAC
+    //? de lo contrario, buscaremos a nivel de ruta que sería la otra opción si llega los datos
+    //? ***********************************************************************************************
+    if (!idProjectVinculation || idProjectVinculation == null || idProjectVinculation == undefined ||
+        !idFund || idFund == null || idFund == undefined ||
+        !idBudget || idBudget == null || idBudget == undefined ||
+        !idPospreSapiencia || idPospreSapiencia == null || idPospreSapiencia == undefined) {
 
-    if( !getRoute || getRoute == null || getRoute == undefined )
-      return new ApiResponse(null, EResponseCodes.FAIL, "No se pudo obtener la ruta presupuestal con los datos dados.");
+      //* Busquemos PAC con la vigencia, tipo de recurso y versión.
+      getPac = await this.pacRepository
+                         .getPacByRouteAndExercise(Number(0),
+                                                   Number(exercise),
+                                                   Number(version),
+                                                   resourceType?.toString()!,
+                                                   Number(page),
+                                                   Number(perPage));
 
-    //* Busquemos PAC con la ruta junto con la vigencia, tipo de recurso y versión.
-    const getPac = await this.pacRepository
-                             .getPacByRouteAndExercise( Number(getRoute.id),
-                                                        Number(exercise),
-                                                        Number(version),
-                                                        resourceType?.toString()! );
+      if (!getPac || getPac == null || getPac == undefined)
+        return new ApiResponse(null, EResponseCodes.FAIL, "No se pudo obtener pacs con la información dada.");
 
-    if( !getPac || getPac == null || getPac == undefined )
-      return new ApiResponse(null, EResponseCodes.FAIL, "No se pudo obtener el pac con la ruta presupuestal obtenido y data dada.");
+    } else {
 
-    //* Calculamos el presupuesto sapiencia y el porcentaje de ejecución
+      //* EN ESTE PUNTO ES PORQUE TENGO LO MÍNIMO PARA REALIZAR LA BÚSQUEDA DE RUTA Y POSTERIOR PAC
+      //TODO: Generar una HU si se requiere buscar por distintivos (Solo proyecto, solo fondo o solo pospres)
+      const getRoute = await this.budgetsRoutesRepository
+                                 .getBudgetForAdditions(Number(idProjectVinculation),
+                                                        Number(idFund),
+                                                        Number(idBudget),
+                                                        Number(idPospreSapiencia));
+
+      if (!getRoute || getRoute == null || getRoute == undefined)
+        return new ApiResponse(null, EResponseCodes.FAIL, "No se pudo obtener la ruta presupuestal con los datos dados.");
+
+      //* Busquemos PAC con la ruta junto con la vigencia, tipo de recurso y versión.
+      getPac = await this.pacRepository
+                         .getPacByRouteAndExercise(Number(getRoute.id),
+                                                   Number(exercise),
+                                                   Number(version),
+                                                   resourceType?.toString()!,
+                                                   Number(page),
+                                                   Number(perPage));
+
+      if (!getPac || getPac == null || getPac == undefined)
+        return new ApiResponse(null, EResponseCodes.FAIL, "No se pudo obtener el pac con la ruta presupuestal obtenido y data dada.");
+
+    }
+
+    //? ***********************************************************************************************
+    //? Si llegamos hasta aquí, calculamos los totales y porcentajes
+    //? ***********************************************************************************************
     for (const pac of getPac.array) {
 
       let sapienciaBudget: number = 0;
       let sapienciaCollected: number = 0;
 
       //* Obtenga la ruta simplificada con la data
-      const filtersByRoute: IBudgetsRoutesFilters = { page: 1, perPage: 1000, idRoute: Number(pac?.budgetRouteId) }; //Solo debería traer 1.
+      const filtersByRoute: IBudgetsRoutesFilters = {
+        page: 1,
+        perPage: 100000,
+        idRoute: Number(pac?.budgetRouteId)
+      }; //Solo debería traer 1.
+
       const getRouteById = await this.budgetsRoutesRepository.getBudgetsRoutesPaginated(filtersByRoute);
-      if( !getRouteById || getRouteById == null || getRouteById == undefined )
+
+      if (!getRouteById || getRouteById == null || getRouteById == undefined)
         return new ApiResponse(null, EResponseCodes.FAIL, "Cuando ibamos a calcular el total sapiencia y porcentajes no se halló la ruta presupuestal, transacción cancelada.");
 
       //* Obtengamos proyecto simplificado
@@ -313,40 +355,24 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
       for (const annualizations of pac?.pacAnnualizations!) {
 
-        if( !band ){
+        if (!band) {
 
           totalProgramming =
-                        Number(annualizations.jan) +
-                        Number(annualizations.feb) +
-                        Number(annualizations.mar) +
-                        Number(annualizations.abr) +
-                        Number(annualizations.may) +
-                        Number(annualizations.jun) +
-                        Number(annualizations.jul) +
-                        Number(annualizations.ago) +
-                        Number(annualizations.sep) +
-                        Number(annualizations.oct) +
-                        Number(annualizations.nov) +
-                        Number(annualizations.dec);
+            Number(annualizations.jan) + Number(annualizations.feb) + Number(annualizations.mar) +
+            Number(annualizations.abr) + Number(annualizations.may) + Number(annualizations.jun) +
+            Number(annualizations.jul) + Number(annualizations.ago) + Number(annualizations.sep) +
+            Number(annualizations.oct) + Number(annualizations.nov) + Number(annualizations.dec);
 
           sapienciaBudget += totalProgramming;
           band = true;
 
-        }else{
+        } else {
 
           totalCollected =
-                        Number(annualizations.jan) +
-                        Number(annualizations.feb) +
-                        Number(annualizations.mar) +
-                        Number(annualizations.abr) +
-                        Number(annualizations.may) +
-                        Number(annualizations.jun) +
-                        Number(annualizations.jul) +
-                        Number(annualizations.ago) +
-                        Number(annualizations.sep) +
-                        Number(annualizations.oct) +
-                        Number(annualizations.nov) +
-                        Number(annualizations.dec);
+            Number(annualizations.jan) + Number(annualizations.feb) + Number(annualizations.mar) +
+            Number(annualizations.abr) + Number(annualizations.may) + Number(annualizations.jun) +
+            Number(annualizations.jul) + Number(annualizations.ago) + Number(annualizations.sep) +
+            Number(annualizations.oct) + Number(annualizations.nov) + Number(annualizations.dec);
 
           sapienciaCollected += totalCollected;
 
@@ -355,7 +381,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
       }
 
       //? Llenamos el objeto respuesta
-      const percentTransform: number = Number(((100*sapienciaCollected)/sapienciaBudget).toFixed(2));
+      const percentTransform: number = Number(((100 * sapienciaCollected) / sapienciaBudget).toFixed(2));
 
       const objResult: ISearchGeneralPac = {
 
@@ -363,7 +389,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
         numberFund: getFundNumber,
         posPreSapi: getPosPreSapiNumber,
         budgetSapi: sapienciaBudget,
-        budgetCollected : sapienciaCollected,
+        budgetCollected: sapienciaCollected,
         percentExecute: percentTransform,
         pacId: idPac,
         routeId: idBudgetRoute,
@@ -372,19 +398,24 @@ export default class PacSubImplementsService implements IPacSubImplementsService
       }
 
       resultTransaction.push(objResult);
+      pac!.dataCondensed = objResult;
+      delete pac!.isActive;
+      delete pac!.dateModify;
+      delete pac!.dateCreate;
+      delete pac!.pacAnnualizations;
 
     }
 
-    if( resultTransaction.length == 0 ||
-        !resultTransaction ||
-        resultTransaction == null ||
-        resultTransaction == undefined ){
+    if (resultTransaction.length == 0 ||
+      !resultTransaction ||
+      resultTransaction == null ||
+      resultTransaction == undefined) {
 
       return new ApiResponse(null, EResponseCodes.FAIL, "Los datos proporcionados no me traen ningún PAC");
 
     }
 
-    return new ApiResponse(resultTransaction, EResponseCodes.OK, "Obteniendo los datos");
+    return new ApiResponse(getPac, EResponseCodes.OK, "Obteniendo los datos");
 
   }
 
@@ -394,26 +425,26 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     const filtersByPlanning = { page: 1, perPage: 100000 };
     const getProjectPlanning = await this.strategicDirectionService.getProjectInvestmentPaginated(filtersByPlanning);
 
-    if( !getProjectPlanning || getProjectPlanning == null || getProjectPlanning == undefined)
+    if (!getProjectPlanning || getProjectPlanning == null || getProjectPlanning == undefined)
       return new ApiResponse(null, EResponseCodes.FAIL, "No se pudieron obtener los proyectos de planeación.");
 
     const getVinculation = await this.projectsRepository.getProjectById(idProject);
 
-    if( !getVinculation || getVinculation == null || getVinculation == undefined)
+    if (!getVinculation || getVinculation == null || getVinculation == undefined)
       return new ApiResponse(null, EResponseCodes.FAIL, "No se pudo obtener el proyecto de vinculación con el ID dado.");
 
     //Debo verificar si es un proyecto de funcionamiento, si es así, debo asociar al pospre sapi, de lo contrario, el de la API.
-    if (getVinculation?.operationProjectId && getVinculation?.operationProjectId != null){
+    if (getVinculation?.operationProjectId && getVinculation?.operationProjectId != null) {
 
       const getPosPreSapi = await this.posPreSapienciaRepository.getPosPreSapienciaById(idPosPreSapi);
       projectNameResult = getPosPreSapi?.description!;
 
-    }else{
+    } else {
 
       const pkInvestmentProject: number = Number(getVinculation!.investmentProjectId);
-      for (const projPlanningApi of getProjectPlanning.data.array){
+      for (const projPlanningApi of getProjectPlanning.data.array) {
 
-        if (projPlanningApi.id === pkInvestmentProject){
+        if (projPlanningApi.id === pkInvestmentProject) {
 
           projectNameResult = projPlanningApi.name;
 
@@ -438,7 +469,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     //* Paso 1. Busquemos los PosPre Sapiencia que se asocian a la vigencia requerida:
     // const getRoutesWithValidity = await this.pacRepository.listDinamicsAssoc(objInitial);
 
-    console.log({data});
+    console.log({ data });
 
 
 

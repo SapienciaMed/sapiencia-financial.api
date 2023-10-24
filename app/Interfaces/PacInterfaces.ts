@@ -159,6 +159,7 @@ export interface IPacFilters {
   exercise?: number;
   version?: number;
   resourceType?: string;
+  route?: number;
 
   managementCenter?: string;
   idProjectVinculation?: number;
@@ -223,6 +224,16 @@ export interface IResultSearchAnnualizationByRoute {
 
 //! Listado dinámicos para presentar en traslados.
 //! Consultas a la inversa, de ruta -> proyecto-fondo-pospre
+//! Pendientes por bugs de traslados también
+export interface macroTotalsWithTransferPac {
+
+  plusOrigenProgramming: number;
+  plusDestinitiesProgramming: number;
+  plusOrigenCollected: number;
+  plusDestinitiesCollected: number;
+
+}
+
 export interface IDinamicListForProjects {
 
   idVinculation: number;
@@ -293,7 +304,8 @@ export interface IPac {
   isActive?: boolean,
   dateModify?: Date,
   dateCreate?: Date,
-  pacAnnualizations: IPacAnnualization[]
+  pacAnnualizations?: IPacAnnualization[],
+  dataCondensed?: ISearchGeneralPac
 
 }
 
