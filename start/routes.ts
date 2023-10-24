@@ -122,6 +122,7 @@ Route.group(() => {
 
   Route.get("/get-by-id/:id", "BudgetsRoutesController.getBudgetsRoutesById");
   Route.post("/get-paginated", "BudgetsRoutesController.getBudgetsRoutesPaginated");
+  Route.get("/get-data", "BudgetsRoutesController.getBudgetsRoutesWithoutPagination");
   Route.post("/create", "BudgetsRoutesController.createBudgetsRoutes");
   Route.put("/update/:id", "BudgetsRoutesController.updateBudgetsRoutes");
 

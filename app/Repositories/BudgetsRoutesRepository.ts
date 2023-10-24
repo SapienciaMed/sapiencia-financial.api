@@ -8,6 +8,7 @@ export interface IBudgetsRoutesRepository {
   getBudgetsRoutesById(id: number): Promise<IBudgetsRoutes | null>;
   getBudgetsRoutesPaginated(filters: IBudgetsRoutesFilters): Promise<IPagingData<IBudgetsRoutes>>;
   createBudgetsRoutes(budgets: IBudgetsRoutes): Promise<IBudgetsRoutes>;
+  getBudgetsRoutesWithoutPagination(): Promise<IBudgetsRoutes[]>;
 
   getBudgetForAdditions(projectId: number,
                         foundId: number,
@@ -17,7 +18,6 @@ export interface IBudgetsRoutesRepository {
 
 export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository {
   constructor() {}
-
   async getBudgetsRoutesById(id: number): Promise<IBudgetsRoutes | null> {
     const res = await BudgetsRoutes.find(id);
     return res ? (res.serialize() as IBudgetsRoutes) : null;
@@ -42,6 +42,19 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
       meta,
     };
 
+  }
+
+  async getBudgetsRoutesWithoutPagination(): Promise<IBudgetsRoutes[]> {
+    const query = BudgetsRoutes.query();
+  
+    query.preload("projectVinculation");
+    query.preload("budget");
+    query.preload("funds");
+    query.preload("pospreSapiencia");
+  
+    const res = await query;
+  
+    return res;
   }
 
   async createBudgetsRoutes(budgetsRoutes: IBudgetsRoutes): Promise<IBudgetsRoutes> {
