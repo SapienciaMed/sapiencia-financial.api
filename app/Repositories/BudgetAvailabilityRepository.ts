@@ -8,7 +8,6 @@ import { IPagingData } from "App/Utils/ApiResponses";
 import { ICreateCdp } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 
-
 export interface IBudgetAvailabilityRepository {
   searchBudgetAvailability(
     filter: IBudgetAvailabilityFilters
@@ -76,53 +75,69 @@ export default class BudgetAvailabilityRepository
 
     const { meta, data } = res.serialize();
 
+    const filteredData = data.filter((item) => {
+      const yearOfDate = item.date.substring(0, 4);
+      return yearOfDate === filter.dateOfCdp;
+    });
+    if (filteredData.length === 0) {
+      meta.total = 0;
+    }
+
     return {
       meta,
-      array: data as IBudgetAvailability[],
+      array: filteredData as IBudgetAvailability[],
     };
   }
   async getAllCdps(): Promise<any[]> {
     const res = await BudgetAvailability.query()
-        .preload("amounts", (query) => {
-            query.preload('budgetRoute', (query) => {
-                query.preload('budget', (query) => {
-                    query.where('id', 1)
-                })
-                query.preload('pospreSapiencia')
-                query.preload('funds')
-                query.preload('projectVinculation')
-            })
-        }).paginate(1, 20);
+      .preload("amounts", (query) => {
+        query.preload("budgetRoute", (query) => {
+          query.preload("budget", (query) => {
+            query.where("id", 1);
+          });
+          query.preload("pospreSapiencia");
+          query.preload("funds");
+          query.preload("projectVinculation");
+        });
+      })
+      .paginate(1, 20);
     return res as unknown as any[];
-}
+  }
 
-  async filterCdpsByDateAndContractObject(date: string, contractObject: string): Promise<any[]> {
+  async filterCdpsByDateAndContractObject(
+    date: string,
+    contractObject: string
+  ): Promise<any[]> {
     const results = await BudgetAvailability.query()
-        .where('CDP_FECHA', new Date(date).toISOString().split('T')[0])
-        .where('CDP_OBJETO_CONTRACTUAL', 'LIKE', `%${contractObject}%`)
-        .preload('amounts');
+      .where("CDP_FECHA", new Date(date).toISOString().split("T")[0])
+      .where("CDP_OBJETO_CONTRACTUAL", "LIKE", `%${contractObject}%`)
+      .preload("amounts");
 
-    const cdps = results.map(result => result.toJSON());
+    const cdps = results.map((result) => result.toJSON());
     return cdps;
-}
+  }
 
-async deleteCdpById(cdpId: number): Promise<void> {
+  async deleteCdpById(cdpId: number): Promise<void> {
     const cdp = await BudgetAvailability.find(cdpId);
     if (!cdp) {
-        throw new Error('El registro no existe');
+      throw new Error("El registro no existe");
     }
     await cdp.delete();
-}
+  }
 
-async createCdps(cdpDataTotal: any) {
-    const { date, contractObject, consecutive, sapConsecutive, icdArr } = cdpDataTotal;
+  async createCdps(cdpDataTotal: any) {
+    const { date, contractObject, consecutive, sapConsecutive, icdArr } =
+      cdpDataTotal;
 
-    const existingCdps = await this.filterCdpsByDateAndContractObject(date, contractObject);
+    const existingCdps = await this.filterCdpsByDateAndContractObject(
+      date,
+      contractObject
+    );
     let alert = "";
 
     if (existingCdps.length > 0) {
-        alert = `Ya existe un CDP registrado para el objeto contractual ${contractObject} y la fecha ${date}`;
-        throw new Error(alert);
+      alert = `Ya existe un CDP registrado para el objeto contractual ${contractObject} y la fecha ${date}`;
+      throw new Error(alert);
     }
 
     const cdp = new BudgetAvailability();
