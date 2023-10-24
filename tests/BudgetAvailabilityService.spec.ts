@@ -92,4 +92,22 @@ test.group("CdpsService Tests", () => {
     assert.isTrue(result.operation.code === EResponseCodes.OK);
   });
  */
+
+
+  test("CdpsService must have a method getById with a return", async (assert) => {
+    const result = await service.getById('1');
+    assert.isNotNull(result);
+  });
+
+  test("the method getById must return a ApiResponse", async (assert) => {
+    const result = await service.getById('1');
+    assert.instanceOf(result, ApiResponse);
+  });
+
+  test("the method getById must return a OK code ", async (assert) => {
+    const result = await service.getById('1');
+    console.log({result})
+    assert.isTrue(result.operation.code === EResponseCodes.OK);
+  });
+
 });
