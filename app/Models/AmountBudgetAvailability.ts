@@ -15,9 +15,6 @@ export default class AmountBudgetAvailability extends BaseModel {
   @column({ isPrimary: true, columnName: "ICD_CODIGO", serializeAs: "id" })
   public id: number;
 
-  @column({ columnName: "ICD_EJERCICIO", serializeAs: "exercise" })
-  public exercise: string;
-
   @column({ columnName: "ICD_CODCDP", serializeAs: "cdpCode" })
   public cdpCode: number;
   
@@ -32,9 +29,6 @@ export default class AmountBudgetAvailability extends BaseModel {
 
   @column({ columnName: "ICD_VALOR", serializeAs: "amount" })
   public amount: number;
-
-  @column({ columnName: "ICD_RP_ASOCIADOS", serializeAs: "rpAssocs" })
-  public rpAssocs: string;
 
   @column({ columnName: "ICD_ACTIVO", serializeAs: "isActive" })
   public isActive: boolean;

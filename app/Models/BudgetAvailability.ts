@@ -8,6 +8,9 @@ export default class BudgetAvailability extends BaseModel {
   @column({ isPrimary: true, columnName: "CDP_CODIGO", serializeAs: "id" })
   public id: number;
 
+  @column({ columnName: "CDP_EJERCICIO", serializeAs: "exercise" })
+  public exercise: string;
+
   @column.dateTime({
     autoCreate: true,
     columnName: "CDP_FECHA",
@@ -26,6 +29,9 @@ export default class BudgetAvailability extends BaseModel {
 
   @column({ columnName: "CDP_CONSECUTIVO_SAP", serializeAs: "sapConsecutive" })
   public sapConsecutive: number;
+
+  @column({ columnName: "CDP_RP_ASOCIADOS", serializeAs: "rpAssocs" })
+  public rpAssocs: string;
 
   @hasMany(() => AmountBudgetAvailability, {
     localKey: "id",
