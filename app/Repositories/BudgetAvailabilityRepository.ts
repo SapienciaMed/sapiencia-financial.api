@@ -85,18 +85,19 @@ export default class BudgetAvailabilityRepository
   }
   async getAllCdps(): Promise<any[]> {
     const res = await BudgetAvailability.query()
-        .preload("amounts", (query) => {
-            query.preload('budgetRoute', (query) => {
-                query.preload('budget', (query) => {
-                    query.where('id', 1)
-                })
-                query.preload('pospreSapiencia')
-                query.preload('funds')
-                query.preload('projectVinculation')
-            })
-        }).paginate(1, 20);
+      .preload("amounts", (query) => {
+        query.preload("budgetRoute", (query) => {
+          query.preload("budget", (query) => {
+            query.where("id", 1);
+          });
+          query.preload("pospreSapiencia");
+          query.preload("funds");
+          query.preload("projectVinculation");
+        });
+      })
+      .paginate(1, 20);
     return res as unknown as any[];
-}
+  }
 
   async filterCdpsByDateAndContractObject(
     date: string,
