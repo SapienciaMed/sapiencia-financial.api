@@ -48,12 +48,12 @@ export default class BudgetAvailabilityController {
 
   }
   
-  public async deleteAmountCdp({ request, response }: HttpContextContract) {
+  public async cancelAmountCdp({ request, response }: HttpContextContract) {
     try {
 
-      const { id } = request.params() as { id: string}
+      const { id, reasonCancellation} = request.body() as { id: number, reasonCancellation:string}
 
-      return response.send(await BudgetAvailabilityProvider.deleteAmountCdp(id));
+      return response.send(await BudgetAvailabilityProvider.cancelAmountCdp(id, reasonCancellation));
     } catch (err) {
       return response.badRequest(
         new ApiResponse(null, EResponseCodes.FAIL, String(err))

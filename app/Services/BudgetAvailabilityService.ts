@@ -14,7 +14,7 @@ export interface IBudgetAvailabilityService {
   ): Promise<ApiResponse<IPagingData<IBudgetAvailability>>>;
   createCdps(cdpData: ICreateCdp): Promise<ApiResponse<any>>
   getById(id: string): Promise<ApiResponse<IBudgetAvailability>>
-  deleteAmountCdp(id: string): Promise<ApiResponse<any>>
+  cancelAmountCdp(id:number, reasonCancellation:string): Promise<ApiResponse<any>>
 }
 
 export default class BudgetAvailabilityService
@@ -56,9 +56,9 @@ export default class BudgetAvailabilityService
     }
   }
   
-  async deleteAmountCdp(id:string): Promise<ApiResponse<BudgetAvailability | any>> {
+  async cancelAmountCdp(id:number, reasonCancellation:string): Promise<ApiResponse<BudgetAvailability | any>> {
     try {
-      const data = await this.budgetAvailabilityRepository.deleteAmountCdp(id);
+      const data = await this.budgetAvailabilityRepository.cancelAmountCdp(id, reasonCancellation);
       return new ApiResponse(data, EResponseCodes.OK, 'CDP encontrado exitosamente');
     } catch (error) {
       return new ApiResponse(null, EResponseCodes.FAIL, 'Error al cargar el CDP' + error);

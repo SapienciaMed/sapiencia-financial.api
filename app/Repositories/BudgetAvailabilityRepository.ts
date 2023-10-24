@@ -1,10 +1,12 @@
 import {
+  IAmountBudgetAvailability,
   IBudgetAvailability,
   IBudgetAvailabilityFilters,
 } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import BudgetAvailability from "../Models/BudgetAvailability";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { ICreateCdp } from "App/Interfaces/BudgetAvailabilityInterfaces";
+import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 
 
 export interface IBudgetAvailabilityRepository {
@@ -14,7 +16,7 @@ export interface IBudgetAvailabilityRepository {
   createCdps(cdpDataTotal: ICreateCdp): Promise<any>;
   getAllCdps(): Promise<any[]>;
   getById(id:string): Promise<BudgetAvailability>
-  deleteAmountCdp(id:string): Promise<BudgetAvailability>
+  cancelAmountCdp(id:number, reasonCancellation:string): Promise<BudgetAvailability>
 }
 
 export default class BudgetAvailabilityRepository
@@ -134,11 +136,28 @@ async createCdps(cdpDataTotal: any) {
 
 
 getById = async(id: string): Promise<any>=> {
-  return await BudgetAvailability.query().where('id',Number(id)).preload('amounts')
+  return await BudgetAvailability.query().where('id',Number(id)).preload('amounts',(query)=>{
+    query.preload('budgetRoute',(query)=>{
+      query.preload('projectVinculation',(query)=>{
+        query.preload('functionalProject')
+      })
+      query.preload('funds')
+      query.preload('budget')
+      query.preload('pospreSapiencia')
+    })
+  })
 }
 
-deleteAmountCdp = async(id: string): Promise<any>=> {
-  return await BudgetAvailability.query().where('id',Number(id)).preload('amounts')
+cancelAmountCdp = async(id:number, reasonCancellation:string): Promise<any>=> {
+  const toUpdate = await AmountBudgetAvailability.find(id);
+    if (!toUpdate) {
+      return null;
+    }
+
+    toUpdate.reasonCancellation = reasonCancellation;
+    toUpdate.isActive = false;
+    await toUpdate.save();
+    return toUpdate.serialize() as IAmountBudgetAvailability;
 }
 
 

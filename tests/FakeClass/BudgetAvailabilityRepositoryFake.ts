@@ -6,7 +6,7 @@ import { IPagingData } from 'App/Utils/ApiResponses';
 
 
 export class BudgetAvailabilityRepositoryFake implements IBudgetAvailabilityRepository {
-    deleteAmountCdp(_id: string): Promise<BudgetAvailability> {
+    cancelAmountCdp(_id: number, _reasonCancellation: string): Promise<BudgetAvailability> {
         throw new Error('Method not implemented.');
     }
     
