@@ -32,11 +32,6 @@ export default class BudgetAvailabilityService
     return new ApiResponse(res, EResponseCodes.OK);
   }
 
-  async getAllCdps(): Promise<ApiResponse<any[]>> {
-    const res = await this.budgetAvailabilityRepository.getAllCdps();
-
-    return new ApiResponse(res, EResponseCodes.OK);
-  }
   async createCdps(cdpData: ICreateCdp): Promise<ApiResponse<any>> {
     try {
       const createdData = await this.budgetAvailabilityRepository.createCdps(cdpData);

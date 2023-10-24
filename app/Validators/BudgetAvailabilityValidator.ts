@@ -11,7 +11,6 @@ export default class BudgetAvailabilityValidator {
     contractObject: schema.string(),
     consecutive: schema.number(),
     sapConsecutive: schema.number(),
-    rpAssocs: schema.string.optional(),
     icdArr: schema.array().members(
       schema.object().members({
         id: schema.number.optional(),
