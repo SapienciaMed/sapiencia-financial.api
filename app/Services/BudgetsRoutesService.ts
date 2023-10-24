@@ -6,7 +6,7 @@ import { IBudgetsRoutesRepository } from "App/Repositories/BudgetsRoutesReposito
 export interface IBudgetsRoutesService {
     getBudgetsRoutesById(id: number): Promise<ApiResponse<IBudgetsRoutes>>;
     getBudgetsRoutesPaginated(filters: IBudgetsRoutesFilters): Promise<ApiResponse<IPagingData<IBudgetsRoutes>>>;
-    getBudgetsRoutesWithoutPagination(filters: IBudgetsRoutesFilters): Promise<ApiResponse<IBudgetsRoutes[]>>;
+    getBudgetsRoutesWithoutPagination(): Promise<ApiResponse<IBudgetsRoutes[]>>;
     createBudgetsRoutes(BudgetsRoutes: IBudgetsRoutes): Promise<ApiResponse<IBudgetsRoutes>>;
     updateBudgetsRoutes(BudgetsRoutes: IBudgetsRoutes, id: number): Promise<ApiResponse<IBudgetsRoutes | null>>;
 }
