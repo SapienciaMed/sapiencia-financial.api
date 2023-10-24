@@ -1,22 +1,26 @@
 import {
+  IAmountBudgetAvailability,
   IBudgetAvailability,
   IBudgetAvailabilityFilters,
 } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import BudgetAvailability from "../Models/BudgetAvailability";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { ICreateCdp } from "App/Interfaces/BudgetAvailabilityInterfaces";
+import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 
 export interface IBudgetAvailabilityRepository {
   searchBudgetAvailability(
     filter: IBudgetAvailabilityFilters
   ): Promise<IPagingData<IBudgetAvailability>>;
   createCdps(cdpDataTotal: ICreateCdp): Promise<any>;
-  getAllCdps(): Promise<any[]>;
+  getById(id:string): Promise<BudgetAvailability>
+  cancelAmountCdp(id:number, reasonCancellation:string): Promise<BudgetAvailability>
 }
 
 export default class BudgetAvailabilityRepository
   implements IBudgetAvailabilityRepository
 {
+  
   async searchBudgetAvailability(
     filter: IBudgetAvailabilityFilters
   ): Promise<IPagingData<IBudgetAvailability>> {
@@ -83,22 +87,7 @@ export default class BudgetAvailabilityRepository
       array: filteredData as IBudgetAvailability[],
     };
   }
-  async getAllCdps(): Promise<any[]> {
-    const res = await BudgetAvailability.query()
-      .preload("amounts", (query) => {
-        query.preload("budgetRoute", (query) => {
-          query.preload("budget", (query) => {
-            query.where("id", 1);
-          });
-          query.preload("pospreSapiencia");
-          query.preload("funds");
-          query.preload("projectVinculation");
-        });
-      })
-      .paginate(1, 20);
-    return res as unknown as any[];
-  }
-
+  
   async filterCdpsByDateAndContractObject(
     date: string,
     contractObject: string
@@ -108,7 +97,7 @@ export default class BudgetAvailabilityRepository
       .where("CDP_OBJETO_CONTRACTUAL", "LIKE", `%${contractObject}%`)
       .preload("amounts");
 
-    const cdps = results.map((result) => result.toJSON());
+    const cdps =   results.map(result => result.toJSON());
     return cdps;
   }
 
@@ -141,6 +130,35 @@ export default class BudgetAvailabilityRepository
     cdp.consecutive = consecutive;
     cdp.sapConsecutive = sapConsecutive;
     await cdp.save();
-    await cdp.related("amounts").createMany(icdArr);
-  }
+    await cdp.related('amounts').createMany(icdArr);
+}
+
+
+getById = async(id: string): Promise<any>=> {
+  return await BudgetAvailability.query().where('id',Number(id)).preload('amounts',(query)=>{
+    query.preload('budgetRoute',(query)=>{
+      query.preload('projectVinculation',(query)=>{
+        query.preload('functionalProject')
+      })
+      query.preload('funds')
+      query.preload('budget')
+      query.preload('pospreSapiencia')
+    })
+  })
+}
+
+cancelAmountCdp = async(id:number, reasonCancellation:string): Promise<any>=> {
+  const toUpdate = await AmountBudgetAvailability.find(id);
+    if (!toUpdate) {
+      return null;
+    }
+
+    toUpdate.reasonCancellation = reasonCancellation;
+    toUpdate.isActive = false;
+    await toUpdate.save();
+    return toUpdate.serialize() as IAmountBudgetAvailability;
+}
+
+
+
 }

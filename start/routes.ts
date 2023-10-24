@@ -122,6 +122,7 @@ Route.group(() => {
 
   Route.get("/get-by-id/:id", "BudgetsRoutesController.getBudgetsRoutesById");
   Route.post("/get-paginated", "BudgetsRoutesController.getBudgetsRoutesPaginated");
+  Route.get("/get-data", "BudgetsRoutesController.getBudgetsRoutesWithoutPagination");
   Route.post("/create", "BudgetsRoutesController.createBudgetsRoutes");
   Route.put("/update/:id", "BudgetsRoutesController.updateBudgetsRoutes");
 
@@ -186,6 +187,8 @@ Route.group(() => {
 Route.group(() => {
   Route.post("/search-cdps", "BudgetAvailabilityController.searchBudgetAvailability");
   Route.post("/create-cdp", "BudgetAvailabilityController.createCdpsCertificationBudgetAvailability");
+  Route.get("/get-by-id/:id", "BudgetAvailabilityController.getById");
+  Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
 
 }).prefix("/api/v1/cdp")
 

@@ -8,6 +8,9 @@ export default class BudgetAvailability extends BaseModel {
   @column({ isPrimary: true, columnName: "CDP_CODIGO", serializeAs: "id" })
   public id: number;
 
+  @column({ columnName: "CDP_EJERCICIO", serializeAs: "exercise" })
+  public exercise: string;
+
   @column.dateTime({
     autoCreate: true,
     columnName: "CDP_FECHA",

@@ -10,6 +10,8 @@ export default class extends BaseSchema {
       table.integer('ICD_CODRPP_RUTA_PRESUPUESTAL').unsigned().references('RPP_CODIGO').inTable('RPP_RUTAS_PRESUPUESTALES')
       table.integer('ICD_POSICION').notNullable()
       table.decimal('ICD_VALOR', 15, 2).notNullable()
+      table.boolean('ICD_ACTIVO').defaultTo(true)
+      table.string('ICD_MOTIVO_ANULACION',500).nullable()
 
     })
   }
