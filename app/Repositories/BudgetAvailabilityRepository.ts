@@ -97,7 +97,7 @@ export default class BudgetAvailabilityRepository
         .where('CDP_OBJETO_CONTRACTUAL', 'LIKE', `%${contractObject}%`)
         .preload('amounts');
 
-    const cdps = results.map(result => result.toJSON());
+    const cdps =   results.map(result => result.toJSON());
     return cdps;
 }
 
