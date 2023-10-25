@@ -1,11 +1,13 @@
 import test from "japa";
-import { BudgetAvailabilityRepositoryFake } from './FakeClass/BudgetAvailabilityRepositoryFake';
+import { BudgetAvailabilityRepositoryFake } from "./FakeClass/BudgetAvailabilityRepositoryFake";
 import BudgetAvailabilityService from "App/Services/BudgetAvailabilityService";
 import { ApiResponse } from "../app/Utils/ApiResponses";
 import { EResponseCodes } from "../app/Constants/ResponseCodesEnum";
+import { IBudgetAvailabilityFilters } from "App/Interfaces/BudgetAvailabilityInterfaces";
 
-
-const service = new BudgetAvailabilityService(new BudgetAvailabilityRepositoryFake());
+const service = new BudgetAvailabilityService(
+  new BudgetAvailabilityRepositoryFake()
+);
 
 test.group("CdpsService Tests", () => {
   test("CdpsService must have a method getAllCdps with a return", async (assert) => {
@@ -92,4 +94,45 @@ test.group("CdpsService Tests", () => {
     assert.isTrue(result.operation.code === EResponseCodes.OK);
   });
  */
+
+  test("Returns an object with meta and array properties", async (assert) => {
+    const filter: IBudgetAvailabilityFilters = {
+      dateOfCdp: "2022",
+      page: 1,
+      perPage: 10,
+      initialDate: "2022-01-01",
+      endDate: "2022-12-31",
+      consecutiveSap: 12345,
+      contractObject: "example",
+    };
+    const expectedItems = {
+      meta: {},
+      array: [],
+    };
+
+    // Act
+    const result = await service.searchBudgetAvailability(filter);
+
+    // Assert
+    assert.containsAllDeepKeys(result.data, expectedItems);
+  });
+
+  test("Returns a list of budget availabilities filtered by the given parameters", async (assert) => {
+    const filter: IBudgetAvailabilityFilters = {
+      dateOfCdp: "2022",
+      page: 1,
+      perPage: 10,
+      initialDate: "2022-01-01",
+      endDate: "2022-12-31",
+      consecutiveSap: 12345,
+      contractObject: "example",
+    };
+
+    // Act
+    const result = await service.searchBudgetAvailability(filter);
+
+    // Assert
+    assert.lengthOf(result.data.array, 1);
+    assert.equal(result.data.meta.total, 1);
+  });
 });
