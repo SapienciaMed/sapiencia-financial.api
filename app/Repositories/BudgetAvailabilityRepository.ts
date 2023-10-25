@@ -160,7 +160,6 @@ export default class BudgetAvailabilityRepository
   ): Promise<IBudgetAvailability | null> {
     // Almacenar los datos actualizados en una variable.
     const res = updatedData;
-    console.log(res);
 
     // Buscar la disponibilidad presupuestaria que se va a actualizar por su ID.
     const toUpdate = await BudgetAvailability.find(res.id);
