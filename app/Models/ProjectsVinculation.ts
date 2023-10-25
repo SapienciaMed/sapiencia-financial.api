@@ -55,11 +55,10 @@ export default class ProjectsVinculation extends BaseModel {
   })
   public areaFuntional: HasOne<typeof FuntionalAreas>;
 
-
-
   @belongsTo(() => FunctionalProject, {
     localKey: "id",
     foreignKey: "operationProjectId",
   })
   public functionalProject: BelongsTo<typeof FunctionalProject>;
+
 }

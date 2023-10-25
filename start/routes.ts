@@ -181,6 +181,11 @@ Route.group(() => {
   Route.post('/resources-type-list', 'PacsController.resourcesTypeList');
   Route.post('/lists-dinamics-routes', 'PacsController.listDinamicsRoutes');
   Route.post('/search-annualdata-routes', 'PacsController.searchAnnualDataRoutes');
+  Route.get('/get-ultimate-version', 'PacsController.getUltimateVersion');
+  Route.post('/search-pacs', 'PacsController.searchPacs');
+  Route.post('/get-routes-by-validity', 'PacsController.getRoutesByValidity');
+  Route.post('/lists-dinamics-association', 'PacsController.listDinamicsAssociations');
+  Route.post('/create-association', 'PacsController.createAssociations');
 
 }).prefix("/api/v1/pac")
 
@@ -191,11 +196,3 @@ Route.group(() => {
   Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
 
 }).prefix("/api/v1/cdp")
-
-Route.group(() => {
-  Route.post('/get-routes-by-validity', 'PacsController.getRoutesByValidity');
-  Route.get('/get-ultimate-version', 'PacsController.getUltimateVersion');
-  Route.post('/search-pacs', 'PacsController.searchPacs');
-  Route.post('/lists-dinamics-association', 'PacsController.listDinamicsAssociations');
-
-}).prefix("/api/v1/pac")
