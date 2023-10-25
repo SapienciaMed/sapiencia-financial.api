@@ -18,7 +18,7 @@ export class BudgetAvailabilityRepositoryFake
   implements IBudgetAvailabilityRepository
 {
   async updateBasicDataCdp(updatedData: any) {
-    throw new Error("Method not implemented.");
+    throw new Error(updatedData + "Method not implemented.");
   }
   searchBudgetAvailability(
     _filter: IBudgetAvailabilityFilters

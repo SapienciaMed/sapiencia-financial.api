@@ -1,5 +1,4 @@
 import { BaseModel, HasMany, column, hasMany } from "@ioc:Adonis/Lucid/Orm";
-import { DateTime } from "luxon";
 import AmountBudgetAvailability from "./AmountBudgetAvailability";
 
 export default class BudgetAvailability extends BaseModel {
@@ -8,12 +7,11 @@ export default class BudgetAvailability extends BaseModel {
   @column({ isPrimary: true, columnName: "CDP_CODIGO", serializeAs: "id" })
   public id: number;
 
-  @column.dateTime({
-    autoCreate: true,
+  @column({
     columnName: "CDP_FECHA",
     serializeAs: "date",
   })
-  public date: DateTime;
+  public date: Date;
 
   @column({
     columnName: "CDP_OBJETO_CONTRACTUAL",

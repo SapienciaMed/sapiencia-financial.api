@@ -6,6 +6,7 @@ import {
 } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import BudgetAvailability from "../Models/BudgetAvailability";
 import { IPagingData } from "App/Utils/ApiResponses";
+import { DateTime } from "luxon";
 
 export interface IBudgetAvailabilityRepository {
   searchBudgetAvailability(
@@ -13,7 +14,7 @@ export interface IBudgetAvailabilityRepository {
   ): Promise<IPagingData<IBudgetAvailability>>;
   createCdps(cdpDataTotal: ICreateCdp): Promise<any>;
   getAllCdps(): Promise<any[]>;
-  updateBasicDataCdp(updatedData: any): Promise<any>;
+  updateBasicDataCdp(updatedData: IUpdateBasicDataCdp): Promise<any>;
 }
 
 export default class BudgetAvailabilityRepository
@@ -79,7 +80,7 @@ export default class BudgetAvailabilityRepository
 
     // Filtrar los datos por año de la fecha si se proporciona el filtro 'dateOfCdp'.
     const filteredData = data.filter((item) => {
-      const yearOfDate = item.date.substring(0, 4);
+      const yearOfDate = new Date(item.date).getFullYear().toString();
       return yearOfDate === filter.dateOfCdp;
     });
 
@@ -154,9 +155,12 @@ export default class BudgetAvailabilityRepository
     await cdp.related("amounts").createMany(icdArr);
   }
 
-  async updateBasicDataCdp(updatedData: IUpdateBasicDataCdp) {
+  async updateBasicDataCdp(
+    updatedData: IUpdateBasicDataCdp
+  ): Promise<IBudgetAvailability | null> {
     // Almacenar los datos actualizados en una variable.
     const res = updatedData;
+    console.log(res);
 
     // Buscar la disponibilidad presupuestaria que se va a actualizar por su ID.
     const toUpdate = await BudgetAvailability.find(res.id);
@@ -168,7 +172,13 @@ export default class BudgetAvailabilityRepository
 
     // Actualizar la fecha de CDP y/o el objeto de contrato si se proporcionan en los datos actualizados.
     if (res.dateOfCdp) {
-      toUpdate.date = res.dateOfCdp;
+      if (res.dateOfCdp.isValid) {
+        toUpdate.date = res.dateOfCdp.toJSDate();
+      } else {
+        const dateOfCdpNew = DateTime.fromISO(res.dateOfCdp.toString());
+        const dateOfCdpNew2 = dateOfCdpNew.toJSDate();
+        toUpdate.date = dateOfCdpNew2;
+      }
     }
     if (res.contractObject) {
       toUpdate.contractObject = res.contractObject;

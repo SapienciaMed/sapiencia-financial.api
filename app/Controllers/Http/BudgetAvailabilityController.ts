@@ -7,6 +7,40 @@ import BudgetAvailabilityFiltersValidator from "App/Validators/BudgetAvailabilit
 import BudgetAvailabilityValidator from "App/Validators/BudgetAvailabilityValidator";
 
 export default class BudgetAvailabilityController {
+  /**
+   * @swagger
+   * /api/v1/cdp/search-cdps:
+   * post:
+   *     tags:
+   *       - CDP
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           description: User payload
+   *           schema:
+   *             type: object
+   *             properties:
+   *               dateOfCdp:
+   *                 type: string
+   *                 example: '2023'
+   *                 required: true
+   *               page:
+   *                 type: number
+   *                 example: 1
+   *               perPage:
+   *                 type: number
+   *                 example: 20
+   *     produces:
+   *       - application/json
+   *     responses:
+   *       200:
+   *         description: Success
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Cdp'
+   */
   public async searchBudgetAvailability({
     request,
     response,
