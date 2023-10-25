@@ -8,7 +8,7 @@ export default class Pac extends BaseModel {
   public id: number
 
   @column({ columnName:'PAC_TIPO_RECURSO', serializeAs:'sourceType' })
-  public sourceType: number
+  public sourceType: string
 
   @column({ columnName:'PAC_CODRPP_RUTA_PRESUPUESTAL', serializeAs:'budgetRouteId' })
   public budgetRouteId: number
@@ -23,10 +23,10 @@ export default class Pac extends BaseModel {
   public isActive: boolean
 
   @column({ columnName:'PAC_FECHA_CREO', serializeAs: "dateCreate" })
-  public dateCreate: string
+  public dateCreate: Date
 
   @column({ columnName:'PAC_FECHA_MODIFICO', serializeAs: "dateModify" })
-  public dateModify: string
+  public dateModify: Date
 
   @hasMany(() => PacAnnualization, {
     localKey: "id",
