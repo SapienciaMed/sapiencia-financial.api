@@ -14,7 +14,7 @@ export interface IBudgetAvailabilityRepository {
   ): Promise<IPagingData<IBudgetAvailability>>;
   createCdps(cdpDataTotal: ICreateCdp): Promise<any>;
   getAllCdps(): Promise<any[]>;
-  updateBasicDataCdp(updatedData: IUpdateBasicDataCdp): Promise<any>;
+  editBudgetAvailabilityBasicDataCDP(updatedData: IUpdateBasicDataCdp): Promise<any>;
 }
 
 export default class BudgetAvailabilityRepository
@@ -155,7 +155,7 @@ export default class BudgetAvailabilityRepository
     await cdp.related("amounts").createMany(icdArr);
   }
 
-  async updateBasicDataCdp(
+  async editBudgetAvailabilityBasicDataCDP(
     updatedData: IUpdateBasicDataCdp
   ): Promise<IBudgetAvailability | null> {
     // Almacenar los datos actualizados en una variable.

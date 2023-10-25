@@ -135,4 +135,18 @@ test.group("CdpsService Tests", () => {
     assert.lengthOf(result.data.array, 1);
     assert.equal(result.data.meta.total, 1);
   });
+
+  test("The method should successfully edit the basic data of a CDP when given valid input.", async (assert) => {
+    const data = {
+      id: 1,
+      dateOfCdp: "2025-10-18T00:00:00.000-05:00",
+      contractObject: "Este es el objeto vamos a actualizar Edit",
+    };
+
+    // Act
+    const result = await service.editBudgetAvailabilityBasicDataCDP(1, data);
+
+    assert.equal(result.data.date, data.dateOfCdp);
+    assert.equal(result.data.contractObject, data.contractObject);
+  });
 });

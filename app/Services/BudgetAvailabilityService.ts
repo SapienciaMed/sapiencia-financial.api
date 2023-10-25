@@ -14,7 +14,7 @@ export interface IBudgetAvailabilityService {
   ): Promise<ApiResponse<IPagingData<IBudgetAvailability>>>;
   createCdps(cdpData: ICreateCdp): Promise<ApiResponse<any>>;
   editBudgetAvailabilityBasicDataCDP(
-    id: string,
+    id: number,
     dataEdit: any
   ): Promise<ApiResponse<any>>;
 }
@@ -61,7 +61,7 @@ export default class BudgetAvailabilityService
   }
 
   async editBudgetAvailabilityBasicDataCDP(
-    id: string,
+    id: number,
     dataEdit: any
   ): Promise<ApiResponse<any>> {
     try {
@@ -69,7 +69,7 @@ export default class BudgetAvailabilityService
         id,
         ...dataEdit,
       };
-      const res = await this.budgetAvailabilityRepository.updateBasicDataCdp(
+      const res = await this.budgetAvailabilityRepository.editBudgetAvailabilityBasicDataCDP(
         updatedData
       );
       return new ApiResponse(res, EResponseCodes.OK);

@@ -1,6 +1,7 @@
 import {
   IBudgetAvailabilityFilters,
   IBudgetAvailability,
+  IUpdateBasicDataCdp,
 } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import { IBudgetAvailabilityRepository } from "App/Repositories/BudgetAvailabilityRepository";
 import { IPagingData } from "App/Utils/ApiResponses";
@@ -17,8 +18,23 @@ const filter: IBudgetAvailability = {
 export class BudgetAvailabilityRepositoryFake
   implements IBudgetAvailabilityRepository
 {
-  async updateBasicDataCdp(updatedData: any) {
-    throw new Error(updatedData + "Method not implemented.");
+  async editBudgetAvailabilityBasicDataCDP(updatedData: IUpdateBasicDataCdp) {
+    const updatedDataNew: any = {
+      id: 1,
+      date: "2023-10-18T05:00:00.000Z",
+      contractObject: "Este es el objeto vamos a actualizar",
+      consecutive: 1,
+      sapConsecutive: 1,
+    };
+
+    if (updatedData.dateOfCdp) {
+      updatedDataNew.date = updatedData.dateOfCdp;
+    }
+    if (updatedData.contractObject) {
+      updatedDataNew.contractObject = updatedData.contractObject;
+    }
+
+    return updatedDataNew;
   }
   searchBudgetAvailability(
     _filter: IBudgetAvailabilityFilters
