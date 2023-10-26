@@ -254,6 +254,7 @@ Route.group(() => {
   Route.post('/get-routes-by-validity', 'PacsController.getRoutesByValidity');
   Route.post('/lists-dinamics-association', 'PacsController.listDinamicsAssociations');
   Route.post('/create-association', 'PacsController.createAssociations');
+  Route.get('/get-pac-by-id/:id', 'PacsController.getPacById');
 
 }).prefix("/api/v1/pac")
 

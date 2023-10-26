@@ -228,6 +228,24 @@ export default class PacsController {
 
   }
 
+  //* Obtener el PAC por ID
+  public async getPacById({request, response}: HttpContextContract) {
+
+    try {
+
+      const { id } = request.params();
+      return response.send(await PacSubImplementsProvider.getPacById(id));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
 
 
 }
