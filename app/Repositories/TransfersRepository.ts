@@ -53,7 +53,7 @@ export default class TransfersRepository implements ITransfersRepository {
   }
 
   //?CREACIÓN DE TRASLADO - CABECERA
-  async createTransfers(transfer: ITransfers): Promise<ITransfers | any> {
+  async createTransfers(transfer: ITransfers): Promise<ITransfers> {
 
     const toCreate = new Transfer();
 
