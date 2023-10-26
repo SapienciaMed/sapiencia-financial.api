@@ -24,6 +24,7 @@ export default interface IPacRepository {
   inactivateVersionPac(versionFixed: number, pacsByExerciseFixed: any): Promise<any>;
   createAssociations(data: ICreateAssociation): Promise<IPac | null>;
   createAnnualizations(data: ICreateAssociation): Promise<IPacAnnualization | null>;
+  getPacById(id: number): Promise<IPagingData<IPac | null>>;
 
 }
 
@@ -344,37 +345,37 @@ export default class PacRepository implements IPacRepository {
 
     if (!filters.version) {
 
-      if( !filters.route ){
+      if (!filters.route) {
 
         query.where("exercise", filters.exercise!)
-        .andWhere("sourceType", filters.resourceType!)
+          .andWhere("sourceType", filters.resourceType!)
         //.andWhere("isActive", true);
 
-      }else{
+      } else {
 
         query.where("exercise", filters.exercise!)
-        .andWhere("sourceType", filters.resourceType!)
-        .andWhere("budgetRouteId", filters.route!);
-      //.andWhere("isActive", true);
+          .andWhere("sourceType", filters.resourceType!)
+          .andWhere("budgetRouteId", filters.route!);
+        //.andWhere("isActive", true);
 
       }
 
     } else {
 
-      if( !filters.route ){
+      if (!filters.route) {
 
         query.where("exercise", filters.exercise!)
-        .andWhere("sourceType", filters.resourceType!)
-        .andWhere("version", filters.version);
-      //.andWhere("isActive", true);
+          .andWhere("sourceType", filters.resourceType!)
+          .andWhere("version", filters.version);
+        //.andWhere("isActive", true);
 
-      }else{
+      } else {
 
         query.where("exercise", filters.exercise!)
-        .andWhere("sourceType", filters.resourceType!)
-        .andWhere("version", filters.version)
-        .andWhere("budgetRouteId", filters.route!);
-      //.andWhere("isActive", true);
+          .andWhere("sourceType", filters.resourceType!)
+          .andWhere("version", filters.version)
+          .andWhere("budgetRouteId", filters.route!);
+        //.andWhere("isActive", true);
 
       }
 
@@ -570,11 +571,11 @@ export default class PacRepository implements IPacRepository {
 
     const properties: IPac = {
       sourceType: data.resourceType,
-      budgetRouteId : Number(data.route),
-      version : Number(data.version),
-      exercise : Number(data.exercise),
-      isActive : true,
-      dateCreate : new Date()
+      budgetRouteId: Number(data.route),
+      version: Number(data.version),
+      exercise: Number(data.exercise),
+      isActive: true,
+      dateCreate: new Date()
     }
 
     const toCreateAssociation = new Pac();
@@ -589,20 +590,20 @@ export default class PacRepository implements IPacRepository {
 
     const properties: IPacAnnualization = {
 
-      pacId : data.pacId,
-      type : data.type!,
-      jan : Number(data.annualization!.jan),
-      feb : Number(data.annualization!.feb),
-      mar : Number(data.annualization!.mar),
-      abr : Number(data.annualization!.abr),
-      may : Number(data.annualization!.may),
-      jun : Number(data.annualization!.jun),
-      jul : Number(data.annualization!.jul),
-      ago : Number(data.annualization!.ago),
-      sep : Number(data.annualization!.sep),
-      oct : Number(data.annualization!.oct),
-      nov : Number(data.annualization!.nov),
-      dec : Number(data.annualization!.dec),
+      pacId: data.pacId,
+      type: data.type!,
+      jan: Number(data.annualization!.jan),
+      feb: Number(data.annualization!.feb),
+      mar: Number(data.annualization!.mar),
+      abr: Number(data.annualization!.abr),
+      may: Number(data.annualization!.may),
+      jun: Number(data.annualization!.jun),
+      jul: Number(data.annualization!.jul),
+      ago: Number(data.annualization!.ago),
+      sep: Number(data.annualization!.sep),
+      oct: Number(data.annualization!.oct),
+      nov: Number(data.annualization!.nov),
+      dec: Number(data.annualization!.dec),
       dateCreate: new Date()
 
     }
@@ -615,20 +616,20 @@ export default class PacRepository implements IPacRepository {
     //* También debemos crear por defecto el recaudado pero en 0
     const collectedExtra: IPacAnnualization = {
 
-      pacId : data.pacId,
-      type : "Recaudado",
-      jan : 0,
-      feb : 0,
-      mar : 0,
-      abr : 0,
-      may : 0,
-      jun : 0,
-      jul : 0,
-      ago : 0,
-      sep : 0,
-      oct : 0,
-      nov : 0,
-      dec : 0,
+      pacId: data.pacId,
+      type: "Recaudado",
+      jan: 0,
+      feb: 0,
+      mar: 0,
+      abr: 0,
+      may: 0,
+      jun: 0,
+      jul: 0,
+      ago: 0,
+      sep: 0,
+      oct: 0,
+      nov: 0,
+      dec: 0,
       dateCreate: new Date()
 
     }
@@ -639,6 +640,23 @@ export default class PacRepository implements IPacRepository {
 
     //Devuelvame el primero indiferentemente del caso.
     return toCreateAnnualization.serialize() as IPacAnnualization;
+
+  }
+
+  async getPacById(id: number): Promise<IPagingData<IPac | null>> {
+
+    const query = Pac.query();
+
+    query.where("id", id);
+    query.preload("pacAnnualizations");
+
+    const res = await query.paginate(1, 1000000);
+    const { data, meta } = res.serialize();
+
+    return {
+      array: data as IPac[] | null[],
+      meta,
+    };
 
   }
 

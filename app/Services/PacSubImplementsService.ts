@@ -16,6 +16,7 @@ import { IProjectPaginated,
          ICreateAssociation,
          IAssociationSuccess} from '../Interfaces/PacInterfaces';
 import { IBudgetsRoutesFilters } from '../Interfaces/BudgetsRoutesInterfaces';
+import { IResultSearchDinamicPac } from '../Interfaces/PacInterfaces';
 
 import {
   IPacFilters,
@@ -34,6 +35,7 @@ export default interface IPacSubImplementsService {
   searchPacs(data: IPacFilters): Promise<ApiResponse<ISearchGeneralPac[] | null>>;
   listDinamicsAssociations(data: IPacFilters): Promise<ApiResponse<IPacComplementary | null>>;
   createAssociations(data: ICreateAssociation): Promise<ApiResponse<IAssociationSuccess | null>>;
+  getPacById(id: number): Promise<ApiResponse<IPac | any | null>>;
 
 }
 
@@ -643,13 +645,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     const getPacReferenceNoRoute = await this.pacRepository.searchPacByMultiData( filtersNoRoute );
     const version: number | undefined = getPacReferenceNoRoute.array[0]?.version;
 
-    // console.log(data.exercise);
-    // console.log(data.resourceType);
-    // console.log(getPacReferenceWithRoute.array);
-    // console.log(getPacReferenceNoRoute.array);
-    // console.log(getRoute.id);
-    // console.log(version);
-
     if( getPacReferenceWithRoute.array.length > 0)
       return new ApiResponse(null, EResponseCodes.FAIL, "Ya está asociada esta ruta al PAC");
 
@@ -679,10 +674,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     if( !savePac || savePac == null || savePac == undefined )
       return new ApiResponse(null, EResponseCodes.FAIL, "No fue posible asociar el PAC");
 
-    console.log(data.annualization?.type);
-    console.log(data.resourceType);
-
-
     const objInsertAnnualization: ICreateAssociation = {
       pacId : savePac.id,
       type : data.annualization?.type,
@@ -702,5 +693,139 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
   }
 
+  async getPacById(id: number): Promise<ApiResponse<IPac | IResultSearchDinamicPac | null>> {
+
+    let filtersByPlanning = { page: 1, perPage: 100000 };
+    let getProjectPlanning = await this.strategicDirectionService.getProjectInvestmentPaginated(filtersByPlanning);
+    if( !getProjectPlanning || getProjectPlanning.data == null || getProjectPlanning.data == undefined)
+      return new ApiResponse(null, EResponseCodes.FAIL, `Ocurrió un error al intentar consultar planeación, no pudimos obtener proyectos`);
+
+    const getPac = await this.pacRepository.getPacById( id );
+    if( !getPac || getPac.array.length <= 0 )
+      return new ApiResponse(null, EResponseCodes.FAIL, `Ocurrió un error al intentar obtener el PAC con ID ${id}`);
+
+      const filter: IBudgetsRoutesFilters = {
+        page: 1,
+        perPage: 100000,
+        idRoute: Number(getPac.array[0]?.budgetRouteId)
+      }
+
+      const getRoute = await this.budgetsRoutesRepository.getBudgetsRoutesPaginated( filter );
+
+      let managementCenter: string = "";
+
+      let fundNumber: string = "";
+      let fundId: number = 0;
+
+      let posPreSapiDescription: string = "";
+      let posPreSapiNumber: string = "";
+      let posPreSapiId: number = 0;
+      let posPreOrigNumber: string = "";
+      let posPreOrigId: number = 0;
+
+      let projectVinculationId: number = 0;
+      let projectPlanningId: number = 0;
+      let projectCode: string = "";
+      let projectName: string = "";
+      let functionalAreaId: number = 0;
+      let functionalAreaNumber: string = "";
+
+      if( getRoute && getRoute.array.length > 0 && getRoute != null ){
+
+        managementCenter = getRoute.array[0].managementCenter;
+
+        fundNumber = getRoute.array[0].fund?.number!;
+        fundId = getRoute.array[0].fund?.id!;
+
+        posPreSapiDescription = getRoute.array[0].pospreSapiencia?.description!;
+        posPreSapiNumber = getRoute.array[0].pospreSapiencia?.number!;
+        posPreSapiId = getRoute.array[0].pospreSapiencia?.id!;
+        posPreOrigNumber = getRoute.array[0].budget?.number!;
+        posPreOrigId = getRoute.array[0].budget?.id!;
+
+        const pkInvestmentProject: number = Number(getRoute.array[0].projectVinculation!.investmentProjectId);
+        const getFunctionalArea = await this.projectsRepository.getProjectById(Number(getRoute.array[0].idProjectVinculation));
+
+        if (getRoute.array[0].projectVinculation?.operationProjectId && getRoute.array[0].projectVinculation?.operationProjectId != null){
+
+          projectVinculationId = Number(getRoute.array[0].idProjectVinculation);
+          projectPlanningId = 0;
+          projectCode = "9000000";
+          projectName = posPreSapiDescription;
+          functionalAreaId = Number(getFunctionalArea!.areaFuntional?.id);
+          functionalAreaNumber = getFunctionalArea!.areaFuntional?.number!;
+
+        }else{
+
+          for (const projPlanning of getProjectPlanning.data.array){
+
+            if (projPlanning.id === pkInvestmentProject){
+
+              projectVinculationId = Number(getRoute.array[0].idProjectVinculation);
+              projectPlanningId = Number(getRoute.array[0].projectVinculation?.investmentProjectId);
+              projectCode = projPlanning.projectCode;
+              projectName = projPlanning.name;
+              functionalAreaId = Number(getFunctionalArea!.areaFuntional?.id);
+              functionalAreaNumber = getFunctionalArea!.areaFuntional?.number!;
+
+            }
+
+          }
+
+        }
+
+      }else{
+
+        return new ApiResponse(null, EResponseCodes.FAIL, `Ocurrió un error al intentar obtener la información de la ruta presupuestal`);
+
+      }
+
+      const totalProgramming: number =
+            Number(getPac.array[0]?.pacAnnualizations![0].jan) + Number(getPac.array[0]?.pacAnnualizations![0].feb) +
+            Number(getPac.array[0]?.pacAnnualizations![0].mar) + Number(getPac.array[0]?.pacAnnualizations![0].abr) +
+            Number(getPac.array[0]?.pacAnnualizations![0].may) + Number(getPac.array[0]?.pacAnnualizations![0].jun) +
+            Number(getPac.array[0]?.pacAnnualizations![0].jul) + Number(getPac.array[0]?.pacAnnualizations![0].ago) +
+            Number(getPac.array[0]?.pacAnnualizations![0].sep) + Number(getPac.array[0]?.pacAnnualizations![0].oct) +
+            Number(getPac.array[0]?.pacAnnualizations![0].nov) + Number(getPac.array[0]?.pacAnnualizations![0].dec);
+
+      const totalCollected: number =
+            Number(getPac.array[0]?.pacAnnualizations![1].jan) + Number(getPac.array[0]?.pacAnnualizations![1].feb) +
+            Number(getPac.array[0]?.pacAnnualizations![1].mar) + Number(getPac.array[0]?.pacAnnualizations![1].abr) +
+            Number(getPac.array[0]?.pacAnnualizations![1].may) + Number(getPac.array[0]?.pacAnnualizations![1].jun) +
+            Number(getPac.array[0]?.pacAnnualizations![1].jul) + Number(getPac.array[0]?.pacAnnualizations![1].ago) +
+            Number(getPac.array[0]?.pacAnnualizations![1].sep) + Number(getPac.array[0]?.pacAnnualizations![1].oct) +
+            Number(getPac.array[0]?.pacAnnualizations![1].nov) + Number(getPac.array[0]?.pacAnnualizations![1].dec);
+
+      const objResult: IResultSearchDinamicPac = {
+
+        resultPac: getPac.array[0],
+        totalsPac: {
+          totalProgramming,
+          totalCollected
+        },
+        resultRoute: {
+          managementCenter,
+          fundNumber,
+          fundId,
+          posPreSapiDescription,
+          posPreSapiNumber,
+          posPreSapiId,
+          posPreOrigNumber,
+          posPreOrigId,
+          projectVinculationId,
+          projectPlanningId,
+          projectCode,
+          projectName,
+          functionalAreaId,
+          functionalAreaNumber
+        }
+
+      }
+
+    return new ApiResponse(objResult, EResponseCodes.OK, "Hemos obtenido un PAC");
+
+  }
 
 }
+
+

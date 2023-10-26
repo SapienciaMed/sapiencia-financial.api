@@ -1,4 +1,5 @@
-import { BaseModel, column, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm';
+import { BaseModel, column, hasMany, HasMany, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm';
+import BudgetsRoutes from './BudgetsRoutes';
 import PacAnnualization from './PacAnnualization';
 
 export default class Pac extends BaseModel {
@@ -34,5 +35,12 @@ export default class Pac extends BaseModel {
     serializeAs: "pacAnnualizations",
   })
   public pacAnnualizations: HasMany<typeof PacAnnualization>;
+
+  @hasOne(() => BudgetsRoutes, {
+    localKey: "id",
+    foreignKey: "id",
+    serializeAs: "budgetRoute",
+  })
+  public budgetRoute: HasOne<typeof BudgetsRoutes>;
 
 }
