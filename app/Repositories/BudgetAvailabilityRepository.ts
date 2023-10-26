@@ -9,7 +9,6 @@ import BudgetAvailability from "../Models/BudgetAvailability";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
-
 export interface IBudgetAvailabilityRepository {
   searchBudgetAvailability(
     filter: IBudgetAvailabilityFilters
