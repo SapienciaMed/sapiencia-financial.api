@@ -5,6 +5,7 @@ import { ApiResponse } from 'App/Utils/ApiResponses';
 import PacProvider from '@ioc:core.PacProvider';
 import PacSubImplementsProvider from '@ioc:core.PacSubImplementsProvider';
 import { DataTransferPac } from '../../Interfaces/PacTransferInterface';
+import { ICreateAssociation } from '../../Interfaces/PacInterfaces';
 
 import {
   IPacAnnualAdapter,
@@ -198,6 +199,24 @@ export default class PacsController {
 
       const data = request.body() as IPacFilters;
       return response.send(await PacSubImplementsProvider.listDinamicsAssociations(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  //* Crear una asociación
+  public async createAssociations({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = request.body() as ICreateAssociation;
+      return response.send(await PacSubImplementsProvider.createAssociations(data));
 
     } catch (err) {
 

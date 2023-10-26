@@ -10,7 +10,7 @@ export default class FunctionalArea  extends BaseModel {
 
   @column({ columnName: "ARF_CODIGO_REFERENCIA", serializeAs: "number" })
   public number: string;
-  
+
   @column({ columnName: "ARF_DENOMINACION", serializeAs: "denomination" })
   public denomination: string;
 
@@ -27,10 +27,10 @@ export default class FunctionalArea  extends BaseModel {
   })
   public dateCreate: DateTime;
 
-
   @hasMany(() => ProjectsVinculation, {
     localKey: "id",
     foreignKey: "functionalAreaId",
   })
   public projectsVinculation: HasMany<typeof ProjectsVinculation>;
+
 }

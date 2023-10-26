@@ -10,21 +10,6 @@ const service = new BudgetAvailabilityService(
 );
 
 test.group("CdpsService Tests", () => {
-  test("CdpsService must have a method getAllCdps with a return", async (assert) => {
-    const result = await service.getAllCdps();
-    assert.isNotNull(result);
-  });
-
-  test("the method getAllCdps must return a ApiResponse", async (assert) => {
-    const result = await service.getAllCdps();
-    assert.instanceOf(result, ApiResponse);
-  });
-
-  test("the method getAllCdps must return a OK code ", async (assert) => {
-    const result = await service.getAllCdps();
-    assert.isTrue(result.operation.code === EResponseCodes.OK);
-  });
-
   /* test("CdpsService must have a method createCdps with a return", async (assert) => {
     const cdpData = {
       "date": "2023-10-18",
@@ -148,5 +133,21 @@ test.group("CdpsService Tests", () => {
 
     assert.equal(result.data.date, data.dateOfCdp);
     assert.equal(result.data.contractObject, data.contractObject);
+  });
+
+  test("CdpsService must have a method getById with a return", async (assert) => {
+    const result = await service.getById("1");
+    assert.isNotNull(result);
+  });
+
+  test("the method getById must return a ApiResponse", async (assert) => {
+    const result = await service.getById("1");
+    assert.instanceOf(result, ApiResponse);
+  });
+
+  test("the method getById must return a OK code ", async (assert) => {
+    const result = await service.getById("1");
+    console.log({ result });
+    assert.isTrue(result.operation.code === EResponseCodes.OK);
   });
 });

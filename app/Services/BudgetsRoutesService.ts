@@ -3,12 +3,14 @@ import { EResponseCodes } from "../Constants/ResponseCodesEnum";
 import { IBudgetsRoutes, IBudgetsRoutesFilters } from "App/Interfaces/BudgetsRoutesInterfaces";
 import { IBudgetsRoutesRepository } from "App/Repositories/BudgetsRoutesRepository";
 
-export interface IBudgetsRoutesService{
+export interface IBudgetsRoutesService {
     getBudgetsRoutesById(id: number): Promise<ApiResponse<IBudgetsRoutes>>;
     getBudgetsRoutesPaginated(filters: IBudgetsRoutesFilters): Promise<ApiResponse<IPagingData<IBudgetsRoutes>>>;
+    getBudgetsRoutesWithoutPagination(): Promise<ApiResponse<IBudgetsRoutes[]>>;
     createBudgetsRoutes(BudgetsRoutes: IBudgetsRoutes): Promise<ApiResponse<IBudgetsRoutes>>;
     updateBudgetsRoutes(BudgetsRoutes: IBudgetsRoutes, id: number): Promise<ApiResponse<IBudgetsRoutes | null>>;
 }
+
 
 export default class BudgetsRoutesService implements IBudgetsRoutesService {
     constructor(private BudgetsRoutesRepository: IBudgetsRoutesRepository) { }
@@ -30,6 +32,11 @@ export default class BudgetsRoutesService implements IBudgetsRoutesService {
     ): Promise<ApiResponse<IPagingData<IBudgetsRoutes>>> {
         const res = await this.BudgetsRoutesRepository.getBudgetsRoutesPaginated(filters);
 
+        return new ApiResponse(res, EResponseCodes.OK);
+    }
+
+    async getBudgetsRoutesWithoutPagination(): Promise<ApiResponse<IBudgetsRoutes[]>> {
+        const res = await this.BudgetsRoutesRepository.getBudgetsRoutesWithoutPagination();
         return new ApiResponse(res, EResponseCodes.OK);
     }
 

@@ -1,4 +1,5 @@
 import {
+  IAmountBudgetAvailability,
   IBudgetAvailability,
   IBudgetAvailabilityFilters,
   ICreateCdp,
@@ -7,14 +8,21 @@ import {
 import BudgetAvailability from "../Models/BudgetAvailability";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
+import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 
 export interface IBudgetAvailabilityRepository {
   searchBudgetAvailability(
     filter: IBudgetAvailabilityFilters
   ): Promise<IPagingData<IBudgetAvailability>>;
   createCdps(cdpDataTotal: ICreateCdp): Promise<any>;
-  getAllCdps(): Promise<any[]>;
-  editBudgetAvailabilityBasicDataCDP(updatedData: IUpdateBasicDataCdp): Promise<any>;
+  editBudgetAvailabilityBasicDataCDP(
+    updatedData: IUpdateBasicDataCdp
+  ): Promise<any>;
+  getById(id: string): Promise<BudgetAvailability>;
+  cancelAmountCdp(
+    id: number,
+    reasonCancellation: string
+  ): Promise<BudgetAvailability>;
 }
 
 export default class BudgetAvailabilityRepository
@@ -94,21 +102,6 @@ export default class BudgetAvailabilityRepository
       array: filteredData as IBudgetAvailability[],
     };
   }
-  async getAllCdps(): Promise<any[]> {
-    const res = await BudgetAvailability.query()
-      .preload("amounts", (query) => {
-        query.preload("budgetRoute", (query) => {
-          query.preload("budget", (query) => {
-            query.where("id", 1);
-          });
-          query.preload("pospreSapiencia");
-          query.preload("funds");
-          query.preload("projectVinculation");
-        });
-      })
-      .paginate(1, 20);
-    return res as unknown as any[];
-  }
 
   async filterCdpsByDateAndContractObject(
     date: string,
@@ -155,6 +148,35 @@ export default class BudgetAvailabilityRepository
     await cdp.related("amounts").createMany(icdArr);
   }
 
+  getById = async (id: string): Promise<any> => {
+    return await BudgetAvailability.query()
+      .where("id", Number(id))
+      .preload("amounts", (query) => {
+        query.preload("budgetRoute", (query) => {
+          query.preload("projectVinculation", (query) => {
+            query.preload("functionalProject");
+          });
+          query.preload("funds");
+          query.preload("budget");
+          query.preload("pospreSapiencia");
+        });
+      });
+  };
+
+  cancelAmountCdp = async (
+    id: number,
+    reasonCancellation: string
+  ): Promise<any> => {
+    const toUpdate = await AmountBudgetAvailability.find(id);
+    if (!toUpdate) {
+      return null;
+    }
+    toUpdate.reasonCancellation = reasonCancellation;
+    toUpdate.isActive = false;
+    await toUpdate.save();
+    return toUpdate.serialize() as IAmountBudgetAvailability;
+  };
+
   async editBudgetAvailabilityBasicDataCDP(
     updatedData: IUpdateBasicDataCdp
   ): Promise<IBudgetAvailability | null> {
@@ -168,7 +190,6 @@ export default class BudgetAvailabilityRepository
     if (!toUpdate) {
       return null;
     }
-
     // Actualizar la fecha de CDP y/o el objeto de contrato si se proporcionan en los datos actualizados.
     if (res.dateOfCdp) {
       if (res.dateOfCdp.isValid) {

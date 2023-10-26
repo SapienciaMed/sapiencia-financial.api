@@ -7,6 +7,7 @@ import {
   ICreateCdp,
   IUpdateBasicDataCdp,
 } from "App/Interfaces/BudgetAvailabilityInterfaces";
+import BudgetAvailability from "App/Models/BudgetAvailability";
 
 export interface IBudgetAvailabilityService {
   searchBudgetAvailability(
@@ -16,6 +17,11 @@ export interface IBudgetAvailabilityService {
   editBudgetAvailabilityBasicDataCDP(
     id: number,
     dataEdit: any
+  ): Promise<ApiResponse<any>>;
+  getById(id: string): Promise<ApiResponse<IBudgetAvailability>>;
+  cancelAmountCdp(
+    id: number,
+    reasonCancellation: string
   ): Promise<ApiResponse<any>>;
 }
 
@@ -35,11 +41,6 @@ export default class BudgetAvailabilityService
     return new ApiResponse(res, EResponseCodes.OK);
   }
 
-  async getAllCdps(): Promise<ApiResponse<any[]>> {
-    const res = await this.budgetAvailabilityRepository.getAllCdps();
-
-    return new ApiResponse(res, EResponseCodes.OK);
-  }
   async createCdps(cdpData: ICreateCdp): Promise<ApiResponse<any>> {
     try {
       const createdData = await this.budgetAvailabilityRepository.createCdps(
@@ -69,15 +70,56 @@ export default class BudgetAvailabilityService
         id,
         ...dataEdit,
       };
-      const res = await this.budgetAvailabilityRepository.editBudgetAvailabilityBasicDataCDP(
-        updatedData
-      );
+      const res =
+        await this.budgetAvailabilityRepository.editBudgetAvailabilityBasicDataCDP(
+          updatedData
+        );
       return new ApiResponse(res, EResponseCodes.OK);
     } catch (error) {
       return new ApiResponse(
         null,
         EResponseCodes.FAIL,
         "Error al editar datos basicos del CDP" + error
+      );
+    }
+  }
+
+  async getById(id: string): Promise<ApiResponse<BudgetAvailability | any>> {
+    try {
+      const data = await this.budgetAvailabilityRepository.getById(id);
+      return new ApiResponse(
+        data,
+        EResponseCodes.OK,
+        "CDP encontrado exitosamente"
+      );
+    } catch (error) {
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "Error al cargar el CDP" + error
+      );
+    }
+  }
+
+  async cancelAmountCdp(
+    id: number,
+    reasonCancellation: string
+  ): Promise<ApiResponse<BudgetAvailability | any>> {
+    try {
+      const data = await this.budgetAvailabilityRepository.cancelAmountCdp(
+        id,
+        reasonCancellation
+      );
+      return new ApiResponse(
+        data,
+        EResponseCodes.OK,
+        "CDP encontrado exitosamente"
+      );
+    } catch (error) {
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "Error al cargar el CDP" + error
       );
     }
   }

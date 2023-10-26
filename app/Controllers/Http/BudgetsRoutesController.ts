@@ -28,6 +28,17 @@ export default class BudgetsRoutesController {
       );
     }
   }
+  public async getBudgetsRoutesWithoutPagination({ response }: HttpContextContract) {
+    try {
+      const result = await BudgetsRoutesProvider.getBudgetsRoutesWithoutPagination();
+      return response.ok(result);
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+}
+
 
   public async createBudgetsRoutes({ request, response }: HttpContextContract) {
     try {

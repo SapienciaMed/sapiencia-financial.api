@@ -89,4 +89,33 @@ export default class BudgetAvailabilityController {
       );
     }
   }
+
+  public async getById({ request, response }: HttpContextContract) {
+    try {
+      const { id } = request.params() as { id: string };
+
+      return response.send(await BudgetAvailabilityProvider.getById(id));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
+
+  public async cancelAmountCdp({ request, response }: HttpContextContract) {
+    try {
+      const { id, reasonCancellation } = request.body() as {
+        id: number;
+        reasonCancellation: string;
+      };
+
+      return response.send(
+        await BudgetAvailabilityProvider.cancelAmountCdp(id, reasonCancellation)
+      );
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
 }

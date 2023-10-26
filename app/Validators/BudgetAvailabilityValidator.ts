@@ -6,15 +6,19 @@ export default class BudgetAvailabilityValidator {
 
   public schema = schema.create({
     id: schema.number.optional(),
+    exercise: schema.string(),
     date: schema.date(),
     contractObject: schema.string(),
     consecutive: schema.number(),
     sapConsecutive: schema.number(),
     icdArr: schema.array().members(
       schema.object().members({
+        id: schema.number.optional(),
         idRppCode: schema.number(),
         cdpPosition: schema.number(),
         amount: schema.number(),
+        isActive: schema.boolean.optional(),
+        reasonCancellation: schema.string.optional(),
       })
     ),
   });

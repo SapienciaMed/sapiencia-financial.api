@@ -34,14 +34,20 @@ export interface IBudgetAvailability {
 }
 
 export interface ICreateCdp {
+  id?: number;
+  exercise: string;
   date: DateTime;
   contractObject: string;
   consecutive: number;
   sapConsecutive: number;
+  rpAssocs?: string;
   icdArr: {
+    id?: number;
     idRppCode: number;
     cdpPosition: number;
     amount: number;
+    isActive?: boolean;
+    reasonCancellation?: string;
   }[];
 }
 
@@ -50,3 +56,12 @@ export interface IUpdateBasicDataCdp {
   dateOfCdp?: DateTime;
   contractObject?: string;
 }
+
+/* export interface IAmountBudgetAvailability{
+  cdpCode: number;
+  idRppCode: number;
+  cdpPosition: number;
+  amount: number;
+  rpAssocs?: string;
+
+} */
