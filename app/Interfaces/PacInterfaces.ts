@@ -237,7 +237,7 @@ export interface macroTotalsWithTransferPac {
 export interface IDinamicListForProjects {
 
   idVinculation: number;
-  idProjectPlanning: number | null;
+  idProjectPlanning?: number | null;
   idProjectFunctional?: number | null;
   projectCode: string;
   posPreSapiRef?: string | null;

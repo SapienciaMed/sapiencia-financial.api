@@ -4,6 +4,9 @@ import { IFunds } from "./FundsInterfaces";
 import { IProjectsVinculation } from "./ProjectsVinculationInterfaces";
 import { IPosPreSapiencia } from "./PosPreSapienciaInterfaces";
 
+
+
+
 export interface IBudgetsRoutes {
   id?: number;
   idProjectVinculation: number;
@@ -12,7 +15,7 @@ export interface IBudgetsRoutes {
   idBudget: number;
   idPospreSapiencia: number;
   idFund: number;
-  balance: number;
+  balance?: number;
   userModify?: string;
   dateModify?: Date;
   userCreate?: string;

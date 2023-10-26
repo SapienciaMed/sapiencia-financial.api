@@ -34,10 +34,12 @@ export default class BudgetsRoutesValidator {
     idBudget: schema.number(),
     idPospreSapiencia: schema.number(),
     idFund:schema.number(),
-    balance:schema.number(),
+    balance:schema.number.optional(),
     userCreate: schema.string.optional(),
     userModify: schema.string.optional(),
   });
+
+
   /**
    * Custom messages for validation failures. You can make use of dot notation `(.)`
    * for targeting nested fields and array expressions `(*)` for targeting all
