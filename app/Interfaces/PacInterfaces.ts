@@ -293,6 +293,7 @@ export interface ITotalsByTransfers {
   idPospreSapiencia?: number,
   idFund?: number,
   idCardTemplate?: string,
+  balance?: number;
   totalProgrammig: number;
   totalCollected: number;
 
@@ -382,6 +383,47 @@ export interface IAssociationSuccess {
   Pac : IPac;
   PacAnnualization : IPacAnnualization;
 
+}
+
+export interface IResultTransferDinamicPac {
+  origins : {
+    original: ITotalsByTransfers[] | null;
+    request: ITotalsByTransfers | null
+  }
+  destinities : {
+    original: ITotalsByTransfers[] | null;
+    request: ITotalsByTransfers | null
+  }
+  resultsTransfer : {
+    updateOrigins: any; //TODO: Pendiente.
+    updateDestinities : any; //TODO: Pendiente.
+    extractProgramming : number;
+    extractCollected : number;
+  }
+}
+
+export interface IResultSearchDinamicPac {
+  resultPac : IPac | null,
+  totalsPac : {
+    totalProgramming : number;
+    totalCollected : number;
+  }
+  resultRoute: {
+    managementCenter : string;
+    fundNumber : string;
+    fundId : number;
+    posPreSapiDescription : string;
+    posPreSapiNumber : string;
+    posPreSapiId : number;
+    posPreOrigNumber : string;
+    posPreOrigId : number;
+    projectVinculationId : number;
+    projectPlanningId : number;
+    projectCode : string;
+    projectName : string;
+    functionalAreaId : number;
+    functionalAreaNumber : string;
+  }
 }
 
 
