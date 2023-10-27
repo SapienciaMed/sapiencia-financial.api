@@ -5,8 +5,8 @@ export interface IBudgetAvailabilityFilters {
   dateOfCdp: string;
   page: number;
   perPage: number;
-  initialDate?: string;
-  endDate?: string;
+  initialDate?: DateTime;
+  endDate?: DateTime;
   pospreId?: number;
   fundId?: number;
   projectId?: number;

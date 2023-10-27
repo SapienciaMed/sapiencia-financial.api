@@ -33,14 +33,16 @@ export default class BudgetAvailabilityRepository
     let { page, perPage } = filter;
 
     // Crear una consulta para disponibilidad presupuestaria con precarga de datos relacionados.
-    const query = BudgetAvailability.query().preload("amounts", (subq) => {
-      subq.preload("budgetRoute", (subq2) => {
-        subq2.preload("budget");
-        subq2.preload("pospreSapiencia");
-        subq2.preload("funds");
-        subq2.preload("projectVinculation");
-      });
-    });
+    const query = BudgetAvailability.query()
+      .preload("amounts", (subq) => {
+        subq.preload("budgetRoute", (subq2) => {
+          subq2.preload("budget");
+          subq2.preload("pospreSapiencia");
+          subq2.preload("funds");
+          subq2.preload("projectVinculation");
+        });
+      })
+      .orderBy("date", "desc");
 
     // Aplicar los filtros de fecha, consecutivo SAP y objeto de contrato si se proporcionan.
     if (filter.dateOfCdp) {
@@ -48,8 +50,8 @@ export default class BudgetAvailabilityRepository
     }
 
     if (filter.initialDate && filter.endDate) {
-      query.where("date", ">=", filter.initialDate);
-      query.where("date", "<=", filter.endDate);
+      query.where("date", ">=", filter.initialDate.toJSDate());
+      query.where("date", "<=", filter.endDate.toJSDate());
     }
 
     if (filter.consecutiveSap) {
@@ -91,25 +93,11 @@ export default class BudgetAvailabilityRepository
     // Extraer datos y metadatos de la respuesta.
     const { meta, data } = res.serialize();
 
-    // Filtrar los datos por año de la fecha 'dateOfCdp'.
-    // const filteredData = data.filter((item) => {
-    //   const yearOfDate = new Date(item.date).getFullYear().toString();
-    //   return yearOfDate === filter.dateOfCdp;
-    // });
-    // console.log(data);
-    // console.log(filteredData);
-
-    // Actualizar el total en los metadatos si no se encontraron datos filtrados.
-    // if (filteredData.length === 0) {
-    //   meta.total = 0;
-    // }
-
     return {
       meta,
       array: data as IBudgetAvailability[],
     };
   }
-
   async filterCdpsByDateAndContractObject(
     date: string,
     contractObject: string
