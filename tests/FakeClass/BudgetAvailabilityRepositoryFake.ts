@@ -28,8 +28,8 @@ export class BudgetAvailabilityRepositoryFake
       sapConsecutive: 1,
     };
 
-    if (updatedData.dateOfCdp) {
-      updatedDataNew.date = updatedData.dateOfCdp;
+    if (updatedData.date) {
+      updatedDataNew.date = updatedData.date;
     }
     if (updatedData.contractObject) {
       updatedDataNew.contractObject = updatedData.contractObject;
