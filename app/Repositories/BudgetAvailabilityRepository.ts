@@ -30,6 +30,8 @@ export default class BudgetAvailabilityRepository
   async searchBudgetAvailability(
     filter: IBudgetAvailabilityFilters
   ): Promise<IPagingData<IBudgetAvailability>> {
+    let { page, perPage } = filter;
+
     // Crear una consulta para disponibilidad presupuestaria con precarga de datos relacionados.
     const query = BudgetAvailability.query().preload("amounts", (subq) => {
       subq.preload("budgetRoute", (subq2) => {
@@ -41,6 +43,10 @@ export default class BudgetAvailabilityRepository
     });
 
     // Aplicar los filtros de fecha, consecutivo SAP y objeto de contrato si se proporcionan.
+    if (filter.dateOfCdp) {
+      query.where("exercise", filter.dateOfCdp);
+    }
+
     if (filter.initialDate && filter.endDate) {
       query.where("date", ">=", filter.initialDate);
       query.where("date", "<=", filter.endDate);
@@ -80,25 +86,27 @@ export default class BudgetAvailabilityRepository
     }
 
     // Realizar la paginación de resultados.
-    const res = await query.paginate(filter.page, filter.perPage);
+    const res = await query.paginate(page, perPage);
 
     // Extraer datos y metadatos de la respuesta.
     const { meta, data } = res.serialize();
 
-    // Filtrar los datos por año de la fecha si se proporciona el filtro 'dateOfCdp'.
-    const filteredData = data.filter((item) => {
-      const yearOfDate = new Date(item.date).getFullYear().toString();
-      return yearOfDate === filter.dateOfCdp;
-    });
+    // Filtrar los datos por año de la fecha 'dateOfCdp'.
+    // const filteredData = data.filter((item) => {
+    //   const yearOfDate = new Date(item.date).getFullYear().toString();
+    //   return yearOfDate === filter.dateOfCdp;
+    // });
+    // console.log(data);
+    // console.log(filteredData);
 
     // Actualizar el total en los metadatos si no se encontraron datos filtrados.
-    if (filteredData.length === 0) {
-      meta.total = 0;
-    }
+    // if (filteredData.length === 0) {
+    //   meta.total = 0;
+    // }
 
     return {
       meta,
-      array: filteredData as IBudgetAvailability[],
+      array: data as IBudgetAvailability[],
     };
   }
 
@@ -189,18 +197,19 @@ export default class BudgetAvailabilityRepository
     if (!toUpdate) {
       return null;
     }
-    // Actualizar la fecha de CDP y/o el objeto de contrato si se proporcionan en los datos actualizados.
-    if (res.dateOfCdp) {
-      if (res.dateOfCdp.isValid) {
-        toUpdate.date = res.dateOfCdp.toJSDate();
-      } else {
-        const dateOfCdpNew = DateTime.fromISO(res.dateOfCdp.toString());
-        const dateOfCdpNew2 = dateOfCdpNew.toJSDate();
-        toUpdate.date = dateOfCdpNew2;
-      }
+    // Actualizar la fecha de CDP y/o el objeto de contrato y/o Consecutivo SAP si se proporcionan en los datos actualizados.
+    if (res.date) {
+      const dateOfCdpNew = DateTime.fromISO(res.date.toString());
+      const dateOfCdpNew2 = dateOfCdpNew.toJSDate();
+      toUpdate.date = dateOfCdpNew2;
+      toUpdate.exercise = new Date(res.date).getFullYear().toString();
     }
     if (res.contractObject) {
       toUpdate.contractObject = res.contractObject;
+    }
+
+    if (res.sapConsecutive || res.sapConsecutive === null) {
+      toUpdate.sapConsecutive = res.sapConsecutive;
     }
 
     // Guardar los cambios en la base de datos.

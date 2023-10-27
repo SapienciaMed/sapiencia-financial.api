@@ -53,8 +53,9 @@ export interface ICreateCdp {
 
 export interface IUpdateBasicDataCdp {
   id: number;
-  dateOfCdp?: DateTime;
+  date?: string;
   contractObject?: string;
+  sapConsecutive?: number | null | undefined;
 }
 
 /* export interface IAmountBudgetAvailability{
