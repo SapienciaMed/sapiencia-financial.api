@@ -2,10 +2,12 @@ import {
   IAmountBudgetAvailability,
   IBudgetAvailability,
   IBudgetAvailabilityFilters,
+  ICreateCdp,
+  IUpdateBasicDataCdp,
 } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import BudgetAvailability from "../Models/BudgetAvailability";
 import { IPagingData } from "App/Utils/ApiResponses";
-import { ICreateCdp } from "App/Interfaces/BudgetAvailabilityInterfaces";
+import { DateTime } from "luxon";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 
 export interface IBudgetAvailabilityRepository {
@@ -13,17 +15,24 @@ export interface IBudgetAvailabilityRepository {
     filter: IBudgetAvailabilityFilters
   ): Promise<IPagingData<IBudgetAvailability>>;
   createCdps(cdpDataTotal: ICreateCdp): Promise<any>;
-  getById(id: string): Promise<BudgetAvailability>
-  cancelAmountCdp(id: number, reasonCancellation: string): Promise<BudgetAvailability>
+  editBudgetAvailabilityBasicDataCDP(
+    updatedData: IUpdateBasicDataCdp
+  ): Promise<any>;
+  getById(id: string): Promise<BudgetAvailability>;
+  cancelAmountCdp(
+    id: number,
+    reasonCancellation: string
+  ): Promise<BudgetAvailability>;
   linkMga(): Promise<any>
 }
 
 export default class BudgetAvailabilityRepository
-  implements IBudgetAvailabilityRepository {
-
+  implements IBudgetAvailabilityRepository
+{
   async searchBudgetAvailability(
     filter: IBudgetAvailabilityFilters
   ): Promise<IPagingData<IBudgetAvailability>> {
+    // Crear una consulta para disponibilidad presupuestaria con precarga de datos relacionados.
     const query = BudgetAvailability.query().preload("amounts", (subq) => {
       subq.preload("budgetRoute", (subq2) => {
         subq2.preload("budget");
@@ -33,6 +42,7 @@ export default class BudgetAvailabilityRepository
       });
     });
 
+    // Aplicar los filtros de fecha, consecutivo SAP y objeto de contrato si se proporcionan.
     if (filter.initialDate && filter.endDate) {
       query.where("date", ">=", filter.initialDate);
       query.where("date", "<=", filter.endDate);
@@ -46,6 +56,7 @@ export default class BudgetAvailabilityRepository
       query.whereILike("contractObject", `%${filter.contractObject}%`);
     }
 
+    // Aplicar filtros basados en el ID de Pospre, Fondo o Proyecto si se proporcionan.
     if (filter.pospreId) {
       query.whereHas("amounts", (sub) =>
         sub.whereHas("budgetRoute", (sub2) =>
@@ -70,14 +81,19 @@ export default class BudgetAvailabilityRepository
       );
     }
 
+    // Realizar la paginación de resultados.
     const res = await query.paginate(filter.page, filter.perPage);
 
+    // Extraer datos y metadatos de la respuesta.
     const { meta, data } = res.serialize();
 
+    // Filtrar los datos por año de la fecha si se proporciona el filtro 'dateOfCdp'.
     const filteredData = data.filter((item) => {
       const yearOfDate = new Date(item.date).getFullYear().toString();
       return yearOfDate === filter.dateOfCdp;
     });
+
+    // Actualizar el total en los metadatos si no se encontraron datos filtrados.
     if (filteredData.length === 0) {
       meta.total = 0;
     }
@@ -133,7 +149,6 @@ export default class BudgetAvailabilityRepository
     await cdp.related('amounts').createMany(icdArr);
   }
 
-
   getById = async (id: string): Promise<any> => {
     return await BudgetAvailability.query().where('id', Number(id)).preload('amounts', (query) => {
       query.where('isActive', '=', true)
@@ -153,12 +168,11 @@ export default class BudgetAvailabilityRepository
     if (!toUpdate) {
       return null;
     }
-
     toUpdate.reasonCancellation = reasonCancellation;
     toUpdate.isActive = false;
     await toUpdate.save();
     return toUpdate.serialize() as IAmountBudgetAvailability;
-  }
+  };
 
   linkMga = async (): Promise<any> => {
     /* const toUpdate = await AmountBudgetAvailability.find(id);
@@ -169,7 +183,38 @@ export default class BudgetAvailabilityRepository
       await toUpdate.save();
       return toUpdate.serialize() as IAmountBudgetAvailability; */
   }
+  
+  async editBudgetAvailabilityBasicDataCDP(
+    updatedData: IUpdateBasicDataCdp
+  ): Promise<IBudgetAvailability | null> {
+    // Almacenar los datos actualizados en una variable.
+    const res = updatedData;
 
+    // Buscar la disponibilidad presupuestaria que se va a actualizar por su ID.
+    const toUpdate = await BudgetAvailability.find(res.id);
 
+    // Verificar si la disponibilidad presupuestaria no se encontró en la base de datos.
+    if (!toUpdate) {
+      return null;
+    }
+    // Actualizar la fecha de CDP y/o el objeto de contrato si se proporcionan en los datos actualizados.
+    if (res.dateOfCdp) {
+      if (res.dateOfCdp.isValid) {
+        toUpdate.date = res.dateOfCdp.toJSDate();
+      } else {
+        const dateOfCdpNew = DateTime.fromISO(res.dateOfCdp.toString());
+        const dateOfCdpNew2 = dateOfCdpNew.toJSDate();
+        toUpdate.date = dateOfCdpNew2;
+      }
+    }
+    if (res.contractObject) {
+      toUpdate.contractObject = res.contractObject;
+    }
 
+    // Guardar los cambios en la base de datos.
+    await toUpdate.save();
+
+    // Devolver los datos de disponibilidad presupuestaria actualizados en formato serializado.
+    return toUpdate.serialize() as IBudgetAvailability;
+  }
 }

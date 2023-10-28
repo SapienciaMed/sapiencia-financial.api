@@ -1,0 +1,383 @@
+/api/v1/cdp/search-cdps:
+  post:
+    tags:
+      - CDP
+    summary: Search CDPS
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              page:
+                type: number
+                example: 1
+              perPage:
+                type: number
+                example: 10
+              dateOfCdp:
+                type: string
+                example: '2023'
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: User payload
+        required: true
+        schema:
+          type: object
+          properties:
+            dateOfCdp:
+              type: string
+              example: '2023'
+              required: true
+            page:
+              type: number
+              example: 1
+            perPage:
+              type: number
+              example: 20
+    responses:
+      '200':
+        description: Ok
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cdps'
+            examples:
+              Consulta:
+                value:
+                  data:
+                    id: 123
+                    cdpCode: 456
+                    idRppCode: 789
+                    cdpPosition: 1
+                    amount: '5000.00'
+                    budgetRoute:
+                      id: 789
+                      idProjectVinculation: 321
+                      managementCenter: '98765432'
+                      div: TestDiv
+                      idBudget: 555
+                      idPospreSapiencia: 999
+                      idFund: 111
+                      balance: '20000.00'
+                      userModify: '987654321'
+                      dateModify: '2023-10-25T09:00:00.000Z'
+                      userCreate: '123456789'
+                      dateCreate: '2023-10-25T09:00:00.000-05:00'
+                      budget:
+                        id: 555
+                        number: TEST20230208
+                        ejercise: 2023
+                        entityId: 777
+                        denomination: Sample Budget - Denomination
+                        description: Sample budget description
+                        userModify: '987654321'
+                        dateModify: '2023-10-25T09:00:00.000Z'
+                        userCreate: '123456789'
+                        dateCreate: '2023-10-25T09:00:00.000-05:00'
+                      pospreSapiencia:
+                        id: 999
+                        number: TEST20200802
+                        budgetId: 555
+                        ejercise: 2023
+                        description: Sample pospreSapiencia description
+                        consecutive: '02'
+                        assignedTo: '987654321'
+                        userCreate: '987654321'
+                        dateModify: '2023-10-25T09:00:00.000Z'
+                        dateCreate: '2023-10-25T09:00:00.000-05:00'
+                        userModify: '987654321'
+                      fund:
+                        id: 111
+                        entityId: 777
+                        number: TEST00123
+                        denomination: Sample Fund - User987654321
+                        description: Sample fund description
+                        dateFrom: '2023-11-01T10:00:00.000Z'
+                        dateTo: '2023-11-06T10:00:00.000Z'
+                        userModify: '987654321'
+                        dateModify: '2023-10-25T09:00:00.000Z'
+                        userCreate: '123456789'
+                        dateCreate: '2023-10-25T09:00:00.000-05:00'
+                      projectVinculation:
+                        id: 321
+                        functionalAreaId: 444
+                        linked: true
+                        type: SampleType
+                        operationProjectId: null
+                        investmentProjectId: 555
+                        userCreate: '987654321'
+                        dateCreate: '2023-10-25T09:00:00.000-05:00'
+                    meta:
+                      total: 10
+                      per_page: 5
+                      current_page: 1
+                      last_page: 2
+                      first_page: 1
+                      first_page_url: /?page=1
+                      last_page_url: /?page=2
+                      next_page_url: /?page=2
+                      previous_page_url: null
+                    operation:
+                      code: OK
+                  operation:
+                    code: OK
+    security:
+      - apiAuth: []
+
+/api/v1/cdp/edit-cdp/{id}:
+  put:
+    tags:
+      - CDP
+    summary: Edit Budget Availability Basic Data CDP
+    parameters:
+      - in: path
+        name: id
+        description: ID of the CDP to edit
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: New basic data for the CDP
+        required: true
+        schema:
+          type: object
+          properties:
+            dateOfCdp:
+              type: string
+              example: '2024-10-18T00:00:00.000-05:00'
+            contractObject:
+              type: string
+              example: Editado
+    produces:
+      - application/json
+    responses:
+      '200':
+        description: Ok
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditCdp'
+            example:
+              data:
+                id: 11
+                date: '2025-10-18T05:00:00.000Z'
+                contractObject: Este es el objeto que vamos a actualizar
+                consecutive: 1
+                sapConsecutive: 1
+              operation:
+                code: OK
+    security:
+      - apiAuth: []
+
+components:
+  schemas:
+    Cdps:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 123
+        cdpCode:
+          type: number
+          example: 456
+        idRppCode:
+          type: number
+          example: 789
+        cdpPosition:
+          type: number
+          example: 1
+        amount:
+          type: string
+          example: '5000.00'
+        budgetRoute:
+          type: object
+          properties:
+            id:
+              type: number
+              example: 789
+            idProjectVinculation:
+              type: number
+              example: 321
+            managementCenter:
+              type: string
+              example: '98765432'
+            div:
+              type: string
+              example: TestDiv
+            idBudget:
+              type: number
+              example: 555
+            idPospreSapiencia:
+              type: number
+              example: 999
+            idFund:
+              type: number
+              example: 111
+            balance:
+              type: string
+              example: '20000.00'
+            userModify:
+              type: string
+              example: '987654321'
+            dateModify:
+              type: string
+              example: '2023-10-25T09:00:00.000Z'
+            userCreate:
+              type: string
+              example: '123456789'
+            dateCreate:
+              type: string
+              example: '2023-10-25T09:00:00.000-05:00'
+            budget:
+              type: object
+              properties:
+                id:
+                  type: number
+                  example: 555
+                number:
+                  type: string
+                  example: TEST20230208
+                ejercise:
+                  type: number
+                  example: 2023
+                entityId:
+                  type: number
+                  example: 777
+                denomination:
+                  type: string
+                  example: Sample Budget - Denomination
+                description:
+                  type: string
+                  example: Sample budget description
+                userModify:
+                  type: string
+                  example: '987654321'
+                dateModify:
+                  type: string
+                  example: '2023-10-25T09:00:00.000Z'
+                userCreate:
+                  type: string
+                  example: '123456789'
+                dateCreate:
+                  type: string
+                  example: '2023-10-25T09:00:00.000-05:00'
+            pospreSapiencia:
+              type: object
+              properties:
+                id:
+                  type: number
+                  example: 999
+                number:
+                  type: string
+                  example: TEST20200802
+                budgetId:
+                  type: number
+                  example: 555
+                ejercise:
+                  type: number
+                  example: 2023
+                description:
+                  type: string
+                  example: Sample pospreSapiencia description
+                consecutive:
+                  type: string
+                  example: '02'
+                assignedTo:
+                  type: string
+                  example: '987654321'
+                userCreate:
+                  type: string
+                  example: '987654321'
+                dateModify:
+                  type: string
+                  example: '2023-10-25T09:00:00.000Z'
+                dateCreate:
+                  type: string
+                  example: '2023-10-25T09:00:00.000-05:00'
+                userModify:
+                  type: string
+                  example: '987654321'
+            fund:
+              type: object
+              properties:
+                id:
+                  type: number
+                  example: 111
+                entityId:
+                  type: number
+                  example: 777
+                number:
+                  type: string
+                  example: TEST00123
+                denomination:
+                  type: string
+                  example: Sample Fund - User987654321
+                description:
+                  type: string
+                  example: Sample fund description
+                dateFrom:
+                  type: string
+                  example: '2023-11-01T10:00:00.000Z'
+                dateTo:
+                  type: string
+                  example: '2023-11-06T10:00:00.000Z'
+                userModify:
+                  type: string
+                  example: '987654321'
+                dateModify:
+                  type: string
+                  example: '2023-10-25T09:00:00.000Z'
+                userCreate:
+                  type: string
+                  example: '123456789'
+                dateCreate:
+                  type: string
+                  example: '2023-10-25T09:00:00.000-05:00'
+            projectVinculation:
+              type: object
+              properties:
+                id:
+                  type: number
+                  example: 321
+                functionalAreaId:
+                  type: number
+                  example: 444
+                linked:
+                  type: boolean
+                  example: true
+                type:
+                  type: string
+                  example: SampleType
+                operationProjectId:
+                  type: null
+                investmentProjectId:
+                  type: number
+                  example: 555
+                userCreate:
+                  type: string
+                  example: '987654321'
+                dateCreate:
+                  type: string
+                  example: '2023-10-25T09:00:00.000-05:00'
+    EditCdp:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 123
+        date:
+          type: string
+          example: '2025-10-18T12:34:56.789Z'
+        contractObject:
+          type: string
+          example: Este es un objeto de contrato actualizado
+        consecutive:
+          type: number
+          example: 42
+        sapConsecutive:
+          type: number
+          example: 99

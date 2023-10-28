@@ -1,5 +1,5 @@
 import { IBudgetsRoutes } from "./BudgetsRoutesInterfaces";
-import { DateTime } from 'luxon';
+import { DateTime } from "luxon";
 
 export interface IBudgetAvailabilityFilters {
   dateOfCdp: string;
@@ -33,7 +33,6 @@ export interface IBudgetAvailability {
   icdAmounts: IAmountBudgetAvailability[];
 }
 
-
 export interface ICreateCdp {
   id?: number;
   exercise: string;
@@ -41,7 +40,7 @@ export interface ICreateCdp {
   contractObject: string;
   consecutive: number;
   sapConsecutive: number;
-  rpAssocs?:string;
+  rpAssocs?: string;
   icdArr: {
     id?: number;
     idRppCode: number;
@@ -50,6 +49,12 @@ export interface ICreateCdp {
     isActive?: boolean;
     reasonCancellation?: string;
   }[];
+}
+
+export interface IUpdateBasicDataCdp {
+  id: number;
+  dateOfCdp?: DateTime;
+  contractObject?: string;
 }
 
 /* export interface IAmountBudgetAvailability{

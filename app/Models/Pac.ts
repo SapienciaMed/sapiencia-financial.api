@@ -1,4 +1,5 @@
-import { BaseModel, column, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm';
+import { BaseModel, column, hasMany, HasMany, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm';
+import BudgetsRoutes from './BudgetsRoutes';
 import PacAnnualization from './PacAnnualization';
 
 export default class Pac extends BaseModel {
@@ -8,7 +9,7 @@ export default class Pac extends BaseModel {
   public id: number
 
   @column({ columnName:'PAC_TIPO_RECURSO', serializeAs:'sourceType' })
-  public sourceType: number
+  public sourceType: string
 
   @column({ columnName:'PAC_CODRPP_RUTA_PRESUPUESTAL', serializeAs:'budgetRouteId' })
   public budgetRouteId: number
@@ -29,10 +30,10 @@ export default class Pac extends BaseModel {
   public userCreate: string
 
   @column({ columnName:'PAC_FECHA_CREO', serializeAs: "dateCreate" })
-  public dateCreate: string
+  public dateCreate: Date
 
   @column({ columnName:'PAC_FECHA_MODIFICO', serializeAs: "dateModify" })
-  public dateModify: string
+  public dateModify: Date
 
   @hasMany(() => PacAnnualization, {
     localKey: "id",
@@ -40,5 +41,12 @@ export default class Pac extends BaseModel {
     serializeAs: "pacAnnualizations",
   })
   public pacAnnualizations: HasMany<typeof PacAnnualization>;
+
+  @hasOne(() => BudgetsRoutes, {
+    localKey: "id",
+    foreignKey: "id",
+    serializeAs: "budgetRoute",
+  })
+  public budgetRoute: HasOne<typeof BudgetsRoutes>;
 
 }
