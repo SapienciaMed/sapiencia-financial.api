@@ -76,19 +76,6 @@ export interface IProjectAddition {
   linked : boolean;
 }
 
-export interface IProjectAdditionList {
-  id : number;
-  functionalAreaId : number;
-  projectId : string;
-  budgetValue : number;
-  linked : boolean;
-  areaFuntional?: IFunctionalAreaAddition
-  conceptProject?: string;
-  assignmentValue: number
-  type?: string;
-  investmentProjectId?: number;
-  operationProjectId?: number;
-}
 
 
 
