@@ -89,18 +89,31 @@ export default class PacService implements IPacService {
       rowsWithFieldsEmpty,
       rowsWithFieldNumberInvalid } = await this.pacRepository.uploadPac(file);
 
+    let errors: IErrosPac[] = [];
     if (validTemplateStatus.error) {
-      return new ApiResponse({ validTemplateStatus, rowsWithFieldsEmpty, rowsWithFieldNumberInvalid }, EResponseCodes.FAIL, validTemplateStatus.message);
+      errors.push({
+        message: validTemplateStatus.message,
+        error: true,
+        rowError: 1,
+        columnError: null,
+      });
+      return new ApiResponse({ responseSave: false, errors, validTemplateStatus, rowsWithFieldsEmpty, rowsWithFieldNumberInvalid }, EResponseCodes.FAIL, "El archivo no pudo ser cargado, revisa las validaciones");
     }
 
     //* Validaciones de existencia de fondo, proyecto, pospre, ruta existente y ruta repetida
     body.version = body.typePac == 'Nueva versión' ? versionFixed + 1 : versionFixed;
     if (rowsWithFieldsEmpty.length > 0) {
-      return new ApiResponse({ responseSave: false, errors: rowsWithFieldsEmpty }, EResponseCodes.OK, "Algún dato de la ruta está vacío");
-      //return new ApiResponse({errors:validTemplateStatus.concat(rowsWithFieldsEmpty).concat(rowsWithFieldNumberInvalid)} , EResponseCodes.FAIL, "Algún dato de la ruta está vacío");
+      errors.push({
+        message: "Algún dato de la ruta está vacío",
+        error: true,
+        rowError: 1,
+        columnError: null,
+      });
+      
+      return new ApiResponse({ responseSave: false, errors: rowsWithFieldsEmpty }, EResponseCodes.OK, "El archivo no pudo ser cargado, revisa las validaciones");
     }
     const routesValidationRequest: ApiResponse<IResultProcRoutes> = await this.reviewBudgetsRoute(data, body);
-    let errors: IErrosPac[] = [];
+
 
     if (rowsWithFieldNumberInvalid.length > 0) {
       errors.push(...rowsWithFieldNumberInvalid)
@@ -125,6 +138,12 @@ export default class PacService implements IPacService {
       case 'Adición':
         // ya debe existir una carga inicial
         if (pacsByExercise.length == 0) {
+          errors.push({
+            message: "No tiene registros en la carga inicial, debe seleccionar carga inicial",
+            error: true,
+            rowError: 1,
+            columnError: null,
+          });
           return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
         dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed, loadedRoutesCurrentExcersice)
@@ -133,6 +152,12 @@ export default class PacService implements IPacService {
       case 'Reducción':
         /* ya debe existir una carga inicial */
         if (pacsByExercise.length == 0) {
+          errors.push({
+            message: "No tiene registros en la carga inicial, debe seleccionar carga inicial",
+            error: true,
+            rowError: 1,
+            columnError: null,
+          });
           return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
 
@@ -142,6 +167,12 @@ export default class PacService implements IPacService {
       case 'Recaudo':
         // ya debe existir una carga inicial
         if (pacsByExercise.length == 0) {
+          errors.push({
+            message: "No tiene registros en la carga inicial, debe seleccionar carga inicial",
+            error: true,
+            rowError: 1,
+            columnError: null,
+          });
           return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
         dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed, loadedRoutesCurrentExcersice)
@@ -153,6 +184,12 @@ export default class PacService implements IPacService {
       case 'Nueva versión':
         // ya debe existir una carga inicial
         if (pacsByExercise.length == 0) {
+          errors.push({
+            message: "No tiene registros en la carga inicial, debe seleccionar carga inicial",
+            error: true,
+            rowError: 1,
+            columnError: null,
+          });
           return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
         }
         let responseValidateNewVersion = this.validateRoutesWithCollectionInNewVersion(loadedRoutesCurrentExcersice, routesValidationRequest.data);
@@ -187,7 +224,9 @@ export default class PacService implements IPacService {
     const errors: IErrosPac[] = [];
 
     dataExcel.condensed.forEach((excelItem, index) => {
+
       if (index == 0) { index += 1 }
+      console.log({index})
       const budgetRouteId = excelItem.budgetRouteId;
       const matchingRoute = loadedRoutesCurrentExcersice.find((route) => route.budgetRouteId === budgetRouteId);
 
@@ -483,7 +522,7 @@ export default class PacService implements IPacService {
     let errorsDetected: IErrosPac[] = []
     data.condensed.forEach((e: any, index: number) => {
       let balance = e.balance;
-      if (index == 0) { index += 1 }
+      index+=1;
       let bugetPrgrammed = e.pacAnnualizationProgrammed.jan +
         e.pacAnnualizationProgrammed.feb +
         e.pacAnnualizationProgrammed.mar +
@@ -582,7 +621,7 @@ export default class PacService implements IPacService {
             rowError: index + 1,
             columnError: null
           })
-        } else */ if (balance == 0 && parseFloat(e.pacAnnualizationCollected.totalBudget) <= 0) {
+        } else */ if (balance == 0 || parseFloat(e.pacAnnualizationCollected.totalBudget) <= 0) {
           errorsDetected.push({
             message: "El recaudo no tiene presupuesto sapiencia",
             error: true,
@@ -955,7 +994,7 @@ export default class PacService implements IPacService {
     //? ************************************************************************************
     //? Validación 2
     //? ************************************************************************************
-    if( originsGetCalculatedOfRequestTransfer.data == null ||  destinitiesGetCalculatedOfRequestTransfer == null){
+    if (originsGetCalculatedOfRequestTransfer.data == null || destinitiesGetCalculatedOfRequestTransfer == null) {
 
       return new ApiResponse(null, EResponseCodes.FAIL, "El valor del presupuesto sapiencia es diferente al valor del presupuesto.");
 
@@ -988,8 +1027,8 @@ export default class PacService implements IPacService {
       //Ahora sumo los nuevos valores y debería obtener la sumatoria original de recaudo
       const plusCollectedsWithTransfer: number = newCollectedOriginalOrigin + newCollectedOriginalDestinity;
 
-      console.log({plusCollectedsWithTransfer});
-      console.log({plusCollectedOriginal});
+      console.log({ plusCollectedsWithTransfer });
+      console.log({ plusCollectedOriginal });
 
       //* Validación 5
       if (plusCollectedsWithTransfer !== plusCollectedOriginal) {
@@ -1017,7 +1056,7 @@ export default class PacService implements IPacService {
 
       //Obtengo valor programado original del origen (Recordemos que viene como un array en sumatoria)
       const origenOriginalResultCall: ITotalsByTransfers[] | null = originsGetCalculatedOriginal.data;
-      console.log({origenOriginalResultCall})
+      console.log({ origenOriginalResultCall })
       const origenOriginalValueProgramming: number | null = origenOriginalResultCall![origenOriginalResultCall?.length! - 1].totalProgrammig;
 
       //Obtengo valor programado original del destino (Recordemos que viene como un array en sumatoria)
@@ -1038,9 +1077,7 @@ export default class PacService implements IPacService {
       //Ahora sumo los nuevos valores y debería obtener la sumatoria original de programado
       const plusProgrammingsWithTransfer: number = newProgrammingOriginalOrigin + newProgrammingOriginalDestinity;
 
-      console.log(originsGetCalculatedOfRequestTransfer.data?.totalProgrammig);
-      console.log(destinitiesGetCalculatedOfRequestTransfer.data?.totalCollected);
-
+      
       //*Validación 3
       if (plusProgrammingsWithTransfer !== plusProgrammingOriginal) {
 
@@ -1128,7 +1165,7 @@ export default class PacService implements IPacService {
         if (!getMyRoute)
           return new ApiResponse(null, EResponseCodes.FAIL, `No se encontro la ruta con V.Proyecto:${x.idProjectVinculation}, Fondo:${x.idFund}, PosPreOrigen:${x.idBudget} y PosPreSapi:${x.idPospreSapiencia}. Revise la combinación de datos. [getCalculatedOfRequestTransfer]`);
 
-        if( (totalProgrammig !== Number(getMyRoute.balance)) && info.headTransfer.pacType == "Programado" ){
+        if ((totalProgrammig !== Number(getMyRoute.balance)) && info.headTransfer.pacType == "Programado") {
 
           return new ApiResponse(null, EResponseCodes.FAIL, 'El valor del presupuesto sapiencia es diferente al valor del presupuesto.');
 
