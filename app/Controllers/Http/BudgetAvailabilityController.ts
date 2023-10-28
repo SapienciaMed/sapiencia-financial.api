@@ -61,5 +61,17 @@ export default class BudgetAvailabilityController {
     }
 
   }
+  
+  public async linkMga({response }: HttpContextContract) {
+    try {
+
+      return response.send(await BudgetAvailabilityProvider.linkMga());
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+
+  }
 
 }

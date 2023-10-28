@@ -13,14 +13,14 @@ export interface IBudgetAvailabilityRepository {
     filter: IBudgetAvailabilityFilters
   ): Promise<IPagingData<IBudgetAvailability>>;
   createCdps(cdpDataTotal: ICreateCdp): Promise<any>;
-  getById(id:string): Promise<BudgetAvailability>
-  cancelAmountCdp(id:number, reasonCancellation:string): Promise<BudgetAvailability>
+  getById(id: string): Promise<BudgetAvailability>
+  cancelAmountCdp(id: number, reasonCancellation: string): Promise<BudgetAvailability>
+  linkMga(): Promise<any>
 }
 
 export default class BudgetAvailabilityRepository
-  implements IBudgetAvailabilityRepository
-{
-  
+  implements IBudgetAvailabilityRepository {
+
   async searchBudgetAvailability(
     filter: IBudgetAvailabilityFilters
   ): Promise<IPagingData<IBudgetAvailability>> {
@@ -75,7 +75,7 @@ export default class BudgetAvailabilityRepository
     const { meta, data } = res.serialize();
 
     const filteredData = data.filter((item) => {
-      const yearOfDate = item.date.substring(0, 4);
+      const yearOfDate = new Date(item.date).getFullYear().toString();
       return yearOfDate === filter.dateOfCdp;
     });
     if (filteredData.length === 0) {
@@ -87,7 +87,7 @@ export default class BudgetAvailabilityRepository
       array: filteredData as IBudgetAvailability[],
     };
   }
-  
+
   async filterCdpsByDateAndContractObject(
     date: string,
     contractObject: string
@@ -97,7 +97,7 @@ export default class BudgetAvailabilityRepository
       .where("CDP_OBJETO_CONTRACTUAL", "LIKE", `%${contractObject}%`)
       .preload("amounts");
 
-    const cdps =   results.map(result => result.toJSON());
+    const cdps = results.map(result => result.toJSON());
     return cdps;
   }
 
@@ -131,24 +131,25 @@ export default class BudgetAvailabilityRepository
     cdp.sapConsecutive = sapConsecutive;
     await cdp.save();
     await cdp.related('amounts').createMany(icdArr);
-}
+  }
 
 
-getById = async(id: string): Promise<any>=> {
-  return await BudgetAvailability.query().where('id',Number(id)).preload('amounts',(query)=>{
-    query.preload('budgetRoute',(query)=>{
-      query.preload('projectVinculation',(query)=>{
-        query.preload('functionalProject')
+  getById = async (id: string): Promise<any> => {
+    return await BudgetAvailability.query().where('id', Number(id)).preload('amounts', (query) => {
+      query.where('isActive', '=', true)
+      query.preload('budgetRoute', (query) => {
+        query.preload('projectVinculation', (query) => {
+          query.preload('functionalProject')
+        })
+        query.preload('funds')
+        query.preload('budget')
+        query.preload('pospreSapiencia')
       })
-      query.preload('funds')
-      query.preload('budget')
-      query.preload('pospreSapiencia')
     })
-  })
-}
+  }
 
-cancelAmountCdp = async(id:number, reasonCancellation:string): Promise<any>=> {
-  const toUpdate = await AmountBudgetAvailability.find(id);
+  cancelAmountCdp = async (id: number, reasonCancellation: string): Promise<any> => {
+    const toUpdate = await AmountBudgetAvailability.find(id);
     if (!toUpdate) {
       return null;
     }
@@ -157,7 +158,17 @@ cancelAmountCdp = async(id:number, reasonCancellation:string): Promise<any>=> {
     toUpdate.isActive = false;
     await toUpdate.save();
     return toUpdate.serialize() as IAmountBudgetAvailability;
-}
+  }
+
+  linkMga = async (): Promise<any> => {
+    /* const toUpdate = await AmountBudgetAvailability.find(id);
+      if (!toUpdate) {
+        return null;
+      }
+  
+      await toUpdate.save();
+      return toUpdate.serialize() as IAmountBudgetAvailability; */
+  }
 
 
 

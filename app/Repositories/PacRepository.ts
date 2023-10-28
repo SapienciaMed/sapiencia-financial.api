@@ -226,6 +226,7 @@ export default class PacRepository implements IPacRepository {
   }
 
     updateOrCreatePac = async (routesValidationRequest: any) => {
+        
         for await (let pac of routesValidationRequest.condensed) {
             let annualizations: any[] = []
             delete pac.numberExcelRom
@@ -237,7 +238,7 @@ export default class PacRepository implements IPacRepository {
             delete pac.pacAnnualizationProgrammed;
             delete pac.pacAnnualizationCollected;
             const toCreatePac = new Pac();
-            toCreatePac.fill({ ...pac, dateCreate: new Date('2023-09-04 17:51:46') });
+            toCreatePac.fill({ ...pac });
             let pacCreated = await toCreatePac.save();
             await pacCreated
                 .related('pacAnnualizations')

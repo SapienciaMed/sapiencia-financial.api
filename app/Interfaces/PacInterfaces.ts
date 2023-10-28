@@ -22,6 +22,8 @@ export interface IBody {
   typeSource: string;
   typePac: string;
   version?:number;
+  userCreate?:string;
+  userModify?:string;
 }
 
 //Desestructuración de interfaz final de data
@@ -95,8 +97,10 @@ export interface IResultProcRoutes {
   version?: number,
   exercise?: number,
   isActive?: boolean,
-  dateModify?: Date,
-  dateCreate?: Date,
+  dateModify?: Date | string,
+  dateCreate?: Date | string,
+  userCreate?:string;
+  userModify?:string;
   pacAnnualizationProgrammed?: any; //IPacAnnualization;
   pacAnnualizationCollected?: any; //IPacAnnualization;
 

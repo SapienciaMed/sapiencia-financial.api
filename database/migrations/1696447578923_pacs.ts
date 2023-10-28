@@ -15,10 +15,23 @@ export default class extends BaseSchema {
         .references("RPP_CODIGO")
         .inTable("RPP_RUTAS_PRESUPUESTALES")
         .comment("Codigo de la ruta presupuestal (FK RPP)");
-      
+
       table.integer('PAC_VERSION').notNullable().comment('Numero de la version cargada')
       table.integer('PAC_VIGENCIA').notNullable().comment('Año de vigencia del PAC')
       table.boolean('PAC_ACTIVO').defaultTo(true).notNullable().comment('Version vigente del presupupuesto')
+
+
+      table
+        .string("PAC_USUARIO_CREO", 15)
+        .notNullable()
+        .comment("Número del documento del usuario que creó el registro");
+
+      table
+        .string("PAC_USUARIO_MODIFICO", 15)
+        .nullable()
+        .comment("Numero del documento del ultimo usuario que hizo una modificacion");
+
+
       /* table
         .timestamp("PAC_FECHA_MODIFICO")
         .nullable()
@@ -28,9 +41,9 @@ export default class extends BaseSchema {
         .notNullable()
         .comment("Fecha y hora de creación del registro");
  */
-        table.string('PAC_FECHA_MODIFICO').nullable()
-        table.string('PAC_FECHA_CREO').nullable()
-      })
+      table.string('PAC_FECHA_MODIFICO').nullable()
+      table.string('PAC_FECHA_CREO').nullable()
+    })
   }
 
   public async down() {

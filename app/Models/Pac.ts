@@ -21,6 +21,12 @@ export default class Pac extends BaseModel {
 
   @column({ columnName:'PAC_ACTIVO', serializeAs:'isActive' })
   public isActive: boolean
+  
+  @column({ columnName:'PAC_USUARIO_MODIFICO', serializeAs:'userModify' })
+  public userModify: string
+  
+  @column({ columnName:'PAC_USUARIO_CREO', serializeAs:'userCreate' })
+  public userCreate: string
 
   @column({ columnName:'PAC_FECHA_CREO', serializeAs: "dateCreate" })
   public dateCreate: string
