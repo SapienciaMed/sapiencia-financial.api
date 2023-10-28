@@ -37,7 +37,9 @@ export default class BudgetAvailabilityRepository
         subq2.preload("budget");
         subq2.preload("pospreSapiencia");
         subq2.preload("funds");
-        subq2.preload("projectVinculation");
+        subq2.preload("projectVinculation",(query)=>{
+          query.preload('functionalProject')
+        });
       });
     });
 
