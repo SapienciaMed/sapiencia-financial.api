@@ -15,7 +15,7 @@ import {
 export default class PacsController {
 
   public async uploadPac({ request, response }: HttpContextContract) {
-    let body = request.body() as { exercise: number, typeSource: string, typePac: string };
+    let body = request.body() as { exercise: number, typeSource: string, typePac: string, userCreate?: string, userModify?: string };
     if (!request.file('file')) {
       return response.status(400).json({ message: 'No se ha proporcionado ningún archivo' })
     }

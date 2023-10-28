@@ -23,6 +23,7 @@ export interface IBudgetAvailabilityService {
     id: number,
     reasonCancellation: string
   ): Promise<ApiResponse<any>>;
+  linkMga(): Promise<ApiResponse<any>>
 }
 
 export default class BudgetAvailabilityService
@@ -106,21 +107,19 @@ export default class BudgetAvailabilityService
     reasonCancellation: string
   ): Promise<ApiResponse<BudgetAvailability | any>> {
     try {
-      const data = await this.budgetAvailabilityRepository.cancelAmountCdp(
-        id,
-        reasonCancellation
-      );
-      return new ApiResponse(
-        data,
-        EResponseCodes.OK,
-        "CDP encontrado exitosamente"
-      );
+      const data = await this.budgetAvailabilityRepository.cancelAmountCdp(id, reasonCancellation);
+      return new ApiResponse(data, EResponseCodes.OK, 'Monto CDP anulado exitosamente');
     } catch (error) {
-      return new ApiResponse(
-        null,
-        EResponseCodes.FAIL,
-        "Error al cargar el CDP" + error
-      );
+      return new ApiResponse(null, EResponseCodes.FAIL, 'Error al anular el monto CDP' + error);
+    }
+  }
+  
+  async linkMga(): Promise<ApiResponse<any>> {
+    try {
+      const data = await this.budgetAvailabilityRepository.linkMga();
+      return new ApiResponse(data, EResponseCodes.OK, 'MGA vinculado al CDP exitosamente');
+    } catch (error) {
+      return new ApiResponse(null, EResponseCodes.FAIL, 'Error al vincular MGA al CDP' + error);
     }
   }
 }

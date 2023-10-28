@@ -228,27 +228,28 @@ export default class PacRepository implements IPacRepository {
     }
   }
 
-  updateOrCreatePac = async (routesValidationRequest: any) => {
-    for await (let pac of routesValidationRequest.condensed) {
-      let annualizations: any[] = []
-      delete pac.numberExcelRom
-      delete pac.pacAnnualizationProgrammed.totalBudget
-      delete pac.pacAnnualizationCollected.totalBudget
-      delete pac.balance;
-      annualizations.push(pac.pacAnnualizationProgrammed)
-      annualizations.push(pac.pacAnnualizationCollected)
-      delete pac.pacAnnualizationProgrammed;
-      delete pac.pacAnnualizationCollected;
-      const toCreatePac = new Pac();
-      toCreatePac.fill({ ...pac, dateCreate: new Date('2023-09-04 17:51:46') });
-      let pacCreated = await toCreatePac.save();
-      await pacCreated
-        .related('pacAnnualizations')
-        .createMany(annualizations)
+    updateOrCreatePac = async (routesValidationRequest: any) => {
+        
+        for await (let pac of routesValidationRequest.condensed) {
+            let annualizations: any[] = []
+            delete pac.numberExcelRom
+            delete pac.pacAnnualizationProgrammed.totalBudget
+            delete pac.pacAnnualizationCollected.totalBudget
+            delete pac.balance;
+            annualizations.push(pac.pacAnnualizationProgrammed)
+            annualizations.push(pac.pacAnnualizationCollected)
+            delete pac.pacAnnualizationProgrammed;
+            delete pac.pacAnnualizationCollected;
+            const toCreatePac = new Pac();
+            toCreatePac.fill({ ...pac });
+            let pacCreated = await toCreatePac.save();
+            await pacCreated
+                .related('pacAnnualizations')
+                .createMany(annualizations)
+        }
+        return routesValidationRequest
     }
-    return routesValidationRequest
-  }
-
+   
   getPacByExcercise = async (exercise: number): Promise<Pac[]> => {
     const pacs = await Pac.query().where('exercise', exercise).preload('pacAnnualizations')
     return pacs;

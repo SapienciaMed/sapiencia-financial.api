@@ -89,7 +89,7 @@ export default class PacService implements IPacService {
       rowsWithFieldsEmpty,
       rowsWithFieldNumberInvalid } = await this.pacRepository.uploadPac(file);
 
-      if (validTemplateStatus.error) {
+    if (validTemplateStatus.error) {
       return new ApiResponse({ validTemplateStatus, rowsWithFieldsEmpty, rowsWithFieldNumberInvalid }, EResponseCodes.FAIL, validTemplateStatus.message);
     }
 
@@ -100,7 +100,6 @@ export default class PacService implements IPacService {
       //return new ApiResponse({errors:validTemplateStatus.concat(rowsWithFieldsEmpty).concat(rowsWithFieldNumberInvalid)} , EResponseCodes.FAIL, "Algún dato de la ruta está vacío");
     }
     const routesValidationRequest: ApiResponse<IResultProcRoutes> = await this.reviewBudgetsRoute(data, body);
-
     let errors: IErrosPac[] = [];
 
     if (rowsWithFieldNumberInvalid.length > 0) {
@@ -429,8 +428,10 @@ export default class PacService implements IPacService {
           version: body!.version,
           exercise: body!.exercise,
           isActive: true,
-          dateModify: new Date(),
-          dateCreate: new Date(),
+          userCreate: body?.userCreate,
+          userModify: body?.userModify,
+          dateCreate: body?.userModify == "" ? '' : new Date(),
+          dateModify: body?.userModify == "" ? new Date() : '',
           pacAnnualizationProgrammed: workingData[i].pacAnnualization[0],
           pacAnnualizationCollected: workingData[i].pacAnnualization[1]
         }
@@ -496,7 +497,7 @@ export default class PacService implements IPacService {
         e.pacAnnualizationProgrammed.nov +
         e.pacAnnualizationProgrammed.dec
 
-      if (balance <= 0 || balance != e.pacAnnualizationProgrammed.totalBudget) {
+      if (balance <= 0 || balance != e.pacAnnualizationProgrammed.totalBudget || bugetPrgrammed != balance) {
         errorsDetected.push({
           message: "El valor del presupuesto no es correcto",
           error: true,
@@ -509,7 +510,7 @@ export default class PacService implements IPacService {
       if (typePac == 'Carga inicial' || typePac == 'adición' || typePac == 'Reducción' || typePac == 'Nueva versión') {
 
         // Valida que el valor total presupuestado coincida con el total programado de los meses
-        if (bugetPrgrammed != e.pacAnnualizationProgrammed.totalBudget) {
+        if (bugetPrgrammed != e.pacAnnualizationProgrammed.totalBudget || balance != bugetPrgrammed) {
           errorsDetected.push({
             message: "No coincide valor programado con valor presupuesto sapiencia",
             error: true,
@@ -523,17 +524,17 @@ export default class PacService implements IPacService {
       let lastCollected = loadedRoutesCurrentExcersice.filter(el => el.version == version && el.sourceType == e.sourceType && el.budgetRouteId == e.budgetRouteId);
 
       let lastCollectedTotal = lastCollected[0]?.pacAnnualizations.collected.jan
-      + lastCollected[0]?.pacAnnualizations.collected.feb
-      + lastCollected[0]?.pacAnnualizations.collected.mar
-      + lastCollected[0]?.pacAnnualizations.collected.abr
-      + lastCollected[0]?.pacAnnualizations.collected.may
-      + lastCollected[0]?.pacAnnualizations.collected.jun
-      + lastCollected[0]?.pacAnnualizations.collected.jul
-      + lastCollected[0]?.pacAnnualizations.collected.ago
-      + lastCollected[0]?.pacAnnualizations.collected.sep
-      + lastCollected[0]?.pacAnnualizations.collected.oct
-      + lastCollected[0]?.pacAnnualizations.collected.nov
-      + lastCollected[0]?.pacAnnualizations.collected.dec ?? 0;
+        + lastCollected[0]?.pacAnnualizations.collected.feb
+        + lastCollected[0]?.pacAnnualizations.collected.mar
+        + lastCollected[0]?.pacAnnualizations.collected.abr
+        + lastCollected[0]?.pacAnnualizations.collected.may
+        + lastCollected[0]?.pacAnnualizations.collected.jun
+        + lastCollected[0]?.pacAnnualizations.collected.jul
+        + lastCollected[0]?.pacAnnualizations.collected.ago
+        + lastCollected[0]?.pacAnnualizations.collected.sep
+        + lastCollected[0]?.pacAnnualizations.collected.oct
+        + lastCollected[0]?.pacAnnualizations.collected.nov
+        + lastCollected[0]?.pacAnnualizations.collected.dec ?? 0;
 
       if (typePac != 'Carga inicial') {
         let bugetCollectec = e.pacAnnualizationCollected.jan +
@@ -571,17 +572,17 @@ export default class PacService implements IPacService {
 
       }
 
-      if (typePac == 'Carga inicial' || typePac == 'Recaudo') {
+      if (typePac == 'Recaudo') {
         // Valida que el valor presupuesto Sapiensa sea mayo que cero
 
-        if (parseFloat(e.pacAnnualizationProgrammed.totalBudget) <= 0 && typePac == 'Carga inicial') {
+        /* if (parseFloat(e.pacAnnualizationProgrammed.totalBudget) <= 0 && typePac == 'Carga inicial') {
           errorsDetected.push({
             message: "Debe tener dato en presupuesto sapiencia y en lo programado del mes",
             error: true,
             rowError: index + 1,
             columnError: null
           })
-        } else if (parseFloat(e.pacAnnualizationCollected.totalBudget) < 0 && typePac == 'Recaudo') {
+        } else */ if (balance == 0 && parseFloat(e.pacAnnualizationCollected.totalBudget) <= 0) {
           errorsDetected.push({
             message: "El recaudo no tiene presupuesto sapiencia",
             error: true,
@@ -896,19 +897,19 @@ export default class PacService implements IPacService {
 
     for (const annualizations of getAnnualization.array) {
 
-      if( annualizations?.type == "Programado" ){
+      if (annualizations?.type == "Programado") {
 
         totalProgramming += (Number(annualizations!.jan) + Number(annualizations!.feb) + Number(annualizations!.mar) +
-                             Number(annualizations!.abr) + Number(annualizations!.may) + Number(annualizations!.jun) +
-                             Number(annualizations!.jul) + Number(annualizations!.ago) + Number(annualizations!.sep) +
-                             Number(annualizations!.oct) + Number(annualizations!.nov) + Number(annualizations!.dec))
+          Number(annualizations!.abr) + Number(annualizations!.may) + Number(annualizations!.jun) +
+          Number(annualizations!.jul) + Number(annualizations!.ago) + Number(annualizations!.sep) +
+          Number(annualizations!.oct) + Number(annualizations!.nov) + Number(annualizations!.dec))
 
-      }else{
+      } else {
 
         totalCollected += (Number(annualizations!.jan) + Number(annualizations!.feb) + Number(annualizations!.mar) +
-                           Number(annualizations!.abr) + Number(annualizations!.may) + Number(annualizations!.jun) +
-                           Number(annualizations!.jul) + Number(annualizations!.ago) + Number(annualizations!.sep) +
-                           Number(annualizations!.oct) + Number(annualizations!.nov) + Number(annualizations!.dec))
+          Number(annualizations!.abr) + Number(annualizations!.may) + Number(annualizations!.jun) +
+          Number(annualizations!.jul) + Number(annualizations!.ago) + Number(annualizations!.sep) +
+          Number(annualizations!.oct) + Number(annualizations!.nov) + Number(annualizations!.dec))
 
       }
 
@@ -1287,27 +1288,27 @@ export default class PacService implements IPacService {
     for (const origins of arrayOrigins) {
 
       const getMyRoute = await this.budgetsRoutesRepository
-                                   .getBudgetForAdditions(origins.idProjectVinculation,
-                                                          origins.idFund,
-                                                          origins.idBudget,
-                                                          origins.idPospreSapiencia);
+        .getBudgetForAdditions(origins.idProjectVinculation,
+          origins.idFund,
+          origins.idBudget,
+          origins.idPospreSapiencia);
 
       if (!getMyRoute) return null;
 
       const getPacWithAnnual = await this.pacRepository
-                                         .getPacByRouteAndExercise(Number(getMyRoute.id), Number(data.headTransfer.exercise), 0, "no", 1, 100000);
+        .getPacByRouteAndExercise(Number(getMyRoute.id), Number(data.headTransfer.exercise), 0, "no", 1, 100000);
 
       for (const ann of getPacWithAnnual.array) {
 
         plusOrigenProgramming += Number(ann?.pacAnnualizations![0].jan) + Number(ann?.pacAnnualizations![0].feb) + Number(ann?.pacAnnualizations![0].mar) +
-                                 Number(ann?.pacAnnualizations![0].abr) + Number(ann?.pacAnnualizations![0].may) + Number(ann?.pacAnnualizations![0].jun) +
-                                 Number(ann?.pacAnnualizations![0].jul) + Number(ann?.pacAnnualizations![0].ago) + Number(ann?.pacAnnualizations![0].sep) +
-                                 Number(ann?.pacAnnualizations![0].oct) + Number(ann?.pacAnnualizations![0].nov) + Number(ann?.pacAnnualizations![0].dec);
+          Number(ann?.pacAnnualizations![0].abr) + Number(ann?.pacAnnualizations![0].may) + Number(ann?.pacAnnualizations![0].jun) +
+          Number(ann?.pacAnnualizations![0].jul) + Number(ann?.pacAnnualizations![0].ago) + Number(ann?.pacAnnualizations![0].sep) +
+          Number(ann?.pacAnnualizations![0].oct) + Number(ann?.pacAnnualizations![0].nov) + Number(ann?.pacAnnualizations![0].dec);
 
         plusOrigenCollected += Number(ann?.pacAnnualizations![1].jan) + Number(ann?.pacAnnualizations![1].feb) + Number(ann?.pacAnnualizations![1].mar) +
-                               Number(ann?.pacAnnualizations![1].abr) + Number(ann?.pacAnnualizations![1].may) + Number(ann?.pacAnnualizations![1].jun) +
-                               Number(ann?.pacAnnualizations![1].jul) + Number(ann?.pacAnnualizations![1].ago) + Number(ann?.pacAnnualizations![1].sep) +
-                               Number(ann?.pacAnnualizations![1].oct) + Number(ann?.pacAnnualizations![1].nov) + Number(ann?.pacAnnualizations![1].dec);
+          Number(ann?.pacAnnualizations![1].abr) + Number(ann?.pacAnnualizations![1].may) + Number(ann?.pacAnnualizations![1].jun) +
+          Number(ann?.pacAnnualizations![1].jul) + Number(ann?.pacAnnualizations![1].ago) + Number(ann?.pacAnnualizations![1].sep) +
+          Number(ann?.pacAnnualizations![1].oct) + Number(ann?.pacAnnualizations![1].nov) + Number(ann?.pacAnnualizations![1].dec);
 
       }
 
@@ -1316,27 +1317,27 @@ export default class PacService implements IPacService {
     for (const destinities of arrayDestinities) {
 
       const getMyRoute = await this.budgetsRoutesRepository
-                                   .getBudgetForAdditions(destinities.idProjectVinculation,
-                                                          destinities.idFund,
-                                                          destinities.idBudget,
-                                                          destinities.idPospreSapiencia);
+        .getBudgetForAdditions(destinities.idProjectVinculation,
+          destinities.idFund,
+          destinities.idBudget,
+          destinities.idPospreSapiencia);
 
       if (!getMyRoute) return null;
 
       const getPacWithAnnual = await this.pacRepository
-                                         .getPacByRouteAndExercise(Number(getMyRoute.id), Number(data.headTransfer.exercise), 0, "no", 1, 100000);
+        .getPacByRouteAndExercise(Number(getMyRoute.id), Number(data.headTransfer.exercise), 0, "no", 1, 100000);
 
       for (const ann of getPacWithAnnual.array) {
 
         plusDestinitiesProgramming += Number(ann?.pacAnnualizations![0].jan) + Number(ann?.pacAnnualizations![0].feb) + Number(ann?.pacAnnualizations![0].mar) +
-                                      Number(ann?.pacAnnualizations![0].abr) + Number(ann?.pacAnnualizations![0].may) + Number(ann?.pacAnnualizations![0].jun) +
-                                      Number(ann?.pacAnnualizations![0].jul) + Number(ann?.pacAnnualizations![0].ago) + Number(ann?.pacAnnualizations![0].sep) +
-                                      Number(ann?.pacAnnualizations![0].oct) + Number(ann?.pacAnnualizations![0].nov) + Number(ann?.pacAnnualizations![0].dec);
+          Number(ann?.pacAnnualizations![0].abr) + Number(ann?.pacAnnualizations![0].may) + Number(ann?.pacAnnualizations![0].jun) +
+          Number(ann?.pacAnnualizations![0].jul) + Number(ann?.pacAnnualizations![0].ago) + Number(ann?.pacAnnualizations![0].sep) +
+          Number(ann?.pacAnnualizations![0].oct) + Number(ann?.pacAnnualizations![0].nov) + Number(ann?.pacAnnualizations![0].dec);
 
         plusDestinitiesCollected += Number(ann?.pacAnnualizations![1].jan) + Number(ann?.pacAnnualizations![1].feb) + Number(ann?.pacAnnualizations![1].mar) +
-                                    Number(ann?.pacAnnualizations![1].abr) + Number(ann?.pacAnnualizations![1].may) + Number(ann?.pacAnnualizations![1].jun) +
-                                    Number(ann?.pacAnnualizations![1].jul) + Number(ann?.pacAnnualizations![1].ago) + Number(ann?.pacAnnualizations![1].sep) +
-                                    Number(ann?.pacAnnualizations![1].oct) + Number(ann?.pacAnnualizations![1].nov) + Number(ann?.pacAnnualizations![1].dec);
+          Number(ann?.pacAnnualizations![1].abr) + Number(ann?.pacAnnualizations![1].may) + Number(ann?.pacAnnualizations![1].jun) +
+          Number(ann?.pacAnnualizations![1].jul) + Number(ann?.pacAnnualizations![1].ago) + Number(ann?.pacAnnualizations![1].sep) +
+          Number(ann?.pacAnnualizations![1].oct) + Number(ann?.pacAnnualizations![1].nov) + Number(ann?.pacAnnualizations![1].dec);
 
       }
 
