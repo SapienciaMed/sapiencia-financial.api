@@ -156,7 +156,6 @@ export default class PacService implements IPacService {
         errors.length == 0 && await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
         break;
       case 'Reducción':
-        /* ya debe existir una carga inicial */
         if (pacsByExercise.length == 0) {
           errors.push({
             message: "No tiene registros en la carga inicial, debe seleccionar carga inicial",
@@ -230,8 +229,8 @@ export default class PacService implements IPacService {
     const errors: IErrosPac[] = [];
 
     dataExcel.condensed.forEach((excelItem, index) => {
-
-      if (index == 0) { index += 1 }
+      index += 1
+      //if (index == 0) { index += 1 }
       console.log({index})
       const budgetRouteId = excelItem.budgetRouteId;
       const matchingRoute = loadedRoutesCurrentExcersice.find((route) => route.budgetRouteId === budgetRouteId);
@@ -271,10 +270,9 @@ export default class PacService implements IPacService {
         e.pacAnnualizations.collected?.nov +
         e.pacAnnualizations.collected?.dec
 
-      if (totalCollected >= 0) {
+      if (totalCollected > 0) {
         let budgetRouteIdMatch = dataExcel.condensed.find(el => el.budgetRouteId == e.budgetRouteId)
         index += 1
-        //if (index == 0) {  }
         if (!budgetRouteIdMatch) {
           errors.push({
             message: "Existen registros en el PAC con recaudos que no están en la nueva carga de archivo",
