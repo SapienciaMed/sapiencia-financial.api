@@ -1,4 +1,4 @@
-import { IBudgetsRoutes, IBudgetsRoutesFilters} from "App/Interfaces/BudgetsRoutesInterfaces";
+import { IBudgetsRoutes, IBudgetsRoutesFilters } from "App/Interfaces/BudgetsRoutesInterfaces";
 import BudgetsRoutes from "../Models/BudgetsRoutes";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
@@ -11,28 +11,32 @@ export interface IBudgetsRoutesRepository {
   getBudgetsRoutesWithoutPagination(): Promise<IBudgetsRoutes[]>;
 
   getBudgetForAdditions(projectId: number,
-                        foundId: number,
-                        posPreOriginId: number,
-                        posPreId: number): Promise<IBudgetsRoutes | null>;
+    idProjectVinculation: number,
+    posPreOriginId: number,
+    posPreId: number): Promise<IBudgetsRoutes | null>;
+  getBudgetForCdp(projectId: number,
+    foundId: number,
+    posPreId: number): Promise<IBudgetsRoutes | null>;
 }
 
+
 export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository {
-  constructor() {}
+  constructor() { }
   async getBudgetsRoutesById(id: number): Promise<IBudgetsRoutes | null> {
     const res = await BudgetsRoutes.find(id);
     return res ? (res.serialize() as IBudgetsRoutes) : null;
   }
 
   async getBudgetsRoutesPaginated(filters: IBudgetsRoutesFilters): Promise<IPagingData<IBudgetsRoutes>> {
-     const query =  BudgetsRoutes.query();
+    const query = BudgetsRoutes.query();
 
-     query.preload("projectVinculation");
-     query.preload("budget");
-     query.preload("funds");
-     query.preload("pospreSapiencia");
+    query.preload("projectVinculation");
+    query.preload("budget");
+    query.preload("funds");
+    query.preload("pospreSapiencia");
 
     if (filters.idProjectVinculation) query.where("idProjectVinculation", filters.idProjectVinculation);
-    if( filters.idRoute ) query.where("id", filters.idRoute);
+    if (filters.idRoute) query.where("id", filters.idRoute);
 
     const res = await query.paginate(filters.page, filters.perPage);
     const { data, meta } = res.serialize();
@@ -46,14 +50,14 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
 
   async getBudgetsRoutesWithoutPagination(): Promise<IBudgetsRoutes[]> {
     const query = BudgetsRoutes.query();
-  
+
     query.preload("projectVinculation");
     query.preload("budget");
     query.preload("funds");
     query.preload("pospreSapiencia");
-  
+
     const res = await query;
-  
+
     return res;
   }
 
@@ -65,7 +69,7 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
     toCreateIBudgetsRoutes.idBudget = budgetsRoutes.idBudget;
     toCreateIBudgetsRoutes.idPospreSapiencia = budgetsRoutes.idPospreSapiencia;
     toCreateIBudgetsRoutes.idFund = budgetsRoutes.idFund;
-    if(budgetsRoutes.userCreate) toCreateIBudgetsRoutes.userCreate = budgetsRoutes.userCreate;
+    if (budgetsRoutes.userCreate) toCreateIBudgetsRoutes.userCreate = budgetsRoutes.userCreate;
 
     await toCreateIBudgetsRoutes.save();
 
@@ -85,7 +89,7 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
     toUpdate.idPospreSapiencia = budgetsRoutes.idPospreSapiencia;
     toUpdate.idFund = budgetsRoutes.idFund;
     toUpdate.dateModify = DateTime.local().toJSDate();
-    if(budgetsRoutes.userModify) {
+    if (budgetsRoutes.userModify) {
       toUpdate.userModify = budgetsRoutes.userModify;
     }
 
@@ -94,16 +98,30 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
   }
 
   async getBudgetForAdditions(projectId: number,
-                              foundId: number,
-                              posPreOriginId: number,
-                              posPreId: number): Promise<IBudgetsRoutes | null> {
+    foundId: number,
+    posPreOriginId: number,
+    posPreId: number): Promise<IBudgetsRoutes | null> {
 
     const res = await BudgetsRoutes.query()
-                                .where('idProjectVinculation', projectId)
-                                .andWhere('idBudget', posPreOriginId)
-                                .andWhere('idPospreSapiencia', posPreId)
-                                .andWhere('idFund', foundId)
-                                .first();
+      .where('idProjectVinculation', projectId)
+      .andWhere('idBudget', posPreOriginId)
+      .andWhere('idPospreSapiencia', posPreId)
+      .andWhere('idFund', foundId)
+      .first();
+
+    return res ? (res.serialize() as IBudgetsRoutes) : null;
+
+  }
+
+  async getBudgetForCdp(projectId: number,
+    foundId: number,
+    posPreId: number): Promise<IBudgetsRoutes | null> {
+
+    const res = await BudgetsRoutes.query()
+      .where('idProjectVinculation', projectId)
+      .andWhere('idPospreSapiencia', posPreId)
+      .andWhere('idFund', foundId)
+      .first();
 
     return res ? (res.serialize() as IBudgetsRoutes) : null;
 

@@ -142,6 +142,7 @@ Route.group(() => {
   Route.get("/get-by-id/:id", "AdditionsController.getAdditionById");
   Route.post("/update/:id", "AdditionsController.updateAdditionWithMov"); //Como acción de validación
   Route.post("/update-save/:id", "AdditionsController.executeUpdateAdditionWithMov"); //Como acción de guardado/actualizado
+  Route.post("/get-info-filter", "AdditionsController.budgetCdp"); //Como acción de guardado/actualizado
 
 }).prefix("/api/v1/additions")
 // .middleware("auth");
@@ -187,6 +188,7 @@ Route.group(() => {
 Route.group(() => {
   Route.post("/search-cdps", "BudgetAvailabilityController.searchBudgetAvailability");
   Route.post("/create-cdp", "BudgetAvailabilityController.createCdpsCertificationBudgetAvailability");
+  Route.post("/asociate-amounts", "BudgetAvailabilityController.associateAmountsWithCdp");
   Route.get("/get-by-id/:id", "BudgetAvailabilityController.getById");
   Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
 

@@ -15,6 +15,7 @@ export interface IBudgetAvailabilityService {
   createCdps(cdpData: ICreateCdp): Promise<ApiResponse<any>>
   getById(id: string): Promise<ApiResponse<IBudgetAvailability>>
   cancelAmountCdp(id:number, reasonCancellation:string): Promise<ApiResponse<any>>
+  associateAmountsWithCdp(cdpId: number, amounts: any[]): Promise<ApiResponse<any>>;
 }
 
 export default class BudgetAvailabilityService
@@ -62,6 +63,16 @@ export default class BudgetAvailabilityService
       return new ApiResponse(data, EResponseCodes.OK, 'CDP encontrado exitosamente');
     } catch (error) {
       return new ApiResponse(null, EResponseCodes.FAIL, 'Error al cargar el CDP' + error);
+    }
+  }
+
+  async associateAmountsWithCdp(cdpId: number, amounts: any[]): Promise<ApiResponse<any>> {
+    try {
+      await this.budgetAvailabilityRepository.associateAmountsWithCdp(cdpId, amounts);
+      return new ApiResponse(null, EResponseCodes.OK, 'Importes asociados exitosamente');
+    } catch (error) {
+      console.error('Error en BudgetAvailabilityService al asociar importes al CDP:', error);
+      return new ApiResponse(null, EResponseCodes.FAIL, 'Error al asociar importes al CDP: ' + error);
     }
   }
 }

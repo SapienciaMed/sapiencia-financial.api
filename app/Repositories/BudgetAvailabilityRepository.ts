@@ -13,6 +13,7 @@ export interface IBudgetAvailabilityRepository {
     filter: IBudgetAvailabilityFilters
   ): Promise<IPagingData<IBudgetAvailability>>;
   createCdps(cdpDataTotal: ICreateCdp): Promise<any>;
+  associateAmountsWithCdp(cdpId: number, amounts: any[]): Promise<void>;
   getAllCdps(): Promise<any[]>;
   getById(id:string): Promise<BudgetAvailability>
   cancelAmountCdp(id:number, reasonCancellation:string): Promise<BudgetAvailability>
@@ -147,6 +148,22 @@ export default class BudgetAvailabilityRepository
     cdp.sapConsecutive = sapConsecutive;
     await cdp.save();
     await cdp.related('amounts').createMany(icdArr);
+}
+
+async associateAmountsWithCdp(cdpId: number, amounts: any[]) {
+  try {
+    const cdp = await BudgetAvailability.findOrFail(cdpId);
+    const existingAmounts = await cdp.related('amounts').query().select('idRppCode').exec();
+    const existingIdRppCodes = existingAmounts.map((amount) => amount.idRppCode);
+
+    const newAmounts = amounts.filter((amount) => {
+      return amount.cdpId === cdpId && !existingIdRppCodes.includes(amount.idRppCode);
+    });
+
+    await cdp.related('amounts').createMany(newAmounts);
+  } catch (error) {
+    throw new Error('Error al asociar importes al CDP: ' + error.message);
+  }
 }
 
 
