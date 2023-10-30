@@ -51,3 +51,78 @@ export interface IAnnualRoute {
   dateModify: null;
   dateCreate: null;
 }
+
+export interface IStructureResponseTransferGlobalOriginals {
+
+  originalTotalProgramming?: number;
+  originalIdProgrammingByAnn?: number;
+  originalPacProgrammingByAnn?: number;
+  originalTotalCollected?: number;
+  originalIdCollectedByAnn?: number;
+  originalPacCollectedByAnn?: number;
+  originalBalanceRoute?: number;
+  originalCardFront?: string;
+
+  transferTotalProgramming?: number;
+  transferIdProgrammingByAnn?: number;
+  transferPacProgrammingByAnn?: number;
+  transferTotalCollected?: number;
+  transferIdCollectedByAnn?: number;
+  transferPacCollectedByAnn?: number;
+
+  originalSourceType?: string;
+  originalBudgetRouteId?: number;
+  originalVersion?: number;
+  originalExercise?: number;
+
+}
+
+export interface IStructureResponseTransferGenericOriginis {
+
+  originsRoutesWithAllInfoOriginal: IStructureResponseTransferGlobalOriginals[];
+  originsRoutesWithAllInfoTransfer: IStructureResponseTransferGlobalOriginals[];
+
+}
+
+export interface IStructureResponseTransferGlobalDestinities {
+
+  destinitiesTotalProgramming?: number;
+  destinitiesIdProgrammingByAnn?: number;
+  destinitiesPacProgrammingByAnn?: number;
+  destinitiesTotalCollected?: number;
+  destinitiesIdCollectedByAnn?: number;
+  destinitiesPacCollectedByAnn?: number;
+  destinitiesBalanceRoute?: number;
+  destinityCardFront?: string;
+
+  transferTotalProgramming?: number;
+  transferIdProgrammingByAnn?: number;
+  transferPacProgrammingByAnn?: number;
+  transferTotalCollected?: number;
+  transferIdCollectedByAnn?: number;
+  transferPacCollectedByAnn?: number;
+
+  destinitiesSourceType?: string;
+  destinitiesBudgetRouteId?: number;
+  destinitiesVersion?: number;
+  destinitiesExercise?: number;
+
+}
+
+export interface IStructureResponseTransferGenericDestinities {
+
+  destinitiesRoutesWithAllInfoOriginal: IStructureResponseTransferGlobalDestinities[];
+  destinitiesRoutesWithAllInfoTransfer: IStructureResponseTransferGlobalDestinities[];
+
+}
+
+export interface IPartialObjectResultTransferGeneric {
+
+  getDataProccessOrigins: IStructureResponseTransferGenericOriginis | null;
+  getDataProccessDestinities: IStructureResponseTransferGenericDestinities | null;
+  resultUpdate?: {
+    updateOrigins: IDestinity[] | boolean,
+    updateDestinities: IDestinity[] | boolean
+  }
+
+}
