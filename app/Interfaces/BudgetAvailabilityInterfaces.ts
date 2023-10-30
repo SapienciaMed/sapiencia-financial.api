@@ -40,7 +40,7 @@ export interface ICreateCdp {
   date: DateTime;
   contractObject: string;
   consecutive: number;
-  sapConsecutive: number;
+  sapConsecutive?: number;
   rpAssocs?:string;
   icdArr: {
     id?: number;

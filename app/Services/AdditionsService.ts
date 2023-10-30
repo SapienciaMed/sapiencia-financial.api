@@ -21,7 +21,7 @@ import { IBudgetsRepository } from "../Repositories/BudgetsRepository";
 import { IBudgetsRoutesRepository } from "../Repositories/BudgetsRoutesRepository";
 import { IStrategicDirectionService } from "./External/StrategicDirectionService";
 import { tranformProjectsVinculation } from "App/Utils/sub-services";
-import { IBudgetsRoutes, IBudgetsRoutesFilters } from "App/Interfaces/BudgetsRoutesInterfaces";
+import { IBudgetsRoutes } from "App/Interfaces/BudgetsRoutesInterfaces";
 export interface IAdditionsService {
 
   getBudgetForCdp(
@@ -76,7 +76,7 @@ export default class AdditionsService implements IAdditionsService {
     private budgetRepository: IBudgetsRepository,
     private budgetRouteRepository: IBudgetsRoutesRepository,
     private strategicDirectionRepository: IStrategicDirectionService,
-    private budgetsRoutesRepository2: IBudgetsRoutesRepository // Cambio de nombre aquí
+    //private budgetsRoutesRepository2: IBudgetsRoutesRepository // Cambio de nombre aquí
   ) {}
 
 

@@ -2,10 +2,10 @@ import {
   IAmountBudgetAvailability,
   IBudgetAvailability,
   IBudgetAvailabilityFilters,
+  ICreateCdp,
 } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import BudgetAvailability from "../Models/BudgetAvailability";
 import { IPagingData } from "App/Utils/ApiResponses";
-import { ICreateCdp } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 
 export interface IBudgetAvailabilityRepository {
