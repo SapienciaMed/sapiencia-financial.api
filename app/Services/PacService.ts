@@ -131,7 +131,13 @@ export default class PacService implements IPacService {
     switch (typePac) {
       case 'Carga inicial':
         if (pacsByExercise.length > 0) {
-          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "La carga inicial ya fue cargada, debe seleccionar Nueva versión");
+          errors.push({
+            message: "No tiene registros en la carga inicial, debe seleccionar carga inicial",
+            error: true,
+            rowError: 1,
+            columnError: null,
+          });
+          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "El archivo no pudo ser cargado, revisa las validaciones");
         }
         responseSave = errors.length == 0 && await this.pacRepository.updateOrCreatePac(routesValidationRequest.data)
         break;
@@ -144,7 +150,7 @@ export default class PacService implements IPacService {
             rowError: 1,
             columnError: null,
           });
-          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
+          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "El archivo no pudo ser cargado, revisa las validaciones");
         }
         dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed, loadedRoutesCurrentExcersice)
         errors.length == 0 && await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
@@ -158,7 +164,7 @@ export default class PacService implements IPacService {
             rowError: 1,
             columnError: null,
           });
-          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
+          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "El archivo no pudo ser cargado, revisa las validaciones");
         }
 
         dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed, loadedRoutesCurrentExcersice)
@@ -173,7 +179,7 @@ export default class PacService implements IPacService {
             rowError: 1,
             columnError: null,
           });
-          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
+          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "El archivo no pudo ser cargado, revisa las validaciones");
         }
         dataToUpdate = this.structureDataPacToUpdate(Object(routesValidationRequest).data.condensed, loadedRoutesCurrentExcersice)
         errors.length == 0 && await this.pacRepository.updatePacExcersiceVersion(dataToUpdate)
@@ -190,7 +196,7 @@ export default class PacService implements IPacService {
             rowError: 1,
             columnError: null,
           });
-          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "No tiene registros en la carga inicial, debe seleccionar carga inicial");
+          return new ApiResponse({ responseSave: false, errors }, EResponseCodes.FAIL, "El archivo no pudo ser cargado, revisa las validaciones");
         }
         let responseValidateNewVersion = this.validateRoutesWithCollectionInNewVersion(loadedRoutesCurrentExcersice, routesValidationRequest.data);
         errors.push(...responseValidateNewVersion)
@@ -267,7 +273,8 @@ export default class PacService implements IPacService {
 
       if (totalCollected >= 0) {
         let budgetRouteIdMatch = dataExcel.condensed.find(el => el.budgetRouteId == e.budgetRouteId)
-        if (index == 0) { index += 1 }
+        index += 1
+        //if (index == 0) {  }
         if (!budgetRouteIdMatch) {
           errors.push({
             message: "Existen registros en el PAC con recaudos que no están en la nueva carga de archivo",
