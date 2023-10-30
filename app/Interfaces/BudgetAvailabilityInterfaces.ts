@@ -39,8 +39,8 @@ export interface ICreateCdp {
   date: DateTime;
   contractObject: string;
   consecutive: number;
-  sapConsecutive: number;
-  rpAssocs?: string;
+  sapConsecutive?: number;
+  rpAssocs?:string;
   icdArr: {
     id?: number;
     idRppCode: number;
