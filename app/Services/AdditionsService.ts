@@ -21,8 +21,15 @@ import { IBudgetsRepository } from "../Repositories/BudgetsRepository";
 import { IBudgetsRoutesRepository } from "../Repositories/BudgetsRoutesRepository";
 import { IStrategicDirectionService } from "./External/StrategicDirectionService";
 import { tranformProjectsVinculation } from "App/Utils/sub-services";
-
+import { IBudgetsRoutes } from "App/Interfaces/BudgetsRoutesInterfaces";
 export interface IAdditionsService {
+
+  getBudgetForCdp(
+    projectId: number,
+    foundId: number,
+    posPreId: number
+  ): Promise<IBudgetsRoutes | null>;
+
   getAdditionsPaginated(
     filters: IAdditionsFilters
   ): Promise<ApiResponse<IPagingData<IAdditions>>>;
@@ -68,8 +75,10 @@ export default class AdditionsService implements IAdditionsService {
     private pospreSapRepository: IPosPreSapienciaRepository,
     private budgetRepository: IBudgetsRepository,
     private budgetRouteRepository: IBudgetsRoutesRepository,
-    private strategicDirectionRepository: IStrategicDirectionService
+    private strategicDirectionRepository: IStrategicDirectionService,
+    //private budgetsRoutesRepository2: IBudgetsRoutesRepository // Cambio de nombre aquí
   ) {}
+
 
   //?OBTENER PAGINADO Y FILTRADO LAS ADICIONES CON SUS MOVIMIENTOS
   async getAdditionsPaginated(
@@ -204,6 +213,21 @@ export default class AdditionsService implements IAdditionsService {
       EResponseCodes.OK,
       "Validaciones pasadas con éxito para agregar adición."
     );
+  }
+
+  async getBudgetForCdp(
+    projectId: number,
+    foundId: number,
+    posPreId: number
+  ): Promise<IBudgetsRoutes | null> {
+    try {
+      // Reemplaza este bloque con la lógica adecuada para obtener el presupuesto
+      const budget = await this.budgetRepository.getBudgetForCdp(projectId, foundId, posPreId);
+      return budget;
+    } catch (error) {
+      console.error("Error al obtener el presupuesto para CDP:", error);
+      return null;
+    }
   }
 
   //?ACTUALIZACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO (VALIDADOR GENERAL ANTES DE EDITAR)
@@ -491,6 +515,16 @@ export default class AdditionsService implements IAdditionsService {
 
     return `OK-${idCard}`;
   }
+
+
+  getStrategicProjects = async (projectId: string) => {
+    let strategicProjects = await this.strategicDirectionRepository.getProjectInvestmentPaginated({
+      nameOrCode: projectId,
+      page: 1,
+      perPage: 1000,
+    });
+    return strategicProjects.data.array;
+  };
 
   //? ACCIÓN DIRECTA PARA CREAR LA ADICIÓN (AQUÍ YA NO HAY VALIDACIONES, SE ASUME QUE YA PASO POR EL VALIDADOR)
   async executeCreateAdditions(

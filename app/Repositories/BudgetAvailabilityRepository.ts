@@ -14,6 +14,8 @@ export interface IBudgetAvailabilityRepository {
     filter: IBudgetAvailabilityFilters
   ): Promise<IPagingData<IBudgetAvailability>>;
   createCdps(cdpDataTotal: ICreateCdp): Promise<any>;
+associateAmountsWithCdp(cdpId: number, amounts: any[]): Promise<void>;
+getAllCdps(): Promise<any[]>;
   editBudgetAvailabilityBasicDataCDP(
     updatedData: IUpdateBasicDataCdp
   ): Promise<any>;
@@ -28,6 +30,9 @@ export interface IBudgetAvailabilityRepository {
 export default class BudgetAvailabilityRepository
   implements IBudgetAvailabilityRepository
 {
+  getAllCdps(): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
   async searchBudgetAvailability(
     filter: IBudgetAvailabilityFilters
   ): Promise<IPagingData<IBudgetAvailability>> {
@@ -150,7 +155,22 @@ export default class BudgetAvailabilityRepository
     await cdp.related('amounts').createMany(icdArr);
   }
 
-  getById = async (id: string): Promise<any> => {
+async associateAmountsWithCdp(cdpId: number, amounts: any[]) {
+  try {
+    const cdp = await BudgetAvailability.findOrFail(cdpId);
+    const existingAmounts = await cdp.related('amounts').query().select('idRppCode').exec();
+    const existingIdRppCodes = existingAmounts.map((amount) => amount.idRppCode);
+
+    const newAmounts = amounts.filter((amount) => {
+      return amount.cdpId === cdpId && !existingIdRppCodes.includes(amount.idRppCode);
+    });
+
+    await cdp.related('amounts').createMany(newAmounts);
+  } catch (error) {
+    throw new Error('Error al asociar importes al CDP: ' + error.message);
+  }
+}  
+getById = async (id: string): Promise<any> => {
     return await BudgetAvailability.query().where('id', Number(id)).preload('amounts', (query) => {
       query.where('isActive', '=', true)
       query.preload('budgetRoute', (query) => {
