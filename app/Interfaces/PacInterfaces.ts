@@ -22,6 +22,8 @@ export interface IBody {
   typeSource: string;
   typePac: string;
   version?:number;
+  userCreate?:string;
+  userModify?:string;
 }
 
 //Desestructuración de interfaz final de data
@@ -45,19 +47,19 @@ export interface Datum {
 export interface IPacAnnualization {
   id?: number;
   pacId?: number;
-  type: Type;
-  jan:  number | null;
-  feb:  number | null;
-  mar:  number | null;
-  abr:  number | null;
-  may:  number | null;
-  jun:  number | null;
-  jul:  number | null;
-  ago:  number | null;
-  sep:  number | null;
-  oct:  number | null;
-  nov:  number | null;
-  dec:  number | null;
+  type: string;
+  jan:  number;
+  feb:  number;
+  mar:  number;
+  abr:  number;
+  may:  number;
+  jun:  number;
+  jul:  number;
+  ago:  number;
+  sep:  number;
+  oct:  number;
+  nov:  number;
+  dec:  number;
   dateModify?: Date;
   dateCreate?: Date;
 }
@@ -95,8 +97,10 @@ export interface IResultProcRoutes {
   version?: number,
   exercise?: number,
   isActive?: boolean,
-  dateModify?: Date,
-  dateCreate?: Date,
+  dateModify?: Date | string,
+  dateCreate?: Date | string,
+  userCreate?:string;
+  userModify?:string;
   pacAnnualizationProgrammed?: any; //IPacAnnualization;
   pacAnnualizationCollected?: any; //IPacAnnualization;
 
@@ -237,10 +241,13 @@ export interface macroTotalsWithTransferPac {
 export interface IDinamicListForProjects {
 
   idVinculation: number;
-  idProjectPlanning: number;
+  idProjectPlanning?: number | null;
+  idProjectFunctional?: number | null;
   projectCode: string;
-  posPreSapiRef?: string;
+  posPreSapiRef?: string | null;
+  posPreSapiRefId?: number | null;
   projectName: string;
+  idFunctionalArea?: number;
   numberFunctionalArea?: string;
 
 }
@@ -266,6 +273,7 @@ export interface IPacComplementary {
 
   headerComposition?: IPacFilters;
   listBudgetsRoutes?: number[];
+  candidatesRoutes?: number[];
   listProjects?: IDinamicListForProjects[];
   listFunds?: IDinamicListForFunds[];
   listPospreSapi ?: IDinamicListForPospres[];
@@ -289,6 +297,7 @@ export interface ITotalsByTransfers {
   idPospreSapiencia?: number,
   idFund?: number,
   idCardTemplate?: string,
+  balance?: number;
   totalProgrammig: number;
   totalCollected: number;
 
@@ -355,5 +364,71 @@ export interface ISearchGeneralPac {
   posPreOrigId?: number;
 
 }
+
+export interface ICreateAssociation {
+
+    exercise?: number;
+    resourceType?: string;
+    route?: number;
+    pacId?: number;
+    type?: string;
+    version?: number;
+    idProjectVinculation?: number;
+    idFund?: number;
+    idPospreSapiencia?: number;
+    idBudget?: number;
+    budgetSapiencia?: number;
+    annualization?: IPacAnnualization;
+
+}
+
+export interface IAssociationSuccess {
+
+  Pac : IPac;
+  PacAnnualization : IPacAnnualization;
+
+}
+
+export interface IResultTransferDinamicPac {
+  origins : {
+    original: ITotalsByTransfers[] | null;
+    request: ITotalsByTransfers | null
+  }
+  destinities : {
+    original: ITotalsByTransfers[] | null;
+    request: ITotalsByTransfers | null
+  }
+  resultsTransfer : {
+    updateOrigins: any; //TODO: Pendiente.
+    updateDestinities : any; //TODO: Pendiente.
+    extractProgramming : number;
+    extractCollected : number;
+  }
+}
+
+export interface IResultSearchDinamicPac {
+  resultPac : IPac | null,
+  totalsPac : {
+    totalProgramming : number;
+    totalCollected : number;
+  }
+  resultRoute: {
+    managementCenter : string;
+    fundNumber : string;
+    fundId : number;
+    posPreSapiDescription : string;
+    posPreSapiNumber : string;
+    posPreSapiId : number;
+    posPreOrigNumber : string;
+    posPreOrigId : number;
+    projectVinculationId : number;
+    projectPlanningId : number;
+    projectCode : string;
+    projectName : string;
+    functionalAreaId : number;
+    functionalAreaNumber : string;
+  }
+}
+
 
 

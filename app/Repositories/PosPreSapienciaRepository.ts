@@ -23,6 +23,7 @@ export interface IPosPreSapienciaRepository {
   createPosPreSapVinculation(posPreSapiencia: IPosPreSapiencia): Promise<IPosPreSapiencia | any>;
   updatePosPreSapVinculation(posPreSapiencia: IPosPreSapiencia, id: number): Promise<IPosPreSapiencia | any>;
   getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<IPagingData<IPosPreSapienciaAdditionList>>;
+  getPosPreSapiSpcifyExercise(exercise: number): Promise<IPosPreSapiencia[] | null>;
 
 }
 
@@ -203,6 +204,17 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
       return null;
 
     }
+
+  }
+
+  async getPosPreSapiSpcifyExercise(exercise: number): Promise<IPosPreSapiencia[] | null> {
+
+    const query = await PosPreSapiencia
+    .query()
+    .select("id", "number", "ejercise")
+    .where("ejercise", exercise);
+
+    return query.map((i) => i.serialize() as IPosPreSapiencia);
 
   }
 

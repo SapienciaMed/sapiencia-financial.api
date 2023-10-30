@@ -17,6 +17,7 @@ export interface IBudgetsRoutesRepository {
   getBudgetForCdp(projectId: number,
     foundId: number,
     posPreId: number): Promise<IBudgetsRoutes | null>;
+    getBudgetsSpcifyExerciseWithPosPreSapi(posPreSapi: number): Promise<IBudgetsRoutes[] | null>;
 }
 
 
@@ -36,7 +37,12 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
     query.preload("pospreSapiencia");
 
     if (filters.idProjectVinculation) query.where("idProjectVinculation", filters.idProjectVinculation);
-    if (filters.idRoute) query.where("id", filters.idRoute);
+    if (filters.idRoute) query.where("id", Number(filters.idRoute));
+
+    query.preload("projectVinculation");
+    query.preload("budget");
+    query.preload("funds");
+    query.preload("pospreSapiencia");
 
     const res = await query.paginate(filters.page, filters.perPage);
     const { data, meta } = res.serialize();
@@ -124,6 +130,50 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
       .first();
 
     return res ? (res.serialize() as IBudgetsRoutes) : null;
+
+  }
+
+  async getBudgetsSpcifyExerciseWithPosPreSapi(posPreSapi: number): Promise<IBudgetsRoutes[] | null> {
+
+    const query = await BudgetsRoutes
+      .query()
+      .preload("projectVinculation", a => {
+        // a.preload("areaFuntional");
+        a.select("id",
+          "type",
+          "operationProjectId",
+          "investmentProjectId")
+      })
+      .preload("funds", b => {
+        b.select("id",
+          "number",
+          "denomination",
+          "description")
+      })
+      .preload("pospreSapiencia", c => {
+        c.select("id",
+          "number",
+          "ejercise",
+          "description")
+      })
+      .preload("budget", d => {
+        d.select("id",
+          "number",
+          "ejercise",
+          "denomination",
+          "description")
+      })
+      .select("id",
+        "idProjectVinculation",
+        "managementCenter",
+        "div",
+        "idBudget",
+        "idPospreSapiencia",
+        "idFund",
+        "balance")
+      .where("idPospreSapiencia", posPreSapi);
+
+    return query.map((i) => i.serialize() as IBudgetsRoutes);
 
   }
 

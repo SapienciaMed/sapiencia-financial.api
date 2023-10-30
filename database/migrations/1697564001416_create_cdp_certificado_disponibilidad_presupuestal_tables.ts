@@ -10,8 +10,7 @@ export default class extends BaseSchema {
       table.date('CDP_FECHA').notNullable()
       table.string('CDP_OBJETO_CONTRACTUAL', 5000).notNullable()
       table.integer('CDP_CONSECUTIVO').notNullable()
-      table.integer('CDP_CONSECUTIVO_SAP').nullable()
-      table.string('CDP_RP_ASOCIADOS').nullable()
+      table.integer('CDP_CONSECUTIVO_SAP').unique().nullable()
     })
   }
 

@@ -1,5 +1,4 @@
 import { BaseModel, HasMany, column, hasMany } from "@ioc:Adonis/Lucid/Orm";
-import { DateTime } from "luxon";
 import AmountBudgetAvailability from "./AmountBudgetAvailability";
 
 export default class BudgetAvailability extends BaseModel {
@@ -11,12 +10,11 @@ export default class BudgetAvailability extends BaseModel {
   @column({ columnName: "CDP_EJERCICIO", serializeAs: "exercise" })
   public exercise: string;
 
-  @column.dateTime({
-    autoCreate: true,
+  @column({
     columnName: "CDP_FECHA",
     serializeAs: "date",
   })
-  public date: DateTime;
+  public date: Date;
 
   @column({
     columnName: "CDP_OBJETO_CONTRACTUAL",
@@ -29,9 +27,6 @@ export default class BudgetAvailability extends BaseModel {
 
   @column({ columnName: "CDP_CONSECUTIVO_SAP", serializeAs: "sapConsecutive" })
   public sapConsecutive: number;
-
-  @column({ columnName: "CDP_RP_ASOCIADOS", serializeAs: "rpAssocs" })
-  public rpAssocs: string;
 
   @hasMany(() => AmountBudgetAvailability, {
     localKey: "id",

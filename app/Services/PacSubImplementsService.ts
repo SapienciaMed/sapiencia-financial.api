@@ -1,5 +1,6 @@
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
-import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
+import { ApiResponse,
+         IPagingData } from "App/Utils/ApiResponses";
 
 import IPacRepository from '../Repositories/PacRepository';
 import { IProjectsRepository } from '../Repositories/ProjectsRepository';
@@ -8,8 +9,14 @@ import { IFundsRepository } from '../Repositories/FundsRepository';
 import { IPosPreSapienciaRepository } from '../Repositories/PosPreSapienciaRepository';
 import { IBudgetsRoutesRepository } from '../Repositories/BudgetsRoutesRepository';
 import { IStrategicDirectionService } from './External/StrategicDirectionService';
-import { IProjectPaginated, ISearchGeneralPac, IPac } from '../Interfaces/PacInterfaces';
+
+import { IProjectPaginated,
+         ISearchGeneralPac,
+         IPac,
+         ICreateAssociation,
+         IAssociationSuccess} from '../Interfaces/PacInterfaces';
 import { IBudgetsRoutesFilters } from '../Interfaces/BudgetsRoutesInterfaces';
+import { IResultSearchDinamicPac } from '../Interfaces/PacInterfaces';
 
 import {
   IPacFilters,
@@ -26,10 +33,11 @@ export default interface IPacSubImplementsService {
   getUltimateVersion(): Promise<ApiResponse<number | null>>;
   getRoutesByValidity(data: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary> | IPacComplementary | null>>;
   searchPacs(data: IPacFilters): Promise<ApiResponse<ISearchGeneralPac[] | null>>;
-  listDinamicsAssociations(data: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | number>>>;
+  listDinamicsAssociations(data: IPacFilters): Promise<ApiResponse<IPacComplementary | null>>;
+  createAssociations(data: ICreateAssociation): Promise<ApiResponse<IAssociationSuccess | null>>;
+  getPacById(id: number): Promise<ApiResponse<IPac | any | null>>;
 
 }
-
 
 export default class PacSubImplementsService implements IPacSubImplementsService {
 
@@ -458,24 +466,366 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
   }
 
-  async listDinamicsAssociations(data: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary | number> | null>> {
+  async listDinamicsAssociations(data: IPacFilters): Promise<ApiResponse<IPacComplementary | null>> {
 
-    // const objInitial: IPacFilters = {
-    //   page: data.page,
-    //   perPage: data.perPage,
-    //   exercise: data.exercise
-    // }
+    let candidatesRoutes: number[] = [];
+    let bandPosPreOk: boolean = true;
+    let listFunds: IDinamicListForFunds[] = [];
+    let listPospreSapi: IDinamicListForPospres[] = [];
+    let listProjects: IDinamicListForProjects[] = [];
 
-    //* Paso 1. Busquemos los PosPre Sapiencia que se asocian a la vigencia requerida:
-    // const getRoutesWithValidity = await this.pacRepository.listDinamicsAssoc(objInitial);
+    let filtersByPlanning = { page: 1, perPage: 100000 };
+    let getProjectPlanning = await this.strategicDirectionService.getProjectInvestmentPaginated(filtersByPlanning);
 
-    console.log({ data });
+    if (!getProjectPlanning || getProjectPlanning == null || getProjectPlanning == undefined)
+      return new ApiResponse(null, EResponseCodes.FAIL, "No se pudieron obtener los proyectos de planeación.");
 
+    //* Vamos a buscar las rutas cuyas vigencias pospre me den la vigencia actual y posteriormente busco las rutas que se asocien
+    //? Búsqueda invertida.
+    const getPosPreSapiCandidates = await this.posPreSapienciaRepository.getPosPreSapiSpcifyExercise(Number(data.exercise));
 
+    if( !getPosPreSapiCandidates || getPosPreSapiCandidates.length <= 0 || getPosPreSapiCandidates == undefined )
+      return new ApiResponse(null, EResponseCodes.FAIL, "No se encontraron rutas presupuestales que cumplan con el criterio de vigencia");
 
-    return new ApiResponse(null, EResponseCodes.INFO, "En Construcción");
+    for (const p of getPosPreSapiCandidates) {
+
+      const getRoute = await this.budgetsRoutesRepository.getBudgetsSpcifyExerciseWithPosPreSapi(Number(p.id));
+
+      //Solo llenamos el array de rutas candidatas si encontramos referencias
+      //? pues pueden existir pospres que aún no están asociadas a una ruta presupuestal.
+      if( !getRoute || getRoute.length <= 0 || getRoute == undefined ){
+
+        bandPosPreOk = false;
+        console.log(`No se encontró ruta presupuestal con PosPreSapi: ${p.number} ... Validador Consola: ${bandPosPreOk}`);
+
+      }else{
+
+        for (const r of getRoute) {
+
+          //* Lleno lista para fondos
+          const objForFunds: IDinamicListForFunds = {
+            idFund: r.fund?.id!,
+            fundCode: r.fund?.number!
+          }
+          listFunds.push( objForFunds );
+
+          //* Lleno lista para pospre sapiencia y pospre origen
+          const objForPospre: IDinamicListForPospres = {
+            idPosPreSapi : Number(r.pospreSapiencia?.id!),
+            numberCodeSapi : r.pospreSapiencia?.number!,
+            descriptionSapi : r.pospreSapiencia?.description!,
+            idPosPreOrig : Number(r.budget?.id!),
+            numberCodeOrig : r.budget?.number!
+          }
+
+          listPospreSapi.push( objForPospre );
+
+          //* Lleno lista para proyectos
+          //* También extraeré Área Funcional (El preload anidado tiene errores -)
+          const getFunctionalArea = await this.projectsRepository.getProjectById(Number(r.idProjectVinculation));
+          if( !getFunctionalArea || getFunctionalArea == undefined )
+            return new ApiResponse(null, EResponseCodes.FAIL, "No se encontraron áreas funcionales para algunos proyectos");
+
+          if (r.projectVinculation?.operationProjectId && r.projectVinculation?.operationProjectId != null) {
+
+            const objForProjec: IDinamicListForProjects = {
+              idVinculation: r.idProjectVinculation,
+              idProjectPlanning : null,
+              idProjectFunctional: r.projectVinculation.operationProjectId,
+              projectCode : "9000000",
+              projectName : r.pospreSapiencia?.description!,
+              idFunctionalArea : getFunctionalArea.areaFuntional?.id,
+              numberFunctionalArea : getFunctionalArea.areaFuntional?.number,
+              posPreSapiRef : r.pospreSapiencia?.number!,
+              posPreSapiRefId : r.pospreSapiencia?.id!,
+            }
+
+            listProjects.push( objForProjec );
+
+          }else{
+
+            const pkInvestmentProject: number = Number(r.projectVinculation!.investmentProjectId);
+            for (const projPlanning of getProjectPlanning.data.array){
+
+              if (projPlanning.id === pkInvestmentProject){
+
+                const objForProjec: IDinamicListForProjects = {
+                  idVinculation : r.idProjectVinculation,
+                  idProjectPlanning : projPlanning.id,
+                  idProjectFunctional : null,
+                  projectCode : projPlanning.projectCode,
+                  projectName : projPlanning.name,
+                  idFunctionalArea : getFunctionalArea.areaFuntional?.id,
+                  numberFunctionalArea : getFunctionalArea.areaFuntional?.number,
+                  posPreSapiRef : null,
+                  posPreSapiRefId : null
+                }
+
+                listProjects.push( objForProjec );
+
+              }
+
+            }
+
+          }
+
+        }
+
+        candidatesRoutes.push( Number(p.id) );
+      }
+
+    }
+
+    //! **********************************************************
+    //! Para eliminar elementos repetidos de los array resultado
+    //! **********************************************************
+    let bash = {};
+    listFunds = listFunds.filter(function (current: IDinamicListForFunds) {
+      let exists = !bash[current.idFund];
+      bash[current.idFund] = true;
+      return exists;
+    });
+
+    let dash = {};
+    listPospreSapi = listPospreSapi.filter(function (current: IDinamicListForPospres) {
+      let exists = !dash[current.idPosPreSapi];
+      dash[current.idPosPreSapi] = true;
+      return exists;
+    });
+
+    let rash = {};
+    listProjects = listProjects.filter(function (current: IDinamicListForProjects) {
+      let exists = !rash[current.idVinculation];
+      rash[current.idVinculation] = true;
+      return exists;
+    });
+
+    const objResult: IPacComplementary = {
+
+      candidatesRoutes,
+      listFunds,
+      listPospreSapi,
+      listProjects
+
+    }
+
+    return new ApiResponse(objResult, EResponseCodes.OK, "Listado de opciones generado exitosamente.");
 
   }
 
+  async createAssociations(data: ICreateAssociation): Promise<ApiResponse<IAssociationSuccess | null>> {
+
+    //* 1. Con los datos proporcionados busquemos la ruta:
+    const getRoute = await this.budgetsRoutesRepository
+                               .getBudgetForAdditions(data.idProjectVinculation!,
+                                                      data.idFund!,
+                                                      data.idBudget!,
+                                                      data.idPospreSapiencia!);
+
+    if( !getRoute || getRoute == null || getRoute == undefined )
+      return new ApiResponse(null, EResponseCodes.FAIL, "No se encontró ninguna ruta presupuestal con la información proporcionada");
+
+    //* 2. Buscamos si la ruta está asociada a algún PAC con esa vigencia y el tipo de recurso
+    const filtersWithRoute: IPacFilters = { //Para buscar la ruta respecto al PAC
+      page: 1,
+      perPage: 1000000,
+      exercise: data.exercise,
+      resourceType: data.resourceType,
+      route: getRoute.id
+    }
+
+    const filtersNoRoute: IPacFilters = { //Para sacar la versión
+      page: 1,
+      perPage: 1000000,
+      exercise: data.exercise,
+      resourceType: data.resourceType
+    }
+
+    const getPacReferenceWithRoute = await this.pacRepository.searchPacByMultiData( filtersWithRoute );
+    const getPacReferenceNoRoute = await this.pacRepository.searchPacByMultiData( filtersNoRoute );
+    const version: number | undefined = getPacReferenceNoRoute.array[0]?.version;
+
+    if( getPacReferenceWithRoute.array.length > 0)
+      return new ApiResponse(null, EResponseCodes.FAIL, "Ya está asociada esta ruta al PAC");
+
+    //* 3. Si vamos por acá, pasó la validación de igualdad
+    //*    procedo a validar que el presupuesto sapiencia me de igual al programado
+    let plusProgramming: number =
+      Number(data.annualization!.jan) + Number(data.annualization!.feb) + Number(data.annualization!.mar) +
+      Number(data.annualization!.abr) + Number(data.annualization!.may) + Number(data.annualization!.jun) +
+      Number(data.annualization!.jul) + Number(data.annualization!.ago) + Number(data.annualization!.sep) +
+      Number(data.annualization!.oct) + Number(data.annualization!.nov) + Number(data.annualization!.dec);
+
+    if( data.budgetSapiencia !== plusProgramming )
+      return new ApiResponse(null, EResponseCodes.FAIL, "El valor del presupuesto es diferente de la suma de todos los programados");
+
+    //TODO: Falta validación contra saldo de la ruta presupuestal y presupuesto sapiencia
+    //TODO: Esperando la definición de la HU
+
+    //* 5. Guardar
+    const objInsertPac: ICreateAssociation = {
+      exercise: data.exercise,
+      resourceType: data.resourceType,
+      route: getRoute.id,
+      version: version
+    }
+
+    const savePac = await this.pacRepository.createAssociations(objInsertPac);
+    if( !savePac || savePac == null || savePac == undefined )
+      return new ApiResponse(null, EResponseCodes.FAIL, "No fue posible asociar el PAC");
+
+    const objInsertAnnualization: ICreateAssociation = {
+      pacId : savePac.id,
+      type : data.annualization?.type,
+      annualization : data.annualization
+    }
+
+    const saveAnnualization = await this.pacRepository.createAnnualizations(objInsertAnnualization);
+    if( !saveAnnualization || saveAnnualization == null || saveAnnualization == undefined )
+      return new ApiResponse(null, EResponseCodes.FAIL, "No fue posible asociar las anualizaciones del PAC");
+
+    const objResult: IAssociationSuccess = {
+      Pac : savePac,
+      PacAnnualization : saveAnnualization,
+    }
+
+    return new ApiResponse(objResult, EResponseCodes.OK, "¡Guardado exitosamente!");
+
+  }
+
+  async getPacById(id: number): Promise<ApiResponse<IPac | IResultSearchDinamicPac | null>> {
+
+    let filtersByPlanning = { page: 1, perPage: 100000 };
+    let getProjectPlanning = await this.strategicDirectionService.getProjectInvestmentPaginated(filtersByPlanning);
+    if( !getProjectPlanning || getProjectPlanning.data == null || getProjectPlanning.data == undefined)
+      return new ApiResponse(null, EResponseCodes.FAIL, `Ocurrió un error al intentar consultar planeación, no pudimos obtener proyectos`);
+
+    const getPac = await this.pacRepository.getPacById( id );
+    if( !getPac || getPac.array.length <= 0 )
+      return new ApiResponse(null, EResponseCodes.FAIL, `Ocurrió un error al intentar obtener el PAC con ID ${id}`);
+
+      const filter: IBudgetsRoutesFilters = {
+        page: 1,
+        perPage: 100000,
+        idRoute: Number(getPac.array[0]?.budgetRouteId)
+      }
+
+      const getRoute = await this.budgetsRoutesRepository.getBudgetsRoutesPaginated( filter );
+
+      let managementCenter: string = "";
+
+      let fundNumber: string = "";
+      let fundId: number = 0;
+
+      let posPreSapiDescription: string = "";
+      let posPreSapiNumber: string = "";
+      let posPreSapiId: number = 0;
+      let posPreOrigNumber: string = "";
+      let posPreOrigId: number = 0;
+
+      let projectVinculationId: number = 0;
+      let projectPlanningId: number = 0;
+      let projectCode: string = "";
+      let projectName: string = "";
+      let functionalAreaId: number = 0;
+      let functionalAreaNumber: string = "";
+
+      if( getRoute && getRoute.array.length > 0 && getRoute != null ){
+
+        managementCenter = getRoute.array[0].managementCenter;
+
+        fundNumber = getRoute.array[0].fund?.number!;
+        fundId = getRoute.array[0].fund?.id!;
+
+        posPreSapiDescription = getRoute.array[0].pospreSapiencia?.description!;
+        posPreSapiNumber = getRoute.array[0].pospreSapiencia?.number!;
+        posPreSapiId = getRoute.array[0].pospreSapiencia?.id!;
+        posPreOrigNumber = getRoute.array[0].budget?.number!;
+        posPreOrigId = getRoute.array[0].budget?.id!;
+
+        const pkInvestmentProject: number = Number(getRoute.array[0].projectVinculation!.investmentProjectId);
+        const getFunctionalArea = await this.projectsRepository.getProjectById(Number(getRoute.array[0].idProjectVinculation));
+
+        if (getRoute.array[0].projectVinculation?.operationProjectId && getRoute.array[0].projectVinculation?.operationProjectId != null){
+
+          projectVinculationId = Number(getRoute.array[0].idProjectVinculation);
+          projectPlanningId = 0;
+          projectCode = "9000000";
+          projectName = posPreSapiDescription;
+          functionalAreaId = Number(getFunctionalArea!.areaFuntional?.id);
+          functionalAreaNumber = getFunctionalArea!.areaFuntional?.number!;
+
+        }else{
+
+          for (const projPlanning of getProjectPlanning.data.array){
+
+            if (projPlanning.id === pkInvestmentProject){
+
+              projectVinculationId = Number(getRoute.array[0].idProjectVinculation);
+              projectPlanningId = Number(getRoute.array[0].projectVinculation?.investmentProjectId);
+              projectCode = projPlanning.projectCode;
+              projectName = projPlanning.name;
+              functionalAreaId = Number(getFunctionalArea!.areaFuntional?.id);
+              functionalAreaNumber = getFunctionalArea!.areaFuntional?.number!;
+
+            }
+
+          }
+
+        }
+
+      }else{
+
+        return new ApiResponse(null, EResponseCodes.FAIL, `Ocurrió un error al intentar obtener la información de la ruta presupuestal`);
+
+      }
+
+      const totalProgramming: number =
+            Number(getPac.array[0]?.pacAnnualizations![0].jan) + Number(getPac.array[0]?.pacAnnualizations![0].feb) +
+            Number(getPac.array[0]?.pacAnnualizations![0].mar) + Number(getPac.array[0]?.pacAnnualizations![0].abr) +
+            Number(getPac.array[0]?.pacAnnualizations![0].may) + Number(getPac.array[0]?.pacAnnualizations![0].jun) +
+            Number(getPac.array[0]?.pacAnnualizations![0].jul) + Number(getPac.array[0]?.pacAnnualizations![0].ago) +
+            Number(getPac.array[0]?.pacAnnualizations![0].sep) + Number(getPac.array[0]?.pacAnnualizations![0].oct) +
+            Number(getPac.array[0]?.pacAnnualizations![0].nov) + Number(getPac.array[0]?.pacAnnualizations![0].dec);
+
+      const totalCollected: number =
+            Number(getPac.array[0]?.pacAnnualizations![1].jan) + Number(getPac.array[0]?.pacAnnualizations![1].feb) +
+            Number(getPac.array[0]?.pacAnnualizations![1].mar) + Number(getPac.array[0]?.pacAnnualizations![1].abr) +
+            Number(getPac.array[0]?.pacAnnualizations![1].may) + Number(getPac.array[0]?.pacAnnualizations![1].jun) +
+            Number(getPac.array[0]?.pacAnnualizations![1].jul) + Number(getPac.array[0]?.pacAnnualizations![1].ago) +
+            Number(getPac.array[0]?.pacAnnualizations![1].sep) + Number(getPac.array[0]?.pacAnnualizations![1].oct) +
+            Number(getPac.array[0]?.pacAnnualizations![1].nov) + Number(getPac.array[0]?.pacAnnualizations![1].dec);
+
+      const objResult: IResultSearchDinamicPac = {
+
+        resultPac: getPac.array[0],
+        totalsPac: {
+          totalProgramming,
+          totalCollected
+        },
+        resultRoute: {
+          managementCenter,
+          fundNumber,
+          fundId,
+          posPreSapiDescription,
+          posPreSapiNumber,
+          posPreSapiId,
+          posPreOrigNumber,
+          posPreOrigId,
+          projectVinculationId,
+          projectPlanningId,
+          projectCode,
+          projectName,
+          functionalAreaId,
+          functionalAreaNumber
+        }
+
+      }
+
+    return new ApiResponse(objResult, EResponseCodes.OK, "Hemos obtenido un PAC");
+
+  }
 
 }
+
+

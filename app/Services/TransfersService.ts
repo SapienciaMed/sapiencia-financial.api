@@ -189,7 +189,6 @@ export default class TransfersService implements ITransfersService {
       //? VALIDAMOS QUE NO SE PUEDA PASAR DE UN PROYECTO DE INVERSIÓN A UNO DE FUNCIONAMIENTO
       const dePiToPf = await this.noPermitedInversionProyToFunctionalProy(i);
       const resultPiToPf = dePiToPf.data.split('@')[0];
-
       if(resultPiToPf === "true"){
 
         transferCards = dePiToPf.data.split('@')[1];
@@ -709,7 +708,9 @@ export default class TransfersService implements ITransfersService {
       arrayCards.push(iter.idCard);
 
       //?Debemos sacar el código del proyecto!
+      console.log('akive')
       const resultProj = await this.projectRepository.getProjectById(iter.projectId);
+      console.log('akive2',resultProj)
       const referenceCodeProject = resultProj?.projectId.toString();
 
       if(iter.type === "Origen" && referenceCodeProject !== "9000000") bandInveProject = true;

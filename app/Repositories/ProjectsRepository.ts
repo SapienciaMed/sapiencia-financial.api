@@ -1,11 +1,10 @@
-import {
-  IProjectAdditionList,
-} from "../Interfaces/AdditionsInterfaces";
 import ProjectsVinculation from "App/Models/ProjectsVinculation";
 import { IProject } from '../Interfaces/ProjectsInterfaces';
+import { tranformProjectsVinculation } from "App/Utils/sub-services";
+import { IProjectsVinculation, IProjectsVinculationFull } from "App/Interfaces/ProjectsVinculationInterfaces";
 
 export interface IProjectsRepository {
-  getProjectById(projectId: number): Promise<IProjectAdditionList | null>;
+  getProjectById(projectId: number): Promise<IProjectsVinculationFull | null>;
   getProjectByInvestmentProjectId(id: number): Promise<IProject | null>;
 }
 
@@ -15,14 +14,21 @@ export default class ProjectsRepository implements IProjectsRepository {
   //?OBTENER PROYECTO POR PK DE PROYECTO
   async getProjectById(
     projectId: number
-  ): Promise<IProjectAdditionList | null> {
+  ): Promise<IProjectsVinculationFull | null> {
 
     const res = await ProjectsVinculation.query()
-      .preload("areaFuntional")
+      .preload("areaFuntional").preload("functionalProject")
       .where("id", projectId)
       .first();
 
-    return res ? (res.serialize() as IProjectAdditionList) : null;
+      if(!res) {
+        return null
+      }
+      
+    const toSend = await tranformProjectsVinculation([res.serialize() as IProjectsVinculation])
+
+
+    return toSend.length === 0 ? null : toSend[0];
   }
 
   //?OBTENER VINCULACIÓN PROYECTO POR ID DE INVERSIÓN (API PLANEACIÓN)

@@ -5,6 +5,7 @@ import { ApiResponse } from 'App/Utils/ApiResponses';
 import PacProvider from '@ioc:core.PacProvider';
 import PacSubImplementsProvider from '@ioc:core.PacSubImplementsProvider';
 import { DataTransferPac } from '../../Interfaces/PacTransferInterface';
+import { ICreateAssociation } from '../../Interfaces/PacInterfaces';
 
 import {
   IPacAnnualAdapter,
@@ -14,7 +15,7 @@ import {
 export default class PacsController {
 
   public async uploadPac({ request, response }: HttpContextContract) {
-    let body = request.body() as { exercise: number, typeSource: string, typePac: string };
+    let body = request.body() as { exercise: number, typeSource: string, typePac: string, userCreate?: string, userModify?: string };
     if (!request.file('file')) {
       return response.status(400).json({ message: 'No se ha proporcionado ningún archivo' })
     }
@@ -198,6 +199,42 @@ export default class PacsController {
 
       const data = request.body() as IPacFilters;
       return response.send(await PacSubImplementsProvider.listDinamicsAssociations(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  //* Crear una asociación
+  public async createAssociations({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = request.body() as ICreateAssociation;
+      return response.send(await PacSubImplementsProvider.createAssociations(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  //* Obtener el PAC por ID
+  public async getPacById({request, response}: HttpContextContract) {
+
+    try {
+
+      const { id } = request.params();
+      return response.send(await PacSubImplementsProvider.getPacById(id));
 
     } catch (err) {
 

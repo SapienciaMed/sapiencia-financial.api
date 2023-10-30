@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon'
 import { BaseModel, column, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm';
 import Pac from './Pac';
 
@@ -54,12 +53,8 @@ export default class PacAnnualization extends BaseModel {
   @column({ columnName: "APA_FECHA_MODIFICO", serializeAs: "dateModify" })
   public dateModify: Date;
 
-  @column.dateTime({
-    autoCreate: true,
-    columnName: "APA_FECHA_CREO",
-    serializeAs: "dateCreate",
-  })
-  public dateCreate: DateTime;
+  @column({ columnName: "APA_FECHA_CREO", serializeAs: "dateCreate" })
+  public dateCreate: Date;
 
   @hasOne(() => Pac, {
     localKey: "pacId",
