@@ -850,7 +850,7 @@ export default class PacService implements IPacService {
     const objHeaderInitial: IPacFilters = {
       page: 1,
       perPage: 1000000,
-      pacType,
+      pacType: "Ambos",
       exercise,
       resourceType,
       idCardTemplate
