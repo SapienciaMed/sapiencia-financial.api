@@ -389,23 +389,6 @@ export interface IAssociationSuccess {
 
 }
 
-export interface IResultTransferDinamicPac {
-  origins : {
-    original: ITotalsByTransfers[] | null;
-    request: ITotalsByTransfers | null
-  }
-  destinities : {
-    original: ITotalsByTransfers[] | null;
-    request: ITotalsByTransfers | null
-  }
-  resultsTransfer : {
-    updateOrigins: any; //TODO: Pendiente.
-    updateDestinities : any; //TODO: Pendiente.
-    extractProgramming : number;
-    extractCollected : number;
-  }
-}
-
 export interface IResultSearchDinamicPac {
   resultPac : IPac | null,
   totalsPac : {
@@ -428,6 +411,36 @@ export interface IResultSearchDinamicPac {
     functionalAreaId : number;
     functionalAreaNumber : string;
   }
+}
+
+export interface IEditPac  {
+
+  route?: number;
+  pacId?: number;
+  budgetRouteId?: number;
+  type?: string;
+  version?: number;
+  resourceType?: string;
+  pacType?: string;
+
+  idProjectVinculation?: number;
+  idFund?: number;
+  idPospreSapiencia?: number;
+  idBudget?: number;
+
+  budgetSapiencia?: number;
+  totalProgramming?: number;
+  totalCollected?: number;
+  annProgrammingPac?: IPacAnnualization;
+  annCollectyerPac?: IPacAnnualization;
+
+}
+
+export interface IResultEditPac {
+
+  toUpdateProgramming : IEditPac;
+  toUpdateCollected : IEditPac;
+
 }
 
 
