@@ -198,6 +198,24 @@ export default class AdditionsController {
 
   }
 
+  public async budgetCdp({ request, response }: HttpContextContract) {
+    try {
+      const { projectId, foundId, posPreId } = request.body();
+      const result = await AdditionsProvider.getBudgetForCdp(
+        projectId,
+        foundId,
+        posPreId
+      );
+      return response.send(result);
+    } catch (err) {
+      console.log(err)
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+        
+      );
+    }
+  }
+
   public async executeUpdateAdditionWithMov({ request, response }: HttpContextContract) {
 
     try {

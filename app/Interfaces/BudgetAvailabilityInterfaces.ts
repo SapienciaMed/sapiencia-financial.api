@@ -5,8 +5,8 @@ export interface IBudgetAvailabilityFilters {
   dateOfCdp: string;
   page: number;
   perPage: number;
-  initialDate?: string;
-  endDate?: string;
+  initialDate?: DateTime;
+  endDate?: DateTime;
   pospreId?: number;
   fundId?: number;
   projectId?: number;
@@ -39,8 +39,8 @@ export interface ICreateCdp {
   date: DateTime;
   contractObject: string;
   consecutive: number;
-  sapConsecutive: number;
-  rpAssocs?: string;
+  sapConsecutive?: number;
+  rpAssocs?:string;
   icdArr: {
     id?: number;
     idRppCode: number;
@@ -53,8 +53,9 @@ export interface ICreateCdp {
 
 export interface IUpdateBasicDataCdp {
   id: number;
-  dateOfCdp?: DateTime;
+  date?: string;
   contractObject?: string;
+  sapConsecutive?: number | null | undefined;
 }
 
 /* export interface IAmountBudgetAvailability{

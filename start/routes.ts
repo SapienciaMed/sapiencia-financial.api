@@ -190,13 +190,12 @@ Route.group(() => {
   );
   Route.get("/get-by-id/:id", "AdditionsController.getAdditionById");
   Route.post("/update/:id", "AdditionsController.updateAdditionWithMov"); //Como acción de validación
-  Route.post(
-    "/update-save/:id",
-    "AdditionsController.executeUpdateAdditionWithMov"
-  ); //Como acción de guardado/actualizado
-}).prefix("/api/v1/additions");
-// .middleware("auth");
+  Route.post("/update-save/:id", "AdditionsController.executeUpdateAdditionWithMov"); //Como acción de guardado/actualizado
+  Route.post("/get-info-filter", "AdditionsController.budgetCdp"); //Como acción de guardado/actualizado
+  "AdditionsController.executeUpdateAdditionWithMov"
 
+}).prefix("/api/v1/additions")
+  
 Route.group(() => {
   Route.post("/get-paginated", "TransfersController.getTransfersPaginated");
   Route.post("/get-funds", "TransfersController.getFundsList");
@@ -254,6 +253,7 @@ Route.group(() => {
   Route.post('/get-routes-by-validity', 'PacsController.getRoutesByValidity');
   Route.post('/lists-dinamics-association', 'PacsController.listDinamicsAssociations');
   Route.post('/create-association', 'PacsController.createAssociations');
+  Route.post('/edit-pac', 'PacsController.editPac');
   Route.get('/get-pac-by-id/:id', 'PacsController.getPacById');
 
 }).prefix("/api/v1/pac")
@@ -261,6 +261,7 @@ Route.group(() => {
 Route.group(() => {
   Route.post("/search-cdps", "BudgetAvailabilityController.searchBudgetAvailability");
   Route.post("/create-cdp", "BudgetAvailabilityController.createCdpsCertificationBudgetAvailability");
+  Route.post("/asociate-amounts", "BudgetAvailabilityController.associateAmountsWithCdp");
   Route.post(
     "/edit-cdp/:id",
     "BudgetAvailabilityController.editBudgetAvailabilityBasicDataCDP"

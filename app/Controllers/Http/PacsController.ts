@@ -5,7 +5,7 @@ import { ApiResponse } from 'App/Utils/ApiResponses';
 import PacProvider from '@ioc:core.PacProvider';
 import PacSubImplementsProvider from '@ioc:core.PacSubImplementsProvider';
 import { DataTransferPac } from '../../Interfaces/PacTransferInterface';
-import { ICreateAssociation } from '../../Interfaces/PacInterfaces';
+import { ICreateAssociation, IEditPac } from '../../Interfaces/PacInterfaces';
 
 import {
   IPacAnnualAdapter,
@@ -54,12 +54,14 @@ export default class PacsController {
 
   }
 
+  //* V2
   public async transfersOnPac({ request, response }: HttpContextContract) {
 
     try {
 
       const data = request.body() as DataTransferPac;
-      return response.send(await PacProvider.transfersOnPac(data));
+      // return response.send(await PacProvider.transfersOnPac(data));
+      return response.send(await PacSubImplementsProvider.transferPacRefactory(data));
 
     } catch (err) {
 
@@ -235,6 +237,24 @@ export default class PacsController {
 
       const { id } = request.params();
       return response.send(await PacSubImplementsProvider.getPacById(id));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  //* Actualizar el PAC
+  public async editPac({request, response}: HttpContextContract) {
+
+    try {
+
+      const data = request.body() as IEditPac;
+      return response.send(await PacSubImplementsProvider.editPac(data));
 
     } catch (err) {
 

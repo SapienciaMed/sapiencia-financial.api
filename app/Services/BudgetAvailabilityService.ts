@@ -13,6 +13,8 @@ export interface IBudgetAvailabilityService {
   searchBudgetAvailability(
     filters: IBudgetAvailabilityFilters
   ): Promise<ApiResponse<IPagingData<IBudgetAvailability>>>;
+
+  associateAmountsWithCdp(cdpId: number, amounts: any[]): Promise<ApiResponse<any>>;
   createCdps(cdpData: ICreateCdp): Promise<ApiResponse<any>>;
   editBudgetAvailabilityBasicDataCDP(
     id: number,
@@ -24,14 +26,14 @@ export interface IBudgetAvailabilityService {
     reasonCancellation: string
   ): Promise<ApiResponse<any>>;
   linkMga(): Promise<ApiResponse<any>>
+
 }
 
 export default class BudgetAvailabilityService
-  implements IBudgetAvailabilityService
-{
+  implements IBudgetAvailabilityService {
   constructor(
     private budgetAvailabilityRepository: IBudgetAvailabilityRepository
-  ) {}
+  ) { }
 
   async searchBudgetAvailability(
     filters: IBudgetAvailabilityFilters
@@ -68,7 +70,7 @@ export default class BudgetAvailabilityService
   ): Promise<ApiResponse<any>> {
     try {
       const updatedData: IUpdateBasicDataCdp = {
-        id,
+        id: +id,
         ...dataEdit,
       };
       const res =
@@ -113,13 +115,23 @@ export default class BudgetAvailabilityService
       return new ApiResponse(null, EResponseCodes.FAIL, 'Error al anular el monto CDP' + error);
     }
   }
-  
+
   async linkMga(): Promise<ApiResponse<any>> {
     try {
       const data = await this.budgetAvailabilityRepository.linkMga();
       return new ApiResponse(data, EResponseCodes.OK, 'MGA vinculado al CDP exitosamente');
     } catch (error) {
       return new ApiResponse(null, EResponseCodes.FAIL, 'Error al vincular MGA al CDP' + error);
+    }
+  }
+
+  async associateAmountsWithCdp(cdpId: number, amounts: any[]): Promise<ApiResponse<any>> {
+    try {
+      await this.budgetAvailabilityRepository.associateAmountsWithCdp(cdpId, amounts);
+      return new ApiResponse(null, EResponseCodes.OK, 'Importes asociados exitosamente');
+    } catch (error) {
+      console.error('Error en BudgetAvailabilityService al asociar importes al CDP:', error);
+      return new ApiResponse(null, EResponseCodes.FAIL, 'Error al asociar importes al CDP: ' + error);
     }
   }
 }

@@ -2,6 +2,9 @@ import { IBudgets, IFilterBudgets} from "App/Interfaces/BudgetsInterfaces";
 import Budgets from "../Models/Budgets";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
+import { IBudgetsRoutes } from "App/Interfaces/BudgetsRoutesInterfaces";
+import BudgetsRoutes from "../Models/BudgetsRoutes";
+
 
 export interface IBudgetsRepository {
   updateBudgets(budgets: IBudgets, id: number): Promise<IBudgets | null>;
@@ -10,6 +13,7 @@ export interface IBudgetsRepository {
   createBudgets(role: IBudgets): Promise<IBudgets>;
   getAllBudgets(): Promise<IBudgets[]>;
   getBudgetsByNumber(number: string): Promise<IPagingData<IBudgets>>;
+  getBudgetForCdp(projectId: number, foundId: number, posPreId: number): Promise<IBudgetsRoutes | null>;
 }
 
 export default class BudgetsRepository implements IBudgetsRepository {
@@ -20,6 +24,22 @@ export default class BudgetsRepository implements IBudgetsRepository {
     return res ? (res.serialize() as IBudgets) : null;
   }
 
+  async getBudgetForCdp(
+    projectId: number,
+    foundId: number,
+    posPreId: number
+  ): Promise<IBudgetsRoutes | null> {
+    const budgetRoutes: IBudgetsRoutes[] = await BudgetsRoutes.query()
+      .where("RPP_CODVPY_PROYECTO", projectId)
+      .where("RPP_CODFND_FONDO", foundId)
+      .where("RPP_CODPPS_POSPRE_SAPIENCIA", posPreId);
+
+    if (budgetRoutes && budgetRoutes.length > 0) {
+      return budgetRoutes[0];
+    } else {
+      return null;
+    }
+  }
   async getBudgetsPaginated(filters: IFilterBudgets): Promise<IPagingData<IBudgets>> {
     const query = Budgets.query();
 

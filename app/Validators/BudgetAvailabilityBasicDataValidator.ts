@@ -25,8 +25,9 @@ export default class BudgetAvailabilityBasicDataValidator {
    */
 
   public schema = schema.create({
-    dateOfCdp: schema.string.optional(),
+    date: schema.string.optional(),
     contractObject: schema.string.optional(),
+    sapConsecutive: schema.number.nullableAndOptional(),
   });
 
   /**
