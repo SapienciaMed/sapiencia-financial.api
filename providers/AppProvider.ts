@@ -232,7 +232,10 @@ export default class AppProvider {
       "core.BudgetAvailabilityProvider",
       () =>
         new CdpService.default(
-          new CdpRepository.default()
+          new CdpRepository.default(),
+          new StrategicDirectionService.default(
+            new VinculationMGARepository.default()
+          )
         )
     );
 
