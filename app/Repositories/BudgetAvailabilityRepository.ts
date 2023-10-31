@@ -58,8 +58,8 @@ export default class BudgetAvailabilityRepository
     }
 
     if (filter.initialDate && filter.endDate) {
-      query.where("date", ">=", filter.initialDate.toJSDate());
-      query.where("date", "<=", filter.endDate.toJSDate());
+      query.where("date", ">=", new Date(filter.initialDate));
+      query.where("date", "<=", new Date(filter.endDate));
     }
 
     if (filter.consecutiveSap) {

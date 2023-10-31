@@ -1,12 +1,12 @@
-import { IBudgetsRoutes } from "./BudgetsRoutesInterfaces";
 import { DateTime } from "luxon";
+import { IBudgetsRoutes } from "./BudgetsRoutesInterfaces";
 
 export interface IBudgetAvailabilityFilters {
   dateOfCdp: string;
   page: number;
   perPage: number;
-  initialDate?: DateTime;
-  endDate?: DateTime;
+  initialDate?: string;
+  endDate?: string;
   pospreId?: number;
   fundId?: number;
   projectId?: number;
