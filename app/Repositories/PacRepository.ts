@@ -30,7 +30,7 @@ export default interface IPacRepository {
   resourcesTypeList(filters: IPacFilters): Promise<IPagingData<IPacPrimary | string>>;
   listDinamicsRoutes(filters: IPacFilters): Promise<IPagingData<IPacPrimary | number>>;
   updateTransfer(data: IAnnualRoute): Promise<IAnnualRoute | null>;
-  getUltimateVersion(): Promise<number | null>;
+  getUltimateVersion(data: IPacFilters): Promise<number | null>;
   inactivateVersionPac(versionFixed: number, pacsByExerciseFixed: any): Promise<any>;
   createAssociations(data: ICreateAssociation): Promise<IPac | null>;
   createAnnualizations(data: ICreateAssociation): Promise<IPacAnnualization | null>;
@@ -240,7 +240,7 @@ export default class PacRepository implements IPacRepository {
   }
 
     updateOrCreatePac = async (routesValidationRequest: any) => {
-        
+
         for await (let pac of routesValidationRequest.condensed) {
             let annualizations: any[] = []
             delete pac.numberExcelRom
@@ -260,7 +260,7 @@ export default class PacRepository implements IPacRepository {
         }
         return routesValidationRequest
     }
-   
+
   getPacByExcercise = async (exercise: number): Promise<Pac[]> => {
     const pacs = await Pac.query().where('exercise', exercise).preload('pacAnnualizations')
     return pacs;
@@ -557,10 +557,12 @@ export default class PacRepository implements IPacRepository {
 
   }
 
-  async getUltimateVersion(): Promise<Pac | null | unknown> {
+  async getUltimateVersion(data: IPacFilters): Promise<Pac | null | unknown> {
 
     const search = Pac.query();
-    search.where("isActive", true);
+    search.where("isActive", true)
+          .andWhere("exercise", Number(data.exercise!));
+
     search.orderBy("version", "desc");
     search.select("version");
     search.first()
