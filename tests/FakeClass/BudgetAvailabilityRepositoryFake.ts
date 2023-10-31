@@ -2,6 +2,7 @@ import {
   IBudgetAvailabilityFilters,
   IBudgetAvailability,
   IUpdateBasicDataCdp,
+  IUpdateRoutesCDP,
 } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import BudgetAvailability from "App/Models/BudgetAvailability";
 import { IBudgetAvailabilityRepository } from "App/Repositories/BudgetAvailabilityRepository";
@@ -16,9 +17,15 @@ const filter: IBudgetAvailability = {
   icdAmounts: [],
 };
 
+  
+  
+
 export class BudgetAvailabilityRepositoryFake
   implements IBudgetAvailabilityRepository
 {
+  updateRoutesCDP(_updateRoutesCDP: IUpdateRoutesCDP, _id: number): Promise<IUpdateRoutesCDP | null> {
+    throw new Error("Method not implemented.");
+  }
   associateAmountsWithCdp(_cdpId: number, _amounts: any[]): Promise<void> {
     throw new Error("Method not implemented.");
   }

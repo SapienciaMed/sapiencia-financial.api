@@ -6,6 +6,7 @@ import {
   IBudgetAvailabilityFilters,
   ICreateCdp,
   IUpdateBasicDataCdp,
+  IUpdateRoutesCDP,
 } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import BudgetAvailability from "App/Models/BudgetAvailability";
 
@@ -26,7 +27,7 @@ export interface IBudgetAvailabilityService {
     reasonCancellation: string
   ): Promise<ApiResponse<any>>;
   linkMga(): Promise<ApiResponse<any>>
-
+  updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<ApiResponse<IUpdateRoutesCDP>>;
 }
 
 export default class BudgetAvailabilityService
@@ -133,5 +134,18 @@ export default class BudgetAvailabilityService
       console.error('Error en BudgetAvailabilityService al asociar importes al CDP:', error);
       return new ApiResponse(null, EResponseCodes.FAIL, 'Error al asociar importes al CDP: ' + error);
     }
+  }
+
+  async updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<ApiResponse<IUpdateRoutesCDP>> {
+    const res = await this.budgetAvailabilityRepository.updateRoutesCDP(updateRoutesCDP, id);
+    if (!res) {
+      return new ApiResponse(
+        {} as IUpdateRoutesCDP,
+        EResponseCodes.FAIL,
+        "El registro indicado no existe"
+      );
+    }
+
+    return new ApiResponse(res, EResponseCodes.OK);
   }
 }

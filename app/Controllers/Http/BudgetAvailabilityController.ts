@@ -5,6 +5,7 @@ import { ApiResponse } from "App/Utils/ApiResponses";
 import BudgetAvailabilityBasicDataValidator from "App/Validators/BudgetAvailabilityBasicDataValidator";
 import BudgetAvailabilityFiltersValidator from "App/Validators/BudgetAvailabilityFiltersValidator";
 import BudgetAvailabilityValidator from "App/Validators/BudgetAvailabilityValidator";
+import updateRouteCDPValidator from "App/Validators/updateRiutesCDPValidator";
 
 export default class BudgetAvailabilityController {
   /**
@@ -140,6 +141,19 @@ export default class BudgetAvailabilityController {
       };
       await BudgetAvailabilityProvider.associateAmountsWithCdp(cdpId, amounts);
       return response.send(new ApiResponse("Importes asociados con éxito", EResponseCodes.OK, "null"));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
+
+  public async updateRoutesCDP({request, response}: HttpContextContract){
+    try {
+      const { id } = request.params();
+      const data = await request.validate(updateRouteCDPValidator);     
+
+      return response.send(await BudgetAvailabilityProvider.updateRoutesCDP(data, id));
     } catch (err) {
       return response.badRequest(
         new ApiResponse(null, EResponseCodes.FAIL, String(err))

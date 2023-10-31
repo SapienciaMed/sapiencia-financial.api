@@ -66,3 +66,15 @@ export interface IUpdateBasicDataCdp {
   rpAssocs?: string;
 
 } */
+
+export interface IUpdateRoutesCDP {
+  id?:                       number;
+  idRppCode:                 number;
+  cdpPosition:               number;
+  amount:                    number;
+  modifiedIdcCountercredit?: number;
+  idcModifiedCredit?:        number;
+  idcFixedCompleted?:        number;
+  idcFinalValue?:            number;
+}
+
