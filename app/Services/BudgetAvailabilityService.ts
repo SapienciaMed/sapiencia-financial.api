@@ -27,6 +27,7 @@ export interface IBudgetAvailabilityService {
     reasonCancellation: string
   ): Promise<ApiResponse<any>>;
   linkMga(): Promise<ApiResponse<any>>
+  getRouteCDPId(id: number): Promise<ApiResponse<IUpdateRoutesCDP | null>>;
   updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<ApiResponse<IUpdateRoutesCDP>>;
 }
 
@@ -147,5 +148,14 @@ export default class BudgetAvailabilityService
     }
 
     return new ApiResponse(res, EResponseCodes.OK);
+  }
+
+  async getRouteCDPId(id: number): Promise<ApiResponse<IUpdateRoutesCDP | null>> {
+    const res = await this.budgetAvailabilityRepository.getRouteCDPId(id);
+    if (!res) {
+      return new ApiResponse(res, EResponseCodes.WARN, "Recurso no encontrado");
+    } else {
+      return new ApiResponse(res, EResponseCodes.OK);
+    }
   }
 }

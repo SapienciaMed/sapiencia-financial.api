@@ -49,8 +49,8 @@ export default class AmountBudgetAvailability extends BaseModel {
   public idcFinalValue: number;
 
   @hasOne(() => BudgetAvailability, {
-    localKey: "id",
-    foreignKey: "ICD_CODCDP",
+    localKey: "cdpCode",
+    foreignKey: "id",
     serializeAs: "budgetAvailability",
   })
   public budgetAvailability: HasOne<typeof BudgetAvailability>;

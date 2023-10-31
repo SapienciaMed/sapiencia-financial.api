@@ -269,5 +269,6 @@ Route.group(() => {
   Route.get("/get-by-id/:id", "BudgetAvailabilityController.getById");
   Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
   Route.post("/link-mga/", "BudgetAvailabilityController.linkMga");
+  Route.get("/get-routeCDP-id/:id", "BudgetAvailabilityController.getRouteCDPId");
   Route.put("/updateRouteCDP/:id", "BudgetAvailabilityController.updateRoutesCDP");
 }).prefix("/api/v1/cdp")

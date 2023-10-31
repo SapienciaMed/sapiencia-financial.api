@@ -180,4 +180,10 @@ test.group("CdpsService Tests", () => {
     assert.equal(result.data.idcFixedCompleted, data.idcFixedCompleted);
     assert.equal(result.data.idcFinalValue, data.idcFinalValue);
   });
+
+  test("the method getRouteCDPId must return a OK code ", async (assert) => {
+    const result = await service.getRouteCDPId(1);
+    console.log({ result });
+    assert.isTrue(result.operation.code === EResponseCodes.OK);
+  });
 });

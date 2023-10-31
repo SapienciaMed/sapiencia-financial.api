@@ -160,4 +160,15 @@ export default class BudgetAvailabilityController {
       );
     }
   }
+  
+  public async getRouteCDPId({ request, response }: HttpContextContract) {
+    try {
+      const { id } = request.params() as { id: number };
+      return response.send(await BudgetAvailabilityProvider.getRouteCDPId(id));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  } 
 }
