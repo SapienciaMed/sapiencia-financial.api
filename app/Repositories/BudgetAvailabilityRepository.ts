@@ -20,7 +20,7 @@ export interface IBudgetAvailabilityRepository {
   editBudgetAvailabilityBasicDataCDP(
     updatedData: IUpdateBasicDataCdp
   ): Promise<any>;
-  getById(id: string): Promise<BudgetAvailability>;
+  getBudgetAvailabilityById(id: string): Promise<BudgetAvailability>;
   cancelAmountCdp(
     id: number,
     reasonCancellation: string
@@ -59,7 +59,6 @@ export default class BudgetAvailabilityRepository
     }
 
     if (filter.initialDate && filter.endDate) {
-      console.log(filter, )
       query.where("date", ">=", getStringDate(new Date(filter.initialDate)));
       query.where("date", "<=", getStringDate(new Date(filter.endDate)));
     }
@@ -177,7 +176,7 @@ export default class BudgetAvailabilityRepository
       throw new Error("Error al asociar importes al CDP: " + error.message);
     }
   }
-  getById = async (id: string): Promise<any> => {
+  getBudgetAvailabilityById = async (id: string): Promise<any> => {
     return await BudgetAvailability.query()
       .where("id", Number(id))
       .preload("amounts", (query) => {

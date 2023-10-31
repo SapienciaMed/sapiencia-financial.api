@@ -266,7 +266,7 @@ Route.group(() => {
     "/edit-cdp/:id",
     "BudgetAvailabilityController.editBudgetAvailabilityBasicDataCDP"
   );
-  Route.get("/get-by-id/:id", "BudgetAvailabilityController.getById");
+  Route.get("/get-by-id/:id", "BudgetAvailabilityController.getBudgetAvailabilityById");
   Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
   Route.post("/link-mga/", "BudgetAvailabilityController.linkMga");
 }).prefix("/api/v1/cdp")
