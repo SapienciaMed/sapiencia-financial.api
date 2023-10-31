@@ -14,7 +14,6 @@ export default class BudgetAvailability extends BaseModel {
   @column({
     columnName: "CDP_FECHA",
     serializeAs: "date",
-    // prepare: (value: DateTime) => new Date(value?.toJSDate()),
     serialize: (value: Date) => {
       return getStringDate(value)
 
