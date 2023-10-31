@@ -9,6 +9,7 @@ import BudgetAvailability from "../Models/BudgetAvailability";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
+import { getStringDate } from "App/Utils/functions";
 export interface IBudgetAvailabilityRepository {
   searchBudgetAvailability(
     filter: IBudgetAvailabilityFilters
@@ -58,8 +59,9 @@ export default class BudgetAvailabilityRepository
     }
 
     if (filter.initialDate && filter.endDate) {
-      query.where("date", ">=", new Date(filter.initialDate));
-      query.where("date", "<=", new Date(filter.endDate));
+      console.log(filter, )
+      query.where("date", ">=", getStringDate(new Date(filter.initialDate)));
+      query.where("date", "<=", getStringDate(new Date(filter.endDate)));
     }
 
     if (filter.consecutiveSap) {
