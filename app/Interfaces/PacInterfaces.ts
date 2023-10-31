@@ -22,6 +22,8 @@ export interface IBody {
   typeSource: string;
   typePac: string;
   version?:number;
+  userCreate?:string;
+  userModify?:string;
 }
 
 //Desestructuración de interfaz final de data
@@ -95,8 +97,10 @@ export interface IResultProcRoutes {
   version?: number,
   exercise?: number,
   isActive?: boolean,
-  dateModify?: Date,
-  dateCreate?: Date,
+  dateModify?: Date | string,
+  dateCreate?: Date | string,
+  userCreate?:string;
+  userModify?:string;
   pacAnnualizationProgrammed?: any; //IPacAnnualization;
   pacAnnualizationCollected?: any; //IPacAnnualization;
 
@@ -293,6 +297,7 @@ export interface ITotalsByTransfers {
   idPospreSapiencia?: number,
   idFund?: number,
   idCardTemplate?: string,
+  balance?: number;
   totalProgrammig: number;
   totalCollected: number;
 
@@ -381,6 +386,60 @@ export interface IAssociationSuccess {
 
   Pac : IPac;
   PacAnnualization : IPacAnnualization;
+
+}
+
+export interface IResultSearchDinamicPac {
+  resultPac : IPac | null,
+  totalsPac : {
+    totalProgramming : number;
+    totalCollected : number;
+  }
+  resultRoute: {
+    managementCenter : string;
+    fundNumber : string;
+    fundId : number;
+    posPreSapiDescription : string;
+    posPreSapiNumber : string;
+    posPreSapiId : number;
+    posPreOrigNumber : string;
+    posPreOrigId : number;
+    projectVinculationId : number;
+    projectPlanningId : number;
+    projectCode : string;
+    projectName : string;
+    functionalAreaId : number;
+    functionalAreaNumber : string;
+  }
+}
+
+export interface IEditPac  {
+
+  route?: number;
+  pacId?: number;
+  budgetRouteId?: number;
+  type?: string;
+  version?: number;
+  resourceType?: string;
+  pacType?: string;
+
+  idProjectVinculation?: number;
+  idFund?: number;
+  idPospreSapiencia?: number;
+  idBudget?: number;
+
+  budgetSapiencia?: number;
+  totalProgramming?: number;
+  totalCollected?: number;
+  annProgrammingPac?: IPacAnnualization;
+  annCollectyerPac?: IPacAnnualization;
+
+}
+
+export interface IResultEditPac {
+
+  toUpdateProgramming : IEditPac;
+  toUpdateCollected : IEditPac;
 
 }
 

@@ -1,17 +1,27 @@
 import fs from 'fs';
 import Excel from 'exceljs'
-import { IPacAnnualization, IPacPrimary, IPac, ICreateAssociation } from '../Interfaces/PacInterfaces';
+import { IPacAnnualization,
+         IPacPrimary,
+         IPac,
+         ICreateAssociation,
+         IEditPac } from '../Interfaces/PacInterfaces';
 import { IPagingData } from '../Utils/ApiResponses';
 import { IPacFilters } from 'App/Interfaces/PacInterfaces';
 import PacAnnualization from 'App/Models/PacAnnualization';
 import Pac from 'App/Models/Pac';
 import { IAnnualRoute } from '../Interfaces/PacTransferInterface';
+import { IResultEditPac } from '../Interfaces/PacInterfaces';
 
 export default interface IPacRepository {
 
   uploadPac(file: any): Promise<any>;
   searchPacByMultiData(filters: IPacFilters): Promise<IPagingData<IPacPrimary | null>>;
-  getPacByRouteAndExercise(route: number, validity: number, version: number, type: string, page: number, perPage: number): Promise<IPagingData<IPac | null>>;
+  getPacByRouteAndExercise(route: number,
+                           validity: number,
+                           version: number,
+                           type: string,
+                           page: number,
+                           perPage: number): Promise<IPagingData<IPac | null>>;
   getAnnualizationsByPacAndType(pac: number, type: string): Promise<IPagingData<IPacAnnualization | null>>;
   updateOrCreatePac(routesValidationRequest: any): Promise<any>;
   getPacByExcercise(exercise: number): Promise<Pac[]>;
@@ -24,6 +34,8 @@ export default interface IPacRepository {
   inactivateVersionPac(versionFixed: number, pacsByExerciseFixed: any): Promise<any>;
   createAssociations(data: ICreateAssociation): Promise<IPac | null>;
   createAnnualizations(data: ICreateAssociation): Promise<IPacAnnualization | null>;
+  getPacById(id: number): Promise<IPagingData<IPac | null>>;
+  updatePac(data: IEditPac): Promise<IResultEditPac | null>;
 
 }
 
@@ -227,27 +239,28 @@ export default class PacRepository implements IPacRepository {
     }
   }
 
-  updateOrCreatePac = async (routesValidationRequest: any) => {
-    for await (let pac of routesValidationRequest.condensed) {
-      let annualizations: any[] = []
-      delete pac.numberExcelRom
-      delete pac.pacAnnualizationProgrammed.totalBudget
-      delete pac.pacAnnualizationCollected.totalBudget
-      delete pac.balance;
-      annualizations.push(pac.pacAnnualizationProgrammed)
-      annualizations.push(pac.pacAnnualizationCollected)
-      delete pac.pacAnnualizationProgrammed;
-      delete pac.pacAnnualizationCollected;
-      const toCreatePac = new Pac();
-      toCreatePac.fill({ ...pac, dateCreate: new Date('2023-09-04 17:51:46') });
-      let pacCreated = await toCreatePac.save();
-      await pacCreated
-        .related('pacAnnualizations')
-        .createMany(annualizations)
+    updateOrCreatePac = async (routesValidationRequest: any) => {
+        
+        for await (let pac of routesValidationRequest.condensed) {
+            let annualizations: any[] = []
+            delete pac.numberExcelRom
+            delete pac.pacAnnualizationProgrammed.totalBudget
+            delete pac.pacAnnualizationCollected.totalBudget
+            delete pac.balance;
+            annualizations.push(pac.pacAnnualizationProgrammed)
+            annualizations.push(pac.pacAnnualizationCollected)
+            delete pac.pacAnnualizationProgrammed;
+            delete pac.pacAnnualizationCollected;
+            const toCreatePac = new Pac();
+            toCreatePac.fill({ ...pac });
+            let pacCreated = await toCreatePac.save();
+            await pacCreated
+                .related('pacAnnualizations')
+                .createMany(annualizations)
+        }
+        return routesValidationRequest
     }
-    return routesValidationRequest
-  }
-
+   
   getPacByExcercise = async (exercise: number): Promise<Pac[]> => {
     const pacs = await Pac.query().where('exercise', exercise).preload('pacAnnualizations')
     return pacs;
@@ -344,37 +357,37 @@ export default class PacRepository implements IPacRepository {
 
     if (!filters.version) {
 
-      if( !filters.route ){
+      if (!filters.route) {
 
         query.where("exercise", filters.exercise!)
-        .andWhere("sourceType", filters.resourceType!)
+          .andWhere("sourceType", filters.resourceType!)
         //.andWhere("isActive", true);
 
-      }else{
+      } else {
 
         query.where("exercise", filters.exercise!)
-        .andWhere("sourceType", filters.resourceType!)
-        .andWhere("budgetRouteId", filters.route!);
-      //.andWhere("isActive", true);
+          .andWhere("sourceType", filters.resourceType!)
+          .andWhere("budgetRouteId", filters.route!);
+        //.andWhere("isActive", true);
 
       }
 
     } else {
 
-      if( !filters.route ){
+      if (!filters.route) {
 
         query.where("exercise", filters.exercise!)
-        .andWhere("sourceType", filters.resourceType!)
-        .andWhere("version", filters.version);
-      //.andWhere("isActive", true);
+          .andWhere("sourceType", filters.resourceType!)
+          .andWhere("version", filters.version);
+        //.andWhere("isActive", true);
 
-      }else{
+      } else {
 
         query.where("exercise", filters.exercise!)
-        .andWhere("sourceType", filters.resourceType!)
-        .andWhere("version", filters.version)
-        .andWhere("budgetRouteId", filters.route!);
-      //.andWhere("isActive", true);
+          .andWhere("sourceType", filters.resourceType!)
+          .andWhere("version", filters.version)
+          .andWhere("budgetRouteId", filters.route!);
+        //.andWhere("isActive", true);
 
       }
 
@@ -416,7 +429,12 @@ export default class PacRepository implements IPacRepository {
 
   }
 
-  async getPacByRouteAndExercise(route: number, validity: number, version: number, type: string, page: number, perPage: number): Promise<IPagingData<IPac | null>> {
+  async getPacByRouteAndExercise(route: number,
+                                 validity: number,
+                                 version: number,
+                                 type: string,
+                                 page: number,
+                                 perPage: number): Promise<IPagingData<IPac | null>> {
 
     const query = Pac.query();
 
@@ -433,16 +451,18 @@ export default class PacRepository implements IPacRepository {
       version === 0 &&
       type !== "no") {
 
-      if (type !== "Ambos") {
+      if (type !== "Ambos" && type !== "Todos") {
 
         query.where("budgetRouteId", route)
           .andWhere("exercise", validity)
-          .andWhere("sourceType", type);
+          .andWhere("sourceType", type)
+          .andWhere("isActive", true);
 
       } else {
 
         query.where("budgetRouteId", route)
-          .andWhere("exercise", validity);
+          .andWhere("exercise", validity)
+          .andWhere("isActive", true);
 
       }
 
@@ -462,7 +482,7 @@ export default class PacRepository implements IPacRepository {
       version !== 0 &&
       type !== "no") {
 
-      if (type !== "Ambos") {
+      if (type !== "Ambos" && type !== "Todos") {
 
         query.where("budgetRouteId", route)
           .andWhere("exercise", validity)
@@ -483,7 +503,7 @@ export default class PacRepository implements IPacRepository {
       version !== 0 &&
       type !== "no") {
 
-      if (type !== "Ambos") {
+      if (type !== "Ambos" && type !== "Todos") {
 
         query.where("exercise", validity)
           .andWhere("version", version)
@@ -570,11 +590,11 @@ export default class PacRepository implements IPacRepository {
 
     const properties: IPac = {
       sourceType: data.resourceType,
-      budgetRouteId : Number(data.route),
-      version : Number(data.version),
-      exercise : Number(data.exercise),
-      isActive : true,
-      dateCreate : new Date()
+      budgetRouteId: Number(data.route),
+      version: Number(data.version),
+      exercise: Number(data.exercise),
+      isActive: true,
+      dateCreate: new Date()
     }
 
     const toCreateAssociation = new Pac();
@@ -589,20 +609,20 @@ export default class PacRepository implements IPacRepository {
 
     const properties: IPacAnnualization = {
 
-      pacId : data.pacId,
-      type : data.type!,
-      jan : Number(data.annualization!.jan),
-      feb : Number(data.annualization!.feb),
-      mar : Number(data.annualization!.mar),
-      abr : Number(data.annualization!.abr),
-      may : Number(data.annualization!.may),
-      jun : Number(data.annualization!.jun),
-      jul : Number(data.annualization!.jul),
-      ago : Number(data.annualization!.ago),
-      sep : Number(data.annualization!.sep),
-      oct : Number(data.annualization!.oct),
-      nov : Number(data.annualization!.nov),
-      dec : Number(data.annualization!.dec),
+      pacId: data.pacId,
+      type: data.type!,
+      jan: Number(data.annualization!.jan),
+      feb: Number(data.annualization!.feb),
+      mar: Number(data.annualization!.mar),
+      abr: Number(data.annualization!.abr),
+      may: Number(data.annualization!.may),
+      jun: Number(data.annualization!.jun),
+      jul: Number(data.annualization!.jul),
+      ago: Number(data.annualization!.ago),
+      sep: Number(data.annualization!.sep),
+      oct: Number(data.annualization!.oct),
+      nov: Number(data.annualization!.nov),
+      dec: Number(data.annualization!.dec),
       dateCreate: new Date()
 
     }
@@ -615,20 +635,20 @@ export default class PacRepository implements IPacRepository {
     //* También debemos crear por defecto el recaudado pero en 0
     const collectedExtra: IPacAnnualization = {
 
-      pacId : data.pacId,
-      type : "Recaudado",
-      jan : 0,
-      feb : 0,
-      mar : 0,
-      abr : 0,
-      may : 0,
-      jun : 0,
-      jul : 0,
-      ago : 0,
-      sep : 0,
-      oct : 0,
-      nov : 0,
-      dec : 0,
+      pacId: data.pacId,
+      type: "Recaudado",
+      jan: 0,
+      feb: 0,
+      mar: 0,
+      abr: 0,
+      may: 0,
+      jun: 0,
+      jul: 0,
+      ago: 0,
+      sep: 0,
+      oct: 0,
+      nov: 0,
+      dec: 0,
       dateCreate: new Date()
 
     }
@@ -639,6 +659,74 @@ export default class PacRepository implements IPacRepository {
 
     //Devuelvame el primero indiferentemente del caso.
     return toCreateAnnualization.serialize() as IPacAnnualization;
+
+  }
+
+  async getPacById(id: number): Promise<IPagingData<IPac | null>> {
+
+    const query = Pac.query();
+
+    query.where("id", id);
+    query.preload("pacAnnualizations");
+
+    const res = await query.paginate(1, 1000000);
+    const { data, meta } = res.serialize();
+
+    return {
+      array: data as IPac[] | null[],
+      meta,
+    };
+
+  }
+
+  async updatePac(data: IEditPac): Promise<IResultEditPac | null>{
+
+    const { pacId } = data;
+    console.log(pacId);
+
+    const toUpdateProgramming = await PacAnnualization.find(Number(data.annProgrammingPac!.id));
+    const toUpdateCollected = await PacAnnualization.find(Number(data.annCollectyerPac!.id));
+
+    if (!toUpdateProgramming || !toUpdateCollected) return null;
+
+    toUpdateProgramming.jan = data.annProgrammingPac!.jan;
+    toUpdateProgramming.feb = data.annProgrammingPac!.feb;
+    toUpdateProgramming.mar = data.annProgrammingPac!.mar;
+    toUpdateProgramming.abr = data.annProgrammingPac!.abr;
+    toUpdateProgramming.may = data.annProgrammingPac!.may;
+    toUpdateProgramming.jun = data.annProgrammingPac!.jun;
+    toUpdateProgramming.jul = data.annProgrammingPac!.jul;
+    toUpdateProgramming.ago = data.annProgrammingPac!.ago;
+    toUpdateProgramming.sep = data.annProgrammingPac!.sep;
+    toUpdateProgramming.oct = data.annProgrammingPac!.oct;
+    toUpdateProgramming.nov = data.annProgrammingPac!.nov;
+    toUpdateProgramming.dec = data.annProgrammingPac!.dec;
+    toUpdateProgramming.dateModify = new Date();
+    await toUpdateProgramming.save();
+
+    toUpdateCollected.jan = data.annCollectyerPac!.jan;
+    toUpdateCollected.feb = data.annCollectyerPac!.feb;
+    toUpdateCollected.mar = data.annCollectyerPac!.mar;
+    toUpdateCollected.abr = data.annCollectyerPac!.abr;
+    toUpdateCollected.may = data.annCollectyerPac!.may;
+    toUpdateCollected.jun = data.annCollectyerPac!.jun;
+    toUpdateCollected.jul = data.annCollectyerPac!.jul;
+    toUpdateCollected.ago = data.annCollectyerPac!.ago;
+    toUpdateCollected.sep = data.annCollectyerPac!.sep;
+    toUpdateCollected.oct = data.annCollectyerPac!.oct;
+    toUpdateCollected.nov = data.annCollectyerPac!.nov;
+    toUpdateCollected.dec = data.annCollectyerPac!.dec;
+    toUpdateCollected.dateModify = new Date();
+    await toUpdateCollected.save();
+
+    const result: IResultEditPac = {
+
+      toUpdateProgramming : toUpdateProgramming.serialize() as IEditPac,
+      toUpdateCollected : toUpdateCollected.serialize() as IEditPac
+
+    }
+
+    return result;
 
   }
 

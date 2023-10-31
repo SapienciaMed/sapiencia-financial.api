@@ -19,6 +19,12 @@ const filter: IBudgetAvailability = {
 export class BudgetAvailabilityRepositoryFake
   implements IBudgetAvailabilityRepository
 {
+  associateAmountsWithCdp(_cdpId: number, _amounts: any[]): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  linkMga(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
   async editBudgetAvailabilityBasicDataCDP(updatedData: IUpdateBasicDataCdp) {
     const updatedDataNew: any = {
       id: 1,
