@@ -1,5 +1,6 @@
 import { BaseModel, HasMany, column, hasMany } from "@ioc:Adonis/Lucid/Orm";
 import AmountBudgetAvailability from "./AmountBudgetAvailability";
+import { getStringDate } from "App/Utils/functions";
 
 export default class BudgetAvailability extends BaseModel {
   public static table = "CDP_CERTIFICADO_DISPONIBILIDAD_PRESUPUESTAL";
@@ -13,6 +14,11 @@ export default class BudgetAvailability extends BaseModel {
   @column({
     columnName: "CDP_FECHA",
     serializeAs: "date",
+    // prepare: (value: DateTime) => new Date(value?.toJSDate()),
+    serialize: (value: Date) => {
+      return getStringDate(value)
+
+    },
   })
   public date: Date;
 
