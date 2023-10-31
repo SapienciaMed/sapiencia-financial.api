@@ -37,7 +37,7 @@ import {
 export default interface IPacSubImplementsService {
 
   getHellow(): Promise<ApiResponse<string | null>>;
-  getUltimateVersion(): Promise<ApiResponse<number | null>>;
+  getUltimateVersion(data: IPacFilters): Promise<ApiResponse<number | null>>;
   getRoutesByValidity(data: IPacFilters): Promise<ApiResponse<IPagingData<IPacPrimary> | IPacComplementary | null>>;
   searchPacs(data: IPacFilters): Promise<ApiResponse<ISearchGeneralPac[] | null>>;
   listDinamicsAssociations(data: IPacFilters): Promise<ApiResponse<IPacComplementary | null>>;
@@ -76,9 +76,9 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
   }
 
-  async getUltimateVersion(): Promise<ApiResponse<number | null>> {
+  async getUltimateVersion(data: IPacFilters): Promise<ApiResponse<number | null>> {
 
-    const getVersion = await this.pacRepository.getUltimateVersion();
+    const getVersion = await this.pacRepository.getUltimateVersion(data);
 
     if (!getVersion || getVersion == null || getVersion == undefined)
       return new ApiResponse(null, EResponseCodes.FAIL, "No se pudo encontrar una versión.");
@@ -857,8 +857,11 @@ export default class PacSubImplementsService implements IPacSubImplementsService
                                   Number(annualCollected.may) + Number(annualCollected.jun) + Number(annualCollected.jul) + Number(annualCollected.ago) +
                                   Number(annualCollected.sep) + Number(annualCollected.oct) + Number(annualCollected.nov) + Number(annualCollected.dec);
 
-
+    console.log({type : data.pacType});
     if( data.pacType == "Programado" || data.pacType == "Ambos" ){
+
+      console.log({plusProgramming});
+      console.log({balanceRoute});
 
       //* Escenario 4
       if( plusProgramming !== budgetSapi )
@@ -875,6 +878,9 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     }
 
     if( data.pacType == "Recaudado" || data.pacType == "Ambos" ){
+
+      console.log({plusProgramming});
+      console.log({balanceRoute});
 
       //* Escenario 5
       if( plusProgramming < plusCollected )

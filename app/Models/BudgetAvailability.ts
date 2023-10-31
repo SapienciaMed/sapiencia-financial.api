@@ -26,7 +26,7 @@ export default class BudgetAvailability extends BaseModel {
   public consecutive: number;
 
   @column({ columnName: "CDP_CONSECUTIVO_SAP", serializeAs: "sapConsecutive" })
-  public sapConsecutive: number;
+  public sapConsecutive: number | null;
 
   @hasMany(() => AmountBudgetAvailability, {
     localKey: "id",

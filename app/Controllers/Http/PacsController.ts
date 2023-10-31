@@ -160,11 +160,12 @@ export default class PacsController {
   }
 
   //* Obtener última versión activa
-  public async getUltimateVersion({ response }: HttpContextContract) {
+  public async getUltimateVersion({ request, response }: HttpContextContract) {
 
     try {
 
-      return response.send(await PacSubImplementsProvider.getUltimateVersion());
+      const data = request.body() as IPacFilters;
+      return response.send(await PacSubImplementsProvider.getUltimateVersion(data));
 
     } catch (err) {
 
