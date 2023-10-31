@@ -70,7 +70,7 @@ export default class BudgetAvailabilityService
   ): Promise<ApiResponse<any>> {
     try {
       const updatedData: IUpdateBasicDataCdp = {
-        id,
+        id: +id,
         ...dataEdit,
       };
       const res =
