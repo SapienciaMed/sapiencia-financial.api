@@ -4,6 +4,7 @@ import BudgetAvailabilityService from "App/Services/BudgetAvailabilityService";
 import { ApiResponse } from "../app/Utils/ApiResponses";
 import { EResponseCodes } from "../app/Constants/ResponseCodesEnum";
 import { IBudgetAvailabilityFilters } from "App/Interfaces/BudgetAvailabilityInterfaces";
+import { DateTime } from "luxon";
 
 const service = new BudgetAvailabilityService(
   new BudgetAvailabilityRepositoryFake()
@@ -81,12 +82,14 @@ test.group("CdpsService Tests", () => {
  */
 
   test("Returns an object with meta and array properties", async (assert) => {
+    const initialDate = DateTime.fromISO("2022-01-01");
+    const endDate = DateTime.fromISO("2022-12-31");
     const filter: IBudgetAvailabilityFilters = {
       dateOfCdp: "2022",
       page: 1,
       perPage: 10,
-      initialDate: "2022-01-01",
-      endDate: "2022-12-31",
+      initialDate: initialDate,
+      endDate: endDate,
       consecutiveSap: 12345,
       contractObject: "example",
     };
@@ -103,12 +106,14 @@ test.group("CdpsService Tests", () => {
   });
 
   test("Returns a list of budget availabilities filtered by the given parameters", async (assert) => {
+    const initialDate = DateTime.fromISO("2022-01-01");
+    const endDate = DateTime.fromISO("2022-12-31");
     const filter: IBudgetAvailabilityFilters = {
       dateOfCdp: "2022",
       page: 1,
       perPage: 10,
-      initialDate: "2022-01-01",
-      endDate: "2022-12-31",
+      initialDate: initialDate,
+      endDate: endDate,
       consecutiveSap: 12345,
       contractObject: "example",
     };
