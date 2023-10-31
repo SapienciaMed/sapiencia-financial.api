@@ -11,13 +11,15 @@ export interface IBudgetsRoutesRepository {
   getBudgetsRoutesWithoutPagination(): Promise<IBudgetsRoutes[]>;
 
   getBudgetForAdditions(projectId: number,
-    foundId: number,
+    idProjectVinculation: number,
     posPreOriginId: number,
     posPreId: number): Promise<IBudgetsRoutes | null>;
-
-  getBudgetsSpcifyExerciseWithPosPreSapi(posPreSapi: number): Promise<IBudgetsRoutes[] | null>;
-
+  getBudgetForCdp(projectId: number,
+    foundId: number,
+    posPreId: number): Promise<IBudgetsRoutes | null>;
+    getBudgetsSpcifyExerciseWithPosPreSapi(posPreSapi: number): Promise<IBudgetsRoutes[] | null>;
 }
+
 
 export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository {
   constructor() { }
@@ -27,8 +29,13 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
   }
 
   async getBudgetsRoutesPaginated(filters: IBudgetsRoutesFilters): Promise<IPagingData<IBudgetsRoutes>> {
-
     const query = BudgetsRoutes.query();
+
+    query.preload("projectVinculation");
+    query.preload("budget");
+    query.preload("funds");
+    query.preload("pospreSapiencia");
+
     if (filters.idProjectVinculation) query.where("idProjectVinculation", filters.idProjectVinculation);
     if (filters.idRoute) query.where("id", Number(filters.idRoute));
 
@@ -104,6 +111,20 @@ export default class BudgetsRoutesRepository implements IBudgetsRoutesRepository
     const res = await BudgetsRoutes.query()
       .where('idProjectVinculation', projectId)
       .andWhere('idBudget', posPreOriginId)
+      .andWhere('idPospreSapiencia', posPreId)
+      .andWhere('idFund', foundId)
+      .first();
+
+    return res ? (res.serialize() as IBudgetsRoutes) : null;
+
+  }
+
+  async getBudgetForCdp(projectId: number,
+    foundId: number,
+    posPreId: number): Promise<IBudgetsRoutes | null> {
+
+    const res = await BudgetsRoutes.query()
+      .where('idProjectVinculation', projectId)
       .andWhere('idPospreSapiencia', posPreId)
       .andWhere('idFund', foundId)
       .first();

@@ -19,8 +19,11 @@ const filter: IBudgetAvailability = {
 export class BudgetAvailabilityRepositoryFake
   implements IBudgetAvailabilityRepository
 {
+  associateAmountsWithCdp(_cdpId: number, _amounts: any[]): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
   linkMga(): Promise<any> {
-      throw new Error("Method not implemented.");
+    throw new Error("Method not implemented.");
   }
   async editBudgetAvailabilityBasicDataCDP(updatedData: IUpdateBasicDataCdp) {
     const updatedDataNew: any = {
@@ -31,8 +34,8 @@ export class BudgetAvailabilityRepositoryFake
       sapConsecutive: 1,
     };
 
-    if (updatedData.dateOfCdp) {
-      updatedDataNew.date = updatedData.dateOfCdp;
+    if (updatedData.date) {
+      updatedDataNew.date = updatedData.date;
     }
     if (updatedData.contractObject) {
       updatedDataNew.contractObject = updatedData.contractObject;

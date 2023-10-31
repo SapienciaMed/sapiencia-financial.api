@@ -10,7 +10,8 @@ export default class BudgetAvailabilityValidator {
     date: schema.date(),
     contractObject: schema.string(),
     consecutive: schema.number(),
-    sapConsecutive: schema.number(),
+    sapConsecutive: schema.number.optional(),
+    rpAssocs: schema.string.optional(),
     icdArr: schema.array().members(
       schema.object().members({
         id: schema.number.optional(),
