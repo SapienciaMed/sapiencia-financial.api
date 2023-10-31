@@ -5,9 +5,11 @@ import { ApiResponse } from "../app/Utils/ApiResponses";
 import { EResponseCodes } from "../app/Constants/ResponseCodesEnum";
 import { IBudgetAvailabilityFilters } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import { DateTime } from "luxon";
+import { StrategicDirectionServiceFake } from "./FakeClass/StrategicDirectionServiceFake";
 
 const service = new BudgetAvailabilityService(
-  new BudgetAvailabilityRepositoryFake()
+  new BudgetAvailabilityRepositoryFake(),
+  new StrategicDirectionServiceFake()
 );
 
 test.group("CdpsService Tests", () => {
