@@ -21,7 +21,7 @@ export interface IBudgetAvailabilityService {
     id: number,
     dataEdit: any
   ): Promise<ApiResponse<any>>;
-  getById(id: string): Promise<ApiResponse<IBudgetAvailability>>;
+  getBudgetAvailabilityById(id: string): Promise<ApiResponse<IBudgetAvailability>>;
   cancelAmountCdp(
     id: number,
     reasonCancellation: string
@@ -89,9 +89,9 @@ export default class BudgetAvailabilityService
     }
   }
 
-  async getById(id: string): Promise<ApiResponse<BudgetAvailability | any>> {
+  async getBudgetAvailabilityById(id: string): Promise<ApiResponse<BudgetAvailability | any>> {
     try {
-      const data = await this.budgetAvailabilityRepository.getById(id);
+      const data = await this.budgetAvailabilityRepository.getBudgetAvailabilityById(id);
       const projectInvesment = await this.strategicDirectionService.getProjectInvestmentPaginated({ page: 1, perPage: 100000 })
       
       const dataFixed = data[0].$preloaded.amounts.map(e => {

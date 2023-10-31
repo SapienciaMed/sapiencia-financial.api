@@ -9,6 +9,7 @@ import BudgetAvailability from "../Models/BudgetAvailability";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
+import { getStringDate } from "App/Utils/functions";
 export interface IBudgetAvailabilityRepository {
   searchBudgetAvailability(
     filter: IBudgetAvailabilityFilters
@@ -19,7 +20,7 @@ export interface IBudgetAvailabilityRepository {
   editBudgetAvailabilityBasicDataCDP(
     updatedData: IUpdateBasicDataCdp
   ): Promise<any>;
-  getById(id: string): Promise<BudgetAvailability>;
+  getBudgetAvailabilityById(id: string): Promise<BudgetAvailability>;
   cancelAmountCdp(
     id: number,
     reasonCancellation: string
@@ -58,8 +59,8 @@ export default class BudgetAvailabilityRepository
     }
 
     if (filter.initialDate && filter.endDate) {
-      query.where("date", ">=", filter.initialDate.toJSDate());
-      query.where("date", "<=", filter.endDate.toJSDate());
+      query.where("date", ">=", getStringDate(new Date(filter.initialDate)));
+      query.where("date", "<=", getStringDate(new Date(filter.endDate)));
     }
 
     if (filter.consecutiveSap) {
@@ -175,7 +176,7 @@ export default class BudgetAvailabilityRepository
       throw new Error("Error al asociar importes al CDP: " + error.message);
     }
   }
-  getById = async (id: string): Promise<any> => {
+  getBudgetAvailabilityById = async (id: string): Promise<any> => {
     return await BudgetAvailability.query()
       .where("id", Number(id))
       .preload("amounts", (query) => {

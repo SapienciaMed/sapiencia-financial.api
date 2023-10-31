@@ -93,10 +93,10 @@ export default class BudgetAvailabilityController {
     }
   }
 
-  public async getById({ request, response }: HttpContextContract) {
+  public async getBudgetAvailabilityById({ request, response }: HttpContextContract) {
     try {
       const { id } = request.params() as { id: string };
-      return response.send(await BudgetAvailabilityProvider.getById(id));
+      return response.send(await BudgetAvailabilityProvider.getBudgetAvailabilityById(id));
     } catch (err) {
       return response.badRequest(
         new ApiResponse(null, EResponseCodes.FAIL, String(err))

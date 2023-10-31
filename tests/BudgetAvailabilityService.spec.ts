@@ -4,7 +4,6 @@ import BudgetAvailabilityService from "App/Services/BudgetAvailabilityService";
 import { ApiResponse } from "../app/Utils/ApiResponses";
 import { EResponseCodes } from "../app/Constants/ResponseCodesEnum";
 import { IBudgetAvailabilityFilters } from "App/Interfaces/BudgetAvailabilityInterfaces";
-import { DateTime } from "luxon";
 import { StrategicDirectionServiceFake } from "./FakeClass/StrategicDirectionServiceFake";
 
 const service = new BudgetAvailabilityService(
@@ -84,14 +83,13 @@ test.group("CdpsService Tests", () => {
  */
 
   test("Returns an object with meta and array properties", async (assert) => {
-    const initialDate = DateTime.fromISO("2022-01-01");
-    const endDate = DateTime.fromISO("2022-12-31");
+  
     const filter: IBudgetAvailabilityFilters = {
       dateOfCdp: "2022",
       page: 1,
       perPage: 10,
-      initialDate: initialDate,
-      endDate: endDate,
+      initialDate: "2022-01-01",
+      endDate: "2022-01-01",
       consecutiveSap: 12345,
       contractObject: "example",
     };
@@ -108,14 +106,14 @@ test.group("CdpsService Tests", () => {
   });
 
   test("Returns a list of budget availabilities filtered by the given parameters", async (assert) => {
-    const initialDate = DateTime.fromISO("2022-01-01");
-    const endDate = DateTime.fromISO("2022-12-31");
+    // const initialDate = DateTime.fromISO("2022-01-01");
+    // const endDate = DateTime.fromISO("2022-12-31");
     const filter: IBudgetAvailabilityFilters = {
       dateOfCdp: "2022",
       page: 1,
       perPage: 10,
-      initialDate: initialDate,
-      endDate: endDate,
+      initialDate: "2022-01-01",
+      endDate: "2022-01-01",
       consecutiveSap: 12345,
       contractObject: "example",
     };
@@ -142,18 +140,18 @@ test.group("CdpsService Tests", () => {
     assert.equal(result.data.contractObject, data.contractObject);
   });
 
-  test("CdpsService must have a method getById with a return", async (assert) => {
-    const result = await service.getById("1");
+  test("CdpsService must have a method getBudgetAvailabilityById with a return", async (assert) => {
+    const result = await service.getBudgetAvailabilityById("1");
     assert.isNotNull(result);
   });
 
-  test("the method getById must return a ApiResponse", async (assert) => {
-    const result = await service.getById("1");
+  test("the method getBudgetAvailabilityById must return a ApiResponse", async (assert) => {
+    const result = await service.getBudgetAvailabilityById("1");
     assert.instanceOf(result, ApiResponse);
   });
 
-  test("the method getById must return a OK code ", async (assert) => {
-    const result = await service.getById("1");
+  test("the method getBudgetAvailabilityById must return a OK code ", async (assert) => {
+    const result = await service.getBudgetAvailabilityById("1");
     console.log({ result });
     assert.isTrue(result.operation.code === EResponseCodes.OK);
   });
