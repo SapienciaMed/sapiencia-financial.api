@@ -270,3 +270,9 @@ Route.group(() => {
   Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
   Route.post("/link-mga/", "BudgetAvailabilityController.linkMga");
 }).prefix("/api/v1/cdp")
+
+Route.group(() => {
+  Route.post('create-rp','BudgetRecordsController.createRp')
+}).prefix('/api/v1/rp')
+
+
