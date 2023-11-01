@@ -5,11 +5,13 @@ import BudgetAvailabilityService from "App/Services/BudgetAvailabilityService";
 import { ApiResponse } from "../app/Utils/ApiResponses";
 import { EResponseCodes } from "../app/Constants/ResponseCodesEnum";
 import { IBudgetAvailabilityFilters } from "App/Interfaces/BudgetAvailabilityInterfaces";
+import { StrategicDirectionServiceFake } from "./FakeClass/StrategicDirectionServiceFake";
 import { DateTime } from "luxon";
 
 
 const service = new BudgetAvailabilityService(
-  new BudgetAvailabilityRepositoryFake()
+  new BudgetAvailabilityRepositoryFake(),
+  new StrategicDirectionServiceFake()
 );
 
 test.group("CdpsService Tests", () => {
@@ -84,14 +86,13 @@ test.group("CdpsService Tests", () => {
  */
 
   test("Returns an object with meta and array properties", async (assert) => {
-    const initialDate = DateTime.fromISO("2022-01-01");
-    const endDate = DateTime.fromISO("2022-12-31");
+  
     const filter: IBudgetAvailabilityFilters = {
       dateOfCdp: "2022",
       page: 1,
       perPage: 10,
-      initialDate: initialDate,
-      endDate: endDate,
+      initialDate: "2022-01-01",
+      endDate: "2022-01-01",
       consecutiveSap: 12345,
       contractObject: "example",
     };
@@ -108,14 +109,14 @@ test.group("CdpsService Tests", () => {
   });
 
   test("Returns a list of budget availabilities filtered by the given parameters", async (assert) => {
-    const initialDate = DateTime.fromISO("2022-01-01");
-    const endDate = DateTime.fromISO("2022-12-31");
+    // const initialDate = DateTime.fromISO("2022-01-01");
+    // const endDate = DateTime.fromISO("2022-12-31");
     const filter: IBudgetAvailabilityFilters = {
       dateOfCdp: "2022",
       page: 1,
       perPage: 10,
-      initialDate: initialDate,
-      endDate: endDate,
+      initialDate: "2022-01-01",
+      endDate: "2022-01-01",
       consecutiveSap: 12345,
       contractObject: "example",
     };
@@ -142,19 +143,49 @@ test.group("CdpsService Tests", () => {
     assert.equal(result.data.contractObject, data.contractObject);
   });
 
-  test("CdpsService must have a method getById with a return", async (assert) => {
-    const result = await service.getById("1");
+  test("CdpsService must have a method getBudgetAvailabilityById with a return", async (assert) => {
+    const result = await service.getBudgetAvailabilityById("1");
     assert.isNotNull(result);
   });
 
-  test("the method getById must return a ApiResponse", async (assert) => {
-    const result = await service.getById("1");
+  test("the method getBudgetAvailabilityById must return a ApiResponse", async (assert) => {
+    const result = await service.getBudgetAvailabilityById("1");
     assert.instanceOf(result, ApiResponse);
   });
 
 
   test("the method getById must return a OK code ", async (assert) => {
     const result = await service.getById("1");
+  test("the method getBudgetAvailabilityById must return a OK code ", async (assert) => {
+    const result = await service.getBudgetAvailabilityById("1");
+    console.log({ result });
+    assert.isTrue(result.operation.code === EResponseCodes.OK);
+  });
+
+  test("The method should successfully edit route CDP when given valid input.", async (assert) => {
+    const data: IUpdateRoutesCDP = {
+      idRppCode: 85,
+      cdpPosition: 1,
+      amount: 12211.00,           
+      modifiedIdcCountercredit: 1223,
+      idcModifiedCredit: 1587,
+      idcFixedCompleted: 15888,
+      idcFinalValue: 15888   
+    };   
+
+    const result = await service.updateRoutesCDP(data, 1);
+
+    assert.equal(result.data.idRppCode, data.idRppCode);
+    assert.equal(result.data.cdpPosition, data.cdpPosition);
+    assert.equal(result.data.amount, data.amount);
+    assert.equal(result.data.modifiedIdcCountercredit, data.modifiedIdcCountercredit);
+    assert.equal(result.data.idcModifiedCredit, data.idcModifiedCredit);
+    assert.equal(result.data.idcFixedCompleted, data.idcFixedCompleted);
+    assert.equal(result.data.idcFinalValue, data.idcFinalValue);
+  });
+
+  test("the method getRouteCDPId must return a OK code ", async (assert) => {
+    const result = await service.getRouteCDPId(1);
     console.log({ result });
     assert.isTrue(result.operation.code === EResponseCodes.OK);
   });

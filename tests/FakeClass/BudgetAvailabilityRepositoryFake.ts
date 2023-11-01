@@ -61,7 +61,7 @@ export class BudgetAvailabilityRepositoryFake
     throw new Error("Method not implemented.");
   }
 
-  getById(_id: string): Promise<BudgetAvailability> {
+  getBudgetAvailabilityById(_id: string): Promise<BudgetAvailability> {
     let oneRegister = new Array<BudgetAvailability>();
     oneRegister.push(new BudgetAvailability());
     return new Promise((res) => {

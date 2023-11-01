@@ -248,7 +248,7 @@ Route.group(() => {
   Route.post('/resources-type-list', 'PacsController.resourcesTypeList');
   Route.post('/lists-dinamics-routes', 'PacsController.listDinamicsRoutes');
   Route.post('/search-annualdata-routes', 'PacsController.searchAnnualDataRoutes');
-  Route.get('/get-ultimate-version', 'PacsController.getUltimateVersion');
+  Route.post('/get-ultimate-version', 'PacsController.getUltimateVersion');
   Route.post('/search-pacs', 'PacsController.searchPacs');
   Route.post('/get-routes-by-validity', 'PacsController.getRoutesByValidity');
   Route.post('/lists-dinamics-association', 'PacsController.listDinamicsAssociations');
@@ -266,7 +266,7 @@ Route.group(() => {
     "/edit-cdp/:id",
     "BudgetAvailabilityController.editBudgetAvailabilityBasicDataCDP"
   );
-  Route.get("/get-by-id/:id", "BudgetAvailabilityController.getById");
+  Route.get("/get-by-id/:id", "BudgetAvailabilityController.getBudgetAvailabilityById");
   Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
   Route.post("/link-mga/", "BudgetAvailabilityController.linkMga");
   Route.get("/get-routeCDP-id/:id", "BudgetAvailabilityController.getRouteCDPId");
