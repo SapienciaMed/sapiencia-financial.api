@@ -25,6 +25,14 @@ Route.get("/", async () => {
 });
 
 Route.group(() => {
+  Route.post("/generate-basic-excel", "ReportController.generateExcelReport");
+}).prefix("/api/v1/reports");
+// .middleware("auth");
+
+http://127.0.0.1:4204/api/v1/reports/generate-basic-excel
+
+
+Route.group(() => {
   Route.get("/get-by-id/:id", "FundsController.getFundsById");
   Route.post("/get-paginated", "FundsController.getFundsPaginated");
   Route.post("/create", "FundsController.createFund");
