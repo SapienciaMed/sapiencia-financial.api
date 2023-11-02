@@ -63,7 +63,6 @@ export default class BudgetAvailabilityController {
     response,
   }: HttpContextContract) {
     try {
-       
       let data = await request.validate(BudgetAvailabilityValidator);
       return response.send(
         await BudgetAvailabilityProvider.createCdps(data)
@@ -124,7 +123,6 @@ export default class BudgetAvailabilityController {
   
   public async linkMga({response }: HttpContextContract) {
     try {
-
       return response.send(await BudgetAvailabilityProvider.linkMga());
     } catch (err) {
       return response.badRequest(
