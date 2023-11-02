@@ -11,3 +11,4 @@ export default class ReportRepository implements IReportRepository {
     return res.map((i) => i.serialize());
   }
 }
+
