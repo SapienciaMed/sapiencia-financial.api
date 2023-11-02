@@ -25,7 +25,9 @@ export interface IBudgetAvailabilityRepository {
     reasonCancellation: string
   ): Promise<BudgetAvailability>;
   linkMga(): Promise<any>;
+  findCdpWithLastAmountPosition(cdpId: number): Promise<{ cdp: BudgetAvailability | null; lastAmountPosition: number }>;
 }
+
 
 export default class BudgetAvailabilityRepository
   implements IBudgetAvailabilityRepository
@@ -249,4 +251,27 @@ export default class BudgetAvailabilityRepository
     // Devolver los datos de disponibilidad presupuestaria actualizados en formato serializado.
     return toUpdate.serialize() as IBudgetAvailability;
   }
+
+  async findCdpWithLastAmountPosition(cdpId: number): Promise<{ cdp: BudgetAvailability, amounts: AmountBudgetAvailability[], lastAmountPosition: number }> {
+    const query = BudgetAvailability.query()
+        .where("id", cdpId)
+        .preload("amounts", (query) => {
+            query.orderBy("cdpPosition", "desc");
+        });
+
+    const { sql, bindings } = query.toSQL();
+    console.log(sql, bindings);
+
+    const cdp = await query.firstOrFail();
+
+    const amounts = cdp.amounts;
+    const lastAmount = amounts[0];
+    const lastAmountPosition = lastAmount ? lastAmount.cdpPosition : 0;
+
+    return { cdp, amounts, lastAmountPosition };
+}
+
+
+
+
 }

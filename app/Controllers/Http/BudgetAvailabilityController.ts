@@ -62,7 +62,6 @@ export default class BudgetAvailabilityController {
     response,
   }: HttpContextContract) {
     try {
-       
       let data = await request.validate(BudgetAvailabilityValidator);
       return response.send(
         await BudgetAvailabilityProvider.createCdps(data)
@@ -123,7 +122,6 @@ export default class BudgetAvailabilityController {
   
   public async linkMga({response }: HttpContextContract) {
     try {
-
       return response.send(await BudgetAvailabilityProvider.linkMga());
     } catch (err) {
       return response.badRequest(
@@ -140,6 +138,22 @@ export default class BudgetAvailabilityController {
       };
       await BudgetAvailabilityProvider.associateAmountsWithCdp(cdpId, amounts);
       return response.send(new ApiResponse("Importes asociados con éxito", EResponseCodes.OK, "null"));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
+
+  public async findCdpWithLastAmountPosition({
+    request,
+    response,
+  }: HttpContextContract) {
+    try {
+      const { cdpId } = request.params() as { cdpId: number };
+      return response.send(
+        await BudgetAvailabilityProvider.findCdpWithLastAmountPosition(cdpId)
+      );
     } catch (err) {
       return response.badRequest(
         new ApiResponse(null, EResponseCodes.FAIL, String(err))

@@ -25,8 +25,8 @@ export interface IBudgetAvailabilityService {
     id: number,
     reasonCancellation: string
   ): Promise<ApiResponse<any>>;
-  linkMga(): Promise<ApiResponse<any>>
-
+  linkMga(): Promise<ApiResponse<any>>;
+  findCdpWithLastAmountPosition(id: number): Promise<ApiResponse<any>>;
 }
 
 export default class BudgetAvailabilityService
@@ -132,6 +132,15 @@ export default class BudgetAvailabilityService
     } catch (error) {
       console.error('Error en BudgetAvailabilityService al asociar importes al CDP:', error);
       return new ApiResponse(null, EResponseCodes.FAIL, 'Error al asociar importes al CDP: ' + error);
+    }
+  }
+
+  async findCdpWithLastAmountPosition(id: number): Promise<ApiResponse<any>> {
+    try {
+      const data = await this.budgetAvailabilityRepository.findCdpWithLastAmountPosition(id);
+      return new ApiResponse(data, EResponseCodes.OK, 'Último monto y posición del CDP obtenidos exitosamente');
+    } catch (error) {
+      return new ApiResponse(null, EResponseCodes.FAIL, 'Error al obtener el último monto y posición del CDP: ' + error);
     }
   }
 }
