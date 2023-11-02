@@ -131,7 +131,7 @@ export default class PacService implements IPacService {
       case 'Carga inicial':
         if (pacsByExercise.length > 0) {
           errors.push({
-            message: "No tiene registros en la carga inicial, debe seleccionar carga inicial",
+            message: "La carga inicial ya fue cargada, debe seleccionar Nueva versión",
             error: true,
             rowError: 1,
             columnError: null,

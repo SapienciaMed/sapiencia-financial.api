@@ -195,7 +195,7 @@ Route.group(() => {
   "AdditionsController.executeUpdateAdditionWithMov"
 
 }).prefix("/api/v1/additions")
-  
+
 Route.group(() => {
   Route.post("/get-paginated", "TransfersController.getTransfersPaginated");
   Route.post("/get-funds", "TransfersController.getFundsList");
@@ -272,7 +272,13 @@ Route.group(() => {
 }).prefix("/api/v1/cdp")
 
 Route.group(() => {
-  Route.post('create-rp','BudgetRecordsController.createRp')
-}).prefix('/api/v1/rp')
+  Route.post('/create-rp', 'BudgetRecordsController.createRp')
+  Route.get('/get-components', 'BudgetRecordsController.getComponents')
+}).prefix('/api/v1/budget-records')
+
+
+Route.group(() => {
+  Route.get('/get-creditors-by-filters', 'CreditorsController.getCreditorsByFilters')
+}).prefix('/api/v1/creditors')
 
 
