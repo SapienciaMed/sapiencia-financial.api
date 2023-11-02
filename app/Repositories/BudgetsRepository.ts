@@ -1,10 +1,10 @@
-import { IBudgets, IFilterBudgets} from "App/Interfaces/BudgetsInterfaces";
+import { IBudgets, IFilterBudgets } from "App/Interfaces/BudgetsInterfaces";
 import Budgets from "../Models/Budgets";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
 import { IBudgetsRoutes } from "App/Interfaces/BudgetsRoutesInterfaces";
 import BudgetsRoutes from "../Models/BudgetsRoutes";
-
+import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 
 export interface IBudgetsRepository {
   updateBudgets(budgets: IBudgets, id: number): Promise<IBudgets | null>;
@@ -17,7 +17,7 @@ export interface IBudgetsRepository {
 }
 
 export default class BudgetsRepository implements IBudgetsRepository {
-  constructor() {}
+  constructor() { }
 
   async getBudgetsById(id: number): Promise<IBudgets | null> {
     const res = await Budgets.find(id);
@@ -35,7 +35,19 @@ export default class BudgetsRepository implements IBudgetsRepository {
       .where("RPP_CODPPS_POSPRE_SAPIENCIA", posPreId);
 
     if (budgetRoutes && budgetRoutes.length > 0) {
-      return budgetRoutes[0];
+      const serializedBudgetRoutes = JSON.stringify(budgetRoutes);
+      const objInfo = JSON.parse(serializedBudgetRoutes);
+      const idRoute = objInfo[0].id;
+      const sumValues = await AmountBudgetAvailability.query().where("ICD_CODRPP_RUTA_PRESUPUESTAL", idRoute).sum('IDC_VALOR_FINAL as sumatotal');
+      let value = sumValues[0]['$extras']['sumatotal'] !== null ? parseFloat(sumValues[0]['$extras']['sumatotal']) : 0;
+      const dataRoute = budgetRoutes[0]['$original'];
+
+      const information = { 
+        ...dataRoute,
+        totalIdc: value
+      };
+
+      return information;
     } else {
       return null;
     }
@@ -49,12 +61,12 @@ export default class BudgetsRepository implements IBudgetsRepository {
 
     query.preload("vinculationmga", (q) => {
       q.select("id",
-               "activityId",
-               "consecutiveActivityDetailed",
-               "detailedActivityId",
-               "userCreate",
-               "dateCreate"
-              )
+        "activityId",
+        "consecutiveActivityDetailed",
+        "detailedActivityId",
+        "userCreate",
+        "dateCreate"
+      )
     });
 
     query.orderBy("denomination", "asc");
@@ -107,7 +119,7 @@ export default class BudgetsRepository implements IBudgetsRepository {
     toUpdate.description = budgets.description;
     toUpdate.ejercise = budgets.ejercise;
     toUpdate.dateModify = DateTime.local().toJSDate();
-    if(budgets.userModify) {
+    if (budgets.userModify) {
       toUpdate.userModify = budgets.userModify;
     }
 
@@ -115,7 +127,7 @@ export default class BudgetsRepository implements IBudgetsRepository {
     return toUpdate.serialize() as IBudgets;
   }
 
-  async getAllBudgets():Promise<IBudgets[]> {
+  async getAllBudgets(): Promise<IBudgets[]> {
     const res = await Budgets.query();
     return res as IBudgets[];
   }

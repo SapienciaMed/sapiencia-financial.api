@@ -31,6 +31,7 @@ export interface IBudgetAvailabilityRepository {
   updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<IUpdateRoutesCDP | null>;
 }
 
+
 export default class BudgetAvailabilityRepository
   implements IBudgetAvailabilityRepository {
 
