@@ -267,6 +267,24 @@ export default class PacsController {
 
   }
 
+  //* Visualizar el PAC
+  public async viewPacComplete({request, response}: HttpContextContract) {
+
+    try {
+
+      const data = request.body() as IEditPac;
+      return response.send(await PacSubImplementsProvider.viewPacComplete(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
 
 
 }
