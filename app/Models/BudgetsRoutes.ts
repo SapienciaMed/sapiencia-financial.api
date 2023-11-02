@@ -1,9 +1,11 @@
-import { BaseModel, HasOne, column, hasOne } from "@ioc:Adonis/Lucid/Orm";
+import { BaseModel, HasOne, column, hasMany, hasOne } from "@ioc:Adonis/Lucid/Orm";
 import { DateTime } from "luxon";
 import ProjectsVinculation from "./ProjectsVinculation";
 import Budgets from "./Budgets";
 import PosPreSapiencia from "./PosPreSapiencia";
 import Funds from "./Funds";
+import AmountBudgetAvailability from "./AmountBudgetAvailability";
+import { HasMany } from "@ioc:Adonis/Lucid/Orm";
 
 export default class BudgetsRoutes  extends BaseModel {
   public static table = "RPP_RUTAS_PRESUPUESTALES";
@@ -75,4 +77,11 @@ export default class BudgetsRoutes  extends BaseModel {
     serializeAs: "fund",
   })
   public funds: HasOne<typeof Funds>;
+
+  @hasMany(() => AmountBudgetAvailability, {
+    foreignKey: 'idRppCode', 
+    localKey: 'id',
+    serializeAs: 'amountBudgetAvailabilities',
+  })
+  public amountBudgetAvailabilities: HasMany<typeof AmountBudgetAvailability>;
 }
