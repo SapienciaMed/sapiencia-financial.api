@@ -17,7 +17,10 @@ import { IProjectPaginated,
          IAssociationSuccess,
          IViewPacComplete} from '../Interfaces/PacInterfaces';
 import { IBudgetsRoutesFilters } from '../Interfaces/BudgetsRoutesInterfaces';
-import { IResultSearchDinamicPac, IEditPac, IPacAnnualization, IResultEditPac } from '../Interfaces/PacInterfaces';
+import { IResultSearchDinamicPac,
+         IEditPac,
+         IPacAnnualization,
+         IResultEditPac } from '../Interfaces/PacInterfaces';
 import { DataTransferPac,
          IDestinity,
          IStructureResponseTransferGlobalOriginals,
@@ -25,7 +28,6 @@ import { DataTransferPac,
          IStructureResponseTransferGenericDestinities,
          IStructureResponseTransferGlobalDestinities,
          IPartialObjectResultTransferGeneric} from '../Interfaces/PacTransferInterface';
-
 import {
   IPacFilters,
   IPacComplementary,
@@ -289,10 +291,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     //? Primero debemos verificar si buscaré respecto a la ruta o si será un agrupador PAC
     //? de lo contrario, buscaremos a nivel de ruta que sería la otra opción si llega los datos
     //? ***********************************************************************************************
-    if (!idProjectVinculation || idProjectVinculation == null || idProjectVinculation == undefined ||
-        !idFund || idFund == null || idFund == undefined ||
-        !idBudget || idBudget == null || idBudget == undefined ||
-        !idPospreSapiencia || idPospreSapiencia == null || idPospreSapiencia == undefined) {
+    if ( !idProjectVinculation && !idFund && !idBudget && !idPospreSapiencia ) {
 
       //* Busquemos PAC con la vigencia, tipo de recurso y versión.
       getPac = await this.pacRepository
@@ -309,7 +308,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     } else {
 
       //* EN ESTE PUNTO ES PORQUE TENGO LO MÍNIMO PARA REALIZAR LA BÚSQUEDA DE RUTA Y POSTERIOR PAC
-      //TODO: Generar una HU si se requiere buscar por distintivos (Solo proyecto, solo fondo o solo pospres)
       const getRoute = await this.budgetsRoutesRepository
                                  .getBudgetForAdditions(Number(idProjectVinculation),
                                                         Number(idFund),
@@ -634,10 +632,10 @@ export default class PacSubImplementsService implements IPacSubImplementsService
                                                       data.idPospreSapiencia!);
 
     if( !getRoute || getRoute == null || getRoute == undefined )
-      return new ApiResponse(null, EResponseCodes.FAIL, "No se encontró ninguna ruta presupuestal con la información proporcionada");
+      return new ApiResponse(null, EResponseCodes.FAIL, "La ruta presupuestal no existe");
 
     //Obtengamos el saldo de una vez
-    //const getBalanceOfRoute: number = Number(getRoute.balance);
+    const getBalanceOfRoute: number = Number(getRoute.balance);
 
     //* 2. Buscamos si la ruta está asociada a algún PAC con esa vigencia y el tipo de recurso
     const filtersWithRoute: IPacFilters = { //Para buscar la ruta respecto al PAC
@@ -659,11 +657,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     const getPacReferenceNoRoute = await this.pacRepository.searchPacByMultiData( filtersNoRoute );
     let version: number | undefined = getPacReferenceNoRoute.array[0]?.version;
 
-    if( version == null || version == undefined || version == 0 ){
-
-      version = 1;
-
-    }
+    if( version == null || version == undefined || version == 0 ) version = 1;
 
     if( getPacReferenceWithRoute.array.length > 0)
       return new ApiResponse(null, EResponseCodes.FAIL, "Ya está asociada esta ruta al PAC");
@@ -679,8 +673,8 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     if( data.budgetSapiencia !== plusProgramming )
       return new ApiResponse(null, EResponseCodes.FAIL, "El valor del presupuesto es diferente de la suma de todos los programados");
 
-    //TODO: Falta validación contra saldo de la ruta presupuestal y presupuesto sapiencia
-    //TODO: Esperando la definición de la HU
+    if( plusProgramming !== getBalanceOfRoute )
+      return new ApiResponse(null, EResponseCodes.FAIL, "El valor del presupuesto sapiencia es diferente al valor del presupuesto");
 
     //* 5. Guardar
     const objInsertPac: ICreateAssociation = {
@@ -1191,23 +1185,18 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
   //? ========================================================================== ?//
   //? ========================================================================== ?//
-  //? ========================================================================== ?//
   //* *********************** REFACTORIZACIÓN TRASLADOS' *********************** *//
-  //? ========================================================================== ?//
   //? ========================================================================== ?//
   //? ========================================================================== ?//
 
   async transferPacRefactory(data: DataTransferPac): Promise<ApiResponse<DataTransferPac | IPartialObjectResultTransferGeneric | null>> {
 
-    /**
      //? Vamos a realizar todos los cálculos primero antes de ir al procesamiento de validación
      //- Fragmentaremos las validaciones en dos momentos:
      //*** 1. Sacar toda la información de lo que viene en [{}] origen y destino.
      //*** 2. Extraer el saldo de lo que viene en la ruta en [{}] de origen y destino.
-     //*** 3. Vamos a hacer los cálculos completos, es decir, si estoy programado entonces también haré
-     //***    los cálculos de recaudado y viseversa, los datos perfectamente deben cuadrar para ambos mundos
-     //***    aún si solo estámos moviendo uno, esto con la finalidad de contenmplar todas las validaciones
-     //***    y adicionalmente tener ajustado el escenario de AMBOS mixto a programado y recaudo */
+     //*** 3. Vamos a hacer los cálculos completos, para ambos escenarios
+     //*** 4. Validamos los escenarios de manera compartida para la validación ambos */
 
     /**1. Obtengo toda la información que requiero: */
     const getDataProccessOrigins: ApiResponse<IStructureResponseTransferGenericOriginis | null> = await this.calculatedInformationByOrigins(data);
@@ -1224,8 +1213,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     //! ************************** ************************* ************************* !//
 
     if( data.headTransfer.pacType === "Programado" || data.headTransfer.pacType === "Ambos" ){
-
-      console.log("********* ENTRAMOS POR PROGRAMADO O AMBOS *********");
 
       //? VALIDACIÓN 1 y 2 - Se solapan con la VALIDACIÓN 4 Y 6.
       //* Para calcular a nivel de programado y recaudo(por si sale la opción ambos)
@@ -1252,9 +1239,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
         if( getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalProgramming! !==
             getDataProccessOrigins.data?.originsRoutesWithAllInfoOriginal[i].originalBalanceRoute ) {
 
-            console.log("El valor del presupuesto sapiencia es diferente al valor del presupuesto");
-            console.log(`El total programado de la transferencia de la ruta ${getDataProccessOrigins.data?.originsRoutesWithAllInfoOriginal[i].originalBudgetRouteId} me está dando ${getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalProgramming!} pero su saldo de ruta me está dando ${getDataProccessOrigins.data?.originsRoutesWithAllInfoOriginal[i].originalBalanceRoute}`);
-
             const objPartialResult: IPartialObjectResultTransferGeneric = {
               getDataProccessOrigins: getDataProccessOrigins.data,
               getDataProccessDestinities: getDataProccessDestinities.data
@@ -1268,9 +1252,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
         if( getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalCollected! >
           getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalProgramming!) {
 
-            console.log("El recaudo es mayor al presupuesto sapiencia del PAC");
-            console.log(`El total recaudado para la ruta ${getDataProccessOrigins.data?.originsRoutesWithAllInfoOriginal[i].originalBudgetRouteId} que es igual a ${getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalCollected} es mayor a lo que tenemos programado, y lo que tenemos programado tiene el valor de ${getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalProgramming!}`);
-
             const objPartialResult: IPartialObjectResultTransferGeneric = {
               getDataProccessOrigins: getDataProccessOrigins.data,
               getDataProccessDestinities: getDataProccessDestinities.data
@@ -1282,9 +1263,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
         //* Validación del escenario 5
         if( getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalProgramming! <
             getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalCollected!) {
-
-            console.log("El recaudo previamente guardado en el PAC es mayor que lo programado a ingresar");
-            console.log(`El total recaudado para la ruta ${getDataProccessOrigins.data?.originsRoutesWithAllInfoOriginal[i].originalBudgetRouteId} que es igual a ${getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalCollected} es mayor a lo que tenemos programado, y lo que tenemos programado tiene el valor de ${getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalProgramming!}`);
 
             const objPartialResult: IPartialObjectResultTransferGeneric = {
               getDataProccessOrigins: getDataProccessOrigins.data,
@@ -1324,9 +1302,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
         if( getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalProgramming! !==
           getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoOriginal[i].destinitiesBalanceRoute ) {
 
-          console.log("El valor del presupuesto sapiencia es diferente al valor del presupuesto");
-          console.log(`El total programado de la transferencia de la ruta ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoOriginal[i].destinitiesBudgetRouteId} me está dando ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalProgramming!} pero su saldo de ruta me está dando ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoOriginal[i].destinitiesBalanceRoute}`);
-
           const objPartialResult: IPartialObjectResultTransferGeneric = {
             getDataProccessOrigins: getDataProccessOrigins.data,
             getDataProccessDestinities: getDataProccessDestinities.data
@@ -1340,9 +1315,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
         if( getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalCollected! >
           getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalProgramming!) {
 
-            console.log("El recaudo es mayor al presupuesto sapiencia del PAC");
-            console.log(`El total recaudado para la ruta ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoOriginal[i].destinitiesBudgetRouteId} que es igual a ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalCollected} es mayor a lo que tenemos programado, y lo que tenemos programado tiene el valor de ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalProgramming!}`);
-
             const objPartialResult: IPartialObjectResultTransferGeneric = {
               getDataProccessOrigins: getDataProccessOrigins.data,
               getDataProccessDestinities: getDataProccessDestinities.data
@@ -1354,9 +1326,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
         //* Validación del escenario 5
         if( getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalProgramming! <
           getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalCollected!) {
-
-          console.log("El recaudo previamente guardado en el PAC es mayor que lo programado a ingresar");
-          console.log(`El total recaudado para la ruta ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoOriginal[i].destinitiesBudgetRouteId} que es igual a ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalCollected} es mayor a lo que tenemos programado, y lo que tenemos programado tiene el valor de ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalProgramming!}`);
 
           const objPartialResult: IPartialObjectResultTransferGeneric = {
             getDataProccessOrigins: getDataProccessOrigins.data,
@@ -1391,7 +1360,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
       //* Validación del escenario 4 (De paso se valida la 1).
       if( originalsProgramming !== newsProgrammings ){
 
-        console.log("No puede aumentar o reducir el valor del presupuesto, solo moverlo entre rutas");
         const objPartialResult: IPartialObjectResultTransferGeneric = {
           getDataProccessOrigins: getDataProccessOrigins.data,
           getDataProccessDestinities: getDataProccessDestinities.data
@@ -1404,7 +1372,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
       //* Validación del escenario 6 (De paso se valida la 2).
       if( originalsCollected !== newsCollecteds ){
 
-        console.log("No puede aumentar o reducir el valor del recaudo, solo moverlo entre rutas");
         const objPartialResult: IPartialObjectResultTransferGeneric = {
           getDataProccessOrigins: getDataProccessOrigins.data,
           getDataProccessDestinities: getDataProccessDestinities.data
@@ -1413,35 +1380,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
       }
 
-
-
-      console.log("********* ********* ********* ********* *********");
-      console.log({});
-      console.log({totalOriginisOriginalProgramming});
-      console.log({totalOriginisTransferProgramming});
-      console.log({totalDestinitiesOriginalProgramming});
-      console.log({totalDestinitiesTransferProgramming});
-      console.log({});
-      console.log({originalsProgramming});
-      console.log({newsProgrammings});
-      console.log({});
-      console.log({});
-      console.log({});
-      console.log({totalOriginisOriginalCollected});
-      console.log({totalOriginisTransferCollected});
-      console.log({totalDestinitiesOriginalCollected});
-      console.log({totalDestinitiesTransferCollected});
-      console.log({});
-      console.log({originalsCollected});
-      console.log({newsCollecteds});
-      console.log({});
-      console.log({});
-      console.log({});
-      console.log("********* ********* ********* ********* *********");
-
       //? Ahora actualizamos la información si llegamos hasta acá
-      //const updateOrigins = null;
-      //const updateDestinities = null;
       const updateOrigins = await this.updateOriginsWithNewData(data);
       const updateDestinities = await this.updateDestinitiesWithNewData(data);
 
@@ -1464,8 +1403,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     //! ************************* ************************* ************************* !//
 
     if( data.headTransfer.pacType === "Recaudado" || data.headTransfer.pacType === "Ambos" ){
-
-      console.log("********* ENTRAMOS POR RECAUDADO O AMBOS *********");
 
       //? VALIDACIÓN 1 y 2 - Se solapan con la VALIDACIÓN 4 Y 6.
       //* Para calcular a nivel de programado y recaudo(por si sale la opción ambos)
@@ -1493,9 +1430,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
         if( getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalProgramming! !==
           getDataProccessOrigins.data?.originsRoutesWithAllInfoOriginal[i].originalBalanceRoute ) {
 
-          console.log("El valor del presupuesto sapiencia es diferente al valor del presupuesto");
-          console.log(`El total programado de la transferencia de la ruta ${getDataProccessOrigins.data?.originsRoutesWithAllInfoOriginal[i].originalBudgetRouteId} me está dando ${getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalProgramming!} pero su saldo de ruta me está dando ${getDataProccessOrigins.data?.originsRoutesWithAllInfoOriginal[i].originalBalanceRoute}`);
-
           const objPartialResult: IPartialObjectResultTransferGeneric = {
             getDataProccessOrigins: getDataProccessOrigins.data,
             getDataProccessDestinities: getDataProccessDestinities.data
@@ -1507,9 +1441,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
         //* Validación del escenario 7
         if( getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalCollected! >
           getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalProgramming!) {
-
-            console.log("El recaudo es mayor al presupuesto sapiencia del PAC");
-            console.log(`El total recaudado para la ruta ${getDataProccessOrigins.data?.originsRoutesWithAllInfoOriginal[i].originalBudgetRouteId} que es igual a ${getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalCollected} es mayor a lo que tenemos programado, y lo que tenemos programado tiene el valor de ${getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalProgramming!}`);
 
             const objPartialResult: IPartialObjectResultTransferGeneric = {
               getDataProccessOrigins: getDataProccessOrigins.data,
@@ -1523,9 +1454,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
         // Por si caemos en el escenario de AMBOS
         if( getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalProgramming! <
           getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalCollected!) {
-
-          console.log("El recaudo previamente guardado en el PAC es mayor que lo programado a ingresar");
-          console.log(`El total recaudado para la ruta ${getDataProccessOrigins.data?.originsRoutesWithAllInfoOriginal[i].originalBudgetRouteId} que es igual a ${getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalCollected} es mayor a lo que tenemos programado, y lo que tenemos programado tiene el valor de ${getDataProccessOrigins.data?.originsRoutesWithAllInfoTransfer[i].transferTotalProgramming!}`);
 
           const objPartialResult: IPartialObjectResultTransferGeneric = {
             getDataProccessOrigins: getDataProccessOrigins.data,
@@ -1566,9 +1494,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
         if( getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalProgramming! !==
           getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoOriginal[i].destinitiesBalanceRoute ) {
 
-          console.log("El valor del presupuesto sapiencia es diferente al valor del presupuesto");
-          console.log(`El total programado de la transferencia de la ruta ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoOriginal[i].destinitiesBudgetRouteId} me está dando ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalProgramming!} pero su saldo de ruta me está dando ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoOriginal[i].destinitiesBalanceRoute}`);
-
           const objPartialResult: IPartialObjectResultTransferGeneric = {
             getDataProccessOrigins: getDataProccessOrigins.data,
             getDataProccessDestinities: getDataProccessDestinities.data
@@ -1580,9 +1505,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
         //* Validación del escenario 7
         if( getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalCollected! >
           getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalProgramming!) {
-
-            console.log("El recaudo es mayor al presupuesto sapiencia del PAC");
-            console.log(`El total recaudado para la ruta ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoOriginal[i].destinitiesBudgetRouteId} que es igual a ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalCollected} es mayor a lo que tenemos programado, y lo que tenemos programado tiene el valor de ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalProgramming!}`);
 
             const objPartialResult: IPartialObjectResultTransferGeneric = {
               getDataProccessOrigins: getDataProccessOrigins.data,
@@ -1596,9 +1518,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
         // Por si caemos en el escenario de AMBOS
         if( getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalProgramming! <
           getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalCollected!) {
-
-          console.log("El recaudo previamente guardado en el PAC es mayor que lo programado a ingresar");
-          console.log(`El total recaudado para la ruta ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoOriginal[i].destinitiesBudgetRouteId} que es igual a ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalCollected} es mayor a lo que tenemos programado, y lo que tenemos programado tiene el valor de ${getDataProccessDestinities.data?.destinitiesRoutesWithAllInfoTransfer[i].transferTotalProgramming!}`);
 
           const objPartialResult: IPartialObjectResultTransferGeneric = {
             getDataProccessOrigins: getDataProccessOrigins.data,
@@ -1633,8 +1552,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
       //* Validación del escenario 4 (De paso se valida la 1).
       if( originalsProgramming !== newsProgrammings ){
 
-        console.log("No puede aumentar o reducir el valor del presupuesto, solo moverlo entre rutas");
-
         const objPartialResult: IPartialObjectResultTransferGeneric = {
           getDataProccessOrigins: getDataProccessOrigins.data,
           getDataProccessDestinities: getDataProccessDestinities.data
@@ -1647,9 +1564,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
       //* Validación del escenario 6 (De paso se valida la 2).
       if( originalsCollected !== newsCollecteds ){
 
-        console.log("No puede aumentar o reducir el valor del recaudo, solo moverlo entre rutas");
-        console.log(`${originalsCollected}   -   ${newsCollecteds}   ->   ${originalsCollected - newsCollecteds}`);
-
         const objPartialResult: IPartialObjectResultTransferGeneric = {
           getDataProccessOrigins: getDataProccessOrigins.data,
           getDataProccessDestinities: getDataProccessDestinities.data
@@ -1658,33 +1572,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
       }
 
-      console.log("********* ********* ********* ********* *********");
-      console.log({});
-      console.log({totalOriginisOriginalProgramming});
-      console.log({totalOriginisTransferProgramming});
-      console.log({totalDestinitiesOriginalProgramming});
-      console.log({totalDestinitiesTransferProgramming});
-      console.log({});
-      console.log({originalsProgramming});
-      console.log({newsProgrammings});
-      console.log({});
-      console.log({});
-      console.log({});
-      console.log({totalOriginisOriginalCollected});
-      console.log({totalOriginisTransferCollected});
-      console.log({totalDestinitiesOriginalCollected});
-      console.log({totalDestinitiesTransferCollected});
-      console.log({});
-      console.log({originalsCollected});
-      console.log({newsCollecteds});
-      console.log({});
-      console.log({});
-      console.log({});
-      console.log("********* ********* ********* ********* *********");
-
       //? Ahora actualizamos la información si llegamos hasta acá
-      //const updateOrigins = null;
-      //const updateDestinities = null;
       const updateOrigins = await this.updateOriginsWithNewData(data);
       const updateDestinities = await this.updateDestinitiesWithNewData(data);
 
@@ -2098,13 +1986,8 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
   //? ========================================================================== ?//
   //? ========================================================================== ?//
-  //? ========================================================================== ?//
   //* *********************** ************************** *********************** *//
   //? ========================================================================== ?//
   //? ========================================================================== ?//
-  //? ========================================================================== ?//
-
 
 }
-
-
