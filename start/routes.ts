@@ -255,6 +255,7 @@ Route.group(() => {
   Route.post('/create-association', 'PacsController.createAssociations');
   Route.post('/edit-pac', 'PacsController.editPac');
   Route.get('/get-pac-by-id/:id', 'PacsController.getPacById');
+  Route.post('/get-view-pac', 'PacsController.viewPacComplete');
 
 }).prefix("/api/v1/pac")
 
