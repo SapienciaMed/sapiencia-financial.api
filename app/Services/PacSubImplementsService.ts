@@ -291,7 +291,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
     //? Primero debemos verificar si buscaré respecto a la ruta o si será un agrupador PAC
     //? de lo contrario, buscaremos a nivel de ruta que sería la otra opción si llega los datos
     //? ***********************************************************************************************
-    if ( !idProjectVinculation && !idFund && !idBudget && !idPospreSapiencia ) {
+    if ( !idProjectVinculation || !idFund || !idBudget || !idPospreSapiencia ) {
 
       //* Busquemos PAC con la vigencia, tipo de recurso y versión.
       getPac = await this.pacRepository
