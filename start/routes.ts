@@ -25,6 +25,14 @@ Route.get("/", async () => {
 });
 
 Route.group(() => {
+  Route.post("/generate-basic-excel", "ReportController.generateExcelReport");
+}).prefix("/api/v1/reports");
+// .middleware("auth");
+
+http://127.0.0.1:4204/api/v1/reports/generate-basic-excel
+
+
+Route.group(() => {
   Route.get("/get-by-id/:id", "FundsController.getFundsById");
   Route.post("/get-paginated", "FundsController.getFundsPaginated");
   Route.post("/create", "FundsController.createFund");
@@ -255,6 +263,7 @@ Route.group(() => {
   Route.post('/create-association', 'PacsController.createAssociations');
   Route.post('/edit-pac', 'PacsController.editPac');
   Route.get('/get-pac-by-id/:id', 'PacsController.getPacById');
+  Route.post('/get-view-pac', 'PacsController.viewPacComplete');
 
 }).prefix("/api/v1/pac")
 
@@ -266,8 +275,9 @@ Route.group(() => {
     "/edit-cdp/:id",
     "BudgetAvailabilityController.editBudgetAvailabilityBasicDataCDP"
   );
-  Route.get("/get-by-id/:id", "BudgetAvailabilityController.getById");
+  Route.get("/get-by-id/:id", "BudgetAvailabilityController.getBudgetAvailabilityById");
   Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
   Route.post("/link-mga/", "BudgetAvailabilityController.linkMga");
-  Route.get("/find-cdp-last-amount-position/:cdpId", "BudgetAvailabilityController.findCdpWithLastAmountPosition");
+  Route.get("/get-routeCDP-id/:id", "BudgetAvailabilityController.getRouteCDPId");
+  Route.put("/updateRouteCDP/:id", "BudgetAvailabilityController.updateRoutesCDP");
 }).prefix("/api/v1/cdp")

@@ -6,8 +6,10 @@ import {
   IBudgetAvailabilityFilters,
   ICreateCdp,
   IUpdateBasicDataCdp,
+  IUpdateRoutesCDP,
 } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import BudgetAvailability from "App/Models/BudgetAvailability";
+import { IStrategicDirectionService } from "./External/StrategicDirectionService";
 
 export interface IBudgetAvailabilityService {
   searchBudgetAvailability(
@@ -20,19 +22,21 @@ export interface IBudgetAvailabilityService {
     id: number,
     dataEdit: any
   ): Promise<ApiResponse<any>>;
-  getById(id: string): Promise<ApiResponse<IBudgetAvailability>>;
+  getBudgetAvailabilityById(id: string): Promise<ApiResponse<IBudgetAvailability>>;
   cancelAmountCdp(
     id: number,
     reasonCancellation: string
   ): Promise<ApiResponse<any>>;
-  linkMga(): Promise<ApiResponse<any>>;
-  findCdpWithLastAmountPosition(id: number): Promise<ApiResponse<any>>;
+  linkMga(): Promise<ApiResponse<any>>
+  getRouteCDPId(id: number): Promise<ApiResponse<IUpdateRoutesCDP | null>>;
+  updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<ApiResponse<IUpdateRoutesCDP>>;
 }
 
 export default class BudgetAvailabilityService
   implements IBudgetAvailabilityService {
   constructor(
-    private budgetAvailabilityRepository: IBudgetAvailabilityRepository
+    private budgetAvailabilityRepository: IBudgetAvailabilityRepository,
+    private strategicDirectionService: IStrategicDirectionService
   ) { }
 
   async searchBudgetAvailability(
@@ -87,11 +91,32 @@ export default class BudgetAvailabilityService
     }
   }
 
-  async getById(id: string): Promise<ApiResponse<BudgetAvailability | any>> {
+  async getBudgetAvailabilityById(id: string): Promise<ApiResponse<BudgetAvailability | any>> {
     try {
-      const data = await this.budgetAvailabilityRepository.getById(id);
+      const data = await this.budgetAvailabilityRepository.getBudgetAvailabilityById(id);
+      const projectInvesment = await this.strategicDirectionService.getProjectInvestmentPaginated({ page: 1, perPage: 100000 })
+      
+      const dataFixed = data[0].$preloaded.amounts.map(e => {
+        let projectName = e.$preloaded.budgetRoute.$preloaded.projectVinculation.$attributes.type=='Funcionamiento'
+          ? e.$preloaded.budgetRoute.$preloaded.projectVinculation.$preloaded?.functionalProject?.$attributes.name
+          : projectInvesment.data.array.find(p => p.id == e.$preloaded.budgetRoute.$preloaded.projectVinculation.$attributes.investmentProjectId)?.name
+        
+        e.$attributes['projectName'] = projectName
+        e.$attributes['fundCode'] = e.$preloaded.budgetRoute.$preloaded.funds.$attributes.number;
+        e.$attributes['pospreSapienciaCode'] = e.$preloaded.budgetRoute.$preloaded.pospreSapiencia.$attributes.number;
+        return e.$attributes;
+      }
+      )
+
+      let dataResponse = [
+        {
+          ...data[0].$attributes,
+          amounts: dataFixed
+        }
+      ]
+
       return new ApiResponse(
-        data,
+        dataResponse,
         EResponseCodes.OK,
         "CDP encontrado exitosamente"
       );
@@ -135,12 +160,25 @@ export default class BudgetAvailabilityService
     }
   }
 
-  async findCdpWithLastAmountPosition(id: number): Promise<ApiResponse<any>> {
-    try {
-      const data = await this.budgetAvailabilityRepository.findCdpWithLastAmountPosition(id);
-      return new ApiResponse(data, EResponseCodes.OK, 'Último monto y posición del CDP obtenidos exitosamente');
-    } catch (error) {
-      return new ApiResponse(null, EResponseCodes.FAIL, 'Error al obtener el último monto y posición del CDP: ' + error);
+  async updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<ApiResponse<IUpdateRoutesCDP>> {
+    const res = await this.budgetAvailabilityRepository.updateRoutesCDP(updateRoutesCDP, id);
+    if (!res) {
+      return new ApiResponse(
+        {} as IUpdateRoutesCDP,
+        EResponseCodes.FAIL,
+        "El registro indicado no existe"
+      );
+    }
+
+    return new ApiResponse(res, EResponseCodes.OK);
+  }
+
+  async getRouteCDPId(id: number): Promise<ApiResponse<IUpdateRoutesCDP | null>> {
+    const res = await this.budgetAvailabilityRepository.getRouteCDPId(id);
+    if (!res) {
+      return new ApiResponse(res, EResponseCodes.WARN, "Recurso no encontrado");
+    } else {
+      return new ApiResponse(res, EResponseCodes.OK);
     }
   }
 }

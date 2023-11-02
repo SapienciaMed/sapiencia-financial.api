@@ -9,6 +9,7 @@ export default class AppProvider {
     /**************************************************************************/
     /******************************** SERVICES ********************************/
     /**************************************************************************/
+    const ReportService = await import("App/Services/ReportService");
     const FundsService = await import("App/Services/FundsService");
     const EntitiesService = await import("App/Services/EntitiesService");
     const BudgetsService = await import("App/Services/BudgetsService");
@@ -49,6 +50,9 @@ export default class AppProvider {
     /**************************************************************************/
     /******************************** REPOSITORIES ****************************/
     /**************************************************************************/
+    const ReportRepository = await import(
+      "App/Repositories/ReportRepository"
+    );
     const BudgetsRepository = await import(
       "App/Repositories/BudgetsRepository"
     );
@@ -100,6 +104,11 @@ export default class AppProvider {
     /******************************** CORE  ***********************************/
     /**************************************************************************/
 
+    
+    this.app.container.singleton(
+      "core.ReportProvider",
+      () => new ReportService.default(new ReportRepository.default())
+    );
     this.app.container.singleton(
       "core.BudgetsProvider",
       () => new BudgetsService.default(new BudgetsRepository.default())
@@ -232,7 +241,10 @@ export default class AppProvider {
       "core.BudgetAvailabilityProvider",
       () =>
         new CdpService.default(
-          new CdpRepository.default()
+          new CdpRepository.default(),
+          new StrategicDirectionService.default(
+            new VinculationMGARepository.default()
+          )
         )
     );
 

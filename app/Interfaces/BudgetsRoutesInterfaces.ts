@@ -24,6 +24,7 @@ export interface IBudgetsRoutes {
   pospreSapiencia?: IPosPreSapiencia;
   budget?: IBudgets;
   fund?: IFunds;
+  totalIdc?: number;
 }
 
 export interface IBudgetsRoutesFilters {

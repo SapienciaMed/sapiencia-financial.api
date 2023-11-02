@@ -4,11 +4,13 @@ import {
   IBudgetAvailabilityFilters,
   ICreateCdp,
   IUpdateBasicDataCdp,
+  IUpdateRoutesCDP,
 } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import BudgetAvailability from "../Models/BudgetAvailability";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
+import { getStringDate } from "App/Utils/functions";
 export interface IBudgetAvailabilityRepository {
   searchBudgetAvailability(
     filter: IBudgetAvailabilityFilters
@@ -19,19 +21,20 @@ export interface IBudgetAvailabilityRepository {
   editBudgetAvailabilityBasicDataCDP(
     updatedData: IUpdateBasicDataCdp
   ): Promise<any>;
-  getById(id: string): Promise<BudgetAvailability>;
+  getBudgetAvailabilityById(id: string): Promise<BudgetAvailability>;
   cancelAmountCdp(
     id: number,
     reasonCancellation: string
   ): Promise<BudgetAvailability>;
   linkMga(): Promise<any>;
-  findCdpWithLastAmountPosition(cdpId: number): Promise<{ cdp: BudgetAvailability | null; lastAmountPosition: number }>;
+  getRouteCDPId(id: number): Promise<IUpdateRoutesCDP | null>;  
+  updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<IUpdateRoutesCDP | null>;
 }
 
 
 export default class BudgetAvailabilityRepository
-  implements IBudgetAvailabilityRepository
-{
+  implements IBudgetAvailabilityRepository {
+
   getAllCdps(): Promise<any[]> {
     throw new Error("Method not implemented.");
   }
@@ -60,8 +63,8 @@ export default class BudgetAvailabilityRepository
     }
 
     if (filter.initialDate && filter.endDate) {
-      query.where("date", ">=", filter.initialDate.toJSDate());
-      query.where("date", "<=", filter.endDate.toJSDate());
+      query.where("date", ">=", getStringDate(new Date(filter.initialDate)));
+      query.where("date", "<=", getStringDate(new Date(filter.endDate)));
     }
 
     if (filter.consecutiveSap) {
@@ -177,7 +180,7 @@ export default class BudgetAvailabilityRepository
       throw new Error("Error al asociar importes al CDP: " + error.message);
     }
   }
-  getById = async (id: string): Promise<any> => {
+  getBudgetAvailabilityById = async (id: string): Promise<any> => {
     return await BudgetAvailability.query()
       .where("id", Number(id))
       .preload("amounts", (query) => {
@@ -252,26 +255,48 @@ export default class BudgetAvailabilityRepository
     return toUpdate.serialize() as IBudgetAvailability;
   }
 
-  async findCdpWithLastAmountPosition(cdpId: number): Promise<{ cdp: BudgetAvailability, amounts: AmountBudgetAvailability[], lastAmountPosition: number }> {
-    const query = BudgetAvailability.query()
-        .where("id", cdpId)
-        .preload("amounts", (query) => {
-            query.orderBy("cdpPosition", "desc");
-        });
-
-    const { sql, bindings } = query.toSQL();
-    console.log(sql, bindings);
-
-    const cdp = await query.firstOrFail();
-
-    const amounts = cdp.amounts;
-    const lastAmount = amounts[0];
-    const lastAmountPosition = lastAmount ? lastAmount.cdpPosition : 0;
-
-    return { cdp, amounts, lastAmountPosition };
-}
+ 
 
 
 
 
+
+  async updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<IUpdateRoutesCDP | null> {
+    const toUpdate = await AmountBudgetAvailability.find(id);
+
+    if (!toUpdate) {
+      return null;
+    }
+
+    toUpdate.idRppCode = updateRoutesCDP.idRppCode;
+    toUpdate.cdpPosition = updateRoutesCDP.cdpPosition;
+    toUpdate.amount = updateRoutesCDP.amount;
+    toUpdate.modifiedIdcCountercredit = updateRoutesCDP?.modifiedIdcCountercredit ?? 0;
+    toUpdate.idcModifiedCredit = updateRoutesCDP?.idcModifiedCredit ?? 0;
+    toUpdate.idcFixedCompleted = updateRoutesCDP?.idcFixedCompleted ?? 0;
+    toUpdate.idcFinalValue = updateRoutesCDP?.idcFinalValue ?? 0;
+
+    await toUpdate.save();
+    return toUpdate.serialize() as IUpdateRoutesCDP;
+  }
+
+
+
+  async getRouteCDPId(id: number): Promise<IUpdateRoutesCDP | null> {
+    const res = await AmountBudgetAvailability.query()
+    .where("id", id)
+    .preload("budgetAvailability") 
+    .preload("budgetRoute", (query) => {
+      query.preload("projectVinculation", (query) => {
+        query.preload("functionalProject");
+      });
+      query.preload("funds");
+      query.preload("budget");
+      query.preload("pospreSapiencia")
+    }) 
+    
+    return res.length > 0 ? (res[0].serialize() as IUpdateRoutesCDP) : null;
+  }
+
+  
 }
