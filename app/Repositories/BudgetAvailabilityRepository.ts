@@ -255,12 +255,6 @@ export default class BudgetAvailabilityRepository
     return toUpdate.serialize() as IBudgetAvailability;
   }
 
- 
-
-
-
-
-
   async updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<IUpdateRoutesCDP | null> {
     const toUpdate = await AmountBudgetAvailability.find(id);
 
