@@ -4,6 +4,7 @@ import {
   IBudgetAvailabilityFilters,
   ICreateCdp,
   IUpdateBasicDataCdp,
+  IUpdateRoutesCDP,
 } from "App/Interfaces/BudgetAvailabilityInterfaces";
 import BudgetAvailability from "../Models/BudgetAvailability";
 import { IPagingData } from "App/Utils/ApiResponses";
@@ -26,11 +27,13 @@ export interface IBudgetAvailabilityRepository {
     reasonCancellation: string
   ): Promise<BudgetAvailability>;
   linkMga(): Promise<any>;
+  getRouteCDPId(id: number): Promise<IUpdateRoutesCDP | null>;  
+  updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<IUpdateRoutesCDP | null>;
 }
 
 export default class BudgetAvailabilityRepository
-  implements IBudgetAvailabilityRepository
-{
+  implements IBudgetAvailabilityRepository {
+
   getAllCdps(): Promise<any[]> {
     throw new Error("Method not implemented.");
   }
@@ -250,4 +253,43 @@ export default class BudgetAvailabilityRepository
     // Devolver los datos de disponibilidad presupuestaria actualizados en formato serializado.
     return toUpdate.serialize() as IBudgetAvailability;
   }
+
+  async updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<IUpdateRoutesCDP | null> {
+    const toUpdate = await AmountBudgetAvailability.find(id);
+
+    if (!toUpdate) {
+      return null;
+    }
+
+    toUpdate.idRppCode = updateRoutesCDP.idRppCode;
+    toUpdate.cdpPosition = updateRoutesCDP.cdpPosition;
+    toUpdate.amount = updateRoutesCDP.amount;
+    toUpdate.modifiedIdcCountercredit = updateRoutesCDP?.modifiedIdcCountercredit ?? 0;
+    toUpdate.idcModifiedCredit = updateRoutesCDP?.idcModifiedCredit ?? 0;
+    toUpdate.idcFixedCompleted = updateRoutesCDP?.idcFixedCompleted ?? 0;
+    toUpdate.idcFinalValue = updateRoutesCDP?.idcFinalValue ?? 0;
+
+    await toUpdate.save();
+    return toUpdate.serialize() as IUpdateRoutesCDP;
+  }
+
+
+
+  async getRouteCDPId(id: number): Promise<IUpdateRoutesCDP | null> {
+    const res = await AmountBudgetAvailability.query()
+    .where("id", id)
+    .preload("budgetAvailability") 
+    .preload("budgetRoute", (query) => {
+      query.preload("projectVinculation", (query) => {
+        query.preload("functionalProject");
+      });
+      query.preload("funds");
+      query.preload("budget");
+      query.preload("pospreSapiencia")
+    }) 
+    
+    return res.length > 0 ? (res[0].serialize() as IUpdateRoutesCDP) : null;
+  }
+
+  
 }

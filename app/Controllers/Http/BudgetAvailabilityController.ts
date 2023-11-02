@@ -5,6 +5,7 @@ import { ApiResponse } from "App/Utils/ApiResponses";
 import BudgetAvailabilityBasicDataValidator from "App/Validators/BudgetAvailabilityBasicDataValidator";
 import BudgetAvailabilityFiltersValidator from "App/Validators/BudgetAvailabilityFiltersValidator";
 import BudgetAvailabilityValidator from "App/Validators/BudgetAvailabilityValidator";
+import updateRouteCDPValidator from "App/Validators/updateRiutesCDPValidator";
 
 export default class BudgetAvailabilityController {
   /**
@@ -146,4 +147,28 @@ export default class BudgetAvailabilityController {
       );
     }
   }
+
+  public async updateRoutesCDP({request, response}: HttpContextContract){
+    try {
+      const { id } = request.params();
+      const data = await request.validate(updateRouteCDPValidator);     
+
+      return response.send(await BudgetAvailabilityProvider.updateRoutesCDP(data, id));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
+  
+  public async getRouteCDPId({ request, response }: HttpContextContract) {
+    try {
+      const { id } = request.params() as { id: number };
+      return response.send(await BudgetAvailabilityProvider.getRouteCDPId(id));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  } 
 }
