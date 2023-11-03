@@ -25,7 +25,7 @@ export default class BudgetAvailabilityFiltersValidator {
    */
 
   public schema = schema.create({
-    dateOfCdp: schema.string(),
+    dateOfCdp: schema.string.optional(),
     page: schema.number(),
     perPage: schema.number(),
     consecutiveSap: schema.number.optional(),

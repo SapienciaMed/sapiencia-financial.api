@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { IBudgetsRoutes } from "./BudgetsRoutesInterfaces";
 
 export interface IBudgetAvailabilityFilters {
-  dateOfCdp: string;
+  dateOfCdp?: string;
   page: number;
   perPage: number;
   initialDate?: string;

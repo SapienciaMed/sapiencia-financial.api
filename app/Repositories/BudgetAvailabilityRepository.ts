@@ -133,7 +133,7 @@ export default class BudgetAvailabilityRepository
   }
 
   async createCdps(cdpDataTotal: any) {
-    const { date, contractObject, consecutive, sapConsecutive, icdArr } =
+    const { date, contractObject, sapConsecutive, icdArr } =
       cdpDataTotal;
       let dateDecode = date.toString();
       dateDecode= dateDecode.split('T')[0];
