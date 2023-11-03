@@ -135,6 +135,8 @@ export default class BudgetAvailabilityRepository
   async createCdps(cdpDataTotal: any) {
     const { date, contractObject, consecutive, sapConsecutive, icdArr } =
       cdpDataTotal;
+      let dateDecode = date.toString();
+      dateDecode= dateDecode.split('T')[0];
 
     const existingCdps = await this.filterCdpsByDateAndContractObject(
       date,
@@ -146,14 +148,22 @@ export default class BudgetAvailabilityRepository
       alert = `Ya existe un CDP registrado para el objeto contractual ${contractObject} y la fecha ${date}`;
       throw new Error(alert);
     }
+    const query = await BudgetAvailability.query()
+    .select('CDP_CONSECUTIVO')
+    .orderBy('CDP_CONSECUTIVO', 'desc')
+    .first();
+  
+  const ultimoRegistro = query ? query.toJSON() : null;
+  
+  const cdp = new BudgetAvailability();
+  cdp.date = dateDecode;
+  cdp.contractObject = contractObject;
+  cdp.consecutive = ultimoRegistro ? (ultimoRegistro?.consecutive + 1) : 1;
+  cdp.sapConsecutive = sapConsecutive;
+  await cdp.save();
+  await cdp.related('amounts').createMany(icdArr);
 
-    const cdp = new BudgetAvailability();
-    cdp.date = date;
-    cdp.contractObject = contractObject;
-    cdp.consecutive = consecutive;
-    cdp.sapConsecutive = sapConsecutive;
-    await cdp.save();
-    await cdp.related("amounts").createMany(icdArr);
+  return {'consecutive':ultimoRegistro?.consecutive + 1}
   }
 
   async associateAmountsWithCdp(cdpId: number, amounts: any[]) {
