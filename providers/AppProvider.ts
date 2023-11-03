@@ -43,6 +43,10 @@ export default class AppProvider {
     const PacService = await import("App/Services/PacService");
     const CdpService = await import("App/Services/BudgetAvailabilityService")
     const PacSubImplementsService = await import("App/Services/PacSubImplementsService");
+    
+    const BudgetRecordService = await import("App/Services/BudgetRecordService");
+   
+    const CreditorService = await import("App/Services/CreditorService");
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -99,7 +103,10 @@ export default class AppProvider {
 
     const PacRepository = await import("App/Repositories/PacRepository");
     const CdpRepository = await import("App/Repositories/BudgetAvailabilityRepository")
-
+    
+    const BudgetRecordRepository = await import("App/Repositories/BudgetRecordRepository")
+    
+    const CreditorRepository = await import("App/Repositories/CreditorRepository")
     /**************************************************************************/
     /******************************** CORE  ***********************************/
     /**************************************************************************/
@@ -263,6 +270,27 @@ export default class AppProvider {
           )
         )
     );
+
+            this.app.container.singleton(
+              "core.BudgetRecordProvider",
+              ()=>
+                new BudgetRecordService.default(
+                  new BudgetRecordRepository.default()
+                )
+              
+            )
+
+            
+    
+            
+            this.app.container.singleton(
+              "core.CreditorsProvider",
+              ()=>
+                new CreditorService.default(
+                  new CreditorRepository.default()
+                )
+              
+            )
 
   }
 
