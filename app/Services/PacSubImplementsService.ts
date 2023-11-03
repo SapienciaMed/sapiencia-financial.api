@@ -860,7 +860,6 @@ export default class PacSubImplementsService implements IPacSubImplementsService
                                   Number(annualCollected.may) + Number(annualCollected.jun) + Number(annualCollected.jul) + Number(annualCollected.ago) +
                                   Number(annualCollected.sep) + Number(annualCollected.oct) + Number(annualCollected.nov) + Number(annualCollected.dec);
 
-    console.log({type : data.pacType});
     if( data.pacType == "Programado" || data.pacType == "Ambos" ){
 
       //* Escenario 4
