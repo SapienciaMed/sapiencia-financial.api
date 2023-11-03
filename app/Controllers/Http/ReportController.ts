@@ -5,6 +5,7 @@ import { ApiResponse } from "App/Utils/ApiResponses";
 import { schema } from "@ioc:Adonis/Core/Validator";
 
 export default class ReportController {
+
   public async generateExcelReport({ response, request }: HttpContextContract) {
     try {
       const filters = await request.validate({
@@ -26,5 +27,6 @@ export default class ReportController {
         new ApiResponse(null, EResponseCodes.FAIL, String(err))
       );
     }
+
   }
 }
