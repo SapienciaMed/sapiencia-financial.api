@@ -37,6 +37,12 @@ export default class ReportService implements IReportService {
         dataTable = await this.reportRepository.generateReportPac(filters.year);
         break;
 
+      case EReportIds.reportExecutionExpenses:
+        dataTable = await this.reportRepository.generateReportExecutionExpenses(
+          filters.year
+        );
+        break;
+
       default:
         dataTable = [];
         break;
