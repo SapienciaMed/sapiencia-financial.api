@@ -32,5 +32,16 @@ export default class BudgetRecordsController {
         }
     }
 
+    public async getTotalValuesImports({ request, response }: HttpContextContract) {
+        try {
+          const { id } = request.params() as { id: number };
+          return response.send(await BudgetRecordProvider.getTotalValuesImports(id));
+        } catch (err) {
+          return response.badRequest(
+            new ApiResponse(null, EResponseCodes.FAIL, String(err))
+          );
+        }
+      }
+
 
 }
