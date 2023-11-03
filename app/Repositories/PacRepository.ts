@@ -361,14 +361,14 @@ export default class PacRepository implements IPacRepository {
 
         query.where("exercise", filters.exercise!)
           .andWhere("sourceType", filters.resourceType!)
-        //.andWhere("isActive", true);
+          .andWhere("isActive", true);
 
       } else {
 
         query.where("exercise", filters.exercise!)
           .andWhere("sourceType", filters.resourceType!)
-          .andWhere("budgetRouteId", filters.route!);
-        //.andWhere("isActive", true);
+          .andWhere("budgetRouteId", filters.route!)
+          .andWhere("isActive", true);
 
       }
 
@@ -376,18 +376,28 @@ export default class PacRepository implements IPacRepository {
 
       if (!filters.route) {
 
-        query.where("exercise", filters.exercise!)
+        if(filters.resourceType !== "Todos"){
+
+          query.where("exercise", filters.exercise!)
           .andWhere("sourceType", filters.resourceType!)
-          .andWhere("version", filters.version);
-        //.andWhere("isActive", true);
+          .andWhere("version", filters.version)
+          .andWhere("isActive", true);
+
+        }else{
+
+          query.where("exercise", filters.exercise!)
+          .andWhere("version", filters.version)
+          .andWhere("isActive", true);
+
+        }
 
       } else {
 
         query.where("exercise", filters.exercise!)
           .andWhere("sourceType", filters.resourceType!)
           .andWhere("version", filters.version)
-          .andWhere("budgetRouteId", filters.route!);
-        //.andWhere("isActive", true);
+          .andWhere("budgetRouteId", filters.route!)
+          .andWhere("isActive", true);
 
       }
 

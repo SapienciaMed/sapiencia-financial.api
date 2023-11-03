@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { IBudgetsRoutes } from "./BudgetsRoutesInterfaces";
 
 export interface IBudgetAvailabilityFilters {
-  dateOfCdp: string;
+  dateOfCdp?: string;
   page: number;
   perPage: number;
   initialDate?: string;
@@ -66,3 +66,15 @@ export interface IUpdateBasicDataCdp {
   rpAssocs?: string;
 
 } */
+
+export interface IUpdateRoutesCDP {
+  id?:                       number;
+  idRppCode:                 number;
+  cdpPosition:               number;
+  amount:                    number;
+  modifiedIdcCountercredit?: number;
+  idcModifiedCredit?:        number;
+  idcFixedCompleted?:        number;
+  idcFinalValue?:            number;
+}
+
