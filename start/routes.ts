@@ -202,7 +202,7 @@ Route.group(() => {
   "AdditionsController.executeUpdateAdditionWithMov"
 
 }).prefix("/api/v1/additions")
-  
+
 Route.group(() => {
   Route.post("/get-paginated", "TransfersController.getTransfersPaginated");
   Route.post("/get-funds", "TransfersController.getFundsList");
@@ -277,4 +277,18 @@ Route.group(() => {
   Route.get("/get-by-id/:id", "BudgetAvailabilityController.getBudgetAvailabilityById");
   Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
   Route.post("/link-mga/", "BudgetAvailabilityController.linkMga");
+  Route.get("/get-routeCDP-id/:id", "BudgetAvailabilityController.getRouteCDPId");
+  Route.put("/updateRouteCDP/:id", "BudgetAvailabilityController.updateRoutesCDP");
 }).prefix("/api/v1/cdp")
+
+Route.group(() => {
+  Route.post('/create-rp', 'BudgetRecordsController.createRp')
+  Route.get('/get-components', 'BudgetRecordsController.getComponents')
+}).prefix('/api/v1/budget-records')
+
+
+Route.group(() => {
+  Route.get('/get-creditors-by-filters', 'CreditorsController.getCreditorsByFilters')
+}).prefix('/api/v1/creditors')
+
+

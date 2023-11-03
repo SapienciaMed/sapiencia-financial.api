@@ -12,6 +12,10 @@ export default class extends BaseSchema {
       table.decimal('ICD_VALOR', 15, 2).notNullable()
       table.boolean('ICD_ACTIVO').defaultTo(true)
       table.string('ICD_MOTIVO_ANULACION',500).nullable()
+      table.decimal('IDC_MODIFICADO_CONTRACREDITO', 15, 2).nullable()
+      table.decimal('IDC_MOFICICADO_CREDITO ', 15, 2).nullable()
+      table.decimal('IDC_FIJADO_CONCLUIDO', 15, 2).nullable()
+      table.decimal('IDC_VALOR_FINAL', 15, 2).nullable()
 
     })
   }

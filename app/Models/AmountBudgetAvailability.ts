@@ -28,7 +28,7 @@ export default class AmountBudgetAvailability extends BaseModel {
   public cdpPosition: number;
 
   @column({ columnName: "ICD_VALOR", serializeAs: "amount" })
-  public amount: number;
+  public amount: number; 
 
   @column({ columnName: "ICD_ACTIVO", serializeAs: "isActive" })
   public isActive: boolean;
@@ -36,9 +36,21 @@ export default class AmountBudgetAvailability extends BaseModel {
   @column({ columnName: "ICD_MOTIVO_ANULACION", serializeAs: "reasonCancellation" })
   public reasonCancellation: string;
 
+  @column({ columnName: "IDC_MODIFICADO_CONTRACREDITO", serializeAs: "modifiedIdcCountercredit" })
+  public modifiedIdcCountercredit: number;
+
+  @column({ columnName: "IDC_MOFICICADO_CREDITO", serializeAs: "idcModifiedCredit" })
+  public idcModifiedCredit: number;
+
+  @column({ columnName: "IDC_FIJADO_CONCLUIDO", serializeAs: "idcFixedCompleted" })
+  public idcFixedCompleted: number;
+
+  @column({ columnName: "IDC_VALOR_FINAL", serializeAs: "idcFinalValue" })
+  public idcFinalValue: number;
+
   @hasOne(() => BudgetAvailability, {
-    localKey: "id",
-    foreignKey: "ICD_CODCDP",
+    localKey: "cdpCode",
+    foreignKey: "id",
     serializeAs: "budgetAvailability",
   })
   public budgetAvailability: HasOne<typeof BudgetAvailability>;
