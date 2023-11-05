@@ -7,6 +7,7 @@ import { IPac } from '../Interfaces/PacInterfaces';
 import { IDataBasicProject, IPacReport } from '../Interfaces/ReportsInterfaces';
 import { IStrategicDirectionService } from '../Services/External/StrategicDirectionService';
 import ProjectsVinculation from '../Models/ProjectsVinculation';
+import BudgetsRoutes from "App/Models/BudgetsRoutes";
 
 export interface IReportRepository {
 
