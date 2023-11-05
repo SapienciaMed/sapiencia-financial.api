@@ -12,6 +12,7 @@ export interface IReportService {
 }
 
 export default class ReportService implements IReportService {
+
   constructor(private reportRepository: IReportRepository) {}
 
   private async generateExcelFile(data: any[]): Promise<any> {
@@ -26,16 +27,13 @@ export default class ReportService implements IReportService {
   public async generateExcelReport(
     filters: IExcelReportFilters
   ): Promise<ApiResponse<boolean>> {
+
     let dataTable: any[];
 
     switch (filters.reportId) {
-      case EReportIds.reportPAC:
-        dataTable = await this.reportRepository.generateReportPac(filters.year);
-        break;
 
-      case EReportIds.reportModifiedRoutes:
-        dataTable = await this.reportRepository.generateReportPac(filters.year);
-        break;
+      case EReportIds.reportPAC: dataTable = await this.reportRepository.generateReportPac(filters.year); break;
+      case EReportIds.reportModifiedRoutes: dataTable = await this.reportRepository.generateReportPac(filters.year); break;
 
       case EReportIds.reportExecutionExpenses:
         dataTable = await this.reportRepository.generateReportExecutionExpenses(
@@ -47,6 +45,8 @@ export default class ReportService implements IReportService {
         dataTable = [];
         break;
     }
+
+    console.log(dataTable);
 
     const res = await this.generateExcelFile(dataTable);
 

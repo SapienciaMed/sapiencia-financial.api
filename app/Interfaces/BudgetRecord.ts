@@ -29,3 +29,8 @@ export interface ILinkRPCDP {
     reasonCancellation?: string;
 
 }
+
+export interface ITotalImports {    
+    totalImport:number;
+    
+}
