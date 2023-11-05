@@ -1,5 +1,6 @@
 import { IReportColumnExecutionExpenses } from "App/Interfaces/ReportInterfaces";
-import BudgetsRoutes from "App/Models/BudgetsRoutes";
+import AdditionsMovement from "App/Models/AdditionsMovement";
+import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 import Pac from "App/Models/Pac";
 
 export interface IReportRepository {
@@ -14,7 +15,7 @@ export default class ReportRepository implements IReportRepository {
     return res.map((i) => i.serialize());
   }
 
-  async generateReportExecutionExpenses(year: number): Promise<any[]> {
+  async generateReportExecutionExpenses(year: number): Promise<any> {
     const resObject: IReportColumnExecutionExpenses[] = [
       {
         Fondo: "",
@@ -39,22 +40,41 @@ export default class ReportRepository implements IReportRepository {
       },
     ];
 
-    const query = await BudgetsRoutes.query()
-      .preload("pospreSapiencia", (subQuery) =>
-        subQuery.whereILike("ejercise", year)
-      )
-      .preload("funds")
-      .preload("projectVinculation");
+    //Addition Movement Query
+    const queryAdditionMovement = await AdditionsMovement.query()
+      .preload("addition")
+      .preload("budgetRoute", (subQuery) =>
+        subQuery
+          .preload("pospreSapiencia", (subQueryBudgetRoute) =>
+            subQueryBudgetRoute.whereILike("ejercise", year)
+          )
+          .preload("funds")
+          .preload("projectVinculation")
+      );
 
-    const res = query
+    const resAdditionMovement = queryAdditionMovement
       .map((i) => i.serialize())
-      .filter((i) => i.pospreSapiencia?.id);
+      .filter((i) => i.budgetRoute?.pospreSapiencia?.id);
 
-    console.log(res);
-    console.log("-----------------------------------------------");
-    console.log(resObject);
-    console.log("-----------------------------------------------");
+    //ICD Query
+    const queryAmountBudgetAvailability =
+      await AmountBudgetAvailability.query().preload("budgetRoute");
 
-    return res;
+    const resAmountBudgetAvailability = queryAmountBudgetAvailability.map((i) =>
+      i.serialize()
+    );
+
+    // console.log(resAdditionMovement);
+    // console.log(
+    //   "----------------------resAdditionMovement-------------------------"
+    // );
+    // console.log(resAmountBudgetAvailability);
+    // console.log(
+    //   "----------------------resAmountBudgetAvailability-------------------------"
+    // );
+    // console.log(resObject);
+    // console.log("-----------------------------------------------");
+
+    return { resAdditionMovement, resAmountBudgetAvailability };
   }
 }
