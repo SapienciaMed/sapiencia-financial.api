@@ -1,4 +1,4 @@
-import { IReportColumnExecutionExpenses } from "App/Interfaces/ReportInterfaces";
+// import { IReportColumnExecutionExpenses } from "App/Interfaces/ReportInterfaces";
 import AdditionsMovement from "App/Models/AdditionsMovement";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 import Pac from "App/Models/Pac";
@@ -16,29 +16,29 @@ export default class ReportRepository implements IReportRepository {
   }
 
   async generateReportExecutionExpenses(year: number): Promise<any> {
-    const resObject: IReportColumnExecutionExpenses[] = [
-      {
-        Fondo: "",
-        "Centro Gestor": "",
-        "Posición Presupuestaria": "",
-        "Área Funcional": "",
-        Proyecto: "",
-        Nombre: "",
-        "Ppto Inicial": "",
-        Reducciones: "",
-        Adiciones: "",
-        Créditos: "",
-        "Contra créditos": "",
-        "Total Ppto Actual": "",
-        Disponibilidad: "",
-        Compromiso: "",
-        Factura: "",
-        Pagos: "",
-        "Disponible Neto": "",
-        Ejecución: "",
-        "porcentaje Ejecución": "",
-      },
-    ];
+    // const resObject: IReportColumnExecutionExpenses[] = [
+    //   {
+    //     Fondo: "",
+    //     "Centro Gestor": "",
+    //     "Posición Presupuestaria": "",
+    //     "Área Funcional": "",
+    //     Proyecto: "",
+    //     Nombre: "",
+    //     "Ppto Inicial": "",
+    //     Reducciones: "",
+    //     Adiciones: "",
+    //     Créditos: "",
+    //     "Contra créditos": "",
+    //     "Total Ppto Actual": "",
+    //     Disponibilidad: "",
+    //     Compromiso: "",
+    //     Factura: "",
+    //     Pagos: "",
+    //     "Disponible Neto": "",
+    //     Ejecución: "",
+    //     "porcentaje Ejecución": "",
+    //   },
+    // ];
 
     //Addition Movement Query
     const queryAdditionMovement = await AdditionsMovement.query()
