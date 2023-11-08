@@ -34,6 +34,9 @@ export default class BudgetsRoutes  extends BaseModel {
   @column({ columnName: "RPP_SALDO", serializeAs: "balance" })
   public balance: number;
 
+  @column({ columnName: "RPP_SALDO_INICIAL", serializeAs: "initialBalance" })
+  public initialBalance: number;
+
   @column({ columnName: "RPP_USUARIO_MODIFICO", serializeAs: "userModify" })
   public userModify: string;
 
@@ -79,7 +82,7 @@ export default class BudgetsRoutes  extends BaseModel {
   public funds: HasOne<typeof Funds>;
 
   @hasMany(() => AmountBudgetAvailability, {
-    foreignKey: 'idRppCode', 
+    foreignKey: 'idRppCode',
     localKey: 'id',
     serializeAs: 'amountBudgetAvailabilities',
   })

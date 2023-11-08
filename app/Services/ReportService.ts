@@ -34,6 +34,7 @@ export default class ReportService implements IReportService {
 
       case EReportIds.reportPAC: dataTable = await this.reportRepository.generateReportPac(filters.year); break;
       case EReportIds.reportModifiedRoutes: dataTable = await this.reportRepository.generateReportPac(filters.year); break;
+      case EReportIds.reportDetailChangesBudget: dataTable = await this.reportRepository.generateReportDetailChangeBudgets(filters.year); break;
 
       case EReportIds.reportExecutionExpenses:
         dataTable = await this.reportRepository.generateReportExecutionExpenses(
@@ -46,7 +47,7 @@ export default class ReportService implements IReportService {
         break;
     }
 
-    console.log(dataTable);
+    // console.log(dataTable);
 
     const res = await this.generateExcelFile(dataTable);
 
