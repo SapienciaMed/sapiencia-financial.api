@@ -16,6 +16,7 @@ export interface IBudgetsRoutes {
   idPospreSapiencia: number;
   idFund: number;
   balance?: number;
+  initialBalance?: number;
   userModify?: string;
   dateModify?: Date;
   userCreate?: string;

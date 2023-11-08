@@ -46,6 +46,9 @@ export default class BudgetsRoutes extends BaseModel {
   @column({ columnName: "RPP_SALDO", serializeAs: "balance" })
   public balance: number;
 
+  @column({ columnName: "RPP_SALDO_INICIAL", serializeAs: "initialBalance" })
+  public initialBalance: number;
+
   @column({ columnName: "RPP_USUARIO_MODIFICO", serializeAs: "userModify" })
   public userModify: string;
 

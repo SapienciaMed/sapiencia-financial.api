@@ -1,10 +1,14 @@
 import Pac from "App/Models/Pac";
+import Additions from "../Models/Addition";
 import { IPac } from "../Interfaces/PacInterfaces";
 import {
   IDataBasicProject,
   IPacReport,
   IReportColumnExecutionExpenses,
+  IHistoryProjects,
+  IReportDetailChangeBudgets,
 } from "../Interfaces/ReportsInterfaces";
+import { IAdditionsReport } from "../Interfaces/AdditionsInterfaces";
 import { IStrategicDirectionService } from "../Services/External/StrategicDirectionService";
 import ProjectsVinculation from "../Models/ProjectsVinculation";
 import BudgetsRoutes from "App/Models/BudgetsRoutes";
@@ -16,13 +20,18 @@ import {
 
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
+  generateReportDetailChangeBudgets(year: number): Promise<any[]>;
   generateReportExecutionExpenses(year: number): Promise<any[]>;
 }
 
 export default class ReportRepository implements IReportRepository {
   constructor(private strategicDirectionService: IStrategicDirectionService) {}
 
-  //Obtener Proyectos vinculados si son inversion o funcionamiento
+  //? Este array nos va permitir contener la información que busquemos de planeación, como una especie de "histórico"
+  //? de esta manera, si ya tenemos cargada la información, no tenemos porque hacer nuevas consultas a la API de planeación
+  //? el objetivo es economizar al menos un 60% del tiempo usado para las consultas.
+  public historyArrayFunctionalProject: IHistoryProjects[] = [];
+
   async getProjectGeneral(
     vinculationId: number,
     candidateName: string
@@ -31,6 +40,35 @@ export default class ReportRepository implements IReportRepository {
     let projectName: string = "";
     let functionalArea: string = "";
 
+    //* Validamos el array de históricos primero antes de:
+    if (this.historyArrayFunctionalProject.length > 0) {
+      //* Realizo busqueda:
+      const result = this.historyArrayFunctionalProject.find(
+        (obj) => obj.vinculationId === vinculationId
+      );
+
+      if (result && result != null && result != undefined) {
+        let objResult: IDataBasicProject;
+
+        if (result.projectCode === "9000000") {
+          objResult = {
+            projectCode: result.projectCode,
+            projectName: candidateName,
+            functionalArea: result.functionalArea,
+          };
+        } else {
+          objResult = {
+            projectCode: result.projectCode,
+            projectName: result.projectName,
+            functionalArea: result.functionalArea,
+          };
+        }
+
+        return objResult;
+      }
+    }
+
+    //* Si paso acá quiere decir que no encontré en el histórico y tendremos que consultar la API planeación
     const filtersByPlanning = { page: 1, perPage: 10000000 };
     const getProjectPlanning =
       await this.strategicDirectionService.getProjectInvestmentPaginated(
@@ -75,9 +113,19 @@ export default class ReportRepository implements IReportRepository {
       functionalArea,
     };
 
+    //* Alimento el histórico:
+    const objHistory: IHistoryProjects = {
+      vinculationId,
+      projectCode,
+      projectName,
+      functionalArea,
+    };
+    this.historyArrayFunctionalProject.push(objHistory);
+
     return objResult;
   }
 
+  //HU-086 Reporte PAC - 7876
   async generateReportPac(year: number): Promise<any[]> {
     //** ************************************************************* */
     //** Agrupamos toda la data y la traemos ordenada Tipo de Recurso  */
@@ -369,71 +417,194 @@ export default class ReportRepository implements IReportRepository {
       //? **************************************************************************************************************
 
       let objResponse: IPacReport = {
-        resourceType,
-        managementCenter,
-        posPreSapi,
-        fundSapi,
-        functionalArea,
-        projectCode,
-        projectName,
-        budgetSapi,
-        programmingJan,
-        collectedJan,
-        executeJan,
-        diferenceJan,
-        programmingFeb,
-        collectedFeb,
-        executeFeb,
-        diferenceFeb,
-        programmingMar,
-        collectedMar,
-        executeMar,
-        diferenceMar,
-        programmingApr,
-        collectedApr,
-        executeApr,
-        diferenceApr,
-        programmingMay,
-        collectedMay,
-        executeMay,
-        diferenceMay,
-        programmingJun,
-        collectedJun,
-        executeJun,
-        diferenceJun,
-        programmingJul,
-        collectedJul,
-        executeJul,
-        diferenceJul,
-        programmingAug,
-        collectedAug,
-        executeAug,
-        diferenceAug,
-        programmingSep,
-        collectedSep,
-        executeSep,
-        diferenceSep,
-        programmingOct,
-        collectedOct,
-        executeOct,
-        diferenceOct,
-        programmingNov,
-        collectedNov,
-        executeNov,
-        diferenceNov,
-        programmingDec,
-        collectedDec,
-        executeDec,
-        diferenceDec,
-        collected,
-        forCollected,
-        percentExecute,
+        "Tipo de recurso": resourceType,
+        "Centro Gestor": managementCenter,
+        "Posición Presupuestal": posPreSapi,
+        "Fondo Sapiencia": fundSapi,
+        "Área Funcional": functionalArea,
+        Proyecto: projectCode,
+        "Nombre proyecto": projectName,
+        "Presupuesto Sapiencia": budgetSapi,
+        "Programado Enero": programmingJan,
+        "Cobrado Enero": collectedJan,
+        "Ejecutado Enero": executeJan,
+        "Diferencias Enero": diferenceJan,
+        "Programado Febrero": programmingFeb,
+        "Cobrado Febrero": collectedFeb,
+        "Ejecutado Febrero": executeFeb,
+        "Diferencias Febrero": diferenceFeb,
+        "Programado Marzo": programmingMar,
+        "Cobrado Marzo": collectedMar,
+        "Ejecutado Marzo": executeMar,
+        "Diferencias Marzo": diferenceMar,
+        "Programado Abril": programmingApr,
+        "Cobrado Abril": collectedApr,
+        "Ejecutado Abril": executeApr,
+        "Diferencias Abril": diferenceApr,
+        "Programado Mayo": programmingMay,
+        "Cobrado Mayo": collectedMay,
+        "Ejecutado Mayo": executeMay,
+        "Diferencias Mayo": diferenceMay,
+        "Programado Junio": programmingJun,
+        "Cobrado Junio": collectedJun,
+        "Ejecutado Junio": executeJun,
+        "Diferencias Junio": diferenceJun,
+        "Programado Julio": programmingJul,
+        "Cobrado Julio": collectedJul,
+        "Ejecutado Julio": executeJul,
+        "Diferencias Julio": diferenceJul,
+        "Programado Agosto": programmingAug,
+        "Cobrado Agosto": collectedAug,
+        "Ejecutado Agosto": executeAug,
+        "Diferencias Agosto": diferenceAug,
+        "Programado Septiembre": programmingSep,
+        "Cobrado Septiembre": collectedSep,
+        "Ejecutado Septiembre": executeSep,
+        "Diferencias Septiembre": diferenceSep,
+        "Programado Octubre": programmingOct,
+        "Cobrado Octubre": collectedOct,
+        "Ejecutado Octubre": executeOct,
+        "Diferencias Octubre": diferenceOct,
+        "Programado Noviembre": programmingNov,
+        "Cobrado Noviembre": collectedNov,
+        "Ejecutado Noviembre": executeNov,
+        "Diferencias Noviembre": diferenceNov,
+        "Programado Diciembre": programmingDec,
+        "Cobrado Diciembre": collectedDec,
+        "Ejecutado Diciembre": executeDec,
+        "Diferencias Diciembre": diferenceDec,
+        Recaudado: collected,
+        "Por Recaudar": forCollected,
+        "% Ejecución": percentExecute,
       };
 
       responseReport.push(objResponse);
     }
 
     return responseReport;
+  }
+
+  //HU-091 Reporte Detalle modificaciones presupuesto - 7873
+  async generateReportDetailChangeBudgets(year: number): Promise<any[]> {
+    let infoArrayAddition: IReportDetailChangeBudgets[] = []; //Tanto para disminución como adición
+    // let infoArrayTransfer: IReportDetailChangeBudgets[] = []; //Para el tema de traslado
+
+    //** Grupo Adición y Disminución **//
+    const getAdditions = await Additions.query()
+      .orderBy("typeMovement", "asc")
+      .preload("additionMove", (q) => {
+        q.preload("budgetRoute", (r) => {
+          r.preload("projectVinculation"),
+            r.preload("funds"),
+            r.preload("budget"),
+            r.preload("pospreSapiencia");
+        });
+      });
+
+    const getGeneralResponse: any[] = getAdditions.map((i) => i.serialize());
+    const getAdjustData = getGeneralResponse as IAdditionsReport[];
+
+    for (const iterResAdd of getAdjustData) {
+      const actAdminDis: string = iterResAdd.actAdminDistrict;
+      const actAdminSap: string = iterResAdd.actAdminSapiencia;
+      const typeMovement: string = iterResAdd.typeMovement;
+
+      for (const iterResMovement of iterResAdd.additionMove) {
+        let credit: number = Number(iterResMovement.value);
+        let againstCredit: number = Number(0);
+        let addBudgetExpenses: number = 0;
+        let addBudgetIncomes: number = 0;
+        let decBudgetExpenses: number = 0;
+        let decBudgetIncomes: number = 0;
+
+        let projectCode: string = "";
+        let projectName: string = "";
+        let functionalArea: string = "";
+        let fund: string = iterResMovement.budgetRoute.fund?.number!;
+
+        let posPreSapi: string =
+          iterResMovement.budgetRoute.pospreSapiencia?.number!;
+        let desPosPreSapi: string =
+          iterResMovement.budgetRoute.pospreSapiencia?.description!;
+        let exercise: number =
+          iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
+
+        let initialBudget: number = iterResMovement.budgetRoute.initialBalance!;
+
+        if (exercise === year) {
+          const getDataProject: IDataBasicProject | null =
+            await this.getProjectGeneral(
+              Number(iterResMovement.budgetRoute.idProjectVinculation),
+              desPosPreSapi
+            );
+
+          if (
+            !getDataProject ||
+            getDataProject == null ||
+            getDataProject == undefined
+          )
+            return [
+              null,
+              "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+            ];
+
+          projectCode = getDataProject.projectCode;
+          projectName = getDataProject.projectName;
+          functionalArea = getDataProject.functionalArea;
+
+          //* Calculo para si es ingreso o gasto
+          //? Este cálculo también lo hago según sin es adición o disminución
+          if (typeMovement === "Adicion") {
+            if (iterResMovement.type === "Ingreso") {
+              addBudgetIncomes += Number(iterResMovement.value);
+            } else {
+              addBudgetExpenses += Number(iterResMovement.value);
+            }
+          } else {
+            if (iterResMovement.type === "Ingreso") {
+              decBudgetIncomes += Number(iterResMovement.value);
+            } else {
+              decBudgetExpenses += Number(iterResMovement.value);
+            }
+          }
+
+          //Organizo objeto para infoArrayAddition
+          const objTransaction: IReportDetailChangeBudgets = {
+            "Acto Administrativo Distrito": actAdminDis,
+            "Acto Administrativo Sapiencia": actAdminSap,
+            "Tipo De Modificación": typeMovement,
+            Proyecto: projectCode,
+            "Nombre Proyecto": projectName,
+            "Área Funcional": functionalArea,
+            Fondo: fund,
+            Pospre: posPreSapi,
+            "Presupuesto Inicial": initialBudget,
+            "Adición Presupuesto Gastos": addBudgetExpenses,
+            "Adición Presupuesto Ingresos": addBudgetIncomes,
+            "Reducción Presupuesto Gasto": decBudgetExpenses,
+            "Reducción Presupuesto Ingreso": decBudgetIncomes,
+            "Crédito Presupuesto": credit,
+            "Contracrédito Presupuesto": againstCredit,
+          };
+
+          infoArrayAddition.push(objTransaction);
+        }
+      }
+    }
+
+    //** Grupo Traslados **//
+    // const getTransgers = await Transfer.query()
+    //   .preload("transferMove", (s) => {
+    //     s.preload("budgetRoute", (t) => {
+    //       t.preload("projectVinculation"),
+    //       t.preload("funds"),
+    //       t.preload("budget"),
+    //       t.preload("pospreSapiencia")
+    //     })
+    // });
+
+    // console.log({ infoArrayAddition });
+    return infoArrayAddition;
   }
 
   async generateReportExecutionExpenses(year: number): Promise<any[]> {
@@ -586,8 +757,6 @@ export default class ReportRepository implements IReportRepository {
     }
 
     // Devuelve la matriz de resultados
-    console.log({ resObject });
-
     return resObject;
   }
 }

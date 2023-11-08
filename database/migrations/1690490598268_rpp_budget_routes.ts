@@ -50,6 +50,10 @@ export default class extends BaseSchema {
         .notNullable()
         .comment("Saldo vigente de ruta presupuestal");
       table
+        .decimal("RPP_SALDO_INICIAL", 20,2)
+        .notNullable()
+        .comment("Saldo inicial de ruta presupuestal");
+      table
         .string("RPP_USUARIO_MODIFICO",15)
         .nullable()
         .comment("Numero del documento del ultimo usuario que hizo una modificacion");
