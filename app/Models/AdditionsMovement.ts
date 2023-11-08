@@ -1,10 +1,8 @@
-import { HasOne } from '@ioc:Adonis/Lucid/Orm';
-import { BaseModel, column, hasOne } from '@ioc:Adonis/Lucid/Orm'
-import Addition from './Addition';
-import BudgetsRoutes from './BudgetsRoutes';
+import { HasOne, BaseModel, column, hasOne } from "@ioc:Adonis/Lucid/Orm";
+import Addition from "./Addition";
+import BudgetsRoutes from "./BudgetsRoutes";
 
 export default class AdditionsMovement extends BaseModel {
-
   public static table = "MAD_MOVIMIENTOS_ADICION";
 
   @column({ isPrimary: true, columnName: "MAD_CODIGO", serializeAs: "id" })
@@ -15,9 +13,11 @@ export default class AdditionsMovement extends BaseModel {
 
   @column({ columnName: "MAD_TIPO", serializeAs: "type" })
   public type: string;
-  
 
-  @column({ columnName: "MAD_CODRPP_RUTA_PRESUPUESTAL", serializeAs: "budgetRouteId" })
+  @column({
+    columnName: "MAD_CODRPP_RUTA_PRESUPUESTAL",
+    serializeAs: "budgetRouteId",
+  })
   public budgetRouteId: number;
 
   @column({ columnName: "MAD_VALOR", serializeAs: "value" })
@@ -36,5 +36,4 @@ export default class AdditionsMovement extends BaseModel {
     serializeAs: "budgetRoute",
   })
   public budgetRoute: HasOne<typeof BudgetsRoutes>;
-
 }

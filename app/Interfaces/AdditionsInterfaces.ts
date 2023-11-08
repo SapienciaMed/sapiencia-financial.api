@@ -35,6 +35,18 @@ export interface IAdditions {
   typeMovement: string;
 }
 
+export interface IAdditionsReport {
+  id?: number;
+  actAdminDistrict: string;
+  actAdminSapiencia: string;
+  userModify?: string;
+  dateModify?: Date;
+  userCreate?: string;
+  dateCreate?: Date,
+  typeMovement: string;
+  additionMove: IAdditionsMovement[]
+}
+
 export interface IAdditionsWithMovements {
   id?: number;                //Para edición
   headAdditon?: IAdditions,   //Opcional porque en edición no lo requerimos
@@ -43,7 +55,7 @@ export interface IAdditionsWithMovements {
 
 
 export interface IAdditionsFull {
-  head: IAdditions,   
+  head: IAdditions,
   details: IAdditionsMovement[]
 }
 

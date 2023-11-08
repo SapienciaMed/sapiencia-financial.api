@@ -7,6 +7,7 @@ export interface IBudgetRecordService {
     createCdps(budgetRecord: IBudgetRecord): Promise<ApiResponse<any>>
     getComponents(): Promise<ApiResponse<any>>
     getRpByFilters(budgetRecordFilter: IBudgetRecordFilter): Promise<ApiResponse<any>>
+    getTotalValuesImports(id: number): Promise<ApiResponse<any>>;
 }
 
 export default class BudgetRecordService implements IBudgetRecordService {
@@ -69,4 +70,16 @@ export default class BudgetRecordService implements IBudgetRecordService {
             );
         }
     }
+    async getTotalValuesImports(id: number): Promise<ApiResponse<any>>  {
+        const res = await this.budgerRecordRepository.getTotalValuesImports(id);
+        if (!res) {
+            return new ApiResponse(
+                {} as any,
+                EResponseCodes.WARN,
+                "Registro no encontrado"
+            );
+        }
+        return new ApiResponse(res, EResponseCodes.OK);
+    }
+
 }

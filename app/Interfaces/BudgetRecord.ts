@@ -40,3 +40,8 @@ export interface IBudgetRecordFilter {
     contractorDocument?: string;
     name?: string;
 }
+
+export interface ITotalImports {    
+    totalImport:number;
+    
+}

@@ -1,11 +1,13 @@
-import { IBudgetRecord, IBudgetRecordFilter, ILinkRPCDP } from "App/Interfaces/BudgetRecord";
+import { IBudgetRecord, IBudgetRecordFilter, ILinkRPCDP,ITotalImports  } from "App/Interfaces/BudgetRecord";
 import BudgetRecord from "App/Models/BudgetRecord";
 import Component from "App/Models/Component";
+import LinkRpcdp from "App/Models/LinkRpcdp";
 
 export interface IBudgetRecordRepository {
     createCdps(budgetRecord: IBudgetRecord): Promise<BudgetRecord>
     getComponents(): Promise<Component[]>
     getRpByFilters(budgetRecordFilter: IBudgetRecordFilter): Promise<any>
+    getTotalValuesImports(id: number): Promise<LinkRpcdp | null>;
 }
 export default class BudgetRecordRepository implements IBudgetRecordRepository {
     createCdps = async (budgetRecord: IBudgetRecord): Promise<BudgetRecord> => {
@@ -65,4 +67,17 @@ export default class BudgetRecordRepository implements IBudgetRecordRepository {
             });
     }
 
+    async  getTotalValuesImports(id: number): Promise<any | 0> {
+      
+        const res = await LinkRpcdp.query()
+        .where('VRP_CODICD_IMPORTES_CDP', id)
+        .where('VRP_ACTIVO', 1)        
+        .sum('VRP_VALOR_INICIAL');  
+
+        const totalValue = res[0]?.$extras['sum(`VRP_VALOR_INICIAL`)'] || 0;         
+       
+        const totalImport: ITotalImports = { totalImport: totalValue };
+    
+        return totalImport;
+    }
 }

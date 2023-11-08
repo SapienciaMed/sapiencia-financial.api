@@ -1,9 +1,9 @@
 import * as XLSX from "xlsx";
 import { EReportIds } from "App/Constants/ReportEnums";
-import { IExcelReportFilters } from "App/Interfaces/ReportInterfaces";
 import { IReportRepository } from "App/Repositories/ReportRepository";
 import { ApiResponse } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
+import { IExcelReportFilters } from "App/Interfaces/ReportsInterfaces";
 
 export interface IReportService {
   generateExcelReport(
@@ -32,9 +32,19 @@ export default class ReportService implements IReportService {
       case EReportIds.reportPAC:
         dataTable = await this.reportRepository.generateReportPac(filters.year);
         break;
-
       case EReportIds.reportModifiedRoutes:
         dataTable = await this.reportRepository.generateReportPac(filters.year);
+        break;
+      case EReportIds.reportDetailChangesBudget:
+        dataTable =
+          await this.reportRepository.generateReportDetailChangeBudgets(
+            filters.year
+          );
+        break;
+      case EReportIds.reportExecutionExpenses:
+        dataTable = await this.reportRepository.generateReportExecutionExpenses(
+          filters.year
+        );
         break;
 
       default:
