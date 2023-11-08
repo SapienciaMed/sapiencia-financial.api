@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, HasMany, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, BelongsTo, HasMany, belongsTo, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import LinkRpcdp from './LinkRpcdp';
+import Creditor from './Creditor';
 
 export default class BudgetRecord extends BaseModel {
   public static table = "RPR_REGISTRO_PRESUPUESTAL";
@@ -31,6 +32,9 @@ export default class BudgetRecord extends BaseModel {
   
   @column({ columnName: 'RPR_CODCRP_COMPONENTE', serializeAs: "componentId" })
   public componentId: number
+  
+  @column({ columnName: 'RPR_CONSECUTIVO_SAB', serializeAs: "consecutiveSap" })
+  public consecutiveSap: number
 
   @column({ columnName: "RPR_USUARIO_MODIFICO", serializeAs: "userCreate" })
   public userCreate: string
@@ -54,5 +58,12 @@ export default class BudgetRecord extends BaseModel {
     serializeAs: "linksRp",
   })
   public linksRp: HasMany<typeof LinkRpcdp>;
+
+  @belongsTo(() => Creditor, {
+    localKey: "id",
+    foreignKey: "supplierId",
+    serializeAs: "creditor",
+  })
+  public creditor: BelongsTo<typeof Creditor>;  
 
 }

@@ -1,4 +1,5 @@
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
+import AmountBudgetAvailability from './AmountBudgetAvailability';
 
 export default class LinkRpcdp extends BaseModel {
   public static table = "VRP_VINCULACION_RPR_ICD";
@@ -20,5 +21,16 @@ export default class LinkRpcdp extends BaseModel {
 
   @column({ columnName: 'VRP_MOTIVO_ANULACION', serializeAs: 'reasonCancellation' })
   public reasonCancellation: string
+  
+  @column({ columnName: 'VRP_POSICION', serializeAs: 'position' })
+  public position: number
+
+  @belongsTo(() => AmountBudgetAvailability, {
+    localKey: "id",
+    foreignKey: "amountCdpId",
+    serializeAs: "amountBudgetAvailability",
+  })
+  public amountBudgetAvailability: BelongsTo<typeof AmountBudgetAvailability>;  
+
 
 }
