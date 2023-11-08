@@ -90,6 +90,16 @@ export interface IReportDetailChangeBudgets {
   "Contracrédito Presupuesto": number;
 }
 
+export interface IReportChangeBudgets {
+  "Tipo De Modificación": string;
+  "Acto Administrativo Distrito": string;
+  "Acto Administrativo Sapiencia": string;
+  "Valor Total": number;
+  "Valor En Millones": number;
+  "Porcentaje Sobre El Presupuesto Inicial": number;
+  "Observación": string;
+}
+
 export interface IDataBasicProject {
   projectCode: string;
   projectName: string;

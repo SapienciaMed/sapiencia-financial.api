@@ -7,6 +7,7 @@ import {
   IReportColumnExecutionExpenses,
   IHistoryProjects,
   IReportDetailChangeBudgets,
+  IReportChangeBudgets,
 } from "../Interfaces/ReportsInterfaces";
 import { IAdditionsReport } from "../Interfaces/AdditionsInterfaces";
 import { IStrategicDirectionService } from "../Services/External/StrategicDirectionService";
@@ -17,15 +18,18 @@ import {
   getAmountBudgetAvailability,
   getCreditAndAgainstCredits,
 } from "App/Utils/functions";
+import Transfer from "App/Models/Transfer";
+import { ITransfersReport } from "App/Interfaces/TransfersInterfaces";
 
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
   generateReportDetailChangeBudgets(year: number): Promise<any[]>;
   generateReportExecutionExpenses(year: number): Promise<any[]>;
+  generateReportOverviewBudgetModifications(year: number): Promise<any[]>;
 }
 
 export default class ReportRepository implements IReportRepository {
-  constructor(private strategicDirectionService: IStrategicDirectionService) {}
+  constructor(private strategicDirectionService: IStrategicDirectionService) { }
 
   //? Este array nos va permitir contener la información que busquemos de planeación, como una especie de "histórico"
   //? de esta manera, si ya tenemos cargada la información, no tenemos porque hacer nuevas consultas a la API de planeación
@@ -362,52 +366,53 @@ export default class ReportRepository implements IReportRepository {
       if (isNaN(executeDec)) executeDec = 0.0;
 
       diferenceJan = Number(
-        ((100 * (programmingJan - collectedJan)) / programmingJan).toFixed(2)
+        ((100 * (collectedJan - programmingJan))).toFixed(2)
       );
       if (isNaN(diferenceJan)) diferenceJan = 0.0;
       diferenceFeb = Number(
-        ((100 * (programmingFeb - collectedFeb)) / programmingFeb).toFixed(2)
+        ((100 * (collectedFeb - programmingFeb))).toFixed(2)
       );
       if (isNaN(diferenceFeb)) diferenceFeb = 0.0;
       diferenceMar = Number(
-        ((100 * (programmingMar - collectedMar)) / programmingMar).toFixed(2)
+        ((100 * (collectedMar - programmingMar))).toFixed(2)
       );
       if (isNaN(diferenceMar)) diferenceMar = 0.0;
       diferenceApr = Number(
-        ((100 * (programmingApr - collectedApr)) / programmingApr).toFixed(2)
+        ((100 * (collectedApr - programmingApr))).toFixed(2)
       );
       if (isNaN(diferenceApr)) diferenceApr = 0.0;
       diferenceMay = Number(
-        ((100 * (programmingMay - collectedMay)) / programmingMay).toFixed(2)
+        ((100 * (collectedMay - programmingMay))).toFixed(2)
       );
       if (isNaN(diferenceMay)) diferenceMay = 0.0;
       diferenceJun = Number(
-        ((100 * (programmingJun - collectedJun)) / programmingJun).toFixed(2)
+        ((100 * (collectedJun - programmingJun))).toFixed(2)
       );
       if (isNaN(diferenceJun)) diferenceJun = 0.0;
       diferenceJul = Number(
-        ((100 * (programmingJul - collectedJul)) / programmingJul).toFixed(2)
+        ((100 * (collectedJul - programmingJul))).toFixed(2)
       );
       if (isNaN(diferenceJul)) diferenceJul = 0.0;
       diferenceAug = Number(
-        ((100 * (programmingAug - collectedAug)) / programmingAug).toFixed(2)
+        ((100 * (collectedAug - programmingAug))).toFixed(2)
       );
       if (isNaN(diferenceAug)) diferenceAug = 0.0;
       diferenceSep = Number(
-        ((100 * (programmingSep - collectedSep)) / programmingSep).toFixed(2)
+        ((100 * (collectedSep - programmingSep))).toFixed(2)
       );
       if (isNaN(diferenceSep)) diferenceSep = 0.0;
       diferenceOct = Number(
-        ((100 * (programmingOct - collectedOct)) / programmingOct).toFixed(2)
+        ((100 * (collectedOct - programmingOct))).toFixed(2)
       );
       if (isNaN(diferenceOct)) diferenceOct = 0.0;
       diferenceNov = Number(
-        ((100 * (programmingNov - collectedNov)) / programmingNov).toFixed(2)
+        ((100 * (collectedNov - programmingNov))).toFixed(2)
       );
       if (isNaN(diferenceNov)) diferenceNov = 0.0;
       diferenceDec = Number(
-        ((100 * (programmingDec - collectedDec)) / programmingDec).toFixed(2)
+        ((100 * (collectedDec - programmingDec))).toFixed(2)
       );
+
       if (isNaN(diferenceDec)) diferenceDec = 0.0;
 
       percentExecute = Number(((100 * collected) / budgetSapi).toFixed(2));
@@ -486,12 +491,14 @@ export default class ReportRepository implements IReportRepository {
 
   //HU-091 Reporte Detalle modificaciones presupuesto - 7873
   async generateReportDetailChangeBudgets(year: number): Promise<any[]> {
-    let infoArrayAddition: IReportDetailChangeBudgets[] = []; //Tanto para disminución como adición
-    // let infoArrayTransfer: IReportDetailChangeBudgets[] = []; //Para el tema de traslado
 
+    let infoArrayResult: IReportDetailChangeBudgets[] = []; //Tanto para disminución como adición y Traslados
+
+    //** *************************** **//
     //** Grupo Adición y Disminución **//
+    //** *************************** **//
     const getAdditions = await Additions.query()
-      .orderBy("typeMovement", "asc")
+      .orderBy("typeMovement", "desc")
       .preload("additionMove", (q) => {
         q.preload("budgetRoute", (r) => {
           r.preload("projectVinculation"),
@@ -501,10 +508,10 @@ export default class ReportRepository implements IReportRepository {
         });
       });
 
-    const getGeneralResponse: any[] = getAdditions.map((i) => i.serialize());
-    const getAdjustData = getGeneralResponse as IAdditionsReport[];
+    const getGeneralAddAndRedResponse: any[] = getAdditions.map((i) => i.serialize());
+    const getAdjustDataAddAndRed = getGeneralAddAndRedResponse as IAdditionsReport[];
 
-    for (const iterResAdd of getAdjustData) {
+    for (const iterResAdd of getAdjustDataAddAndRed) {
       const actAdminDis: string = iterResAdd.actAdminDistrict;
       const actAdminSap: string = iterResAdd.actAdminSapiencia;
       const typeMovement: string = iterResAdd.typeMovement;
@@ -522,13 +529,9 @@ export default class ReportRepository implements IReportRepository {
         let functionalArea: string = "";
         let fund: string = iterResMovement.budgetRoute.fund?.number!;
 
-        let posPreSapi: string =
-          iterResMovement.budgetRoute.pospreSapiencia?.number!;
-        let desPosPreSapi: string =
-          iterResMovement.budgetRoute.pospreSapiencia?.description!;
-        let exercise: number =
-          iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
-
+        let posPreSapi: string = iterResMovement.budgetRoute.pospreSapiencia?.number!;
+        let desPosPreSapi: string = iterResMovement.budgetRoute.pospreSapiencia?.description!;
+        let exercise: number = iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
         let initialBudget: number = iterResMovement.budgetRoute.initialBalance!;
 
         if (exercise === year) {
@@ -538,15 +541,8 @@ export default class ReportRepository implements IReportRepository {
               desPosPreSapi
             );
 
-          if (
-            !getDataProject ||
-            getDataProject == null ||
-            getDataProject == undefined
-          )
-            return [
-              null,
-              "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
-            ];
+          if (!getDataProject || getDataProject == null || getDataProject == undefined)
+            return [ null, "Ocurrió un error hallando la información del proyecto, revisar consistencia de información" ];
 
           projectCode = getDataProject.projectCode;
           projectName = getDataProject.projectName;
@@ -587,24 +583,170 @@ export default class ReportRepository implements IReportRepository {
             "Contracrédito Presupuesto": againstCredit,
           };
 
-          infoArrayAddition.push(objTransaction);
+          infoArrayResult.push( objTransaction );
         }
       }
-    }
+    } //For de adición y disminución
 
+    //** *************** **//
     //** Grupo Traslados **//
-    // const getTransgers = await Transfer.query()
-    //   .preload("transferMove", (s) => {
-    //     s.preload("budgetRoute", (t) => {
-    //       t.preload("projectVinculation"),
-    //       t.preload("funds"),
-    //       t.preload("budget"),
-    //       t.preload("pospreSapiencia")
-    //     })
-    // });
+    //** *************** **//
+    const getTransfers = await Transfer.query()
+      .orderBy("id", "desc")
+      .preload("transferMove", (s) => {
+        s.preload("budgetRoute", (t) => {
+          t.preload("projectVinculation"),
+            t.preload("funds"),
+            t.preload("budget"),
+            t.preload("pospreSapiencia")
+        })
+      });
 
-    // console.log({ infoArrayAddition });
-    return infoArrayAddition;
+    const getGeneralTransferResponse: any[] = getTransfers.map((i) => i.serialize());
+    const getAdjustDataTransfer = getGeneralTransferResponse as ITransfersReport[];
+
+    for (const iterTransfer of getAdjustDataTransfer) {
+
+      const actAdminDis: string = iterTransfer.actAdminDistrict;
+      const actAdminSap: string = iterTransfer.actAdminSapiencia;
+      const typeMovement: string = "Traslado";
+
+      for (const iterResMovement of iterTransfer.transferMove!) {
+
+        let credit: number = 0;
+        let againstCredit: number = 0;
+
+        if (iterResMovement.type === "Origen") {
+          credit = iterResMovement.value;
+          againstCredit = 0;
+        } else {
+          againstCredit = iterResMovement.value;
+          credit = 0;
+        }
+
+        let addBudgetExpenses: number = 0;
+        let addBudgetIncomes: number = 0;
+        let decBudgetExpenses: number = 0;
+        let decBudgetIncomes: number = 0;
+
+        let projectCode: string = "";
+        let projectName: string = "";
+        let functionalArea: string = "";
+        let fund: string = iterResMovement.budgetRoute.fund?.number!;
+
+        let posPreSapi: string = iterResMovement.budgetRoute.pospreSapiencia?.number!;
+        let desPosPreSapi: string = iterResMovement.budgetRoute.pospreSapiencia?.description!;
+        let exercise: number = iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
+        let initialBudget: number = iterResMovement.budgetRoute.initialBalance!;
+
+        if (exercise === year) {
+
+          const getDataProject: IDataBasicProject | null =
+            await this.getProjectGeneral(
+              Number(iterResMovement.budgetRoute.idProjectVinculation),
+              desPosPreSapi
+            );
+
+          if (!getDataProject || getDataProject == null || getDataProject == undefined)
+            return [ null, "Ocurrió un error hallando la información del proyecto, revisar consistencia de información" ];
+
+          projectCode = getDataProject.projectCode;
+          projectName = getDataProject.projectName;
+          functionalArea = getDataProject.functionalArea;
+
+          //Organizo objeto para infoArrayAddition
+          const objTransaction: IReportDetailChangeBudgets = {
+            "Acto Administrativo Distrito": actAdminDis,
+            "Acto Administrativo Sapiencia": actAdminSap,
+            "Tipo De Modificación": typeMovement,
+            Proyecto: projectCode,
+            "Nombre Proyecto": projectName,
+            "Área Funcional": functionalArea,
+            Fondo: fund,
+            Pospre: posPreSapi,
+            "Presupuesto Inicial": initialBudget,
+            "Adición Presupuesto Gastos": addBudgetExpenses,
+            "Adición Presupuesto Ingresos": addBudgetIncomes,
+            "Reducción Presupuesto Gasto": decBudgetExpenses,
+            "Reducción Presupuesto Ingreso": decBudgetIncomes,
+            "Crédito Presupuesto": credit,
+            "Contracrédito Presupuesto": againstCredit,
+          };
+
+          infoArrayResult.push( objTransaction );
+
+        }
+
+      }
+
+    } //For de traslados
+
+    console.log(infoArrayResult.reverse());
+    return infoArrayResult;
+
+  }
+
+  //HU-090 Reporte Resumen modificaciones presupuesto
+  async generateReportOverviewBudgetModifications(year: number): Promise<any[]> {
+
+    let infoArrayResult: IReportChangeBudgets[] = []; //Tanto para disminución como adición.
+    //** *************************** **//
+    //** Grupo Adición y Disminución **//
+    //** *************************** **//
+    const getAdditions = await Additions.query()
+      .orderBy("typeMovement", "desc")
+      .preload("additionMove", (q) => {
+        q.preload("budgetRoute", (r) => {
+          r.preload("projectVinculation"),
+            r.preload("funds"),
+            r.preload("budget"),
+            r.preload("pospreSapiencia");
+        });
+      });
+
+    const getGeneralAddAndRedResponse: any[] = getAdditions.map((i) => i.serialize());
+    const getAdjustDataAddAndRed = getGeneralAddAndRedResponse as IAdditionsReport[];
+
+    for (const iterResAdd of getAdjustDataAddAndRed) {
+      const actAdminDis: string = iterResAdd.actAdminDistrict;
+      const actAdminSap: string = iterResAdd.actAdminSapiencia;
+      const typeMovement: string = iterResAdd.typeMovement;
+      const observation: string = "";
+
+      for (const iterResMovement of iterResAdd.additionMove) {
+
+        let total: number = 0;
+        let millionsTotal: number = 0;
+        let exercise: number = iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
+        //let initialBudget: number = iterResMovement.budgetRoute.initialBalance!;
+        //let balanaceBudget: number = iterResMovement.budgetRoute.balance!;
+        let percentUpInitialValue: number = 0;
+
+        if (exercise === year) {
+
+          //* Calculo indiferente si es ingreso o gasto
+          total = Number(iterResMovement.value);
+          millionsTotal = Number((total/1000000).toFixed(2));
+
+          //Organizo objeto para infoArrayAddition
+          const objTransaction: IReportChangeBudgets = {
+            "Tipo De Modificación": typeMovement,
+            "Acto Administrativo Distrito": actAdminDis,
+            "Acto Administrativo Sapiencia": actAdminSap,
+            "Valor Total": total,
+            "Valor En Millones": millionsTotal,
+            "Porcentaje Sobre El Presupuesto Inicial": percentUpInitialValue,
+            "Observación": observation,
+          };
+
+          infoArrayResult.push( objTransaction );
+        }
+      }
+    } //For de adición y disminución
+
+    console.log({infoArrayResult});
+    return infoArrayResult;
+
   }
 
   async generateReportExecutionExpenses(year: number): Promise<any[]> {
