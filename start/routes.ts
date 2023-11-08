@@ -284,12 +284,18 @@ Route.group(() => {
 Route.group(() => {
   Route.post('/create-rp', 'BudgetRecordsController.createRp')
   Route.get('/get-components', 'BudgetRecordsController.getComponents')
+  Route.post('/get-rp-by-filters', 'BudgetRecordsController.getRpByFilters')
   Route.get('/get-totalvaluesimports/:id', 'BudgetRecordsController.getTotalValuesImports')
 }).prefix('/api/v1/budget-records')
 
 
 Route.group(() => {
-  Route.get('/get-creditors-by-filters', 'CreditorsController.getCreditorsByFilters')
+  Route.post('/get-creditors-by-filters', 'CreditorsController.getCreditorsByFilters')
 }).prefix('/api/v1/creditors')
+
+Route.group(() => {
+  Route.get('/get-all-dependencies', 'PayrollsController.getAllDependencies')
+  Route.post('/get-contractors-by-documents', 'PayrollsController.getContractorsByDocuments')
+}).prefix('/api/v1/payroll').middleware('auth')
 
 

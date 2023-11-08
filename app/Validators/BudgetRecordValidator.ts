@@ -7,13 +7,14 @@ export default class BudgetRecordValidator {
   public schema = schema.create({
     id: schema.number.optional(),
     supplierType: schema.string(),
-    supplierId: schema.number(),
-    contractorDocument: schema.string(),
+    supplierId: schema.number.optional(),
+    contractorDocument: schema.string.optional(),
     documentDate: schema.date(),
     dateValidity: schema.date(),
     dependencyId: schema.number(),
     contractualObject: schema.string(),
     componentId: schema.number(),
+    consecutiveSap: schema.number.optional(),
     userCreate: schema.string.optional(),
     userModify: schema.string.optional(),
     dateCreate: schema.date.optional(),
@@ -21,11 +22,12 @@ export default class BudgetRecordValidator {
     linksRp: schema.array.optional().members(
         schema.object().members({
             id: schema.number.optional(),
-            rpId: schema.number(),
+            rpId: schema.number.optional(),
             amountCdpId: schema.number(),
             initialAmount: schema.number.optional(),
             isActive: schema.boolean.optional(),
             reasonCancellation: schema.string.optional(),
+            position: schema.number.optional(),
         })
     )
       

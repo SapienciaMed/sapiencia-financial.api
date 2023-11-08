@@ -6,6 +6,6 @@ export default class Component extends BaseModel {
   @column({ isPrimary: true, columnName:'CRP_CODIGO', serializeAs:'id' })
   public id: number
   
-  @column({  columnName:'CRP_CODIGO', serializeAs:'RPC_NOMBRE' })
+  @column({  columnName:'CRP_NOMBRE', serializeAs:'name' })
   public name: string
 }

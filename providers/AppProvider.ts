@@ -47,6 +47,10 @@ export default class AppProvider {
     const BudgetRecordService = await import("App/Services/BudgetRecordService");
    
     const CreditorService = await import("App/Services/CreditorService");
+    
+    const PayrollService = await import(
+      "App/Services/External/PayrollService"
+    );
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -294,6 +298,13 @@ export default class AppProvider {
                 new CreditorService.default(
                   new CreditorRepository.default()
                 )
+              
+            )
+            
+            this.app.container.singleton(
+              "core.PayrollProvider",
+              ()=>
+                new PayrollService.default()
               
             )
 
