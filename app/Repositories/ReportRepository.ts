@@ -10,7 +10,8 @@ import { IDataBasicProject, IPacReport, IHistoryProjects, IReportDetailChangeBud
 import { IStrategicDirectionService } from '../Services/External/StrategicDirectionService';
 import ProjectsVinculation from '../Models/ProjectsVinculation';
 import BudgetsRoutes from "App/Models/BudgetsRoutes";
-import { IAdditions, IAdditionsReport, IAdditionsMovement } from '../Interfaces/AdditionsInterfaces';
+import { IAdditionsReport } from '../Interfaces/AdditionsInterfaces';
+// import Transfer from "App/Models/Transfer";
 
 export interface IReportRepository {
 
@@ -389,8 +390,8 @@ export default class ReportRepository implements IReportRepository {
   //HU-091 Reporte Detalle modificaciones presupuesto - 7873
   async generateReportDetailChangeBudgets(year: number): Promise<any[]> {
 
-    let infoArrayAddition: IReportDetailChangeBudgets[] = [];
-    let infoArrayTransfer: IReportDetailChangeBudgets[] = [];
+    let infoArrayAddition: IReportDetailChangeBudgets[] = []; //Tanto para disminución como adición
+    // let infoArrayTransfer: IReportDetailChangeBudgets[] = []; //Para el tema de traslado
 
     //** Grupo Adición y Disminución **//
     const getAdditions = await Additions.query()
@@ -445,6 +446,26 @@ export default class ReportRepository implements IReportRepository {
           projectName = getDataProject.projectName;
           functionalArea = getDataProject.functionalArea;
 
+          //* Calculo para si es ingreso o gasto
+          //? Este cálculo también lo hago según sin es adición o disminución
+          if(typeMovement === "Adicion"){
+
+            if( iterResMovement.type === "Ingreso" ){
+              addBudgetIncomes += Number(iterResMovement.value);
+            }else{
+              addBudgetExpenses += Number(iterResMovement.value);
+            }
+
+          }else{
+
+            if( iterResMovement.type === "Ingreso" ){
+              decBudgetIncomes += Number(iterResMovement.value);
+            }else{
+              decBudgetExpenses += Number(iterResMovement.value);
+            }
+
+          }
+          
           //Organizo objeto para infoArrayAddition
           const objTransaction: IReportDetailChangeBudgets = {
             "Acto Administrativo Distrito" : actAdminDis,
@@ -472,9 +493,16 @@ export default class ReportRepository implements IReportRepository {
 
     }
 
-
     //** Grupo Traslados **//
-    //TODO !!! <-
+    // const getTransgers = await Transfer.query()
+    //   .preload("transferMove", (s) => {
+    //     s.preload("budgetRoute", (t) => {
+    //       t.preload("projectVinculation"),
+    //       t.preload("funds"),
+    //       t.preload("budget"),
+    //       t.preload("pospreSapiencia")
+    //     })
+    // });
 
 
     console.log({infoArrayAddition});
