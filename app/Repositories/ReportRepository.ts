@@ -1,14 +1,18 @@
-import AdditionsMovement from "App/Models/AdditionsMovement";
-// import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 import Pac from "App/Models/Pac";
-
 import { IPac } from "../Interfaces/PacInterfaces";
-import { IDataBasicProject, IPacReport } from "../Interfaces/ReportsInterfaces";
+import {
+  IDataBasicProject,
+  IPacReport,
+  IReportColumnExecutionExpenses,
+} from "../Interfaces/ReportsInterfaces";
 import { IStrategicDirectionService } from "../Services/External/StrategicDirectionService";
 import ProjectsVinculation from "../Models/ProjectsVinculation";
 import BudgetsRoutes from "App/Models/BudgetsRoutes";
-import { IReportColumnExecutionExpenses } from "App/Interfaces/ReportInterfaces";
-// import TransfersMovement from "App/Models/TransfersMovement";
+import {
+  getAdditionMovement,
+  getAmountBudgetAvailability,
+  getCreditAndAgainstCredits,
+} from "App/Utils/functions";
 
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
@@ -18,6 +22,7 @@ export interface IReportRepository {
 export default class ReportRepository implements IReportRepository {
   constructor(private strategicDirectionService: IStrategicDirectionService) {}
 
+  //Obtener Proyectos vinculados si son inversion o funcionamiento
   async getProjectGeneral(
     vinculationId: number,
     candidateName: string
@@ -432,37 +437,25 @@ export default class ReportRepository implements IReportRepository {
   }
 
   async generateReportExecutionExpenses(year: number): Promise<any[]> {
+    // Matriz que almacenará el resultado del informe
     const resObject: IReportColumnExecutionExpenses[] = [];
 
-    //Addition Movement Query
-    const queryAdditionMovement = await AdditionsMovement.query()
-      .preload("addition")
-      .preload("budgetRoute", (subQuery) =>
-        subQuery
-          .preload("pospreSapiencia", (subQueryBudgetRoute) =>
-            subQueryBudgetRoute.whereILike("ejercise", year)
-          )
-          .preload("funds")
-          .preload("projectVinculation")
-      )
+    // Consulta la ruta de presupuesto para el año especificado
+    const queryBudgetRoute = await BudgetsRoutes.query()
+      .preload("pospreSapiencia", (subQuery) => {
+        subQuery.where("ejercise", year);
+      })
+      .preload("projectVinculation")
+      .preload("funds")
+      .preload("projectVinculation")
       .orderBy("id", "desc");
 
-    const resAdditionMovement = queryAdditionMovement
-      .map((i) => i.serialize())
-      .filter((i) => i.budgetRoute?.pospreSapiencia?.id);
+    // Mapea los resultados de la consulta a objetos serializados
+    const resBudgetRoute = queryBudgetRoute.map((i) => i.serialize());
 
-    //ICD Query
-    // const queryAmountBudgetAvailability = await AmountBudgetAvailability.query()
-    //   .preload("budgetRoute")
-    //   .orderBy("id", "desc");
-
-    // const resAmountBudgetAvailability = queryAmountBudgetAvailability.map((i) =>
-    //   i.serialize()
-    // );
-
-    for (let i = 0; i < resAdditionMovement.length; i++) {
-      const Fund = resAdditionMovement[i];
-
+    // Recorre los resultados y genera el informe
+    for (const rpp of resBudgetRoute) {
+      // Variables para almacenar información
       let nameFund: string = "";
       let nameManagementCenter: string = "";
       let numberPospre: string = "";
@@ -483,71 +476,118 @@ export default class ReportRepository implements IReportRepository {
       let execution: number = 0;
       let percentageExecution: number = 0;
 
-      if (Fund.budgetRoute?.fund?.number)
-        nameFund = Fund.budgetRoute?.fund?.number ?? "";
-      if (Fund.budgetRoute?.managementCenter)
-        nameManagementCenter = Fund.budgetRoute?.managementCenter ?? "";
-      if (Fund.budgetRoute?.pospreSapiencia?.number)
-        numberPospre = Fund.budgetRoute?.pospreSapiencia?.number ?? "";
-      if (Fund.budgetRoute?.projectVinculation?.type === "Inversion") {
-        const getDataProject: IDataBasicProject | null =
-          await this.getProjectGeneral(
-            Number(Fund.budgetRoute?.idProjectVinculation),
-            Fund.budgetRoute?.pospreSapiencia?.description!
-          );
-        if (
-          !getDataProject ||
-          getDataProject == null ||
-          getDataProject == undefined
-        ) {
-          return [
-            null,
-            "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
-          ];
-        } else {
-          functionalArea = getDataProject.functionalArea;
-          projectCode = getDataProject.projectCode;
-          projectName = getDataProject.projectName;
-        }
+      // Fondo
+      if (rpp.fund?.number) nameFund = rpp.fund?.number ?? "";
+
+      // Centro Gestor
+      if (rpp.managementCenter)
+        nameManagementCenter = rpp.managementCenter ?? "";
+
+      // Pospresupuesto SAPCIENCIA
+      if (rpp.pospreSapiencia?.number)
+        numberPospre = rpp.pospreSapiencia?.number ?? "";
+
+      // Obtener información del proyecto
+      const getDataProject: IDataBasicProject | null =
+        await this.getProjectGeneral(
+          Number(rpp.idProjectVinculation),
+          rpp.pospreSapiencia?.description!
+        );
+
+      if (
+        !getDataProject ||
+        getDataProject == null ||
+        getDataProject == undefined
+      ) {
+        // Manejo de errores en caso de que no se pueda obtener información del proyecto
+        return [
+          null,
+          "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+        ];
       } else {
-        functionalArea = `Preguntar ${Fund.budgetRoute?.projectVinculation?.type}`;
-        projectCode = `Preguntar ${Fund.budgetRoute?.projectVinculation?.type}`;
-        projectName = `Preguntar ${Fund.budgetRoute?.projectVinculation?.type}`;
-      }
-      if (Fund.addition?.typeMovement === "Disminucion") {
-        valueReduction = Fund.value ?? 0;
-      }
-      if (Fund.addition?.typeMovement === "Adicion") {
-        valueAddiction = Fund.value ?? 0;
-      }
-      if (Fund.budgetRoute?.balance) {
-        currentPpr = Fund.budgetRoute?.balance ?? 0;
+        // Asignar datos del proyecto
+        functionalArea = getDataProject.functionalArea;
+        projectCode = getDataProject.projectCode;
+        projectName = getDataProject.projectName;
       }
 
+      // Reducciones y adiciones
+      const resultAdditionMovement = await getAdditionMovement(rpp.id);
+
+      if (resultAdditionMovement.length > 0) {
+        for (const additionMovement of resultAdditionMovement) {
+          if (additionMovement.addition.typeMovement === "Adicion")
+            valueAddiction += +additionMovement.value;
+          if (additionMovement.addition.typeMovement === "Disminucion")
+            valueReduction += +additionMovement.value;
+        }
+      }
+
+      // Créditos y contra créditos
+      const resultCredit = await getCreditAndAgainstCredits(rpp.id);
+      if (resultCredit) {
+        if (resultCredit?.type === "Destino") {
+          credits = +resultCredit.value;
+        } else {
+          againstCredits = +resultCredit.value;
+        }
+      }
+
+      // Total Ppto Actual
+      if (rpp.balance) currentPpr = rpp.balance ? +rpp.balance : 0;
+
+      // Disponibilidad
+      const resultAmountBudgetAvailability = await getAmountBudgetAvailability(
+        rpp.id
+      );
+
+      if (resultAmountBudgetAvailability?.availability)
+        availability = +resultAmountBudgetAvailability?.availabilityValue;
+      if (resultAmountBudgetAvailability?.compromise)
+        compromise = +resultAmountBudgetAvailability?.compromiseValue;
+
+      // Disponible Neto
+      availabilityNet =
+        +currentPpr - (availability + compromise + invoices + payments);
+
+      // Ejecución
+      execution = +compromise + +invoices + +payments;
+
+      // Porcentaje de Ejecución
+      percentageExecution = Number(+execution / +currentPpr);
+      if (!isFinite(percentageExecution)) percentageExecution = 0;
+
+      // Crear un nuevo objeto de informe
       const newItem: IReportColumnExecutionExpenses = {
-        Fondo: nameFund && nameFund,
-        "Centro Gestor": nameManagementCenter && nameManagementCenter,
-        "Posición Presupuestaria": numberPospre && numberPospre,
-        "Área Funcional": functionalArea && functionalArea,
-        Proyecto: projectCode && projectCode,
-        Nombre: projectName && projectName,
-        "Ppto Inicial": Number(initialPpr),
-        Reducciones: valueReduction && Number(valueReduction),
-        Adiciones: valueAddiction && Number(valueAddiction),
-        Créditos: credits,
+        //Id: rpp.id,
+        Fondo: nameFund,
+        "Centro Gestor": nameManagementCenter,
+        "Posición Presupuestaria": numberPospre,
+        "Área Funcional": functionalArea,
+        Proyecto: projectCode,
+        Nombre: projectName,
+        "Ppto Inicial": +initialPpr,
+        Reducciones: valueReduction && +valueReduction,
+        Adiciones: valueAddiction && +valueAddiction,
+        Créditos: +credits,
         "Contra créditos": againstCredits,
-        "Total Ppto Actual": currentPpr && Number(currentPpr),
+        "Total Ppto Actual": currentPpr && +currentPpr,
         Disponibilidad: availability,
         Compromiso: compromise,
-        Factura: invoices,
-        Pagos: payments,
-        "Disponible Neto": availabilityNet,
-        Ejecución: execution,
-        "porcentaje Ejecución": percentageExecution,
+        Factura: +invoices,
+        Pagos: +payments,
+        "Disponible Neto": +availabilityNet,
+        Ejecución: +execution,
+        "Porcentaje de Ejecución": `${percentageExecution} %`,
       };
 
+      // Agregar el objeto al resultado
       resObject.push(newItem);
     }
+
+    // Devuelve la matriz de resultados
+    console.log({ resObject });
+
     return resObject;
   }
 }

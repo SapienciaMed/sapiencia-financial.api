@@ -1,9 +1,9 @@
 import * as XLSX from "xlsx";
 import { EReportIds } from "App/Constants/ReportEnums";
-import { IExcelReportFilters } from "App/Interfaces/ReportInterfaces";
 import { IReportRepository } from "App/Repositories/ReportRepository";
 import { ApiResponse } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
+import { IExcelReportFilters } from "App/Interfaces/ReportsInterfaces";
 
 export interface IReportService {
   generateExcelReport(

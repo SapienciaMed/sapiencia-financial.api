@@ -1,19 +1,28 @@
-import { BaseModel, HasOne, column, hasMany, hasOne } from "@ioc:Adonis/Lucid/Orm";
+import {
+  BaseModel,
+  HasOne,
+  column,
+  hasMany,
+  hasOne,
+  HasMany,
+} from "@ioc:Adonis/Lucid/Orm";
 import { DateTime } from "luxon";
 import ProjectsVinculation from "./ProjectsVinculation";
 import Budgets from "./Budgets";
 import PosPreSapiencia from "./PosPreSapiencia";
 import Funds from "./Funds";
 import AmountBudgetAvailability from "./AmountBudgetAvailability";
-import { HasMany } from "@ioc:Adonis/Lucid/Orm";
 
-export default class BudgetsRoutes  extends BaseModel {
+export default class BudgetsRoutes extends BaseModel {
   public static table = "RPP_RUTAS_PRESUPUESTALES";
 
   @column({ isPrimary: true, columnName: "RPP_CODIGO", serializeAs: "id" })
   public id: number;
 
-  @column({ columnName: "RPP_CODVPY_PROYECTO", serializeAs: "idProjectVinculation" })
+  @column({
+    columnName: "RPP_CODVPY_PROYECTO",
+    serializeAs: "idProjectVinculation",
+  })
   public idProjectVinculation: number;
 
   @column({ columnName: "RPP_CENTRO_GESTOR", serializeAs: "managementCenter" })
@@ -25,7 +34,10 @@ export default class BudgetsRoutes  extends BaseModel {
   @column({ columnName: "RPP_CODPPR_POSPRE", serializeAs: "idBudget" })
   public idBudget: number;
 
-  @column({ columnName: "RPP_CODPPS_POSPRE_SAPIENCIA", serializeAs: "idPospreSapiencia" })
+  @column({
+    columnName: "RPP_CODPPS_POSPRE_SAPIENCIA",
+    serializeAs: "idPospreSapiencia",
+  })
   public idPospreSapiencia: number;
 
   @column({ columnName: "RPP_CODFND_FONDO", serializeAs: "idFund" })
@@ -79,9 +91,9 @@ export default class BudgetsRoutes  extends BaseModel {
   public funds: HasOne<typeof Funds>;
 
   @hasMany(() => AmountBudgetAvailability, {
-    foreignKey: 'idRppCode', 
-    localKey: 'id',
-    serializeAs: 'amountBudgetAvailabilities',
+    foreignKey: "idRppCode",
+    localKey: "id",
+    serializeAs: "amountBudgetAvailabilities",
   })
   public amountBudgetAvailabilities: HasMany<typeof AmountBudgetAvailability>;
 }

@@ -1,5 +1,4 @@
 export enum EReportIds {
-
   reportPAC = "pac",
   reportModifiedRoutes = "modified_routes",
   reportTransfers = "transfers",
@@ -12,5 +11,4 @@ export enum EReportIds {
   reportAccountsPayable = "accounts_payable",
   reportExecutionIncome = "execution_income",
   reportExecutionExpenses = "execution_expenses",
-
 }
