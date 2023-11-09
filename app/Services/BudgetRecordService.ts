@@ -41,7 +41,7 @@ export default class BudgetRecordService implements IBudgetRecordService {
             const data = await this.budgerRecordRepository.getComponents()
             return new ApiResponse(
                 data,
-                EResponseCodes.FAIL,
+                EResponseCodes.OK,
                 "Componentes encontrados exitosamente"
             );
 
@@ -59,7 +59,7 @@ export default class BudgetRecordService implements IBudgetRecordService {
             const data = await this.budgerRecordRepository.getRpByFilters(budgetRecordFilter)
             return new ApiResponse(
                 data,
-                EResponseCodes.FAIL,
+                EResponseCodes.OK,
                 "Registros presupuestales encontrados exitosamente"
             );
         } catch (error) {

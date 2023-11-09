@@ -16,6 +16,18 @@ export default class LinkRpcdp extends BaseModel {
 
   @column({ columnName: 'VRP_VALOR_INICIAL', serializeAs: 'initialAmount' })
   public initialAmount: number
+  
+  @column({ columnName: 'VRP_VALOR_MOD_CREDITO', serializeAs: 'creditAmount' })
+  public creditAmount: number
+
+  @column({ columnName: 'VRP_VALOR_MOD_CONTRACREDITO', serializeAs: 'againtsAmount' })
+  public againtsAmount: number
+  
+  @column({ columnName: 'VRP_VALOR_FIJADO_CONCLUIDO', serializeAs: 'fixedCompleted' })
+  public fixedCompleted: number
+  
+  @column({ columnName: 'VRP_VALOR_FINAL', serializeAs: 'finalAmount' })
+  public finalAmount: number
 
   @column({ columnName: 'VRP_ACTIVO', serializeAs: 'isActive' })
   public isActive: boolean

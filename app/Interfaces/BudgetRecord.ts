@@ -16,21 +16,21 @@ export interface IBudgetRecord {
     dateCreate?: DateTime;
     dateModify?: string;
     linksRp?: ILinkRPCDP[]
-
-
 }
-
 
 export interface ILinkRPCDP {
     id?: number;
     rpId?: number;
     amountCdpId: number;
     initialAmount?: number;
+    creditAmount?: number;
+    againtsAmount?: number;
+    fixedCompleted?: number;
+    finalAmount?: number;
     isActive?: boolean;
     reasonCancellation?: string;
     position?: number;
 }
-
 
 export interface IBudgetRecordFilter {
     consecutiveRpSap?: number;
@@ -41,7 +41,6 @@ export interface IBudgetRecordFilter {
     name?: string;
 }
 
-export interface ITotalImports {    
-    totalImport:number;
-    
+export interface ITotalImports {
+    totalImport: number;
 }

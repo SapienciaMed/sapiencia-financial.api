@@ -43,27 +43,38 @@ export default class BudgetRecordRepository implements IBudgetRecordRepository {
 
     getRpByFilters = async (budgetRecordFilter: IBudgetRecordFilter): Promise<any> => {
         return await BudgetRecord.query()
-            /* .if(budgetRecordFilter.consecutiveRpSap,()=>{
-                Query.where()
+             .if(budgetRecordFilter.consecutiveRpSap,(query)=>{
+                 query.where('consecutiveSap','=',budgetRecordFilter.consecutiveRpSap!)
             })
-            .if(budgetRecordFilter.consecutiveRpAurora,()=>{
-                Query.where()
-            })*/
+            .if(budgetRecordFilter.consecutiveRpAurora,(query)=>{
+                query.where('id',budgetRecordFilter.consecutiveRpAurora!)
+            })
             .if(budgetRecordFilter.contractorDocument, (query) => {
                 query.where('contractorDocument', budgetRecordFilter.contractorDocument!)
             })
             .if(budgetRecordFilter.supplierType, (query) => {
                 query.where('supplierType', budgetRecordFilter.supplierType!)
             })
-            /*.if(budgetRecordFilter.taxAccreditedId,()=>{
-                Query.where()
+            .if(budgetRecordFilter.taxAccreditedId,(query)=>{
+                query.whereHas('creditor',(query)=>{
+                    query.where('taxIdentification','=',budgetRecordFilter.taxAccreditedId!)
+                })
             })
-            .if(budgetRecordFilter.name,()=>{
-                Query.where()
-            }) */
+            .if(budgetRecordFilter.name,(query)=>{
+                query.whereHas('creditor',(query)=>{
+                    query.where('name','=',budgetRecordFilter.name!)
+                })
+            })
             .preload('creditor')
             .preload('linksRp', (query) => {
-                query.preload('amountBudgetAvailability')
+                query.preload('amountBudgetAvailability', (query)=>{
+                    query.preload('budgetRoute',(query)=>{
+                        query.preload('budget')    
+                        query.preload('funds')    
+                        query.preload('pospreSapiencia')    
+                        query.preload('projectVinculation')    
+                    })
+                })
             });
     }
 
