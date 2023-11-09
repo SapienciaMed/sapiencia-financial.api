@@ -681,7 +681,6 @@ export default class ReportRepository implements IReportRepository {
 
     } //For de traslados
 
-    console.log(infoArrayResult.reverse());
     return infoArrayResult;
 
   }
@@ -690,6 +689,8 @@ export default class ReportRepository implements IReportRepository {
   async generateReportOverviewBudgetModifications(year: number): Promise<any[]> {
 
     let infoArrayResult: IReportChangeBudgets[] = []; //Tanto para disminución como adición.
+
+
     //** *************************** **//
     //** Grupo Adición y Disminución **//
     //** *************************** **//
@@ -717,9 +718,9 @@ export default class ReportRepository implements IReportRepository {
 
         let total: number = 0;
         let millionsTotal: number = 0;
+        let millionsLiquid: number = 0;
         let exercise: number = iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
-        //let initialBudget: number = iterResMovement.budgetRoute.initialBalance!;
-        //let balanaceBudget: number = iterResMovement.budgetRoute.balance!;
+        let initialBudget: number = iterResMovement.budgetRoute.initialBalance!;
         let percentUpInitialValue: number = 0;
 
         if (exercise === year) {
@@ -727,6 +728,14 @@ export default class ReportRepository implements IReportRepository {
           //* Calculo indiferente si es ingreso o gasto
           total = Number(iterResMovement.value);
           millionsTotal = Number((total/1000000).toFixed(2));
+          millionsLiquid = Number((initialBudget/1000000).toFixed(2));
+          percentUpInitialValue = Number(millionsTotal/millionsLiquid);
+
+          //! Por si nos quedan valores que podrían dividirse en 0
+          millionsTotal === Number("Infinity") ? millionsTotal = 0 : millionsTotal = millionsTotal;
+          millionsLiquid === Number("Infinity") ? millionsLiquid = 0 : millionsLiquid = millionsLiquid;
+          percentUpInitialValue === Number("Infinity") ? percentUpInitialValue = 0 : percentUpInitialValue = percentUpInitialValue;
+
 
           //Organizo objeto para infoArrayAddition
           const objTransaction: IReportChangeBudgets = {
@@ -741,10 +750,77 @@ export default class ReportRepository implements IReportRepository {
 
           infoArrayResult.push( objTransaction );
         }
+
       }
+
     } //For de adición y disminución
 
-    console.log({infoArrayResult});
+    //** *************** **//
+    //** Grupo Traslados **//
+    //** *************** **//
+    const getTransfers = await Transfer.query()
+      .orderBy("id", "desc")
+      .preload("transferMove", (s) => {
+        s.preload("budgetRoute", (t) => {
+          t.preload("projectVinculation"),
+            t.preload("funds"),
+            t.preload("budget"),
+            t.preload("pospreSapiencia")
+        })
+      });
+
+    const getGeneralTransferResponse: any[] = getTransfers.map((i) => i.serialize());
+    const getAdjustDataTransfer = getGeneralTransferResponse as ITransfersReport[];
+
+    for (const iterTransfer of getAdjustDataTransfer){
+
+      const actAdminDis: string = iterTransfer.actAdminDistrict;
+      const actAdminSap: string = iterTransfer.actAdminSapiencia;
+      const typeMovement: string = "Traslado";
+      const observation: string = iterTransfer.observations;
+
+      for (const iterResMovement of iterTransfer.transferMove!){
+
+        let total: number = 0;
+        let millionsTotal: number = 0;
+        let millionsLiquid: number = 0;
+        let exercise: number = iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
+        let initialBudget: number = iterResMovement.budgetRoute.initialBalance!;
+        let percentUpInitialValue: number = 0;
+
+        if (exercise === year) {
+
+          //* Calculo indiferente si es origen o destino / Contra crédito o Crédito
+          total = Number(iterResMovement.value);
+          millionsTotal = Number((total/1000000).toFixed(2));
+          millionsLiquid = Number((initialBudget/1000000).toFixed(2));
+          percentUpInitialValue = Number(millionsTotal/millionsLiquid);
+
+          //! Por si nos quedan valores que podrían dividirse en 0
+          millionsTotal === Number("Infinity") ? millionsTotal = 0 : millionsTotal = millionsTotal;
+          millionsLiquid === Number("Infinity") ? millionsLiquid = 0 : millionsLiquid = millionsLiquid;
+          percentUpInitialValue === Number("Infinity") ? percentUpInitialValue = 0 : percentUpInitialValue = percentUpInitialValue;
+
+
+          //Organizo objeto para infoArrayAddition
+          const objTransaction: IReportChangeBudgets = {
+            "Tipo De Modificación": typeMovement,
+            "Acto Administrativo Distrito": actAdminDis,
+            "Acto Administrativo Sapiencia": actAdminSap,
+            "Valor Total": total,
+            "Valor En Millones": millionsTotal,
+            "Porcentaje Sobre El Presupuesto Inicial": percentUpInitialValue,
+            "Observación": observation,
+          };
+
+          infoArrayResult.push( objTransaction );
+
+        }
+
+      }
+
+    }
+
     return infoArrayResult;
 
   }
