@@ -9,6 +9,8 @@ import {
   IReportDetailChangeBudgets,
   IReportChangeBudgets,
   IReportColumnCdpBalance,
+  IReportColumnRpBalance,
+  IReportColumnAccountsPayable,
 } from "../Interfaces/ReportsInterfaces";
 import { IAdditionsReport } from "../Interfaces/AdditionsInterfaces";
 import { IStrategicDirectionService } from "../Services/External/StrategicDirectionService";
@@ -19,6 +21,7 @@ import {
   getAmountBudgetAvailability,
   getCheckWhetherOrNotHaveRp,
   getCreditAndAgainstCredits,
+  getlinksRpCdp,
 } from "App/Utils/functions";
 import Transfer from "App/Models/Transfer";
 import { ITransfersReport } from "App/Interfaces/TransfersInterfaces";
@@ -30,10 +33,12 @@ export interface IReportRepository {
   generateReportExecutionExpenses(year: number): Promise<any[]>;
   generateReportOverviewBudgetModifications(year: number): Promise<any[]>;
   generateReportCdpBalance(year: number): Promise<any[]>;
+  generateReportRpBalance(year: number): Promise<any[]>;
+  generateReportAccountsPayable(year: number): Promise<any[]>;
 }
 
 export default class ReportRepository implements IReportRepository {
-  constructor(private strategicDirectionService: IStrategicDirectionService) { }
+  constructor(private strategicDirectionService: IStrategicDirectionService) {}
 
   //? Este array nos va permitir contener la información que busquemos de planeación, como una especie de "histórico"
   //? de esta manera, si ya tenemos cargada la información, no tenemos porque hacer nuevas consultas a la API de planeación
@@ -369,53 +374,29 @@ export default class ReportRepository implements IReportRepository {
       executeDec = Number(((100 * collectedDec) / programmingDec).toFixed(2));
       if (isNaN(executeDec)) executeDec = 0.0;
 
-      diferenceJan = Number(
-        ((100 * (collectedJan - programmingJan))).toFixed(2)
-      );
+      diferenceJan = Number((100 * (collectedJan - programmingJan)).toFixed(2));
       if (isNaN(diferenceJan)) diferenceJan = 0.0;
-      diferenceFeb = Number(
-        ((100 * (collectedFeb - programmingFeb))).toFixed(2)
-      );
+      diferenceFeb = Number((100 * (collectedFeb - programmingFeb)).toFixed(2));
       if (isNaN(diferenceFeb)) diferenceFeb = 0.0;
-      diferenceMar = Number(
-        ((100 * (collectedMar - programmingMar))).toFixed(2)
-      );
+      diferenceMar = Number((100 * (collectedMar - programmingMar)).toFixed(2));
       if (isNaN(diferenceMar)) diferenceMar = 0.0;
-      diferenceApr = Number(
-        ((100 * (collectedApr - programmingApr))).toFixed(2)
-      );
+      diferenceApr = Number((100 * (collectedApr - programmingApr)).toFixed(2));
       if (isNaN(diferenceApr)) diferenceApr = 0.0;
-      diferenceMay = Number(
-        ((100 * (collectedMay - programmingMay))).toFixed(2)
-      );
+      diferenceMay = Number((100 * (collectedMay - programmingMay)).toFixed(2));
       if (isNaN(diferenceMay)) diferenceMay = 0.0;
-      diferenceJun = Number(
-        ((100 * (collectedJun - programmingJun))).toFixed(2)
-      );
+      diferenceJun = Number((100 * (collectedJun - programmingJun)).toFixed(2));
       if (isNaN(diferenceJun)) diferenceJun = 0.0;
-      diferenceJul = Number(
-        ((100 * (collectedJul - programmingJul))).toFixed(2)
-      );
+      diferenceJul = Number((100 * (collectedJul - programmingJul)).toFixed(2));
       if (isNaN(diferenceJul)) diferenceJul = 0.0;
-      diferenceAug = Number(
-        ((100 * (collectedAug - programmingAug))).toFixed(2)
-      );
+      diferenceAug = Number((100 * (collectedAug - programmingAug)).toFixed(2));
       if (isNaN(diferenceAug)) diferenceAug = 0.0;
-      diferenceSep = Number(
-        ((100 * (collectedSep - programmingSep))).toFixed(2)
-      );
+      diferenceSep = Number((100 * (collectedSep - programmingSep)).toFixed(2));
       if (isNaN(diferenceSep)) diferenceSep = 0.0;
-      diferenceOct = Number(
-        ((100 * (collectedOct - programmingOct))).toFixed(2)
-      );
+      diferenceOct = Number((100 * (collectedOct - programmingOct)).toFixed(2));
       if (isNaN(diferenceOct)) diferenceOct = 0.0;
-      diferenceNov = Number(
-        ((100 * (collectedNov - programmingNov))).toFixed(2)
-      );
+      diferenceNov = Number((100 * (collectedNov - programmingNov)).toFixed(2));
       if (isNaN(diferenceNov)) diferenceNov = 0.0;
-      diferenceDec = Number(
-        ((100 * (collectedDec - programmingDec))).toFixed(2)
-      );
+      diferenceDec = Number((100 * (collectedDec - programmingDec)).toFixed(2));
 
       if (isNaN(diferenceDec)) diferenceDec = 0.0;
 
@@ -495,7 +476,6 @@ export default class ReportRepository implements IReportRepository {
 
   //HU-091 Reporte Detalle modificaciones presupuesto - 7873
   async generateReportDetailChangeBudgets(year: number): Promise<any[]> {
-
     let infoArrayResult: IReportDetailChangeBudgets[] = []; //Tanto para disminución como adición y Traslados
 
     //** *************************** **//
@@ -512,8 +492,11 @@ export default class ReportRepository implements IReportRepository {
         });
       });
 
-    const getGeneralAddAndRedResponse: any[] = getAdditions.map((i) => i.serialize());
-    const getAdjustDataAddAndRed = getGeneralAddAndRedResponse as IAdditionsReport[];
+    const getGeneralAddAndRedResponse: any[] = getAdditions.map((i) =>
+      i.serialize()
+    );
+    const getAdjustDataAddAndRed =
+      getGeneralAddAndRedResponse as IAdditionsReport[];
 
     for (const iterResAdd of getAdjustDataAddAndRed) {
       const actAdminDis: string = iterResAdd.actAdminDistrict;
@@ -533,9 +516,12 @@ export default class ReportRepository implements IReportRepository {
         let functionalArea: string = "";
         let fund: string = iterResMovement.budgetRoute.fund?.number!;
 
-        let posPreSapi: string = iterResMovement.budgetRoute.pospreSapiencia?.number!;
-        let desPosPreSapi: string = iterResMovement.budgetRoute.pospreSapiencia?.description!;
-        let exercise: number = iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
+        let posPreSapi: string =
+          iterResMovement.budgetRoute.pospreSapiencia?.number!;
+        let desPosPreSapi: string =
+          iterResMovement.budgetRoute.pospreSapiencia?.description!;
+        let exercise: number =
+          iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
         let initialBudget: number = iterResMovement.budgetRoute.initialBalance!;
 
         if (exercise === year) {
@@ -545,8 +531,15 @@ export default class ReportRepository implements IReportRepository {
               desPosPreSapi
             );
 
-          if (!getDataProject || getDataProject == null || getDataProject == undefined)
-            return [ null, "Ocurrió un error hallando la información del proyecto, revisar consistencia de información" ];
+          if (
+            !getDataProject ||
+            getDataProject == null ||
+            getDataProject == undefined
+          )
+            return [
+              null,
+              "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+            ];
 
           projectCode = getDataProject.projectCode;
           projectName = getDataProject.projectName;
@@ -587,7 +580,7 @@ export default class ReportRepository implements IReportRepository {
             "Contracrédito Presupuesto": againstCredit,
           };
 
-          infoArrayResult.push( objTransaction );
+          infoArrayResult.push(objTransaction);
         }
       }
     } //For de adición y disminución
@@ -602,21 +595,22 @@ export default class ReportRepository implements IReportRepository {
           t.preload("projectVinculation"),
             t.preload("funds"),
             t.preload("budget"),
-            t.preload("pospreSapiencia")
-        })
+            t.preload("pospreSapiencia");
+        });
       });
 
-    const getGeneralTransferResponse: any[] = getTransfers.map((i) => i.serialize());
-    const getAdjustDataTransfer = getGeneralTransferResponse as ITransfersReport[];
+    const getGeneralTransferResponse: any[] = getTransfers.map((i) =>
+      i.serialize()
+    );
+    const getAdjustDataTransfer =
+      getGeneralTransferResponse as ITransfersReport[];
 
     for (const iterTransfer of getAdjustDataTransfer) {
-
       const actAdminDis: string = iterTransfer.actAdminDistrict;
       const actAdminSap: string = iterTransfer.actAdminSapiencia;
       const typeMovement: string = "Traslado";
 
       for (const iterResMovement of iterTransfer.transferMove!) {
-
         let credit: number = 0;
         let againstCredit: number = 0;
 
@@ -638,21 +632,30 @@ export default class ReportRepository implements IReportRepository {
         let functionalArea: string = "";
         let fund: string = iterResMovement.budgetRoute.fund?.number!;
 
-        let posPreSapi: string = iterResMovement.budgetRoute.pospreSapiencia?.number!;
-        let desPosPreSapi: string = iterResMovement.budgetRoute.pospreSapiencia?.description!;
-        let exercise: number = iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
+        let posPreSapi: string =
+          iterResMovement.budgetRoute.pospreSapiencia?.number!;
+        let desPosPreSapi: string =
+          iterResMovement.budgetRoute.pospreSapiencia?.description!;
+        let exercise: number =
+          iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
         let initialBudget: number = iterResMovement.budgetRoute.initialBalance!;
 
         if (exercise === year) {
-
           const getDataProject: IDataBasicProject | null =
             await this.getProjectGeneral(
               Number(iterResMovement.budgetRoute.idProjectVinculation),
               desPosPreSapi
             );
 
-          if (!getDataProject || getDataProject == null || getDataProject == undefined)
-            return [ null, "Ocurrió un error hallando la información del proyecto, revisar consistencia de información" ];
+          if (
+            !getDataProject ||
+            getDataProject == null ||
+            getDataProject == undefined
+          )
+            return [
+              null,
+              "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+            ];
 
           projectCode = getDataProject.projectCode;
           projectName = getDataProject.projectName;
@@ -677,23 +680,19 @@ export default class ReportRepository implements IReportRepository {
             "Contracrédito Presupuesto": againstCredit,
           };
 
-          infoArrayResult.push( objTransaction );
-
+          infoArrayResult.push(objTransaction);
         }
-
       }
-
     } //For de traslados
 
     return infoArrayResult;
-
   }
 
   //HU-090 Reporte Resumen modificaciones presupuesto
-  async generateReportOverviewBudgetModifications(year: number): Promise<any[]> {
-
+  async generateReportOverviewBudgetModifications(
+    year: number
+  ): Promise<any[]> {
     let infoArrayResult: IReportChangeBudgets[] = []; //Tanto para disminución como adición.
-
 
     //** *************************** **//
     //** Grupo Adición y Disminución **//
@@ -709,8 +708,11 @@ export default class ReportRepository implements IReportRepository {
         });
       });
 
-    const getGeneralAddAndRedResponse: any[] = getAdditions.map((i) => i.serialize());
-    const getAdjustDataAddAndRed = getGeneralAddAndRedResponse as IAdditionsReport[];
+    const getGeneralAddAndRedResponse: any[] = getAdditions.map((i) =>
+      i.serialize()
+    );
+    const getAdjustDataAddAndRed =
+      getGeneralAddAndRedResponse as IAdditionsReport[];
 
     for (const iterResAdd of getAdjustDataAddAndRed) {
       const actAdminDis: string = iterResAdd.actAdminDistrict;
@@ -719,27 +721,31 @@ export default class ReportRepository implements IReportRepository {
       const observation: string = "";
 
       for (const iterResMovement of iterResAdd.additionMove) {
-
         let total: number = 0;
         let millionsTotal: number = 0;
         let millionsLiquid: number = 0;
-        let exercise: number = iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
+        let exercise: number =
+          iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
         let initialBudget: number = iterResMovement.budgetRoute.initialBalance!;
         let percentUpInitialValue: number = 0;
 
         if (exercise === year) {
-
           //* Calculo indiferente si es ingreso o gasto
           total = Number(iterResMovement.value);
-          millionsTotal = Number((total/1000000).toFixed(2));
-          millionsLiquid = Number((initialBudget/1000000).toFixed(2));
-          percentUpInitialValue = Number(millionsTotal/millionsLiquid);
+          millionsTotal = Number((total / 1000000).toFixed(2));
+          millionsLiquid = Number((initialBudget / 1000000).toFixed(2));
+          percentUpInitialValue = Number(millionsTotal / millionsLiquid);
 
           //! Por si nos quedan valores que podrían dividirse en 0
-          millionsTotal === Number("Infinity") ? millionsTotal = 0 : millionsTotal = millionsTotal;
-          millionsLiquid === Number("Infinity") ? millionsLiquid = 0 : millionsLiquid = millionsLiquid;
-          percentUpInitialValue === Number("Infinity") ? percentUpInitialValue = 0 : percentUpInitialValue = percentUpInitialValue;
-
+          millionsTotal === Number("Infinity")
+            ? (millionsTotal = 0)
+            : (millionsTotal = millionsTotal);
+          millionsLiquid === Number("Infinity")
+            ? (millionsLiquid = 0)
+            : (millionsLiquid = millionsLiquid);
+          percentUpInitialValue === Number("Infinity")
+            ? (percentUpInitialValue = 0)
+            : (percentUpInitialValue = percentUpInitialValue);
 
           //Organizo objeto para infoArrayAddition
           const objTransaction: IReportChangeBudgets = {
@@ -749,14 +755,12 @@ export default class ReportRepository implements IReportRepository {
             "Valor Total": total,
             "Valor En Millones": millionsTotal,
             "Porcentaje Sobre El Presupuesto Inicial": percentUpInitialValue,
-            "Observación": observation,
+            Observación: observation,
           };
 
-          infoArrayResult.push( objTransaction );
+          infoArrayResult.push(objTransaction);
         }
-
       }
-
     } //For de adición y disminución
 
     //** *************** **//
@@ -769,42 +773,48 @@ export default class ReportRepository implements IReportRepository {
           t.preload("projectVinculation"),
             t.preload("funds"),
             t.preload("budget"),
-            t.preload("pospreSapiencia")
-        })
+            t.preload("pospreSapiencia");
+        });
       });
 
-    const getGeneralTransferResponse: any[] = getTransfers.map((i) => i.serialize());
-    const getAdjustDataTransfer = getGeneralTransferResponse as ITransfersReport[];
+    const getGeneralTransferResponse: any[] = getTransfers.map((i) =>
+      i.serialize()
+    );
+    const getAdjustDataTransfer =
+      getGeneralTransferResponse as ITransfersReport[];
 
-    for (const iterTransfer of getAdjustDataTransfer){
-
+    for (const iterTransfer of getAdjustDataTransfer) {
       const actAdminDis: string = iterTransfer.actAdminDistrict;
       const actAdminSap: string = iterTransfer.actAdminSapiencia;
       const typeMovement: string = "Traslado";
       const observation: string = iterTransfer.observations;
 
-      for (const iterResMovement of iterTransfer.transferMove!){
-
+      for (const iterResMovement of iterTransfer.transferMove!) {
         let total: number = 0;
         let millionsTotal: number = 0;
         let millionsLiquid: number = 0;
-        let exercise: number = iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
+        let exercise: number =
+          iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
         let initialBudget: number = iterResMovement.budgetRoute.initialBalance!;
         let percentUpInitialValue: number = 0;
 
         if (exercise === year) {
-
           //* Calculo indiferente si es origen o destino / Contra crédito o Crédito
           total = Number(iterResMovement.value);
-          millionsTotal = Number((total/1000000).toFixed(2));
-          millionsLiquid = Number((initialBudget/1000000).toFixed(2));
-          percentUpInitialValue = Number(millionsTotal/millionsLiquid);
+          millionsTotal = Number((total / 1000000).toFixed(2));
+          millionsLiquid = Number((initialBudget / 1000000).toFixed(2));
+          percentUpInitialValue = Number(millionsTotal / millionsLiquid);
 
           //! Por si nos quedan valores que podrían dividirse en 0
-          millionsTotal === Number("Infinity") ? millionsTotal = 0 : millionsTotal = millionsTotal;
-          millionsLiquid === Number("Infinity") ? millionsLiquid = 0 : millionsLiquid = millionsLiquid;
-          percentUpInitialValue === Number("Infinity") ? percentUpInitialValue = 0 : percentUpInitialValue = percentUpInitialValue;
-
+          millionsTotal === Number("Infinity")
+            ? (millionsTotal = 0)
+            : (millionsTotal = millionsTotal);
+          millionsLiquid === Number("Infinity")
+            ? (millionsLiquid = 0)
+            : (millionsLiquid = millionsLiquid);
+          percentUpInitialValue === Number("Infinity")
+            ? (percentUpInitialValue = 0)
+            : (percentUpInitialValue = percentUpInitialValue);
 
           //Organizo objeto para infoArrayAddition
           const objTransaction: IReportChangeBudgets = {
@@ -814,21 +824,18 @@ export default class ReportRepository implements IReportRepository {
             "Valor Total": total,
             "Valor En Millones": millionsTotal,
             "Porcentaje Sobre El Presupuesto Inicial": percentUpInitialValue,
-            "Observación": observation,
+            Observación: observation,
           };
 
-          infoArrayResult.push( objTransaction );
-
+          infoArrayResult.push(objTransaction);
         }
-
       }
-
     }
 
     return infoArrayResult;
-
   }
 
+  //HU-094 Reporte Ejecucion de gastos
   async generateReportExecutionExpenses(year: number): Promise<any[]> {
     // Matriz que almacenará el resultado del informe
     const resObject: IReportColumnExecutionExpenses[] = [];
@@ -986,6 +993,7 @@ export default class ReportRepository implements IReportRepository {
     return resObject;
   }
 
+  //HU-095 Reporte CDP con saldo
   async generateReportCdpBalance(year: number): Promise<any> {
     const resObject: IReportColumnCdpBalance[] = [];
 
@@ -1090,6 +1098,185 @@ export default class ReportRepository implements IReportRepository {
           }
         }
       }
+    }
+
+    return resObject;
+  }
+
+  //HU-096 Reporte Rp con saldo
+  async generateReportRpBalance(year: number): Promise<any[]> {
+    let resObject: IReportColumnRpBalance[] = [];
+
+    const resultRpBalance = await getlinksRpCdp(year, "RpBalance");
+
+    for (const vrp of resultRpBalance) {
+      let idVrp: number = vrp.id;
+      let consecutiveSap: number = 0;
+      let consecutiveAurora: number = 0;
+      let positionRp: number = 0;
+      let fund: string = "";
+      let nameManagementCenter: string = "";
+      let numberPospre: string = "";
+      let functionalArea: string = "";
+      let projectCode: string = "";
+      let projectName: string = "";
+      let finalAmount: number = 0;
+
+      //Consecutivo RP SAP
+      consecutiveSap = vrp.budgetRecord.consecutiveSap;
+
+      //Consecutivo RP Aurora
+      consecutiveAurora = vrp.budgetRecord.id;
+
+      //Posición
+      positionRp = vrp.position;
+
+      //Fondo
+      fund = vrp.amountBudgetAvailability.budgetRoute.fund.number;
+
+      //Centro gestor
+      nameManagementCenter =
+        vrp.amountBudgetAvailability.budgetRoute.managementCenter;
+
+      //Posicion Presupuestaria
+      numberPospre =
+        vrp.amountBudgetAvailability.budgetRoute.pospreSapiencia.number;
+
+      //Area Funcional, Proyecto y Nombre del proyecto
+      const getDataProject: IDataBasicProject | null =
+        await this.getProjectGeneral(
+          Number(vrp.amountBudgetAvailability.budgetRoute.idProjectVinculation),
+          vrp.amountBudgetAvailability.budgetRoute.pospreSapiencia?.description!
+        );
+
+      if (
+        !getDataProject ||
+        getDataProject == null ||
+        getDataProject == undefined
+      ) {
+        // Manejo de errores en caso de que no se pueda obtener información del proyecto
+        return [
+          null,
+          "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+        ];
+      } else {
+        // Asignar datos del proyecto
+        functionalArea = getDataProject.functionalArea;
+        projectCode = getDataProject.projectCode;
+        projectName = getDataProject.projectName;
+      }
+
+      //Valor Final
+      finalAmount = vrp.finalAmount;
+
+      const newItem: IReportColumnRpBalance = {
+        Id: idVrp,
+        "Consecutivo RP SAP": consecutiveSap,
+        "Consecutivo RP Aurora": consecutiveAurora,
+        Posición: positionRp,
+        Fondo: fund,
+        "Centro Gestor": nameManagementCenter,
+        "Posicion Presupuestaria": numberPospre,
+        "Area Funcional": functionalArea,
+        Proyecto: projectCode,
+        "Nombre proyecto": projectName,
+        "Valor Final": finalAmount,
+      };
+
+      // Agregar el objeto al resultado
+      resObject.push(newItem);
+    }
+
+    return resObject;
+  }
+
+  //HU-097 Report Cuentas por pagar
+  async generateReportAccountsPayable(year: number): Promise<any[]> {
+    let resObject: IReportColumnAccountsPayable[] = [];
+
+    const resultAccountsPayable = await getlinksRpCdp(year, "AccountsPayable");
+
+    for (const vrp of resultAccountsPayable) {
+      let idVrp: number = vrp.id;
+      let consecutiveSap: number = 0;
+      let consecutiveAurora: number = 0;
+      let positionRp: number = 0;
+      let fund: string = "";
+      let nameManagementCenter: string = "";
+      let numberPospre: string = "";
+      let functionalArea: string = "";
+      let projectCode: string = "";
+      let projectName: string = "";
+      let finalAmount: number = 0;
+      let valueCaused: number = 0;
+
+      // //Consecutivo RP SAP
+      // consecutiveSap = vrp.budgetRecord.consecutiveSap;
+
+      // //Consecutivo RP Aurora
+      // consecutiveAurora = vrp.budgetRecord.id;
+
+      // //Posición
+      // positionRp = vrp.position;
+
+      // //Fondo
+      // fund = vrp.amountBudgetAvailability.budgetRoute.fund.number;
+
+      // //Centro gestor
+      // nameManagementCenter =
+      //   vrp.amountBudgetAvailability.budgetRoute.managementCenter;
+
+      // //Posicion Presupuestaria
+      // numberPospre =
+      //   vrp.amountBudgetAvailability.budgetRoute.pospreSapiencia.number;
+
+      // //Area Funcional, Proyecto y Nombre del proyecto
+      // const getDataProject: IDataBasicProject | null =
+      //   await this.getProjectGeneral(
+      //     Number(vrp.amountBudgetAvailability.budgetRoute.idProjectVinculation),
+      //     vrp.amountBudgetAvailability.budgetRoute.pospreSapiencia?.description!
+      //   );
+
+      // if (
+      //   !getDataProject ||
+      //   getDataProject == null ||
+      //   getDataProject == undefined
+      // ) {
+      //   // Manejo de errores en caso de que no se pueda obtener información del proyecto
+      //   return [
+      //     null,
+      //     "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+      //   ];
+      // } else {
+      //   // Asignar datos del proyecto
+      //   functionalArea = getDataProject.functionalArea;
+      //   projectCode = getDataProject.projectCode;
+      //   projectName = getDataProject.projectName;
+      // }
+
+      // //Valor Final
+      // finalAmount = vrp.finalAmount;
+
+      // //Valor Causado
+      // valueCaused = vrp.finalAmount;
+
+      const newItem: IReportColumnAccountsPayable = {
+        Id: idVrp,
+        "Consecutivo RP SAP": consecutiveSap,
+        "Consecutivo RP Aurora": consecutiveAurora,
+        Posición: positionRp,
+        Fondo: fund,
+        "Centro Gestor": nameManagementCenter,
+        "Posicion Presupuestaria": numberPospre,
+        "Area Funcional": functionalArea,
+        Proyecto: projectCode,
+        "Nombre proyecto": projectName,
+        "Valor Final": finalAmount,
+        "Valor Causado": valueCaused,
+      };
+
+      // Agregar el objeto al resultado
+      resObject.push(newItem);
     }
 
     return resObject;

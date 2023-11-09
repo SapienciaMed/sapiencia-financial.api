@@ -113,3 +113,31 @@ export const getCheckWhetherOrNotHaveRp = async (icdId: number) => {
 
   return false;
 };
+
+export const getlinksRpCdp = async (year: number, type: string) => {
+  let result: any[] = [];
+  const queryLinkRpcdp = await LinkRpcdp.query()
+    .orderBy("id", "desc")
+    .preload("amountBudgetAvailability", (subQuery) => {
+      subQuery.preload("budgetRoute", (subSubQuery) => {
+        subSubQuery.preload("funds");
+        subSubQuery.preload("pospreSapiencia");
+        subSubQuery.preload("projectVinculation");
+      });
+    })
+    .preload("budgetRecord");
+
+  const resLinkRpcdp = queryLinkRpcdp
+    .map((i) => i.serialize())
+    .filter(
+      (i) =>
+        i.amountBudgetAvailability.budgetRoute.pospreSapiencia.ejercise ===
+          year && i.isActive === 1
+    );
+
+  if (type === "RpBalance") {
+    result = resLinkRpcdp;
+  }
+
+  return result;
+};
