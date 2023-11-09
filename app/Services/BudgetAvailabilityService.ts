@@ -30,6 +30,7 @@ export interface IBudgetAvailabilityService {
   linkMga(): Promise<ApiResponse<any>>
   getRouteCDPId(id: number): Promise<ApiResponse<IUpdateRoutesCDP | null>>;
   updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<ApiResponse<IUpdateRoutesCDP>>;
+  getRpCDP(id: string): Promise<ApiResponse<IBudgetAvailability>>;
 }
 
 export default class BudgetAvailabilityService
@@ -128,7 +129,7 @@ export default class BudgetAvailabilityService
       );
     }
   }
-
+  
   async cancelAmountCdp(
     id: number,
     reasonCancellation: string
@@ -181,4 +182,54 @@ export default class BudgetAvailabilityService
       return new ApiResponse(res, EResponseCodes.OK);
     }
   }
+  async getRpCDP(id: string): Promise<ApiResponse<any>> {
+    try {
+      const data = await this.budgetAvailabilityRepository.getRpCDP(id);
+      const projectInvesment = await this.strategicDirectionService.getProjectInvestmentPaginated({ page: 1, perPage: 100000 });
+  
+      const consecutive = data[0].consecutive;
+      const sapConsecutive = data[0].sapConsecutive;
+
+      const dataFixed = data[0].$preloaded.amounts.map(amount => {
+        const projectName = amount.$preloaded.budgetRoute.$preloaded.projectVinculation.$attributes.type == 'Funcionamiento'
+          ? amount.$preloaded.budgetRoute.$preloaded.projectVinculation.$preloaded?.functionalProject?.$attributes.name
+          : projectInvesment.data.array.find(p => p.id == amount.$preloaded.budgetRoute.$preloaded.projectVinculation.$attributes.investmentProjectId)?.name;
+  
+        // New: Extract the creditor id from the nested relationships
+        const creditorId = amount.$preloaded.linkRpcdps[0]?.$preloaded.budgetRecord.$preloaded.creditor.$attributes.id;
+
+  
+        // Return the modified amount object with additional properties
+        return {
+          ...amount.$attributes,
+          projectName,
+          fundCode: amount.$preloaded.budgetRoute.$preloaded.funds.$attributes.number,
+          pospreSapienciaCode: amount.$preloaded.budgetRoute.$preloaded.pospreSapiencia.$attributes.number,
+          creditorIds: creditorId, // This will be an array of creditor ids
+          consecutive: consecutive,
+          sapConsecutive: sapConsecutive
+        };
+      });
+  
+      let dataResponse = [
+        {
+          ...data[0].$attributes,
+          amounts: dataFixed
+        }
+      ];
+  
+      return new ApiResponse(
+        dataResponse, // Make sure to send the modified dataResponse instead of the original data
+        EResponseCodes.OK,
+        "CDP encontrado exitosamente"
+      );
+    } catch (error) {
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "Error al cargar el CDP" + error
+      );
+    }
+  }
+  
 }

@@ -1,13 +1,16 @@
 import {
   BaseModel,
   BelongsTo,
+  HasMany,
   HasOne,
   belongsTo,
   column,
+  hasMany,
   hasOne,
 } from "@ioc:Adonis/Lucid/Orm";
 import BudgetAvailability from "./BudgetAvailability";
 import BudgetsRoutes from "./BudgetsRoutes";
+import LinkRpcdp from "./LinkRpcdp";
 
 export default class AmountBudgetAvailability extends BaseModel {
   public static table = "ICD_IMPORTES_CDP";
@@ -61,4 +64,11 @@ export default class AmountBudgetAvailability extends BaseModel {
     serializeAs: "budgetRoute",
   })
   public budgetRoute: BelongsTo<typeof BudgetsRoutes>;
+
+  @hasMany(() => LinkRpcdp, {
+    localKey: 'id', 
+    foreignKey: 'amountCdpId', 
+  })
+  public linkRpcdps: HasMany<typeof LinkRpcdp>;
+  
 }
