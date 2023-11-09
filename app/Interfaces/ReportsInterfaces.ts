@@ -90,6 +90,16 @@ export interface IReportDetailChangeBudgets {
   "Contracrédito Presupuesto": number;
 }
 
+export interface IReportChangeBudgets {
+  "Tipo De Modificación": string;
+  "Acto Administrativo Distrito": string;
+  "Acto Administrativo Sapiencia": string;
+  "Valor Total": number;
+  "Valor En Millones": number;
+  "Porcentaje Sobre El Presupuesto Inicial": number;
+  "Observación": string;
+}
+
 export interface IDataBasicProject {
   projectCode: string;
   projectName: string;
@@ -105,7 +115,7 @@ export interface IDataCredits {
 }
 
 export interface IReportColumnExecutionExpenses {
-  // Id?: number;
+  Id?: number;
   Fondo: string;
   "Centro Gestor": string;
   "Posición Presupuestaria": string;
@@ -125,4 +135,18 @@ export interface IReportColumnExecutionExpenses {
   "Disponible Neto": number;
   Ejecución: number;
   "Porcentaje de Ejecución": string;
+}
+
+export interface IReportColumnCdpBalance {
+  Id?: number;
+  "Consecutivo CDP SAP": number;
+  "Consecutivo CDP Aurora": number;
+  Posición: number;
+  Fondo: string;
+  "Centro Gestor": string;
+  "Posicion Presupuestaria": string;
+  "Area Funcional": string;
+  Proyecto: string;
+  "Nombre proyecto": string;
+  "Valor Final": number;
 }

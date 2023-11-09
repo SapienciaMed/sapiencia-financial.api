@@ -29,6 +29,7 @@ export interface IBudgetAvailabilityRepository {
   linkMga(): Promise<any>;
   getRouteCDPId(id: number): Promise<IUpdateRoutesCDP | null>;  
   updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<IUpdateRoutesCDP | null>;
+  getRpCDP(id: string): Promise<BudgetAvailability>;
 }
 
 
@@ -205,7 +206,7 @@ export default class BudgetAvailabilityRepository
         });
       });
   };
-
+  
   cancelAmountCdp = async (
     id: number,
     reasonCancellation: string
@@ -301,6 +302,26 @@ export default class BudgetAvailabilityRepository
     
     return res.length > 0 ? (res[0].serialize() as IUpdateRoutesCDP) : null;
   }
-
+  getRpCDP = async (id: string): Promise<any> => {
+    return await BudgetAvailability.query()
+      .where("id", Number(id))
+   .preload("amounts", (query) => {       
+        query.preload("linkRpcdps", (q) => {
+          q.preload("budgetRecord", (c) => {
+            c.preload("creditor")
+          });
+        });
+        query.preload("budgetRoute", (query) => {
+          query.preload("projectVinculation", (query) => {
+            query.preload("functionalProject");
+          });
+          query.preload("funds");
+          query.preload("budget");
+          query.preload("pospreSapiencia");
+        });
+      });      
+    
+  };
+  
   
 }

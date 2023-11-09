@@ -1,5 +1,6 @@
 import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
 import AmountBudgetAvailability from './AmountBudgetAvailability';
+import BudgetRecord from './BudgetRecord';
 
 export default class LinkRpcdp extends BaseModel {
   public static table = "VRP_VINCULACION_RPR_ICD";
@@ -44,5 +45,13 @@ export default class LinkRpcdp extends BaseModel {
   })
   public amountBudgetAvailability: BelongsTo<typeof AmountBudgetAvailability>;  
 
-
+  @belongsTo(() => BudgetRecord, {
+    foreignKey: 'rpId', // La clave foránea en LinkRpcdp que apunta al ID de BudgetRecord
+    localKey: 'id', // La clave primaria en BudgetRecord
+    serializeAs: 'budgetRecord',
+  })
+  public budgetRecord: BelongsTo<typeof BudgetRecord>;
+  
+  
+  
 }

@@ -73,6 +73,10 @@ export default class BudgetRecord extends BaseModel {
     foreignKey: "supplierId",
     serializeAs: "creditor",
   })
-  public creditor: BelongsTo<typeof Creditor>;  
+  public creditor: BelongsTo<typeof Creditor>;    
 
+  
+  
 }
+
+
