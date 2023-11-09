@@ -44,3 +44,17 @@ export interface IBudgetRecordFilter {
 export interface ITotalImports {
     totalImport: number;
 }
+
+export interface IBudgetRecordDataBasic {
+    id:number;
+    dependencyId?:number;
+    contractualObject?:string;
+    componentId?:number;
+    consecutiveRpSap?:number;
+    documentDate?:any;
+    dateValidity?:any;
+    contractNumber?:string;
+    responsibleDocument?:string;
+    supervisorDocument?:string;
+
+}
