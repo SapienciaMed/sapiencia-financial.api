@@ -986,7 +986,7 @@ export default class ReportRepository implements IReportRepository {
     return resObject;
   }
 
-  async generateReportCdpBalance(year: number): Promise<any> {
+  async generateReportCdpBalance(year: number): Promise<any[]> {
     const resObject: IReportColumnCdpBalance[] = [];
 
     const queryBudgetAvailability = await BudgetAvailability.query()
