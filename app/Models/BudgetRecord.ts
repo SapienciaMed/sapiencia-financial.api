@@ -33,8 +33,17 @@ export default class BudgetRecord extends BaseModel {
   @column({ columnName: 'RPR_CODCRP_COMPONENTE', serializeAs: "componentId" })
   public componentId: number
   
-  @column({ columnName: 'RPR_CONSECUTIVO_SAB', serializeAs: "consecutiveSap" })
+  @column({ columnName: 'RPR_CONSECUTIVO_SAP', serializeAs: "consecutiveSap" })
   public consecutiveSap: number
+
+  @column({ columnName: 'RPR_NUMERO_CONTRATO', serializeAs: "contractNumber" })
+  public contractNumber: string
+  
+  @column({ columnName: 'RPR_DOCUMENTO_RESPONSABLE', serializeAs: "responsibleDocument" })
+  public responsibleDocument: number
+  
+  @column({ columnName: 'RPR_DOCUMENTO_SUPERVISOR', serializeAs: "supervisorDocument" })
+  public supervisorDocument: number
 
   @column({ columnName: "RPR_USUARIO_MODIFICO", serializeAs: "userCreate" })
   public userCreate: string
