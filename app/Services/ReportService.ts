@@ -46,6 +46,11 @@ export default class ReportService implements IReportService {
           filters.year
         );
         break;
+      case EReportIds.reportCdpBalance:
+        dataTable = await this.reportRepository.generateReportCdpBalance(
+          filters.year
+        );
+        break;
 
       default:
         dataTable = [];
