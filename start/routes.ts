@@ -279,6 +279,7 @@ Route.group(() => {
   Route.post("/link-mga/", "BudgetAvailabilityController.linkMga");
   Route.get("/get-routeCDP-id/:id", "BudgetAvailabilityController.getRouteCDPId");
   Route.put("/updateRouteCDP/:id", "BudgetAvailabilityController.updateRoutesCDP");
+  Route.get("/get-CDPRp-id/:id", "BudgetAvailabilityController.getRpCDP");
 }).prefix("/api/v1/cdp")
 
 Route.group(() => {

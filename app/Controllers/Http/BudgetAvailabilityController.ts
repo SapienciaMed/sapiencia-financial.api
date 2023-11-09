@@ -169,4 +169,15 @@ export default class BudgetAvailabilityController {
       );
     }
   } 
+
+  public async getRpCDP({ request, response }: HttpContextContract) {
+    try {
+      const { id } = request.params() as { id: string };
+      return response.send(await BudgetAvailabilityProvider.getRpCDP(id));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
 }
