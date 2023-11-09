@@ -105,7 +105,7 @@ export interface IDataCredits {
 }
 
 export interface IReportColumnExecutionExpenses {
-  // Id?: number;
+  Id?: number;
   Fondo: string;
   "Centro Gestor": string;
   "Posición Presupuestaria": string;
@@ -125,4 +125,18 @@ export interface IReportColumnExecutionExpenses {
   "Disponible Neto": number;
   Ejecución: number;
   "Porcentaje de Ejecución": string;
+}
+
+export interface IReportColumnCdpBalance {
+  Id?: number;
+  "Consecutivo CDP SAP": number;
+  "Consecutivo CDP Aurora": number;
+  Posición: number;
+  Fondo: string;
+  "Centro Gestor": string;
+  "Posicion Presupuestaria": string;
+  "Area Funcional": string;
+  Proyecto: string;
+  "Nombre proyecto": string;
+  "Valor Final": number;
 }

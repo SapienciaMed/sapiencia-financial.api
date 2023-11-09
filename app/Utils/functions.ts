@@ -103,3 +103,13 @@ export const getAmountBudgetAvailability = async (
     compromiseValue: compromiseValue,
   };
 };
+
+export const getCheckWhetherOrNotHaveRp = async (icdId: number) => {
+  const queryLinkRpcdp = await LinkRpcdp.query().where("amountCdpId", icdId);
+
+  const resLinkRpcdp = queryLinkRpcdp.map((i) => i.serialize());
+
+  if (resLinkRpcdp.length > 0) return true;
+
+  return false;
+};

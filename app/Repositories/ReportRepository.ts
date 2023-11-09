@@ -7,6 +7,7 @@ import {
   IReportColumnExecutionExpenses,
   IHistoryProjects,
   IReportDetailChangeBudgets,
+  IReportColumnCdpBalance,
 } from "../Interfaces/ReportsInterfaces";
 import { IAdditionsReport } from "../Interfaces/AdditionsInterfaces";
 import { IStrategicDirectionService } from "../Services/External/StrategicDirectionService";
@@ -15,13 +16,16 @@ import BudgetsRoutes from "App/Models/BudgetsRoutes";
 import {
   getAdditionMovement,
   getAmountBudgetAvailability,
+  getCheckWhetherOrNotHaveRp,
   getCreditAndAgainstCredits,
 } from "App/Utils/functions";
+import BudgetAvailability from "App/Models/BudgetAvailability";
 
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
   generateReportDetailChangeBudgets(year: number): Promise<any[]>;
   generateReportExecutionExpenses(year: number): Promise<any[]>;
+  generateReportCdpBalance(year: number): Promise<any[]>;
 }
 
 export default class ReportRepository implements IReportRepository {
@@ -616,13 +620,14 @@ export default class ReportRepository implements IReportRepository {
       .preload("pospreSapiencia", (subQuery) => {
         subQuery.where("ejercise", year);
       })
-      .preload("projectVinculation")
       .preload("funds")
       .preload("projectVinculation")
       .orderBy("id", "desc");
 
     // Mapea los resultados de la consulta a objetos serializados
-    const resBudgetRoute = queryBudgetRoute.map((i) => i.serialize());
+    const resBudgetRoute = queryBudgetRoute
+      .map((i) => i.serialize())
+      .filter((i) => i.pospreSapiencia && i.pospreSapiencia !== null);
 
     // Recorre los resultados y genera el informe
     for (const rpp of resBudgetRoute) {
@@ -682,6 +687,9 @@ export default class ReportRepository implements IReportRepository {
         projectName = getDataProject.projectName;
       }
 
+      //Valor inicial
+      if (rpp.initialBalance) initialPpr = rpp.initialBalance;
+
       // Reducciones y adiciones
       const resultAdditionMovement = await getAdditionMovement(rpp.id);
 
@@ -730,7 +738,7 @@ export default class ReportRepository implements IReportRepository {
 
       // Crear un nuevo objeto de informe
       const newItem: IReportColumnExecutionExpenses = {
-        //Id: rpp.id,
+        // Id: rpp.id,
         Fondo: nameFund,
         "Centro Gestor": nameManagementCenter,
         "Posición Presupuestaria": numberPospre,
@@ -757,6 +765,115 @@ export default class ReportRepository implements IReportRepository {
     }
 
     // Devuelve la matriz de resultados
+    return resObject;
+  }
+
+  async generateReportCdpBalance(year: number): Promise<any> {
+    const resObject: IReportColumnCdpBalance[] = [];
+
+    const queryBudgetAvailability = await BudgetAvailability.query()
+      .where("exercise", year)
+      .orderBy("id", "desc")
+      .preload("amounts", (subQuery) => {
+        subQuery.preload("budgetRoute", (subSubQuery) => {
+          subSubQuery.preload("funds");
+          subSubQuery.preload("pospreSapiencia");
+          subSubQuery.preload("projectVinculation");
+        });
+      });
+
+    const resBudgetAvailability = queryBudgetAvailability.map((i) =>
+      i.serialize()
+    );
+
+    for (const cdp of resBudgetAvailability) {
+      let idCdp: number = cdp.id;
+      let consecutiveSap: number = 0;
+      let consecutiveAurora: number = 0;
+      let positionIcd: number = 0;
+      let fund: string = "";
+      let nameManagementCenter: string = "";
+      let numberPospre: string = "";
+      let functionalArea: string = "";
+      let projectCode: string = "";
+      let projectName: string = "";
+      let finalAmount: number = 0;
+
+      if (idCdp) {
+        if (cdp.amounts.length > 0) {
+          for (const icd of cdp.amounts) {
+            if (icd.isActive === 1) {
+              const itHas = await getCheckWhetherOrNotHaveRp(icd.id);
+              if (!itHas) {
+                // console.log({ idCdp, icd: icd.id, rpp: icd.idRppCode });
+
+                //Consecutivo CDP SAP
+                consecutiveSap = Number(cdp.sapConsecutive);
+
+                //Consecutivo CDP Aurora
+                consecutiveAurora = Number(cdp.consecutive);
+
+                //Posicion
+                positionIcd = Number(icd.cdpPosition);
+
+                //Fondo
+                fund = icd.budgetRoute.fund.number;
+
+                //Centro gestor
+                nameManagementCenter = icd.budgetRoute.managementCenter;
+
+                //Posicion Presupuestaria
+                numberPospre = icd.budgetRoute.pospreSapiencia.number;
+
+                //Area Funcional, Proyecto y Nombre del proyecto
+                const getDataProject: IDataBasicProject | null =
+                  await this.getProjectGeneral(
+                    Number(icd.budgetRoute.idProjectVinculation),
+                    icd.budgetRoute.pospreSapiencia?.description!
+                  );
+
+                if (
+                  !getDataProject ||
+                  getDataProject == null ||
+                  getDataProject == undefined
+                ) {
+                  // Manejo de errores en caso de que no se pueda obtener información del proyecto
+                  return [
+                    null,
+                    "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+                  ];
+                } else {
+                  // Asignar datos del proyecto
+                  functionalArea = getDataProject.functionalArea;
+                  projectCode = getDataProject.projectCode;
+                  projectName = getDataProject.projectName;
+                }
+
+                //Valor Final
+                finalAmount = icd.idcFinalValue ? Number(icd.idcFinalValue) : 0;
+
+                const newItem: IReportColumnCdpBalance = {
+                  // Id: idCdp,
+                  "Consecutivo CDP SAP": consecutiveSap,
+                  "Consecutivo CDP Aurora": consecutiveAurora,
+                  Posición: positionIcd,
+                  Fondo: fund,
+                  "Centro Gestor": nameManagementCenter,
+                  "Posicion Presupuestaria": numberPospre,
+                  "Area Funcional": functionalArea,
+                  Proyecto: projectCode,
+                  "Nombre proyecto": projectName,
+                  "Valor Final": finalAmount,
+                };
+                // Agregar el objeto al resultado
+                resObject.push(newItem);
+              }
+            }
+          }
+        }
+      }
+    }
+
     return resObject;
   }
 }
