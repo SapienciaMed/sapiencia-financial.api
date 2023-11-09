@@ -25,8 +25,8 @@ export default class ReportService implements IReportService {
 
   public async generateExcelReport(
     filters: IExcelReportFilters
-    ): Promise<ApiResponse<boolean>> {
-  // ): Promise<any> {
+  ): Promise<ApiResponse<boolean>> {
+    // ): Promise<any> {
     let dataTable: any[];
 
     switch (filters.reportId) {

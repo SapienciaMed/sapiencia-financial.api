@@ -2,6 +2,7 @@ import { IDataCredits } from "App/Interfaces/ReportsInterfaces";
 import AdditionsMovement from "App/Models/AdditionsMovement";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 import LinkRpcdp from "App/Models/LinkRpcdp";
+import Pago from "App/Models/PagPagos";
 import TransfersMovement from "App/Models/TransfersMovement";
 
 export function getStringDate(date: Date): string {
@@ -134,9 +135,22 @@ export const getlinksRpCdp = async (year: number, type: string) => {
         i.amountBudgetAvailability.budgetRoute.pospreSapiencia.ejercise ===
           year && i.isActive === 1
     );
+  for (const lrc of resLinkRpcdp) {
+    const queryPago = await Pago.query().where("vinculacionRpCode", lrc.id);
+    const resPago = queryPago.map((i) => i.serialize());
 
-  if (type === "RpBalance") {
-    result = resLinkRpcdp;
+    if (type === "RpBalance") {
+      const find = resPago.filter((i) => i.valorCausado &&  i.valorPagado);
+      if (!find.length) {
+        result.push(lrc);
+      }
+    }
+    if (type === "AccountsPayable") {
+      const find = resPago.filter((i) => i.valorCausado && !i.valorPagado);
+      if (find.length > 0) {
+        result.push(lrc);
+      }
+    }
   }
 
   return result;
