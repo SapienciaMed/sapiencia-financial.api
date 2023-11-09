@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon';
+import { IBudgetsRoutes } from './BudgetsRoutesInterfaces';
 
 export interface ITransfers {
   id?: number;
@@ -10,6 +11,30 @@ export interface ITransfers {
   dateModify?: Date;
   userCreate?: string;
   dateCreate?: DateTime
+}
+
+export interface ITransfersMovement
+{
+  id: number;
+  transferId: number;
+  type: string;
+  budgetRouteId: number;
+  value: number;
+  transfer: ITransfers;
+  budgetRoute: IBudgetsRoutes;
+}
+
+export interface ITransfersReport {
+  id?: number;
+  actAdminDistrict: string;
+  actAdminSapiencia: string;
+  value: number;
+  observations: string;
+  userModify?: string;
+  dateModify?: Date;
+  userCreate?: string;
+  dateCreate?: Date;
+  transferMove?: ITransfersMovement[];
 }
 
 export interface ITransfersFilters {
