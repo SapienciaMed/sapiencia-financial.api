@@ -23,6 +23,9 @@ const filter: IBudgetAvailability = {
 export class BudgetAvailabilityRepositoryFake
   implements IBudgetAvailabilityRepository
 {
+  getRpCDP(_id: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
   getRouteCDPId(_id: number): Promise<IUpdateRoutesCDP | null> {
     throw new Error("Method not implemented.");
   }
