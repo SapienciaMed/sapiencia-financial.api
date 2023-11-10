@@ -80,7 +80,9 @@ export default class BudgetRecordRepository implements IBudgetRecordRepository {
                         query.preload('budget')    
                         query.preload('funds')    
                         query.preload('pospreSapiencia')    
-                        query.preload('projectVinculation')    
+                        query.preload('projectVinculation',(query)=>{
+                            query.preload('functionalProject')
+                        })    
                     })
                 })
             });
