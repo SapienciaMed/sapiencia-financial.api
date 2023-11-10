@@ -97,7 +97,7 @@ export interface IReportChangeBudgets {
   "Valor Total": number;
   "Valor En Millones": number;
   "Porcentaje Sobre El Presupuesto Inicial": number;
-  "Observación": string;
+  Observación: string;
 }
 
 export interface IDataBasicProject {
@@ -149,4 +149,33 @@ export interface IReportColumnCdpBalance {
   Proyecto: string;
   "Nombre proyecto": string;
   "Valor Final": number;
+}
+
+export interface IReportColumnRpBalance {
+  Id?: number;
+  "Consecutivo RP SAP": number;
+  "Consecutivo RP Aurora": number;
+  Posición: number;
+  Fondo: string;
+  "Centro Gestor": string;
+  "Posicion Presupuestaria": string;
+  "Area Funcional": string;
+  Proyecto: string;
+  "Nombre proyecto": string;
+  "Valor Final": number;
+}
+
+export interface IReportColumnAccountsPayable {
+  Id?: number;
+  "Consecutivo RP SAP": number;
+  "Consecutivo RP Aurora": number;
+  Posición: number;
+  Fondo: string;
+  "Centro Gestor": string;
+  "Posicion Presupuestaria": string;
+  "Area Funcional": string;
+  Proyecto: string;
+  "Nombre proyecto": string;
+  "Valor Final": number;
+  "Valor Causado": number;
 }
