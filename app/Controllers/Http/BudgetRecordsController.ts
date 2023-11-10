@@ -86,5 +86,15 @@ export default class BudgetRecordsController {
         }
     }
 
-
+//getCausation
+public async getCausation({ request, response }: HttpContextContract) {
+    try {
+      const { id } = request.params();
+      return response.send(await BudgetRecordProvider.getCausation(id));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
 }
