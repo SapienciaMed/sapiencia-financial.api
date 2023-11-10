@@ -1109,7 +1109,7 @@ export default class ReportRepository implements IReportRepository {
     const resultRpBalance = await getlinksRpCdp(year, "RpBalance");
 
     for (const vrp of resultRpBalance) {
-      let idVrp: number = vrp.id;
+      // let idVrp: number = vrp.id;
       let consecutiveSap: number = 0;
       let consecutiveAurora: number = 0;
       let positionRp: number = 0;
