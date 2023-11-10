@@ -21,7 +21,7 @@ export interface IBudgetRecord {
 export interface ILinkRPCDP {
     id?: number;
     rpId?: number;
-    amountCdpId: number;
+    amountCdpId?: number;
     initialAmount?: number;
     creditAmount?: number;
     againtsAmount?: number;

@@ -1,8 +1,7 @@
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
-import { IBudgetRecord, IBudgetRecordDataBasic, IBudgetRecordFilter } from "App/Interfaces/BudgetRecord";
+import { IBudgetRecord, IBudgetRecordDataBasic, IBudgetRecordFilter, ILinkRPCDP } from "App/Interfaces/BudgetRecord";
 import IBudgetRecordRepository from "App/Repositories/BudgetRecordRepository";
 import { ApiResponse } from "App/Utils/ApiResponses";
-import { IStrategicDirectionService } from "./External/StrategicDirectionService";
 
 
 export interface IBudgetRecordService {
@@ -10,23 +9,18 @@ export interface IBudgetRecordService {
     updateDataBasicRp(budgetRecordDataBasic:IBudgetRecordDataBasic): Promise<ApiResponse<any>>
     getComponents(): Promise<ApiResponse<any>>
     getRpByFilters(budgetRecordFilter: IBudgetRecordFilter): Promise<ApiResponse<any>>
-    getTotalValuesImports(id: number): Promise<ApiResponse<any>>;
-    getRpById(id: number): Promise<ApiResponse<any>>;    
+    getTotalValuesImports(id: number): Promise<ApiResponse<any>>;   
+    updateRp(id:number,budgetRecordDataBasic:ILinkRPCDP): Promise<ApiResponse<any>>
 }
 
 export default class BudgetRecordService implements IBudgetRecordService {
 
 
-   /*  constructor(private budgerRecordRepository: IBudgetRecordRepository) {
+   constructor(private budgerRecordRepository: IBudgetRecordRepository) {
         this.budgerRecordRepository = budgerRecordRepository;
        
-    } */
-
-    constructor(
-        private budgerRecordRepository : IBudgetRecordRepository,
-        private strategicDirectionService: IStrategicDirectionService
-      ) { }
-
+    } 
+    
     createCdps = async (budgetRecord: IBudgetRecord): Promise<ApiResponse<any>> => {
         try {
             const data = await this.budgerRecordRepository.createCdps(budgetRecord)
@@ -49,6 +43,25 @@ export default class BudgetRecordService implements IBudgetRecordService {
     updateDataBasicRp = async(budgetRecordDataBasic:IBudgetRecordDataBasic): Promise<ApiResponse<any>> => {
         try {
             const data = await this.budgerRecordRepository.updateDataBasicRp(budgetRecordDataBasic)
+            return new ApiResponse(
+                data,
+                EResponseCodes.OK,
+                "RP editado exitosamente"
+            );
+
+        } catch (error) {
+            return new ApiResponse(
+                null,
+                EResponseCodes.FAIL,
+                "Error al editar el RP" + error
+            );
+        }
+
+    }
+
+    updateRp = async(id:number,budgetRecordDataBasic:ILinkRPCDP): Promise<ApiResponse<any>> => {
+        try {
+            const data = await this.budgerRecordRepository.updateRp(id,budgetRecordDataBasic)
             return new ApiResponse(
                 data,
                 EResponseCodes.OK,
@@ -109,22 +122,5 @@ export default class BudgetRecordService implements IBudgetRecordService {
             );
         }
         return new ApiResponse(res, EResponseCodes.OK);
-    }
-
-    async getRpById(id: number): Promise<ApiResponse<any>> {
-        const addition = await this.budgerRecordRepository.getRpById(id);
-        const projectInvesment = await this.strategicDirectionService.getProjectInvestmentPaginated({ page: 1, perPage: 100000 });
-        
-    
-        if (!addition) {
-          return new ApiResponse(
-            {} as IBudgetRecord,
-            EResponseCodes.FAIL,
-            "Registro no encontrado"
-          );
-        }    
-       
-        return new ApiResponse(projectInvesment, EResponseCodes.OK);
-      }
-
+    }   
 }

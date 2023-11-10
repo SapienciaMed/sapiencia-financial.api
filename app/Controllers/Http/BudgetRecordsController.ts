@@ -6,6 +6,7 @@ import { ApiResponse } from 'App/Utils/ApiResponses';
 import BudgetRecordUpdateBasicRpValidator from 'App/Validators/BudgetRecordUpdateBasicRpValidator';
 import BudgetRecordValidator from 'App/Validators/BudgetRecordValidator';
 
+
 export default class BudgetRecordsController {
 
     public async createRp({ request,response }: HttpContextContract) {
@@ -69,25 +70,21 @@ export default class BudgetRecordsController {
           );
         }
       }
-
-
       
-  public async getRpById({ response, request }: HttpContextContract) {
-
-    try {
-
-      const { id } = request.params();
-      return response.send(await BudgetRecordProvider.getRpById(id));
-
-    } catch (err) {
-
-      return response.badRequest(
-        new ApiResponse(null, EResponseCodes.FAIL, String(err))
-      );
-
+      public async updateRp({ request,response }: HttpContextContract) {
+        try {
+            const { id } = request.params() as { id: number };
+            //const budgetRecordDataBasic = await request.validate(LinkValidator);
+            
+            return response.send(
+                await BudgetRecordProvider.updateRp(id,request.all())
+            );
+        } catch (err) {
+            return response.badRequest(
+                new ApiResponse(null, EResponseCodes.FAIL, String(err))
+            );
+        }
     }
-
-  }
 
 
 }

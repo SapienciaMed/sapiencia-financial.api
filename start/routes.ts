@@ -288,6 +288,7 @@ Route.group(() => {
   Route.get('/get-components', 'BudgetRecordsController.getComponents')
   Route.post('/get-rp-by-filters', 'BudgetRecordsController.getRpByFilters')
   Route.get('/get-totalvaluesimports/:id', 'BudgetRecordsController.getTotalValuesImports')
+  Route.post('/update-data/:id', 'BudgetRecordsController.updateRp')
 }).prefix('/api/v1/budget-records')
 
 

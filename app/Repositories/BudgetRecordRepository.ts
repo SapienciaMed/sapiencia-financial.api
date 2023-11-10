@@ -10,8 +10,12 @@ export interface IBudgetRecordRepository {
     getRpByFilters(budgetRecordFilter: IBudgetRecordFilter): Promise<any>
     getTotalValuesImports(id: number): Promise<LinkRpcdp | null>;
     getRpById(id: number): Promise<IBudgetRecord | null>;
+    updateRp(id: number,budgetRecordDataBasic:ILinkRPCDP): Promise<ILinkRPCDP | null>
 }
 export default class BudgetRecordRepository implements IBudgetRecordRepository {
+    getRpById(_id: number): Promise<IBudgetRecord | null> {
+        throw new Error("Method not implemented.");
+    }
     
     updateDataBasicRp(_budgetRecordDataBasic: IBudgetRecordDataBasic): Promise<BudgetRecord> {
         throw new Error("Method not implemented.");
@@ -103,26 +107,21 @@ export default class BudgetRecordRepository implements IBudgetRecordRepository {
         return totalImport;
     }
 
-    async getRpById(id: number): Promise<IBudgetRecord | null> {
-        return await BudgetRecord.query()
-          .where('id', id)
-          .preload('creditor') 
-          .preload('linksRp', (query) => {
-            query.preload('amountBudgetAvailability', (query)=>{
-                query.preload('budgetRoute',(query)=>{
-                    query.preload('budget')    
-                    query.preload('funds')    
-                    query.preload('pospreSapiencia')    
-                    query.preload('projectVinculation',(query)=>{
-                        query.preload('functionalProject')
-                    })  
-                })
-            })
-        }) 
-          .first(); 
+   
       
-        
-      }
-      
+    async updateRp(id: number,budgets: ILinkRPCDP): Promise<ILinkRPCDP | null> {
+        const toUpdate = await LinkRpcdp.find(id);
+        if (!toUpdate) {
+          return null;
+        }
     
+        /* toUpdate.isActive = budgets.isActive!;
+        toUpdate.reasonCancellation = budgets.reasonCancellation!;        */
+
+        toUpdate.fill({ ...toUpdate, ...budgets });
+       
+    
+        await toUpdate.save();
+        return toUpdate.serialize() as IBudgetRecordDataBasic;
+      }
 }
