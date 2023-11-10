@@ -1169,7 +1169,7 @@ export default class ReportRepository implements IReportRepository {
       finalAmount = vrp.finalAmount;
 
       const newItem: IReportColumnRpBalance = {
-        Id: idVrp,
+        // Id: idVrp,
         "Consecutivo RP SAP": consecutiveSap,
         "Consecutivo RP Aurora": consecutiveAurora,
         Posición: positionRp,
