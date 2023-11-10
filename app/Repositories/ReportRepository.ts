@@ -23,12 +23,14 @@ import {
 import Transfer from "App/Models/Transfer";
 import { ITransfersReport } from "App/Interfaces/TransfersInterfaces";
 import BudgetAvailability from "App/Models/BudgetAvailability";
+import { IReportTransfers } from '../Interfaces/ReportsInterfaces';
 
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
   generateReportDetailChangeBudgets(year: number): Promise<any[]>;
   generateReportExecutionExpenses(year: number): Promise<any[]>;
   generateReportOverviewBudgetModifications(year: number): Promise<any[]>;
+  generateReportTransfers(year: number): Promise<any[]>;
   generateReportCdpBalance(year: number): Promise<any[]>;
 }
 
@@ -215,71 +217,181 @@ export default class ReportRepository implements IReportRepository {
       projectName = getDataProject.projectName;
 
       //? **************************************************************************************************************
-      //? Ahora traigamos las anualizaciones
-      //? Calculo los totales asociados a los valores programados
+
+      //* ****************** *//
+      //* PROGRAMADO DEL AÑO
+      //* ****************** *//
       budgetSapi =
         Number(pac.pacAnnualizations![0].jan) + Number(pac.pacAnnualizations![0].feb) + Number(pac.pacAnnualizations![0].mar) +
         Number(pac.pacAnnualizations![0].abr) + Number(pac.pacAnnualizations![0].may) + Number(pac.pacAnnualizations![0].jun) +
         Number(pac.pacAnnualizations![0].jul) + Number(pac.pacAnnualizations![0].ago) + Number(pac.pacAnnualizations![0].sep) +
         Number(pac.pacAnnualizations![0].oct) + Number(pac.pacAnnualizations![0].nov) + Number(pac.pacAnnualizations![0].dec);
 
-      programmingJan = Number(pac.pacAnnualizations![0].jan); if (isNaN(programmingJan)) programmingJan = 0.0;
-      programmingFeb = Number(pac.pacAnnualizations![0].feb); if (isNaN(programmingFeb)) programmingFeb = 0.0;
-      programmingMar = Number(pac.pacAnnualizations![0].mar); if (isNaN(programmingMar)) programmingMar = 0.0;
-      programmingApr = Number(pac.pacAnnualizations![0].abr); if (isNaN(programmingApr)) programmingApr = 0.0;
-      programmingMay = Number(pac.pacAnnualizations![0].may); if (isNaN(programmingMay)) programmingMay = 0.0;
-      programmingJun = Number(pac.pacAnnualizations![0].jun); if (isNaN(programmingJun)) programmingJun = 0.0;
-      programmingJul = Number(pac.pacAnnualizations![0].jul); if (isNaN(programmingJul)) programmingJul = 0.0;
-      programmingAug = Number(pac.pacAnnualizations![0].ago); if (isNaN(programmingAug)) programmingAug = 0.0;
-      programmingSep = Number(pac.pacAnnualizations![0].sep); if (isNaN(programmingSep)) programmingSep = 0.0;
-      programmingOct = Number(pac.pacAnnualizations![0].oct); if (isNaN(programmingOct)) programmingOct = 0.0;
-      programmingNov = Number(pac.pacAnnualizations![0].nov); if (isNaN(programmingNov)) programmingNov = 0.0;
-      programmingDec = Number(pac.pacAnnualizations![0].dec); if (isNaN(programmingDec)) programmingDec = 0.0;
+      //* ****************** *//
+      //* PROGRAMADO POR MES
+      //* ****************** *//
+      programmingJan = Number(pac.pacAnnualizations![0].jan);
+      if (isNaN(programmingJan) || programmingJan === Number("Infinity")) programmingJan = 0.0;
 
+      programmingFeb = Number(pac.pacAnnualizations![0].feb);
+      if (isNaN(programmingFeb) || programmingFeb === Number("Infinity")) programmingFeb = 0.0;
+
+      programmingMar = Number(pac.pacAnnualizations![0].mar);
+      if (isNaN(programmingMar) || programmingMar === Number("Infinity")) programmingMar = 0.0;
+
+      programmingApr = Number(pac.pacAnnualizations![0].abr);
+      if (isNaN(programmingApr) || programmingApr === Number("Infinity")) programmingApr = 0.0;
+
+      programmingMay = Number(pac.pacAnnualizations![0].may);
+      if (isNaN(programmingMay) || programmingMay === Number("Infinity")) programmingMay = 0.0;
+
+      programmingJun = Number(pac.pacAnnualizations![0].jun);
+      if (isNaN(programmingJun) || programmingJun === Number("Infinity")) programmingJun = 0.0;
+
+      programmingJul = Number(pac.pacAnnualizations![0].jul);
+      if (isNaN(programmingJul) || programmingJul === Number("Infinity")) programmingJul = 0.0;
+
+      programmingAug = Number(pac.pacAnnualizations![0].ago);
+      if (isNaN(programmingAug) || programmingAug === Number("Infinity")) programmingAug = 0.0;
+
+      programmingSep = Number(pac.pacAnnualizations![0].sep);
+      if (isNaN(programmingSep) || programmingSep === Number("Infinity")) programmingSep = 0.0;
+
+      programmingOct = Number(pac.pacAnnualizations![0].oct);
+      if (isNaN(programmingOct) || programmingOct === Number("Infinity")) programmingOct = 0.0;
+
+      programmingNov = Number(pac.pacAnnualizations![0].nov);
+      if (isNaN(programmingNov) || programmingNov === Number("Infinity")) programmingNov = 0.0;
+
+      programmingDec = Number(pac.pacAnnualizations![0].dec);
+      if (isNaN(programmingDec) || programmingDec === Number("Infinity")) programmingDec = 0.0;
+
+      //* ****************** *//
+      //* RECAUDADO DEL AÑO
+      //* ****************** *//
       collected =
         Number(pac.pacAnnualizations![1].jan) + Number(pac.pacAnnualizations![1].feb) + Number(pac.pacAnnualizations![1].mar) +
         Number(pac.pacAnnualizations![1].abr) + Number(pac.pacAnnualizations![1].may) + Number(pac.pacAnnualizations![1].jun) +
         Number(pac.pacAnnualizations![1].jul) + Number(pac.pacAnnualizations![1].ago) + Number(pac.pacAnnualizations![1].sep) +
         Number(pac.pacAnnualizations![1].oct) + Number(pac.pacAnnualizations![1].nov) + Number(pac.pacAnnualizations![1].dec);
 
-      collectedJan = Number(pac.pacAnnualizations![1].jan); if (isNaN(collectedJan)) collectedJan = 0.0;
-      collectedFeb = Number(pac.pacAnnualizations![1].feb); if (isNaN(collectedFeb)) collectedFeb = 0.0;
-      collectedMar = Number(pac.pacAnnualizations![1].mar); if (isNaN(collectedMar)) collectedMar = 0.0;
-      collectedApr = Number(pac.pacAnnualizations![1].abr); if (isNaN(collectedApr)) collectedApr = 0.0;
-      collectedMay = Number(pac.pacAnnualizations![1].may); if (isNaN(collectedMay)) collectedMay = 0.0;
-      collectedJun = Number(pac.pacAnnualizations![1].jun); if (isNaN(collectedJun)) collectedJun = 0.0;
-      collectedJul = Number(pac.pacAnnualizations![1].jul); if (isNaN(collectedJul)) collectedJul = 0.0;
-      collectedAug = Number(pac.pacAnnualizations![1].ago); if (isNaN(collectedAug)) collectedAug = 0.0;
-      collectedSep = Number(pac.pacAnnualizations![1].sep); if (isNaN(collectedSep)) collectedSep = 0.0;
-      collectedOct = Number(pac.pacAnnualizations![1].oct); if (isNaN(collectedOct)) collectedOct = 0.0;
-      collectedNov = Number(pac.pacAnnualizations![1].nov); if (isNaN(collectedNov)) collectedNov = 0.0;
-      collectedDec = Number(pac.pacAnnualizations![1].dec); if (isNaN(collectedDec)) collectedDec = 0.0;
+      //* ****************** *//
+      //* RECAUDADO POR MES
+      //* ****************** *//
+      collectedJan = Number(pac.pacAnnualizations![1].jan);
+      if (isNaN(collectedJan) || collectedJan === Number("Infinity")) collectedJan = 0.0;
 
-      executeJan = Number(((100 * collectedJan) / programmingJan).toFixed(2)); if (isNaN(executeJan)) executeJan = 0.0;
-      executeFeb = Number(((100 * collectedFeb) / programmingFeb).toFixed(2)); if (isNaN(executeFeb)) executeFeb = 0.0;
-      executeMar = Number(((100 * collectedMar) / programmingMar).toFixed(2)); if (isNaN(executeMar)) executeMar = 0.0;
-      executeApr = Number(((100 * collectedApr) / programmingApr).toFixed(2)); if (isNaN(executeApr)) executeApr = 0.0;
-      executeMay = Number(((100 * collectedMay) / programmingMay).toFixed(2)); if (isNaN(executeMay)) executeMay = 0.0;
-      executeJun = Number(((100 * collectedJun) / programmingJun).toFixed(2)); if (isNaN(executeJun)) executeJun = 0.0;
-      executeJul = Number(((100 * collectedJul) / programmingJul).toFixed(2)); if (isNaN(executeJul)) executeJul = 0.0;
-      executeAug = Number(((100 * collectedAug) / programmingAug).toFixed(2)); if (isNaN(executeAug)) executeAug = 0.0;
-      executeSep = Number(((100 * collectedSep) / programmingSep).toFixed(2)); if (isNaN(executeSep)) executeSep = 0.0;
-      executeOct = Number(((100 * collectedOct) / programmingOct).toFixed(2)); if (isNaN(executeOct)) executeOct = 0.0;
-      executeNov = Number(((100 * collectedNov) / programmingNov).toFixed(2)); if (isNaN(executeNov)) executeNov = 0.0;
-      executeDec = Number(((100 * collectedDec) / programmingDec).toFixed(2)); if (isNaN(executeDec)) executeDec = 0.0;
+      collectedFeb = Number(pac.pacAnnualizations![1].feb);
+      if (isNaN(collectedFeb) || collectedFeb === Number("Infinity")) collectedFeb = 0.0;
 
-      diferenceJan = Number((collectedJan - programmingJan).toFixed(2)); if (isNaN(diferenceJan)) diferenceJan = 0.0;
-      diferenceFeb = Number((collectedFeb - programmingFeb).toFixed(2)); if (isNaN(diferenceFeb)) diferenceFeb = 0.0;
-      diferenceMar = Number((collectedMar - programmingMar).toFixed(2)); if (isNaN(diferenceMar)) diferenceMar = 0.0;
-      diferenceApr = Number((collectedApr - programmingApr).toFixed(2)); if (isNaN(diferenceApr)) diferenceApr = 0.0;
-      diferenceMay = Number((collectedMay - programmingMay).toFixed(2)); if (isNaN(diferenceMay)) diferenceMay = 0.0;
-      diferenceJun = Number((collectedJun - programmingJun).toFixed(2)); if (isNaN(diferenceJun)) diferenceJun = 0.0;
-      diferenceJul = Number((collectedJul - programmingJul).toFixed(2)); if (isNaN(diferenceJul)) diferenceJul = 0.0;
-      diferenceAug = Number((collectedAug - programmingAug).toFixed(2)); if (isNaN(diferenceAug)) diferenceAug = 0.0;
-      diferenceSep = Number((collectedSep - programmingSep).toFixed(2)); if (isNaN(diferenceSep)) diferenceSep = 0.0;
-      diferenceOct = Number((collectedOct - programmingOct).toFixed(2)); if (isNaN(diferenceOct)) diferenceOct = 0.0;
-      diferenceNov = Number((collectedNov - programmingNov).toFixed(2)); if (isNaN(diferenceNov)) diferenceNov = 0.0;
-      diferenceDec = Number((collectedDec - programmingDec).toFixed(2)); if (isNaN(diferenceDec)) diferenceDec = 0.0;
+      collectedMar = Number(pac.pacAnnualizations![1].mar);
+      if (isNaN(collectedMar) || collectedMar === Number("Infinity")) collectedMar = 0.0;
+
+      collectedApr = Number(pac.pacAnnualizations![1].abr);
+      if (isNaN(collectedApr) || collectedApr === Number("Infinity")) collectedApr = 0.0;
+
+      collectedMay = Number(pac.pacAnnualizations![1].may);
+      if (isNaN(collectedMay) || collectedMay === Number("Infinity")) collectedMay = 0.0;
+
+      collectedJun = Number(pac.pacAnnualizations![1].jun);
+      if (isNaN(collectedJun) || collectedJun === Number("Infinity")) collectedJun = 0.0;
+
+      collectedJul = Number(pac.pacAnnualizations![1].jul);
+      if (isNaN(collectedJul) || collectedJul === Number("Infinity")) collectedJul = 0.0;
+
+      collectedAug = Number(pac.pacAnnualizations![1].ago);
+      if (isNaN(collectedAug) || collectedAug === Number("Infinity")) collectedAug = 0.0;
+
+      collectedSep = Number(pac.pacAnnualizations![1].sep);
+      if (isNaN(collectedSep) || collectedSep === Number("Infinity")) collectedSep = 0.0;
+
+      collectedOct = Number(pac.pacAnnualizations![1].oct);
+      if (isNaN(collectedOct) || collectedOct === Number("Infinity")) collectedOct = 0.0;
+
+      collectedNov = Number(pac.pacAnnualizations![1].nov);
+      if (isNaN(collectedNov) || collectedNov === Number("Infinity")) collectedNov = 0.0;
+
+      collectedDec = Number(pac.pacAnnualizations![1].dec);
+      if (isNaN(collectedDec) || collectedDec === Number("Infinity")) collectedDec = 0.0;
+
+
+      //* ****************** *//
+      //* EJECUTADO POR MES
+      //* ****************** *//
+      executeJan = Number(((100 * collectedJan) / programmingJan).toFixed(2));
+      if (isNaN(executeJan) || executeJan === Number("Infinity")) executeJan = 0.0;
+
+      executeFeb = Number(((100 * collectedFeb) / programmingFeb).toFixed(2));
+      if (isNaN(executeFeb) || executeFeb === Number("Infinity")) executeFeb = 0.0;
+
+      executeMar = Number(((100 * collectedMar) / programmingMar).toFixed(2));
+      if (isNaN(executeMar) || executeMar === Number("Infinity")) executeMar = 0.0;
+
+      executeApr = Number(((100 * collectedApr) / programmingApr).toFixed(2));
+      if (isNaN(executeApr) || executeApr === Number("Infinity")) executeApr = 0.0;
+
+      executeMay = Number(((100 * collectedMay) / programmingMay).toFixed(2));
+      if (isNaN(executeMay) || executeMay === Number("Infinity")) executeMay = 0.0;
+
+      executeJun = Number(((100 * collectedJun) / programmingJun).toFixed(2));
+      if (isNaN(executeJun) || executeJun === Number("Infinity")) executeJun = 0.0;
+
+      executeJul = Number(((100 * collectedJul) / programmingJul).toFixed(2));
+      if (isNaN(executeJul) || executeJul === Number("Infinity")) executeJul = 0.0;
+
+      executeAug = Number(((100 * collectedAug) / programmingAug).toFixed(2));
+      if (isNaN(executeAug) || executeAug === Number("Infinity")) executeAug = 0.0;
+
+      executeSep = Number(((100 * collectedSep) / programmingSep).toFixed(2));
+      if (isNaN(executeSep) || executeSep === Number("Infinity")) executeSep = 0.0;
+
+      executeOct = Number(((100 * collectedOct) / programmingOct).toFixed(2));
+      if (isNaN(executeOct) || executeOct === Number("Infinity")) executeOct = 0.0;
+
+      executeNov = Number(((100 * collectedNov) / programmingNov).toFixed(2));
+      if (isNaN(executeNov) || executeNov === Number("Infinity")) executeNov = 0.0;
+
+      executeDec = Number(((100 * collectedDec) / programmingDec).toFixed(2));
+      if (isNaN(executeDec) || executeDec === Number("Infinity")) executeDec = 0.0;
+
+      //* ****************** *//
+      //* DIFERENCIA POR MES
+      //* ****************** *//
+      diferenceJan = Number((collectedJan - programmingJan).toFixed(2));
+      if (isNaN(diferenceJan) || diferenceJan === Number("Infinity")) diferenceJan = 0.0;
+
+      diferenceFeb = Number((collectedFeb - programmingFeb).toFixed(2));
+      if (isNaN(diferenceFeb) || diferenceFeb === Number("Infinity")) diferenceFeb = 0.0;
+
+      diferenceMar = Number((collectedMar - programmingMar).toFixed(2));
+      if (isNaN(diferenceMar) || diferenceMar === Number("Infinity")) diferenceMar = 0.0;
+
+      diferenceApr = Number((collectedApr - programmingApr).toFixed(2));
+      if (isNaN(diferenceApr) || diferenceApr === Number("Infinity")) diferenceApr = 0.0;
+
+      diferenceMay = Number((collectedMay - programmingMay).toFixed(2));
+      if (isNaN(diferenceMay) || diferenceMay === Number("Infinity")) diferenceMay = 0.0;
+
+      diferenceJun = Number((collectedJun - programmingJun).toFixed(2));
+      if (isNaN(diferenceJun) || diferenceJun === Number("Infinity")) diferenceJun = 0.0;
+
+      diferenceJul = Number((collectedJul - programmingJul).toFixed(2));
+      if (isNaN(diferenceJul) || diferenceJul === Number("Infinity")) diferenceJul = 0.0;
+
+      diferenceAug = Number((collectedAug - programmingAug).toFixed(2));
+      if (isNaN(diferenceAug) || diferenceAug === Number("Infinity")) diferenceAug = 0.0;
+
+      diferenceSep = Number((collectedSep - programmingSep).toFixed(2));
+      if (isNaN(diferenceSep) || diferenceSep === Number("Infinity")) diferenceSep = 0.0;
+
+      diferenceOct = Number((collectedOct - programmingOct).toFixed(2));
+      if (isNaN(diferenceOct) || diferenceOct === Number("Infinity")) diferenceOct = 0.0;
+
+      diferenceNov = Number((collectedNov - programmingNov).toFixed(2));
+      if (isNaN(diferenceNov) || diferenceNov === Number("Infinity")) diferenceNov = 0.0;
+
+      diferenceDec = Number((collectedDec - programmingDec).toFixed(2));
+      if (isNaN(diferenceDec) || diferenceDec === Number("Infinity")) diferenceDec = 0.0;
 
       percentExecute = Number(((100 * collected) / budgetSapi).toFixed(2));
       forCollected = Number(budgetSapi - collected);
@@ -556,7 +668,6 @@ export default class ReportRepository implements IReportRepository {
 
     let infoArrayResult: IReportChangeBudgets[] = []; //Tanto para disminución como adición.
 
-
     //** *************************** **//
     //** Grupo Adición y Disminución **//
     //** *************************** **//
@@ -582,8 +693,6 @@ export default class ReportRepository implements IReportRepository {
 
       for (const iterResMovement of iterResAdd.additionMove) {
 
-        console.log({iterResMovement});
-
         let total: number = 0;
         let millionsTotal: number = 0;
         let millionsLiquid: number = 0;
@@ -597,13 +706,12 @@ export default class ReportRepository implements IReportRepository {
           total = Number(iterResMovement.value);
           millionsTotal = Number((total/1000000).toFixed(2));
           millionsLiquid = Number((initialBudget/1000000).toFixed(2));
-          percentUpInitialValue = Number(millionsTotal/millionsLiquid);
+          percentUpInitialValue = Number((millionsTotal/millionsLiquid).toFixed(2));
 
           //! Por si nos quedan valores que podrían dividirse en 0
-          millionsTotal === Number("Infinity") ? millionsTotal = 0 : millionsTotal = millionsTotal;
-          millionsLiquid === Number("Infinity") ? millionsLiquid = 0 : millionsLiquid = millionsLiquid;
-          percentUpInitialValue === Number("Infinity") ? percentUpInitialValue = 0 : percentUpInitialValue = percentUpInitialValue;
-
+          if(millionsTotal === Number("Infinity") || isNaN(millionsTotal)) millionsTotal = 0;
+          if(millionsLiquid === Number("Infinity") || isNaN(millionsLiquid)) millionsLiquid = 0;
+          if(percentUpInitialValue === Number("Infinity") || isNaN(percentUpInitialValue)) percentUpInitialValue = 0;
 
           //Organizo objeto para infoArrayAddition
           const objTransaction: IReportChangeBudgets = {
@@ -693,7 +801,95 @@ export default class ReportRepository implements IReportRepository {
 
   }
 
+  //HU-088 Reporte Traslados
+  async generateReportTransfers(year: number): Promise<any[]> {
 
+    let infoArrayResult: IReportTransfers[] = []; //Para los traslados.
+
+    //** *************** **//
+    //** Grupo Traslados **//
+    //** *************** **//
+    const getTransfers = await Transfer.query()
+      .orderBy("actAdminDistrict", "asc")
+      .preload("transferMove", (s) => {
+        s.preload("budgetRoute", (t) => {
+          t.preload("projectVinculation"),
+            t.preload("funds"),
+            t.preload("budget"),
+            t.preload("pospreSapiencia")
+        })
+      });
+
+    const getGeneralTransferResponse: any[] = getTransfers.map((i) => i.serialize());
+    const getAdjustDataTransfer = getGeneralTransferResponse as ITransfersReport[];
+
+    for (const transfer of getAdjustDataTransfer) {
+
+      const actAdminDis: string = transfer.actAdminDistrict;
+      const actAdminSap: string = transfer.actAdminSapiencia;
+      const observation: string = transfer.observations;
+
+      for (const movements of transfer.transferMove!){
+
+        let credit: number = 0;
+        let againstCredit: number = 0;
+
+        if (movements.type === "Origen") {
+          credit = movements.value;
+          againstCredit = 0;
+        } else {
+          againstCredit = movements.value;
+          credit = 0;
+        }
+
+        let projectCode: string = "";
+        let projectName: string = "";
+        let functionalArea: string = "";
+        let fund: string = movements.budgetRoute.fund?.number!;
+        let managementCenter = movements.budgetRoute.managementCenter;
+
+        let posPreSapi: string = movements.budgetRoute.pospreSapiencia?.number!;
+        let desPosPreSapi: string = movements.budgetRoute.pospreSapiencia?.description!;
+        let exercise: number = movements.budgetRoute.pospreSapiencia?.ejercise!;
+
+        if (exercise === year) {
+
+          const getDataProject: IDataBasicProject | null =
+            await this.getProjectGeneral(Number(movements.budgetRoute.idProjectVinculation), desPosPreSapi );
+
+          if (!getDataProject || getDataProject == null || getDataProject == undefined)
+            return [ null, "Ocurrió un error hallando la información del proyecto, revisar consistencia de información" ];
+
+          projectCode = getDataProject.projectCode;
+          projectName = getDataProject.projectName;
+          functionalArea = getDataProject.functionalArea;
+
+          const objTransaction: IReportTransfers = {
+            "Acto Administrativo Distrito": actAdminDis,
+            "Acto Administrativo Sapiencia": actAdminSap,
+            "Centro Gestor": managementCenter,
+            "Posición Presupuestal": posPreSapi,
+            "Fondo": fund,
+            "Área Funcional": functionalArea,
+            "Proyecto": projectCode,
+            "Valor Contracrédito": againstCredit,
+            "Valor Crédito": credit,
+            "Nombre Proyecto": projectName,
+            "Observación": observation
+          };
+
+          infoArrayResult.push( objTransaction );
+
+        }
+
+      }
+
+    }
+
+    console.log(infoArrayResult);
+    return infoArrayResult;
+
+  }
 
   async generateReportExecutionExpenses(year: number): Promise<any[]> {
     // Matriz que almacenará el resultado del informe

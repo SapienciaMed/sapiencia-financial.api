@@ -45,9 +45,10 @@ export default class ReportService implements IReportService {
         dataTable = await this.reportRepository.generateReportExecutionExpenses(filters.year);
         break;
       case EReportIds.reportCdpBalance:
-        dataTable = await this.reportRepository.generateReportCdpBalance(
-          filters.year
-        );
+        dataTable = await this.reportRepository.generateReportCdpBalance(filters.year);
+        break;
+      case EReportIds.reportTransfers:
+        dataTable = await this.reportRepository.generateReportTransfers(filters.year);
         break;
 
       default:

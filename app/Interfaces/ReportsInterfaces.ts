@@ -100,6 +100,20 @@ export interface IReportChangeBudgets {
   "Observación": string;
 }
 
+export interface IReportTransfers {
+  "Acto Administrativo Distrito": string;
+  "Acto Administrativo Sapiencia": string;
+  "Centro Gestor": string;
+  "Posición Presupuestal": string;
+  "Fondo": string;
+  "Área Funcional": string;
+  "Proyecto": string;
+  "Valor Contracrédito": number;
+  "Valor Crédito": number;
+  "Nombre Proyecto": string;
+  "Observación": string;
+}
+
 export interface IDataBasicProject {
   projectCode: string;
   projectName: string;
