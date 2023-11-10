@@ -1,16 +1,22 @@
-import { IBudgetRecord, IBudgetRecordFilter, ILinkRPCDP,ITotalImports  } from "App/Interfaces/BudgetRecord";
+import { IBudgetRecord, IBudgetRecordDataBasic, IBudgetRecordFilter, ILinkRPCDP,ITotalImports  } from "App/Interfaces/BudgetRecord";
 import BudgetRecord from "App/Models/BudgetRecord";
 import Component from "App/Models/Component";
 import LinkRpcdp from "App/Models/LinkRpcdp";
 
 export interface IBudgetRecordRepository {
     createCdps(budgetRecord: IBudgetRecord): Promise<BudgetRecord>
+    updateDataBasicRp(budgetRecordDataBasic:IBudgetRecordDataBasic): Promise<BudgetRecord>
     getComponents(): Promise<Component[]>
     getRpByFilters(budgetRecordFilter: IBudgetRecordFilter): Promise<any>
     getTotalValuesImports(id: number): Promise<LinkRpcdp | null>;
     getRpById(id: number): Promise<IBudgetRecord | null>;
 }
 export default class BudgetRecordRepository implements IBudgetRecordRepository {
+    
+    updateDataBasicRp(_budgetRecordDataBasic: IBudgetRecordDataBasic): Promise<BudgetRecord> {
+        throw new Error("Method not implemented.");
+    }
+
     createCdps = async (budgetRecord: IBudgetRecord): Promise<BudgetRecord> => {
         let linkRpData: ILinkRPCDP[] = [];
         budgetRecord?.linksRp!.length > 0 && linkRpData.push(...budgetRecord.linksRp!)
@@ -37,6 +43,8 @@ export default class BudgetRecordRepository implements IBudgetRecordRepository {
             .createMany(linkRpData)
         return BudgetRecordCreated;
     }
+
+
 
     getComponents = async (): Promise<Component[]> => {
         return await Component.query();
@@ -73,7 +81,9 @@ export default class BudgetRecordRepository implements IBudgetRecordRepository {
                         query.preload('budget')    
                         query.preload('funds')    
                         query.preload('pospreSapiencia')    
-                        query.preload('projectVinculation')    
+                        query.preload('projectVinculation',(query)=>{
+                            query.preload('functionalProject')
+                        })    
                     })
                 })
             });

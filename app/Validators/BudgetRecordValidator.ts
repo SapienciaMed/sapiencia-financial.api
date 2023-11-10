@@ -32,6 +32,7 @@ export default class BudgetRecordValidator {
             isActive: schema.boolean.optional(),
             reasonCancellation: schema.string.optional(),
             position: schema.number.optional(),
+            observation: schema.string.optional(),
         })
     )
     

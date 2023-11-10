@@ -17,6 +17,7 @@ export default class extends BaseSchema {
       table.boolean('VRP_ACTIVO').defaultTo(true).notNullable().comment('Estado de anulación de la vinculación del CDP')
       table.string('VRP_MOTIVO_ANULACION',500).nullable().comment('Motivo de la anulación')
       table.integer('VRP_POSICION').nullable().comment('Posicion')
+      table.string('VRP_OBSERVACION',500).nullable().comment('Observacion de la vinculacion del RP')
       
       
     })

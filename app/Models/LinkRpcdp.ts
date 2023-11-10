@@ -37,6 +37,9 @@ export default class LinkRpcdp extends BaseModel {
   
   @column({ columnName: 'VRP_POSICION', serializeAs: 'position' })
   public position: number
+  
+  @column({ columnName: 'VRP_OBSERVACION', serializeAs: 'observation' })
+  public observation: string
 
   @belongsTo(() => AmountBudgetAvailability, {
     localKey: "id",

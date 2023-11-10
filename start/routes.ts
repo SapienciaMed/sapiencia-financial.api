@@ -284,6 +284,7 @@ Route.group(() => {
 
 Route.group(() => {
   Route.post('/create-rp', 'BudgetRecordsController.createRp')
+  Route.post('/update-data-basic-rp', 'BudgetRecordsController.updateDataBasicRp')
   Route.get('/get-components', 'BudgetRecordsController.getComponents')
   Route.post('/get-rp-by-filters', 'BudgetRecordsController.getRpByFilters')
   Route.get('/get-totalvaluesimports/:id', 'BudgetRecordsController.getTotalValuesImports')
