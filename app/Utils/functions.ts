@@ -2,6 +2,7 @@ import { IDataCredits } from "App/Interfaces/ReportsInterfaces";
 import AdditionsMovement from "App/Models/AdditionsMovement";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 import LinkRpcdp from "App/Models/LinkRpcdp";
+import Pago from "App/Models/PagPagos";
 import TransfersMovement from "App/Models/TransfersMovement";
 
 export function getStringDate(date: Date): string {
@@ -112,4 +113,45 @@ export const getCheckWhetherOrNotHaveRp = async (icdId: number) => {
   if (resLinkRpcdp.length > 0) return true;
 
   return false;
+};
+
+export const getlinksRpCdp = async (year: number, type: string) => {
+  let result: any[] = [];
+  const queryLinkRpcdp = await LinkRpcdp.query()
+    .orderBy("id", "desc")
+    .preload("amountBudgetAvailability", (subQuery) => {
+      subQuery.preload("budgetRoute", (subSubQuery) => {
+        subSubQuery.preload("funds");
+        subSubQuery.preload("pospreSapiencia");
+        subSubQuery.preload("projectVinculation");
+      });
+    })
+    .preload("budgetRecord");
+
+  const resLinkRpcdp = queryLinkRpcdp
+    .map((i) => i.serialize())
+    .filter(
+      (i) =>
+        i.amountBudgetAvailability.budgetRoute.pospreSapiencia.ejercise ===
+          year && i.isActive === 1
+    );
+  for (const lrc of resLinkRpcdp) {
+    const queryPago = await Pago.query().where("vinculacionRpCode", lrc.id);
+    const resPago = queryPago.map((i) => i.serialize());
+
+    if (type === "RpBalance") {
+      const find = resPago.filter((i) => i.valorCausado && i.valorPagado);
+      if (!find.length && !queryPago.length) {
+        result.push(lrc);
+      }
+    }
+    if (type === "AccountsPayable") {
+      const find = resPago.filter((i) => i.valorCausado && !i.valorPagado);
+      if (find.length > 0) {
+        result.push(lrc);
+      }
+    }
+  }
+
+  return result;
 };
