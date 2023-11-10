@@ -8,6 +8,7 @@ export interface IBudgetRecordRepository {
     getComponents(): Promise<Component[]>
     getRpByFilters(budgetRecordFilter: IBudgetRecordFilter): Promise<any>
     getTotalValuesImports(id: number): Promise<LinkRpcdp | null>;
+    getRpById(id: number): Promise<IBudgetRecord | null>;
 }
 export default class BudgetRecordRepository implements IBudgetRecordRepository {
     createCdps = async (budgetRecord: IBudgetRecord): Promise<BudgetRecord> => {
@@ -91,4 +92,27 @@ export default class BudgetRecordRepository implements IBudgetRecordRepository {
     
         return totalImport;
     }
+
+    async getRpById(id: number): Promise<IBudgetRecord | null> {
+        return await BudgetRecord.query()
+          .where('id', id)
+          .preload('creditor') 
+          .preload('linksRp', (query) => {
+            query.preload('amountBudgetAvailability', (query)=>{
+                query.preload('budgetRoute',(query)=>{
+                    query.preload('budget')    
+                    query.preload('funds')    
+                    query.preload('pospreSapiencia')    
+                    query.preload('projectVinculation',(query)=>{
+                        query.preload('functionalProject')
+                    })  
+                })
+            })
+        }) 
+          .first(); 
+      
+        
+      }
+      
+    
 }

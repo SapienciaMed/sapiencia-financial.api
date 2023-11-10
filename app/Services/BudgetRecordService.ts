@@ -2,20 +2,29 @@ import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { IBudgetRecord, IBudgetRecordFilter } from "App/Interfaces/BudgetRecord";
 import IBudgetRecordRepository from "App/Repositories/BudgetRecordRepository";
 import { ApiResponse } from "App/Utils/ApiResponses";
+import { IStrategicDirectionService } from "./External/StrategicDirectionService";
+
 
 export interface IBudgetRecordService {
     createCdps(budgetRecord: IBudgetRecord): Promise<ApiResponse<any>>
     getComponents(): Promise<ApiResponse<any>>
     getRpByFilters(budgetRecordFilter: IBudgetRecordFilter): Promise<ApiResponse<any>>
     getTotalValuesImports(id: number): Promise<ApiResponse<any>>;
+    getRpById(id: number): Promise<ApiResponse<any>>;    
 }
 
 export default class BudgetRecordService implements IBudgetRecordService {
 
 
-    constructor(private budgerRecordRepository: IBudgetRecordRepository) {
+   /*  constructor(private budgerRecordRepository: IBudgetRecordRepository) {
         this.budgerRecordRepository = budgerRecordRepository;
-    }
+       
+    } */
+
+    constructor(
+        private budgerRecordRepository : IBudgetRecordRepository,
+        private strategicDirectionService: IStrategicDirectionService
+      ) { }
 
     createCdps = async (budgetRecord: IBudgetRecord): Promise<ApiResponse<any>> => {
         try {
@@ -81,5 +90,21 @@ export default class BudgetRecordService implements IBudgetRecordService {
         }
         return new ApiResponse(res, EResponseCodes.OK);
     }
+
+    async getRpById(id: number): Promise<ApiResponse<any>> {
+        const addition = await this.budgerRecordRepository.getRpById(id);
+        const projectInvesment = await this.strategicDirectionService.getProjectInvestmentPaginated({ page: 1, perPage: 100000 });
+        
+    
+        if (!addition) {
+          return new ApiResponse(
+            {} as IBudgetRecord,
+            EResponseCodes.FAIL,
+            "Registro no encontrado"
+          );
+        }    
+       
+        return new ApiResponse(projectInvesment, EResponseCodes.OK);
+      }
 
 }

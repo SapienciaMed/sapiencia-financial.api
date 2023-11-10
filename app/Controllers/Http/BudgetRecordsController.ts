@@ -57,4 +57,23 @@ export default class BudgetRecordsController {
       }
 
 
+      
+  public async getRpById({ response, request }: HttpContextContract) {
+
+    try {
+
+      const { id } = request.params();
+      return response.send(await BudgetRecordProvider.getRpById(id));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+
 }
