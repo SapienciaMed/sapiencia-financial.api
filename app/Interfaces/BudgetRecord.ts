@@ -30,6 +30,7 @@ export interface ILinkRPCDP {
     isActive?: boolean;
     reasonCancellation?: string;
     position?: number;
+    observation?: string;
 }
 
 export interface IBudgetRecordFilter {
