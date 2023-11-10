@@ -140,8 +140,8 @@ export const getlinksRpCdp = async (year: number, type: string) => {
     const resPago = queryPago.map((i) => i.serialize());
 
     if (type === "RpBalance") {
-      const find = resPago.filter((i) => i.valorCausado &&  i.valorPagado);
-      if (!find.length) {
+      const find = resPago.filter((i) => i.valorCausado && i.valorPagado);
+      if (!find.length && !queryPago.length) {
         result.push(lrc);
       }
     }
