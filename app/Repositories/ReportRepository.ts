@@ -374,30 +374,29 @@ export default class ReportRepository implements IReportRepository {
       executeDec = Number(((100 * collectedDec) / programmingDec).toFixed(2));
       if (isNaN(executeDec)) executeDec = 0.0;
 
-      diferenceJan = Number((100 * (collectedJan - programmingJan)).toFixed(2));
+      diferenceJan = Number((collectedJan - programmingJan).toFixed(2));
       if (isNaN(diferenceJan)) diferenceJan = 0.0;
-      diferenceFeb = Number((100 * (collectedFeb - programmingFeb)).toFixed(2));
+      diferenceFeb = Number((collectedFeb - programmingFeb).toFixed(2));
       if (isNaN(diferenceFeb)) diferenceFeb = 0.0;
-      diferenceMar = Number((100 * (collectedMar - programmingMar)).toFixed(2));
+      diferenceMar = Number((collectedMar - programmingMar).toFixed(2));
       if (isNaN(diferenceMar)) diferenceMar = 0.0;
-      diferenceApr = Number((100 * (collectedApr - programmingApr)).toFixed(2));
+      diferenceApr = Number((collectedApr - programmingApr).toFixed(2));
       if (isNaN(diferenceApr)) diferenceApr = 0.0;
-      diferenceMay = Number((100 * (collectedMay - programmingMay)).toFixed(2));
+      diferenceMay = Number((collectedMay - programmingMay).toFixed(2));
       if (isNaN(diferenceMay)) diferenceMay = 0.0;
-      diferenceJun = Number((100 * (collectedJun - programmingJun)).toFixed(2));
+      diferenceJun = Number((collectedJun - programmingJun).toFixed(2));
       if (isNaN(diferenceJun)) diferenceJun = 0.0;
-      diferenceJul = Number((100 * (collectedJul - programmingJul)).toFixed(2));
+      diferenceJul = Number((collectedJul - programmingJul).toFixed(2));
       if (isNaN(diferenceJul)) diferenceJul = 0.0;
-      diferenceAug = Number((100 * (collectedAug - programmingAug)).toFixed(2));
+      diferenceAug = Number((collectedAug - programmingAug).toFixed(2));
       if (isNaN(diferenceAug)) diferenceAug = 0.0;
-      diferenceSep = Number((100 * (collectedSep - programmingSep)).toFixed(2));
+      diferenceSep = Number((collectedSep - programmingSep).toFixed(2));
       if (isNaN(diferenceSep)) diferenceSep = 0.0;
-      diferenceOct = Number((100 * (collectedOct - programmingOct)).toFixed(2));
+      diferenceOct = Number((collectedOct - programmingOct).toFixed(2));
       if (isNaN(diferenceOct)) diferenceOct = 0.0;
-      diferenceNov = Number((100 * (collectedNov - programmingNov)).toFixed(2));
+      diferenceNov = Number((collectedNov - programmingNov).toFixed(2));
       if (isNaN(diferenceNov)) diferenceNov = 0.0;
-      diferenceDec = Number((100 * (collectedDec - programmingDec)).toFixed(2));
-
+      diferenceDec = Number((collectedDec - programmingDec).toFixed(2));
       if (isNaN(diferenceDec)) diferenceDec = 0.0;
 
       percentExecute = Number(((100 * collected) / budgetSapi).toFixed(2));

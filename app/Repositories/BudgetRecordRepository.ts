@@ -1,15 +1,21 @@
-import { IBudgetRecord, IBudgetRecordFilter, ILinkRPCDP,ITotalImports  } from "App/Interfaces/BudgetRecord";
+import { IBudgetRecord, IBudgetRecordDataBasic, IBudgetRecordFilter, ILinkRPCDP,ITotalImports  } from "App/Interfaces/BudgetRecord";
 import BudgetRecord from "App/Models/BudgetRecord";
 import Component from "App/Models/Component";
 import LinkRpcdp from "App/Models/LinkRpcdp";
 
 export interface IBudgetRecordRepository {
     createCdps(budgetRecord: IBudgetRecord): Promise<BudgetRecord>
+    updateDataBasicRp(budgetRecordDataBasic:IBudgetRecordDataBasic): Promise<BudgetRecord>
     getComponents(): Promise<Component[]>
     getRpByFilters(budgetRecordFilter: IBudgetRecordFilter): Promise<any>
     getTotalValuesImports(id: number): Promise<LinkRpcdp | null>;
 }
 export default class BudgetRecordRepository implements IBudgetRecordRepository {
+    
+    updateDataBasicRp(_budgetRecordDataBasic: IBudgetRecordDataBasic): Promise<BudgetRecord> {
+        throw new Error("Method not implemented.");
+    }
+
     createCdps = async (budgetRecord: IBudgetRecord): Promise<BudgetRecord> => {
         let linkRpData: ILinkRPCDP[] = [];
         budgetRecord?.linksRp!.length > 0 && linkRpData.push(...budgetRecord.linksRp!)
@@ -37,33 +43,48 @@ export default class BudgetRecordRepository implements IBudgetRecordRepository {
         return BudgetRecordCreated;
     }
 
+
+
     getComponents = async (): Promise<Component[]> => {
         return await Component.query();
     }
 
     getRpByFilters = async (budgetRecordFilter: IBudgetRecordFilter): Promise<any> => {
         return await BudgetRecord.query()
-            /* .if(budgetRecordFilter.consecutiveRpSap,()=>{
-                Query.where()
+             .if(budgetRecordFilter.consecutiveRpSap,(query)=>{
+                 query.where('consecutiveSap','=',budgetRecordFilter.consecutiveRpSap!)
             })
-            .if(budgetRecordFilter.consecutiveRpAurora,()=>{
-                Query.where()
-            })*/
+            .if(budgetRecordFilter.consecutiveRpAurora,(query)=>{
+                query.where('id',budgetRecordFilter.consecutiveRpAurora!)
+            })
             .if(budgetRecordFilter.contractorDocument, (query) => {
                 query.where('contractorDocument', budgetRecordFilter.contractorDocument!)
             })
             .if(budgetRecordFilter.supplierType, (query) => {
                 query.where('supplierType', budgetRecordFilter.supplierType!)
             })
-            /*.if(budgetRecordFilter.taxAccreditedId,()=>{
-                Query.where()
+            .if(budgetRecordFilter.taxAccreditedId,(query)=>{
+                query.whereHas('creditor',(query)=>{
+                    query.where('taxIdentification','=',budgetRecordFilter.taxAccreditedId!)
+                })
             })
-            .if(budgetRecordFilter.name,()=>{
-                Query.where()
-            }) */
+            .if(budgetRecordFilter.name,(query)=>{
+                query.whereHas('creditor',(query)=>{
+                    query.where('name','=',budgetRecordFilter.name!)
+                })
+            })
             .preload('creditor')
             .preload('linksRp', (query) => {
-                query.preload('amountBudgetAvailability')
+                query.preload('amountBudgetAvailability', (query)=>{
+                    query.preload('budgetRoute',(query)=>{
+                        query.preload('budget')    
+                        query.preload('funds')    
+                        query.preload('pospreSapiencia')    
+                        query.preload('projectVinculation',(query)=>{
+                            query.preload('functionalProject')
+                        })    
+                    })
+                })
             });
     }
 

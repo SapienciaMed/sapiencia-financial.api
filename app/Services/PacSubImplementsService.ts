@@ -362,7 +362,7 @@ export default class PacSubImplementsService implements IPacSubImplementsService
 
       //* Datos adicionales:
       const idBudgetRoute: number = getRouteById.array[0].id!;
-      const idPac: number = getPac.array[0]?.id!;
+      const idPac: number = pac?.id!;
       const getPosPreOrigNumber: string = getRouteById.array[0].budget?.number!;
 
       //* Procesamiento para cálculos de anualización
@@ -1033,19 +1033,19 @@ export default class PacSubImplementsService implements IPacSubImplementsService
       executeNov = Number(((100 * totalCollectedNov) / totalProgrammingNov).toFixed(2)); if( isNaN(executeNov) ) executeNov = 0.0;
       executeDec = Number(((100 * totalCollectedDec) / totalProgrammingDec).toFixed(2)); if( isNaN(executeDec) ) executeDec = 0.0;
 
-      //* Sacamos las diferencias (En porcentaje):
-      diferenceJan = Number(((100 * (totalProgrammingJan - totalCollectedJan)) / totalProgrammingJan).toFixed(2)); if( isNaN(diferenceJan) ) diferenceJan = 0.0;
-      diferenceFeb = Number(((100 * (totalProgrammingFeb - totalCollectedFeb)) / totalProgrammingFeb).toFixed(2)); if( isNaN(diferenceFeb) ) diferenceFeb = 0.0;
-      diferenceMar = Number(((100 * (totalProgrammingMar - totalCollectedMar)) / totalProgrammingMar).toFixed(2)); if( isNaN(diferenceMar) ) diferenceMar = 0.0;
-      diferenceAbr = Number(((100 * (totalProgrammingAbr - totalCollectedAbr)) / totalProgrammingAbr).toFixed(2)); if( isNaN(diferenceAbr) ) diferenceAbr = 0.0;
-      diferenceMay = Number(((100 * (totalProgrammingMay - totalCollectedMay)) / totalProgrammingMay).toFixed(2)); if( isNaN(diferenceMay) ) diferenceMay = 0.0;
-      diferenceJun = Number(((100 * (totalProgrammingJun - totalCollectedJun)) / totalProgrammingJun).toFixed(2)); if( isNaN(diferenceJun) ) diferenceJun = 0.0;
-      diferenceJul = Number(((100 * (totalProgrammingJul - totalCollectedJul)) / totalProgrammingJul).toFixed(2)); if( isNaN(diferenceJul) ) diferenceJul = 0.0;
-      diferenceAgo = Number(((100 * (totalProgrammingAgo - totalCollectedAgo)) / totalProgrammingAgo).toFixed(2)); if( isNaN(diferenceAgo) ) diferenceAgo = 0.0;
-      diferenceSep = Number(((100 * (totalProgrammingSep - totalCollectedSep)) / totalProgrammingSep).toFixed(2)); if( isNaN(diferenceSep) ) diferenceSep = 0.0;
-      diferenceOct = Number(((100 * (totalProgrammingOct - totalCollectedOct)) / totalProgrammingOct).toFixed(2)); if( isNaN(diferenceOct) ) diferenceOct = 0.0;
-      diferenceNov = Number(((100 * (totalProgrammingNov - totalCollectedNov)) / totalProgrammingNov).toFixed(2)); if( isNaN(diferenceNov) ) diferenceNov = 0.0;
-      diferenceDec = Number(((100 * (totalProgrammingDec - totalCollectedDec)) / totalProgrammingDec).toFixed(2)); if( isNaN(diferenceDec) ) diferenceDec = 0.0;
+      //* Sacamos las diferencias (Sin porcentaje):
+      diferenceJan = Number(((totalCollectedJan - totalProgrammingJan)).toFixed(2)); if( isNaN(diferenceJan) ) diferenceJan = 0.0;
+      diferenceFeb = Number(((totalCollectedFeb - totalProgrammingFeb)).toFixed(2)); if( isNaN(diferenceFeb) ) diferenceFeb = 0.0;
+      diferenceMar = Number(((totalCollectedMar - totalProgrammingMar)).toFixed(2)); if( isNaN(diferenceMar) ) diferenceMar = 0.0;
+      diferenceAbr = Number(((totalCollectedAbr - totalProgrammingAbr)).toFixed(2)); if( isNaN(diferenceAbr) ) diferenceAbr = 0.0;
+      diferenceMay = Number(((totalCollectedMay - totalProgrammingMay)).toFixed(2)); if( isNaN(diferenceMay) ) diferenceMay = 0.0;
+      diferenceJun = Number(((totalCollectedJun - totalProgrammingJun)).toFixed(2)); if( isNaN(diferenceJun) ) diferenceJun = 0.0;
+      diferenceJul = Number(((totalCollectedJul - totalProgrammingJul)).toFixed(2)); if( isNaN(diferenceJul) ) diferenceJul = 0.0;
+      diferenceAgo = Number(((totalCollectedAgo - totalProgrammingAgo)).toFixed(2)); if( isNaN(diferenceAgo) ) diferenceAgo = 0.0;
+      diferenceSep = Number(((totalCollectedSep - totalProgrammingSep)).toFixed(2)); if( isNaN(diferenceSep) ) diferenceSep = 0.0;
+      diferenceOct = Number(((totalCollectedOct - totalProgrammingOct)).toFixed(2)); if( isNaN(diferenceOct) ) diferenceOct = 0.0;
+      diferenceNov = Number(((totalCollectedNov - totalProgrammingNov)).toFixed(2)); if( isNaN(diferenceNov) ) diferenceNov = 0.0;
+      diferenceDec = Number(((totalCollectedDec - totalProgrammingDec)).toFixed(2)); if( isNaN(diferenceDec) ) diferenceDec = 0.0;
 
       //* Porcentaje general de ejecución:
       const percentExecuteAnnual: number = Number(((100 * totalCollectedAnnual) / totalProgrammingAnnual).toFixed(2));
