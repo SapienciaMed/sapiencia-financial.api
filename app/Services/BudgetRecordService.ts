@@ -2,6 +2,7 @@ import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { IBudgetRecord, IBudgetRecordDataBasic, IBudgetRecordFilter } from "App/Interfaces/BudgetRecord";
 import IBudgetRecordRepository from "App/Repositories/BudgetRecordRepository";
 import { ApiResponse } from "App/Utils/ApiResponses";
+import { IStrategicDirectionService } from "./External/StrategicDirectionService";
 
 export interface IBudgetRecordService {
     createCdps(budgetRecord: IBudgetRecord): Promise<ApiResponse<any>>
@@ -14,7 +15,10 @@ export interface IBudgetRecordService {
 export default class BudgetRecordService implements IBudgetRecordService {
 
 
-    constructor(private budgerRecordRepository: IBudgetRecordRepository) {
+    constructor(
+        private budgerRecordRepository: IBudgetRecordRepository,
+        private strategicDirectionService: IStrategicDirectionService
+        ) {
         this.budgerRecordRepository = budgerRecordRepository;
     }
 
@@ -77,8 +81,26 @@ export default class BudgetRecordService implements IBudgetRecordService {
     getRpByFilters = async (budgetRecordFilter: IBudgetRecordFilter): Promise<ApiResponse<any>> => {
         try {
             const data = await this.budgerRecordRepository.getRpByFilters(budgetRecordFilter)
+            const projectInvesment = await this.strategicDirectionService.getProjectInvestmentPaginated({ page: 1, perPage: 100000 })
+            
+            let res = {
+                ...data[0].$attributes,
+                creditor: data[0].$preloaded.creditor.$attributes,
+                linksRp:data.map(ev=>{
+                    return ev.$preloaded.linksRp.map(e=>{
+                        return {
+                            ...e.$attributes,
+                            projectName:e.$preloaded.amountBudgetAvailability.budgetRoute.projectVinculation.type=='Inversion'
+                                ? projectInvesment?.data?.array?.find(proy=>proy.id == e.$preloaded.amountBudgetAvailability.budgetRoute.projectVinculation.investmentProjectId)?.name!
+                                : e.$preloaded.amountBudgetAvailability.budgetRoute.projectVinculation.functionalProject.$attributes.name,
+                                ...e.$preloaded
+                        }
+                    })
+                }).flat()
+            }
+
             return new ApiResponse(
-                data,
+                [res],
                 EResponseCodes.OK,
                 "Registros presupuestales encontrados exitosamente"
             );
