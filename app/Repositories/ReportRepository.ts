@@ -21,6 +21,7 @@ import {
   getAmountBudgetAvailability,
   getCheckWhetherOrNotHaveRp,
   getCreditAndAgainstCredits,
+  getInvoicesAndPaymentsVrp,
   getlinksRpCdp,
 } from "App/Utils/functions";
 import Transfer from "App/Models/Transfer";
@@ -1111,14 +1112,15 @@ export default class ReportRepository implements IReportRepository {
 
       // Reducciones y adiciones
       const resultAdditionMovement = await getAdditionMovement(rpp.id);
-
       if (resultAdditionMovement.length > 0) {
-        for (const additionMovement of resultAdditionMovement) {
-          if (additionMovement.addition.typeMovement === "Adicion")
-            valueAddiction += +additionMovement.value;
-          if (additionMovement.addition.typeMovement === "Disminucion")
-            valueReduction += +additionMovement.value;
-        }
+        const sumAddiction: number = resultAdditionMovement
+          .filter((objeto) => objeto.addition.typeMovement === "Adicion")
+          .reduce((total, objeto) => total + parseInt(objeto.value, 10), 0);
+        valueAddiction = sumAddiction;
+        const sumReduction: number = resultAdditionMovement
+          .filter((objeto) => objeto.addition.typeMovement === "Disminucion")
+          .reduce((total, objeto) => total + parseInt(objeto.value, 10), 0);
+        valueReduction = sumReduction;
       }
 
       // Créditos y contra créditos
@@ -1134,15 +1136,27 @@ export default class ReportRepository implements IReportRepository {
       // Total Ppto Actual
       if (rpp.balance) currentPpr = rpp.balance ? +rpp.balance : 0;
 
-      // Disponibilidad
+      // Disponibilidad y Compromiso
       const resultAmountBudgetAvailability = await getAmountBudgetAvailability(
-        rpp.id
+        rpp.id,
+        year
       );
-
+      // Disponibilidad
       if (resultAmountBudgetAvailability?.availability)
         availability = +resultAmountBudgetAvailability?.availabilityValue;
+      // Compromiso
       if (resultAmountBudgetAvailability?.compromise)
         compromise = +resultAmountBudgetAvailability?.compromiseValue;
+
+      //Factura y Pagos
+      const resultInvoicesAndPayments = await getInvoicesAndPaymentsVrp(
+        rpp.id,
+        year
+      );
+      //Factura
+      invoices = resultInvoicesAndPayments.invoiceSumn;
+      //Pagos
+      payments = resultInvoicesAndPayments.paymentSumn;
 
       // Disponible Neto
       availabilityNet =
@@ -1152,7 +1166,7 @@ export default class ReportRepository implements IReportRepository {
       execution = +compromise + +invoices + +payments;
 
       // Porcentaje de Ejecución
-      percentageExecution = Number(+execution / +currentPpr);
+      percentageExecution = Number(+execution / +currentPpr) * 100;
       if (!isFinite(percentageExecution)) percentageExecution = 0;
 
       // Crear un nuevo objeto de informe
