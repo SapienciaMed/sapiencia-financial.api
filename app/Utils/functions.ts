@@ -34,6 +34,7 @@ export const getCreditAndAgainstCredits = async (
   const result = resTransfersMovement.map((i) => i.serialize());
 
   const filterData = result.find((i) => i.budgetRouteId === rpp_credits);
+  // if (rpp_credits === "9232020200802") console.log({ rpp_credits, filterData });
 
   return filterData
     ? {
@@ -62,38 +63,39 @@ export const getAdditionMovement = async (
 
 //Obtiene información sobre la disponibilidad y compromiso presupuestario relacionados con un presupuesto.
 export const getAmountBudgetAvailability = async (
-  rpp_amount_budget_availability: string
+  rpp_amount_budget_availability: number,
+  year: number
 ): Promise<any> => {
   let availability = false;
   let availabilityValue = 0;
   let compromise = false;
   let compromiseValue = 0;
-  const queryAmountBudgetAvailability =
-    await AmountBudgetAvailability.query().where(
-      "idRppCode",
-      rpp_amount_budget_availability
-    );
+  const queryAmountBudgetAvailability = await AmountBudgetAvailability.query()
+    .where("idRppCode", rpp_amount_budget_availability)
+    .preload("budgetAvailability");
 
-  const resAmountBudgetAvailability = queryAmountBudgetAvailability.map((i) =>
-    i.serialize()
-  );
+  const resAmountBudgetAvailability = queryAmountBudgetAvailability
+    .map((i) => i.serialize())
+    .filter((i) => i.isActive === 1 && i.budgetAvailability.exercise == year);
 
   if (resAmountBudgetAvailability.length > 0) {
-    let idcFinalValue: number = 0;
     for (const element of resAmountBudgetAvailability) {
-      idcFinalValue += element.idcFinalValue ? +element.idcFinalValue : 0;
       const queryLinkRpcdp = await LinkRpcdp.query().where(
         "amountCdpId",
         element.cdpCode
       );
-
       const resLinkRpcdp = queryLinkRpcdp.map((i) => i.serialize());
       if (resLinkRpcdp.length > 0) {
         compromise = true;
-        compromiseValue = idcFinalValue;
-      } else {
+        compromiseValue += isFinite(element.idcFinalValue)
+          ? +element.idcFinalValue
+          : 0;
+      }
+      if (!resLinkRpcdp.length) {
         availability = true;
-        availabilityValue = idcFinalValue;
+        availabilityValue += isFinite(element.idcFinalValue)
+          ? +element.idcFinalValue
+          : 0;
       }
     }
   }
