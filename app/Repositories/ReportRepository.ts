@@ -21,6 +21,7 @@ import {
   getAmountBudgetAvailability,
   getCheckWhetherOrNotHaveRp,
   getCreditAndAgainstCredits,
+  getInvoicesAndPaymentsVrp,
   getlinksRpCdp,
 } from "App/Utils/functions";
 import Transfer from "App/Models/Transfer";
@@ -951,6 +952,16 @@ export default class ReportRepository implements IReportRepository {
       // Compromiso
       if (resultAmountBudgetAvailability?.compromise)
         compromise = +resultAmountBudgetAvailability?.compromiseValue;
+
+      //Factura y Pagos
+      const resultInvoicesAndPayments = await getInvoicesAndPaymentsVrp(
+        rpp.id,
+        year
+      );
+      //Factura
+      invoices = resultInvoicesAndPayments.invoiceSumn;
+      //Pagos
+      payments = resultInvoicesAndPayments.paymentSumn;
 
       // Disponible Neto
       availabilityNet =
