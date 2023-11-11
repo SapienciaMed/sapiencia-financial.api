@@ -40,10 +40,10 @@ export default class BudgetRecord extends BaseModel {
   public contractNumber: string
   
   @column({ columnName: 'RPR_DOCUMENTO_RESPONSABLE', serializeAs: "responsibleDocument" })
-  public responsibleDocument: number
+  public responsibleDocument: string
   
   @column({ columnName: 'RPR_DOCUMENTO_SUPERVISOR', serializeAs: "supervisorDocument" })
-  public supervisorDocument: number
+  public supervisorDocument: string
 
   @column({ columnName: "RPR_USUARIO_MODIFICO", serializeAs: "userCreate" })
   public userCreate: string
