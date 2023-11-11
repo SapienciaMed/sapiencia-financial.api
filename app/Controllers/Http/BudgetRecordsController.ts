@@ -3,7 +3,6 @@ import BudgetRecordProvider from '@ioc:core.BudgetRecordProvider'
 import { EResponseCodes } from 'App/Constants/ResponseCodesEnum';
 import { IBudgetRecordFilter } from 'App/Interfaces/BudgetRecord';
 import { ApiResponse } from 'App/Utils/ApiResponses';
-import BudgetRecordUpdateBasicRpValidator from 'App/Validators/BudgetRecordUpdateBasicRpValidator';
 import BudgetRecordValidator from 'App/Validators/BudgetRecordValidator';
 
 
@@ -24,7 +23,7 @@ export default class BudgetRecordsController {
     
     public async updateDataBasicRp({ request,response }: HttpContextContract) {
         try {
-            const budgetRecordDataBasic = await request.validate(BudgetRecordUpdateBasicRpValidator);
+            const budgetRecordDataBasic = await request.validate(BudgetRecordValidator);
             return response.send(
                 await BudgetRecordProvider.updateDataBasicRp(budgetRecordDataBasic)
             );

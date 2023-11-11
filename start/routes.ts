@@ -289,7 +289,7 @@ Route.group(() => {
   Route.post('/get-rp-by-filters', 'BudgetRecordsController.getRpByFilters')
   Route.get('/get-totalvaluesimports/:id', 'BudgetRecordsController.getTotalValuesImports')
   Route.post('/update-data/:id', 'BudgetRecordsController.updateRp')
-}).prefix('/api/v1/budget-records')
+}).prefix('/api/v1/budget-records').middleware('auth')
 
 
 Route.group(() => {
