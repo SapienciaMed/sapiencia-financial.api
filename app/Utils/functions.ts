@@ -34,6 +34,7 @@ export const getCreditAndAgainstCredits = async (
   const result = resTransfersMovement.map((i) => i.serialize());
 
   const filterData = result.find((i) => i.budgetRouteId === rpp_credits);
+  // if (rpp_credits === "9232020200802") console.log({ rpp_credits, filterData });
 
   return filterData
     ? {
@@ -62,38 +63,47 @@ export const getAdditionMovement = async (
 
 //Obtiene información sobre la disponibilidad y compromiso presupuestario relacionados con un presupuesto.
 export const getAmountBudgetAvailability = async (
-  rpp_amount_budget_availability: string
+  rpp_amount_budget_availability: number,
+  year: number
 ): Promise<any> => {
   let availability = false;
   let availabilityValue = 0;
   let compromise = false;
   let compromiseValue = 0;
-  const queryAmountBudgetAvailability =
-    await AmountBudgetAvailability.query().where(
-      "idRppCode",
-      rpp_amount_budget_availability
-    );
 
-  const resAmountBudgetAvailability = queryAmountBudgetAvailability.map((i) =>
-    i.serialize()
-  );
+  const queryAmountBudgetAvailability = await AmountBudgetAvailability.query()
+    .where("idRppCode", rpp_amount_budget_availability)
+    .preload("budgetAvailability");
+
+  const resAmountBudgetAvailability = queryAmountBudgetAvailability
+    .map((i) => i.serialize())
+    .filter((i) => i.isActive === 1 && i.budgetAvailability.exercise == year);
 
   if (resAmountBudgetAvailability.length > 0) {
-    let idcFinalValue: number = 0;
     for (const element of resAmountBudgetAvailability) {
-      idcFinalValue += element.idcFinalValue ? +element.idcFinalValue : 0;
       const queryLinkRpcdp = await LinkRpcdp.query().where(
         "amountCdpId",
-        element.cdpCode
+        element.id
       );
+      const resLinkRpcdp = queryLinkRpcdp
+        .map((i) => i.serialize())
+        .filter((i) => i.isActive === 1);
 
-      const resLinkRpcdp = queryLinkRpcdp.map((i) => i.serialize());
       if (resLinkRpcdp.length > 0) {
+        const sumCompromiseVrp = resLinkRpcdp
+          .filter((i) => i.finalAmount)
+          .map((obj) => parseFloat(obj.finalAmount))
+          .reduce((total, value) => total + value, 0);
+
         compromise = true;
-        compromiseValue = idcFinalValue;
-      } else {
+        compromiseValue += sumCompromiseVrp;
+      }
+
+      if (!resLinkRpcdp.length) {
         availability = true;
-        availabilityValue = idcFinalValue;
+        availabilityValue += isFinite(element.idcFinalValue)
+          ? +element.idcFinalValue
+          : 0;
       }
     }
   }
@@ -113,6 +123,59 @@ export const getCheckWhetherOrNotHaveRp = async (icdId: number) => {
   if (resLinkRpcdp.length > 0) return true;
 
   return false;
+};
+
+export const getInvoicesAndPaymentsVrp = async (
+  rppId: number,
+  year: number
+): Promise<any> => {
+  let invoiceSumn: number = 0;
+  let paymentSumn: number = 0;
+  const queryAmountBudgetAvailability = await AmountBudgetAvailability.query()
+    .where("idRppCode", rppId)
+    .preload("budgetAvailability");
+
+  const resAmountBudgetAvailability = queryAmountBudgetAvailability
+    .map((i) => i.serialize())
+    .filter((i) => i.isActive === 1 && i.budgetAvailability.exercise == year);
+
+  if (resAmountBudgetAvailability.length > 0) {
+    for (const icd of resAmountBudgetAvailability) {
+      const queryLinkRpcdp = await LinkRpcdp.query().where(
+        "amountCdpId",
+        icd.id
+      );
+      const resLinkRpcdp = queryLinkRpcdp.map((i) => i.serialize());
+      if (resLinkRpcdp.length > 0) {
+        for (const linkRpcdp of resLinkRpcdp) {
+          const queryPago = await Pago.query().where(
+            "vinculacionRpCode",
+            linkRpcdp.id
+          );
+          const resPago = queryPago.map((i) => i.serialize());
+          if (resPago.length > 0) {
+            resPago.forEach((element) => {
+              const resta: number =
+                parseInt(element.valorCausado) - parseInt(element.valorPagado);
+              if (resta > 0) {
+                invoiceSumn += resta;
+              }
+            });
+
+            paymentSumn = resPago.reduce(
+              (total, i) => total + parseInt(i.valorPagado),
+              0
+            );
+          }
+        }
+      }
+    }
+  }
+
+  return {
+    invoiceSumn: invoiceSumn,
+    paymentSumn: paymentSumn,
+  };
 };
 
 export const getlinksRpCdp = async (year: number, type: string) => {
