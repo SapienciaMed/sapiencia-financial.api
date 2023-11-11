@@ -39,6 +39,12 @@ Route.group(() => {
   .middleware("auth");
 
 Route.group(() => {
+  Route.post("/get-paginated", "PagPagosController.getPagosPaginated");
+  Route.post("/create", "PagPagosController.processDocument");
+
+}).prefix("/api/v1/pag-pagos");
+
+Route.group(() => {
   Route.get("/get-by-id/:id", "BudgetsController.getBudgetsById");
   Route.post("/get-paginated", "BudgetsController.getBudgetsPaginated");
   Route.post("/create", "BudgetsController.createBudgets");
@@ -88,12 +94,16 @@ Route.group(() => {
 }).prefix("/api/v1/functional-area")
   .middleware("auth");
 
+
 Route.group(() => {
   Route.post("/get-paginated", "ProjectsController.getProjectsPaginated");
   Route.get("/get-all", "ProjectsController.getAllProjects");
-  Route.post("/get-unrelated-projects","ProjectsController.getUnrelatedProjects");
-}).prefix("/api/v1/projects")
-  .middleware("auth");
+  Route.post(
+    "/get-unrelated-projects",
+    "ProjectsController.getUnrelatedProjects"
+  );
+}).prefix("/api/v1/projects").middleware("auth");
+
 
 Route.group(() => {
   Route.get("/get-by-id/:id","ManagementCenterController.getManagementCenterById");

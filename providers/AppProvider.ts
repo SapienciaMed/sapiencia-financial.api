@@ -43,7 +43,7 @@ export default class AppProvider {
     const PacService = await import("App/Services/PacService");
     const CdpService = await import("App/Services/BudgetAvailabilityService")
     const PacSubImplementsService = await import("App/Services/PacSubImplementsService");
-
+    const PagPagosService = await import("App/Services/PagPagosService");
     const BudgetRecordService = await import("App/Services/BudgetRecordService");
 
     const CreditorService = await import("App/Services/CreditorService");
@@ -61,6 +61,9 @@ export default class AppProvider {
     const ReportRepository = await import(
       "App/Repositories/ReportRepository"
     );
+    
+    const PagPagosRepository = await import("App/Repositories/PagPagosRepository")
+    
     const BudgetsRepository = await import(
       "App/Repositories/BudgetsRepository"
     );
@@ -125,6 +128,12 @@ export default class AppProvider {
           )
         ))
     );
+
+/*     this.app.container.singleton('core.PagoProvider', async () => {
+      const pagPagosRepository = await PagPagosRepository.default;
+      return new PagPagosService.default(pagPagosRepository);
+    });
+ */
     this.app.container.singleton(
       "core.BudgetsProvider",
       () => new BudgetsService.default(new BudgetsRepository.default())
@@ -220,6 +229,7 @@ export default class AppProvider {
         )
     );
 
+
     //API EXTERNA
     this.app.container.singleton(
       "core.PlanningProvider",
@@ -312,6 +322,7 @@ export default class AppProvider {
     )
 
   }
+  
 
   public async boot() {
     // IoC container is ready

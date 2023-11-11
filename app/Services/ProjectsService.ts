@@ -21,9 +21,17 @@ export default class ProjectsService implements IProjectsService {
 
   async getAllProjects(): Promise<ApiResponse<IProjectsVinculationFull[]>> {
     const allProjects =
-      await this.functionalAreaRepository.getAllProjectFunctionalArea();
-
+    await this.functionalAreaRepository.getAllProjectFunctionalArea();
+    
+    try {
+      const transformedProjects = await tranformProjectsVinculation(allProjects);
+      // Continuar con el código después de la transformación, si es necesario.
+    } catch (error) {
+      console.error("Ocurrió un error al transformar los proyectos:", error);
+      // Puedes agregar más lógica aquí para manejar el error según tus necesidades.
+    }
     const res = await tranformProjectsVinculation(allProjects);
+    console.log(allProjects);
 
     return new ApiResponse(res, EResponseCodes.OK);
   }
