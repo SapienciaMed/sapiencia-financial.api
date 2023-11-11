@@ -114,6 +114,20 @@ export interface IReportTransfers {
   "Observación": string;
 }
 
+export interface IReportModifiedRoutes {
+  "Tipo De Modificación": string;
+  "Acto Administrativo Distrito": string;
+  "Acto Administrativo Sapiencia": string;
+  "Centro Gestor": string;
+  "Posición Presupuestal": string;
+  "Fondo": string;
+  "Área Funcional": string;
+  "Proyecto": string;
+  "Valor Ingreso": number;
+  "Valor Gasto": number;
+  "Nombre Proyecto": string;
+}
+
 export interface IDataBasicProject {
   projectCode: string;
   projectName: string;
