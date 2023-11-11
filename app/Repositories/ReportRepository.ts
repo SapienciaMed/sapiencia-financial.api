@@ -1166,7 +1166,9 @@ export default class ReportRepository implements IReportRepository {
       execution = +compromise + +invoices + +payments;
 
       // Porcentaje de Ejecución
-      percentageExecution = Number(+execution / +currentPpr) * 100;
+      percentageExecution = Number(
+        ((100 * +execution) / +currentPpr).toFixed(2)
+      );
       if (!isFinite(percentageExecution)) percentageExecution = 0;
 
       // Crear un nuevo objeto de informe
