@@ -17,6 +17,7 @@ import { ApiResponse } from "App/Utils/ApiResponses";
 import { IBudgets } from '../../Interfaces/BudgetsInterfaces';
 import { IDesvinculationMgaV2 } from '../../Interfaces/VinculationMGAInterfaces';
 import { IPosPreSapiencia } from '../../Interfaces/PosPreSapienciaInterfaces';
+import CdpVinculateMGAValidator from "App/Validators/CdpVinculateMGAValidator";
 
 export default class VinculationMGAController {
 
@@ -199,4 +200,44 @@ export default class VinculationMGAController {
 
   }
 
+  //getActivitiesDetail
+  public async getActivitiesDetail({ request, response }: HttpContextContract) {
+    
+    try {
+
+      const data = request.body();
+      return response.send(await VinculationMGAProvider.getActivitiesDetail(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+//createVinculationWithPlanningV2
+  public async createVinculationMga({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = await request.validate(
+        CdpVinculateMGAValidator
+      );     
+     // return data;
+      return response.send(await VinculationMGAProvider.createVinculationMga(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  
 }

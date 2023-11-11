@@ -110,8 +110,10 @@ Route.group(() => {
     "/update-vinculation-multiple",
     "VinculationMGAController.updateMultipleVinculation"
   );
-}).prefix("/api/v1/vinculation-mga");
-// .middleware("auth");
+  Route.post("/get-activities-detail", "VinculationMGAController.getActivitiesDetail")
+  Route.post("/create-vinculation-mga", "VinculationMGAController.createVinculationMga")
+}).prefix("/api/v1/vinculation-mga")
+//.middleware("auth");
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "FunctionalAreaController.getFunctionalAreaById");
@@ -280,7 +282,7 @@ Route.group(() => {
   Route.get("/get-routeCDP-id/:id", "BudgetAvailabilityController.getRouteCDPId");
   Route.put("/updateRouteCDP/:id", "BudgetAvailabilityController.updateRoutesCDP");
   Route.get("/get-CDPRp-id/:id", "BudgetAvailabilityController.getRpCDP");
-}).prefix("/api/v1/cdp")
+}).prefix("/api/v1/cdp").middleware("auth");
 
 Route.group(() => {
   Route.post('/create-rp', 'BudgetRecordsController.createRp')
@@ -290,6 +292,7 @@ Route.group(() => {
   Route.get('/get-totalvaluesimports/:id', 'BudgetRecordsController.getTotalValuesImports')
   Route.post('/update-data/:id', 'BudgetRecordsController.updateRp')
 }).prefix('/api/v1/budget-records')
+.middleware("auth");
 
 
 Route.group(() => {

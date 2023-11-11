@@ -9,6 +9,8 @@ import VinculationMGA from "App/Models/VinculationMGA";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { IVinculationMgaV2,
          IDesvinculationMgaV2 } from '../Interfaces/VinculationMGAInterfaces';
+import { ICDPVinculateMGA } from "App/Interfaces/ICDPVinculateMGAInterface.ts";
+import CdpVinculationMga from "App/Models/CdpVinculationMga";
 
 export interface IVinculationMGARepository {
 
@@ -18,6 +20,7 @@ export interface IVinculationMGARepository {
   createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaV2): Promise<IVinculationMgaV2>;
   deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<IDesvinculationMgaV2 | boolean>;
   getVinculationMGAByPosPreOrg(id: number): Promise<IActivityMGA[] | any>;
+  createVinculationMga(data: ICDPVinculateMGA): Promise<ICDPVinculateMGA[]>;
 
 }
 
@@ -92,6 +95,19 @@ export default class VinculationMGARepository implements IVinculationMGAReposito
     const query = await VinculationMGA.query().where("budgetId", id);
     return query;
 
+  }
+
+  async createVinculationMga(data:  ICDPVinculateMGA): Promise<ICDPVinculateMGA[]> {
+    const createdRecords: ICDPVinculateMGA[] = [];
+
+    for (const item of data.datos) {
+        const toCreate = new CdpVinculationMga(); 
+        toCreate.fill(item);
+        await toCreate.save();
+        createdRecords.push(toCreate.serialize() as ICDPVinculateMGA);
+    }
+
+    return createdRecords;
   }
 
 }

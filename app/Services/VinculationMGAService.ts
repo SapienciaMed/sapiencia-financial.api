@@ -9,6 +9,8 @@ import { IFiltersVinculationMGA } from "App/Interfaces/VinculationMGAInterfaces"
 import { IDesvinculationMgaV2 } from '../Interfaces/VinculationMGAInterfaces';
 
 import { IVinculationMGARepository } from "App/Repositories/VinculationMGARepository";
+import { IStrategicDirectionService } from "./External/StrategicDirectionService";
+import { ICDPVinculateMGA } from "App/Interfaces/ICDPVinculateMGAInterface.ts";
 
 export interface IVinculationMGAService {
 
@@ -16,11 +18,14 @@ export interface IVinculationMGAService {
   getVinculationMGAPaginated(filters: IFiltersVinculationMGA): Promise<ApiResponse<IPagingData<IActivityMGA>>>;
   createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaWithMultipleV2): Promise<ApiResponse<IVinculationMgaWithMultipleV2>>;
   deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<ApiResponse<IDesvinculationMgaV2 | boolean>>;
+  getActivitiesDetail(data: any): Promise<ApiResponse<any>>;
+  createVinculationMga(data: ICDPVinculateMGA): Promise<ApiResponse<ICDPVinculateMGA[]>>;
 
-}
+}//ICDPVinculateMGA
 
 export default class VinculationMGAService implements IVinculationMGAService {
-  constructor(private vinculationMGARepository: IVinculationMGARepository) { }
+  constructor(private vinculationMGARepository: IVinculationMGARepository,
+    private strategicDirectionService: IStrategicDirectionService) { }
 
   async getVinculationMGAById(id: number): Promise<ApiResponse<IActivityMGA>> {
     const res = await this.vinculationMGARepository.getVinculationMGAById(id);
@@ -65,5 +70,54 @@ export default class VinculationMGAService implements IVinculationMGAService {
     return new ApiResponse(res, EResponseCodes.OK);
 
   }
+  async getActivitiesDetail(data: any): Promise<ApiResponse<any>> {
+    try {
+      const datos = await this.strategicDirectionService.getActivitiesFilters(data);
+      // Asume que el primer elemento es el que necesitas      
+      
+
+      return new ApiResponse(
+        datos.data,
+        EResponseCodes.OK,
+        "Actividad encontrada exitosamente"
+      );
+    } catch (error) {
+      return new ApiResponse(
+        null,
+        EResponseCodes.FAIL,
+        "Error al cargar el CDP" + error
+      );
+    }
+  }
+  
+//
+async createVinculationMga(data: ICDPVinculateMGA): Promise<ApiResponse<ICDPVinculateMGA[]>> {
+  try {
+      // Asumiendo que `createVinculationMga` en el repositorio devuelve un arreglo de `ICDPVinculateMGA`
+      const res = await this.vinculationMGARepository.createVinculationMga(data);
+      
+      // Verifica si `res` está vacío o no
+      if (res.length === 0) {
+          return new ApiResponse(
+              [],
+              EResponseCodes.FAIL,
+              "No se crearon vínculos"
+          );
+      }
+
+      return new ApiResponse(
+          res,
+          EResponseCodes.OK,
+          "Vínculos creados exitosamente"
+      );
+  } catch (error) {
+      // Manejo de errores
+      return new ApiResponse(
+          [],
+          EResponseCodes.FAIL,
+          "Error al crear vínculos: " + error.message
+      );
+  }
+}
 
 }

@@ -36,6 +36,7 @@ export interface IStrategicDirectionService {
   getDetailedActivitiesNoUseOnPosPre(ids: Array<number>, posPreOrig: number): Promise<ApiResponse<IApiPlanningDetailedActivitiesSpecify[] | any>>;
   getDetailedActivitiesYesUseOnPosPre(ids: Array<number>, posPreOrig: number): Promise<ApiResponse<IApiPlanningDetailedActivitiesSpecify[] | any>>;
   getVinculationDetailedActivitiesV2ById(id: number): Promise<ApiResponse<IApiPlanningDetailedActivitiesSpecify | any>>;
+  getActivitiesFilters(data:any): Promise<ApiResponse<IApiPlanningDetailedActivities|any>>;
 }
 
 export default class StrategicDirectionService implements IStrategicDirectionService {
@@ -518,6 +519,50 @@ export default class StrategicDirectionService implements IStrategicDirectionSer
       );
 
     }
+
+    //? Obtengo todo el listado de actividades de inversión desde planeación
+  public async getActivitiesFilters(
+    filter: IProjectFilters
+  ): Promise<ApiResponse<IApiPlanningDetailedActivities[]>> {
+    const urlConsumer = `/api/v1/activities/get-by-filters`;
+
+    const res = await this.axiosInstance.post<
+      ApiResponse<IApiPlanningDetailedActivities[]>
+    >(urlConsumer, filter, {
+      headers: {
+        Authorization: process.env.CURRENT_AUTHORIZATION,
+      },
+    });
+
+    const requestResult: IApiPlanningDetailedActivities[] = [];
+    const dataI: IApiPlanningDetailedActivities[] = res.data.data;
+
+    dataI.forEach((res) => {
+      const objResult: IApiPlanningDetailedActivities = {
+        id:                     res.id,
+        activityId:             res.activityId,
+        consecutive:            res.consecutive,
+        detailActivity:         res.detailActivity,
+        component:              res.component,
+        measurement:            res.measurement,
+        amount:                 res.amount,
+        unitCost:               res.unitCost,
+        pospre:                 res.pospre,
+        validatorCPC:           res.validatorCPC,
+        clasificatorCPC:        res.clasificatorCPC,
+        sectionValidatorCPC:    res.sectionValidatorCPC,
+        activity:               res.activity,
+      };
+
+      requestResult.push(objResult);
+    });
+
+    return new ApiResponse(
+      requestResult,
+      EResponseCodes.OK,
+      "Listado de Proyectos de Inversión desde Planeación."
+    );
+  }
 
 
 }
