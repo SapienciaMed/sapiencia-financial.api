@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon';
 import LinkRpcdp from 'App/Models/LinkRpcdp';
 
 export interface IPago {

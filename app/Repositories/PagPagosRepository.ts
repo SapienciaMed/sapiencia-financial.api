@@ -5,7 +5,6 @@ import * as ExcelJS from 'exceljs';
 import { IPago, IPagoFilters } from 'App/Interfaces/PagPagosInterfaces';
 import { IPagingData } from 'App/Utils/ApiResponses';
 import PagPagos from 'App/Models/PagPagos';
-import VinculationMGARepository from './VinculationMGARepository';
 import PagPagosValidator from 'App/Validators/PagPagosValidator';
 
 export interface IPagoRepository {
@@ -47,7 +46,7 @@ export default class PagoRepository implements IPagoRepository {
 
     const pagos: IPago[] = [];
 
-    worksheet.eachRow((row, rowNumber) => {
+    worksheet.eachRow((row, _rowNumber) => {
         const idCellValue = row.getCell(1).value;
         const vinculacionRpCodeCellValue = row.getCell(2).value;
 
