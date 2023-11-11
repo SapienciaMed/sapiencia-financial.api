@@ -1,8 +1,11 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import BudgetRecordProvider from '@ioc:core.BudgetRecordProvider'
 import { EResponseCodes } from 'App/Constants/ResponseCodesEnum';
+import { IBudgetRecordFilter } from 'App/Interfaces/BudgetRecord';
 import { ApiResponse } from 'App/Utils/ApiResponses';
+import BudgetRecordUpdateBasicRpValidator from 'App/Validators/BudgetRecordUpdateBasicRpValidator';
 import BudgetRecordValidator from 'App/Validators/BudgetRecordValidator';
+
 
 export default class BudgetRecordsController {
 
@@ -19,11 +22,36 @@ export default class BudgetRecordsController {
         }
     }
     
+    public async updateDataBasicRp({ request,response }: HttpContextContract) {
+        try {
+            const budgetRecordDataBasic = await request.validate(BudgetRecordUpdateBasicRpValidator);
+            return response.send(
+                await BudgetRecordProvider.updateDataBasicRp(budgetRecordDataBasic)
+            );
+        } catch (err) {
+            return response.badRequest(
+                new ApiResponse(null, EResponseCodes.FAIL, String(err))
+            );
+        }
+    }
+    
     public async getComponents({ response }: HttpContextContract) {
         try {
-            console.log("111111")
             return response.send(
                 await BudgetRecordProvider.getComponents()
+            );
+        } catch (err) {
+            return response.badRequest(
+                new ApiResponse(null, EResponseCodes.FAIL, String(err))
+            );
+        }
+    }
+    
+    public async getRpByFilters({ request,response }: HttpContextContract) {
+        try {
+            const budgetRecordFilter = request.body() as IBudgetRecordFilter;
+            return response.send(
+                await BudgetRecordProvider.getRpByFilters(budgetRecordFilter)
             );
         } catch (err) {
             return response.badRequest(
@@ -42,6 +70,21 @@ export default class BudgetRecordsController {
           );
         }
       }
+      
+      public async updateRp({ request,response }: HttpContextContract) {
+        try {
+            const { id } = request.params() as { id: number };
+            //const budgetRecordDataBasic = await request.validate(LinkValidator);
+            
+            return response.send(
+                await BudgetRecordProvider.updateRp(id,request.all())
+            );
+        } catch (err) {
+            return response.badRequest(
+                new ApiResponse(null, EResponseCodes.FAIL, String(err))
+            );
+        }
+    }
 
 
 }

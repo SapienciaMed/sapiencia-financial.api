@@ -1,46 +1,96 @@
-import { IBudgetRecord, ILinkRPCDP,ITotalImports } from "App/Interfaces/BudgetRecord";
+import { IBudgetRecord, IBudgetRecordDataBasic, IBudgetRecordFilter, ILinkRPCDP,ITotalImports  } from "App/Interfaces/BudgetRecord";
 import BudgetRecord from "App/Models/BudgetRecord";
 import Component from "App/Models/Component";
 import LinkRpcdp from "App/Models/LinkRpcdp";
 
 export interface IBudgetRecordRepository {
     createCdps(budgetRecord: IBudgetRecord): Promise<BudgetRecord>
+    updateDataBasicRp(budgetRecordDataBasic:IBudgetRecordDataBasic): Promise<BudgetRecord>
     getComponents(): Promise<Component[]>
+    getRpByFilters(budgetRecordFilter: IBudgetRecordFilter): Promise<any>
     getTotalValuesImports(id: number): Promise<LinkRpcdp | null>;
+    getRpById(id: number): Promise<IBudgetRecord | null>;
+    updateRp(id: number,budgetRecordDataBasic:ILinkRPCDP): Promise<ILinkRPCDP | null>
 }
-
 export default class BudgetRecordRepository implements IBudgetRecordRepository {
+    getRpById(_id: number): Promise<IBudgetRecord | null> {
+        throw new Error("Method not implemented.");
+    }
     
+    updateDataBasicRp(_budgetRecordDataBasic: IBudgetRecordDataBasic): Promise<BudgetRecord> {
+        throw new Error("Method not implemented.");
+    }
+
     createCdps = async (budgetRecord: IBudgetRecord): Promise<BudgetRecord> => {
         let linkRpData: ILinkRPCDP[] = [];
         budgetRecord?.linksRp!.length > 0 && linkRpData.push(...budgetRecord.linksRp!)
         const toCreateBudgetRecord = new BudgetRecord();
-        
+
         toCreateBudgetRecord.fill(
-                {
-                    supplierType: budgetRecord.supplierType,
-                    supplierId: budgetRecord.supplierId,
-                    contractorDocument: budgetRecord.contractorDocument,
-                    documentDate: new Date(budgetRecord.documentDate),
-                    dateValidity: new Date(budgetRecord.dateValidity),
-                    dependencyId: budgetRecord.dependencyId,
-                    contractualObject: budgetRecord.contractualObject,
-                    componentId: budgetRecord.componentId,
-                    userCreate: budgetRecord.userCreate,
-                    userModify: budgetRecord.userModify,
-                    dateModify: budgetRecord.dateModify
+            {
+                supplierType: budgetRecord.supplierType,
+                supplierId: budgetRecord.supplierId,
+                contractorDocument: budgetRecord.contractorDocument,
+                documentDate: new Date(budgetRecord.documentDate),
+                dateValidity: new Date(budgetRecord.dateValidity),
+                dependencyId: budgetRecord.dependencyId,
+                contractualObject: budgetRecord.contractualObject,
+                componentId: budgetRecord.componentId,
+                userCreate: budgetRecord.userCreate,
+                userModify: budgetRecord.userModify,
+                dateModify: budgetRecord.dateModify
             }
         );
         let BudgetRecordCreated = await toCreateBudgetRecord.save();
         await BudgetRecordCreated
             .related('linksRp')
             .createMany(linkRpData)
-       return BudgetRecordCreated;
+        return BudgetRecordCreated;
     }
 
 
-    getComponents = async(): Promise<Component[]>=> {
-        return await Component.all();
+
+    getComponents = async (): Promise<Component[]> => {
+        return await Component.query();
+    }
+
+    getRpByFilters = async (budgetRecordFilter: IBudgetRecordFilter): Promise<any> => {
+        return await BudgetRecord.query()
+             .if(budgetRecordFilter.consecutiveRpSap,(query)=>{
+                 query.where('consecutiveSap','=',budgetRecordFilter.consecutiveRpSap!)
+            })
+            .if(budgetRecordFilter.consecutiveRpAurora,(query)=>{
+                query.where('id',budgetRecordFilter.consecutiveRpAurora!)
+            })
+            .if(budgetRecordFilter.contractorDocument, (query) => {
+                query.where('contractorDocument', budgetRecordFilter.contractorDocument!)
+            })
+            .if(budgetRecordFilter.supplierType, (query) => {
+                query.where('supplierType', budgetRecordFilter.supplierType!)
+            })
+            .if(budgetRecordFilter.taxAccreditedId,(query)=>{
+                query.whereHas('creditor',(query)=>{
+                    query.where('taxIdentification','=',budgetRecordFilter.taxAccreditedId!)
+                })
+            })
+            .if(budgetRecordFilter.name,(query)=>{
+                query.whereHas('creditor',(query)=>{
+                    query.where('name','=',budgetRecordFilter.name!)
+                })
+            })
+            .preload('creditor')
+            .preload('linksRp', (query) => {
+                query.preload('amountBudgetAvailability', (query)=>{
+                    query.preload('budgetRoute',(query)=>{
+                        query.preload('budget')    
+                        query.preload('funds')    
+                        query.preload('pospreSapiencia')    
+                        query.preload('projectVinculation',(query)=>{
+                            query.preload('functionalProject')
+                        })    
+                    })
+                })
+            });
     }
 
     async  getTotalValuesImports(id: number): Promise<any | 0> {
@@ -56,4 +106,22 @@ export default class BudgetRecordRepository implements IBudgetRecordRepository {
     
         return totalImport;
     }
+
+   
+      
+    async updateRp(id: number,budgets: ILinkRPCDP): Promise<ILinkRPCDP | null> {
+        const toUpdate = await LinkRpcdp.find(id);
+        if (!toUpdate) {
+          return null;
+        }
+    
+        /* toUpdate.isActive = budgets.isActive!;
+        toUpdate.reasonCancellation = budgets.reasonCancellation!;        */
+
+        toUpdate.fill({ ...toUpdate, ...budgets });
+       
+    
+        await toUpdate.save();
+        return toUpdate.serialize() as IBudgetRecordDataBasic;
+      }
 }
