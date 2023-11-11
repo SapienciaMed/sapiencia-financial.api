@@ -198,7 +198,6 @@ Route.group(() => {
   .middleware("auth");
 
 Route.group(() => {
-<<<<<<< HEAD
   Route.post('/create-rp', 'BudgetRecordsController.createRp')
   Route.post('/update-data-basic-rp', 'BudgetRecordsController.updateDataBasicRp')
   Route.get('/get-components', 'BudgetRecordsController.getComponents')
@@ -207,14 +206,7 @@ Route.group(() => {
   Route.post('/update-data/:id', 'BudgetRecordsController.updateRp')
 }).prefix('/api/v1/budget-records').middleware('auth')
 
-=======
-  Route.post('/create-rp', 'BudgetRecordsController.createRp');
-  Route.get('/get-components', 'BudgetRecordsController.getComponents');
-  Route.post('/get-rp-by-filters', 'BudgetRecordsController.getRpByFilters');
-  Route.get('/get-totalvaluesimports/:id', 'BudgetRecordsController.getTotalValuesImports');
-}).prefix('/api/v1/budget-records')
-  .middleware("auth");
->>>>>>> 13915add471591044bf4a36165b15596c951ab6c
+
 
 Route.group(() => {
   Route.post('/get-creditors-by-filters', 'CreditorsController.getCreditorsByFilters');

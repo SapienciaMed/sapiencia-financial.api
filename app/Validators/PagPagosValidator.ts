@@ -1,5 +1,4 @@
 import { schema, CustomMessages } from "@ioc:Adonis/Core/Validator";
-import { IPago } from "App/Interfaces/PagPagosInterfaces";
 
 export default class PagPagosValidator {
   public schema = schema.create({

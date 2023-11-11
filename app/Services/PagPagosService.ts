@@ -1,6 +1,5 @@
 import { IPago, IPagoFilters } from 'App/Interfaces/PagPagosInterfaces';
 import { IPagingData } from 'App/Utils/ApiResponses';
-import PagPagosValidator from 'App/Validators/PagPagosValidator';
 import PagoRepository, { IFileData } from 'App/Repositories/PagPagosRepository';
 
 export interface IPagoService {
@@ -27,8 +26,8 @@ export default class PagoService implements IPagoService {
     }
   }
 
-  private async processPagoDocument(fileContent: string): Promise<void> {
-    const pagos: IPago[] = await this.pagoRepository.readExcel(fileContent);
-    await this.pagoRepository.insertPagosToDatabase(pagos, PagPagosValidator);
+  private async processPagoDocument(_fileContent: string): Promise<void> {
+   /*  const pagos: IPago[] = await this.pagoRepository.readExcel(fileContent);
+    await this.pagoRepository.insertPagosToDatabase(pagos, PagPagosValidator); */
   }
 }

@@ -25,6 +25,7 @@ export default class ProjectsService implements IProjectsService {
     
     try {
       const transformedProjects = await tranformProjectsVinculation(allProjects);
+      transformedProjects;
       // Continuar con el código después de la transformación, si es necesario.
     } catch (error) {
       console.error("Ocurrió un error al transformar los proyectos:", error);
