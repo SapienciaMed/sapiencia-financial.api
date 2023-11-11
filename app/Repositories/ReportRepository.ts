@@ -31,6 +31,7 @@ export interface IReportRepository {
   generateReportExecutionExpenses(year: number): Promise<any[]>;
   generateReportOverviewBudgetModifications(year: number): Promise<any[]>;
   generateReportTransfers(year: number): Promise<any[]>;
+  generateReportModifiedRoutes(year: number): Promise<any[]>;
   generateReportCdpBalance(year: number): Promise<any[]>;
 }
 
@@ -886,8 +887,15 @@ export default class ReportRepository implements IReportRepository {
 
     }
 
-    console.log(infoArrayResult);
     return infoArrayResult;
+
+  }
+
+  async generateReportModifiedRoutes(year: number): Promise<any[]> {
+
+    console.log("Hola desde generateReportModifiedRoutes", year);
+
+    return [null];
 
   }
 
