@@ -26,7 +26,7 @@ import {
 import Transfer from "App/Models/Transfer";
 import { ITransfersReport } from "App/Interfaces/TransfersInterfaces";
 import BudgetAvailability from "App/Models/BudgetAvailability";
-import { IReportTransfers } from '../Interfaces/ReportsInterfaces';
+import { IReportTransfers, IReportModifiedRoutes } from '../Interfaces/ReportsInterfaces';
 
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
@@ -168,57 +168,25 @@ export default class ReportRepository implements IReportRepository {
       let budgetSapi: number = 0;
       let collected: number = 0;
 
-      let programmingJan: number = 0;
-      let programmingFeb: number = 0;
-      let programmingMar: number = 0;
-      let programmingApr: number = 0;
-      let programmingMay: number = 0;
-      let programmingJun: number = 0;
-      let programmingJul: number = 0;
-      let programmingAug: number = 0;
-      let programmingSep: number = 0;
-      let programmingOct: number = 0;
-      let programmingNov: number = 0;
-      let programmingDec: number = 0;
+      let programmingJan: number = 0; let programmingFeb: number = 0; let programmingMar: number = 0;
+      let programmingApr: number = 0; let programmingMay: number = 0; let programmingJun: number = 0;
+      let programmingJul: number = 0; let programmingAug: number = 0; let programmingSep: number = 0;
+      let programmingOct: number = 0; let programmingNov: number = 0; let programmingDec: number = 0;
 
-      let collectedJan: number = 0;
-      let collectedFeb: number = 0;
-      let collectedMar: number = 0;
-      let collectedApr: number = 0;
-      let collectedMay: number = 0;
-      let collectedJun: number = 0;
-      let collectedJul: number = 0;
-      let collectedAug: number = 0;
-      let collectedSep: number = 0;
-      let collectedOct: number = 0;
-      let collectedNov: number = 0;
-      let collectedDec: number = 0;
+      let collectedJan: number = 0; let collectedFeb: number = 0; let collectedMar: number = 0;
+      let collectedApr: number = 0; let collectedMay: number = 0; let collectedJun: number = 0;
+      let collectedJul: number = 0; let collectedAug: number = 0; let collectedSep: number = 0;
+      let collectedOct: number = 0; let collectedNov: number = 0; let collectedDec: number = 0;
 
-      let executeJan: number = 0;
-      let executeFeb: number = 0;
-      let executeMar: number = 0;
-      let executeApr: number = 0;
-      let executeMay: number = 0;
-      let executeJun: number = 0;
-      let executeJul: number = 0;
-      let executeAug: number = 0;
-      let executeSep: number = 0;
-      let executeOct: number = 0;
-      let executeNov: number = 0;
-      let executeDec: number = 0;
+      let executeJan: number = 0; let executeFeb: number = 0; let executeMar: number = 0;
+      let executeApr: number = 0; let executeMay: number = 0; let executeJun: number = 0;
+      let executeJul: number = 0; let executeAug: number = 0; let executeSep: number = 0;
+      let executeOct: number = 0; let executeNov: number = 0; let executeDec: number = 0;
 
-      let diferenceJan: number = 0;
-      let diferenceFeb: number = 0;
-      let diferenceMar: number = 0;
-      let diferenceApr: number = 0;
-      let diferenceMay: number = 0;
-      let diferenceJun: number = 0;
-      let diferenceJul: number = 0;
-      let diferenceAug: number = 0;
-      let diferenceSep: number = 0;
-      let diferenceOct: number = 0;
-      let diferenceNov: number = 0;
-      let diferenceDec: number = 0;
+      let diferenceJan: number = 0; let diferenceFeb: number = 0; let diferenceMar: number = 0;
+      let diferenceApr: number = 0; let diferenceMay: number = 0; let diferenceJun: number = 0;
+      let diferenceJul: number = 0; let diferenceAug: number = 0; let diferenceSep: number = 0;
+      let diferenceOct: number = 0; let diferenceNov: number = 0; let diferenceDec: number = 0;
 
       let percentExecute: number = 0;
       let forCollected: number = 0;
@@ -974,9 +942,91 @@ export default class ReportRepository implements IReportRepository {
 
   async generateReportModifiedRoutes(year: number): Promise<any[]> {
 
-    console.log("Hola desde generateReportModifiedRoutes", year);
+    let infoArrayResult: IReportModifiedRoutes[] = []; //Para adición y disminución.
 
-    return [null];
+    //** *************************** **//
+    //** Grupo Adición y Disminución **//
+    //** *************************** **//
+    const getAdditions = await Additions.query()
+      .orderBy("actAdminDistrict", "asc")
+      .preload("additionMove", (q) => {
+        q.preload("budgetRoute", (r) => {
+          r.preload("projectVinculation"),
+            r.preload("funds"),
+            r.preload("budget"),
+            r.preload("pospreSapiencia");
+        });
+      });
+
+    const getGeneralAddAndRedResponse: any[] = getAdditions.map((i) => i.serialize());
+    const getAdjustDataAddAndRed = getGeneralAddAndRedResponse as IAdditionsReport[];
+
+    for (const iterAdditions of getAdjustDataAddAndRed){
+
+      const actAdminDis: string = iterAdditions.actAdminDistrict;
+      const actAdminSap: string = iterAdditions.actAdminSapiencia;
+      const typeMovement: string = iterAdditions.typeMovement;
+
+      for (const iterResMovement of iterAdditions.additionMove){
+
+        let valBudgetExpenses: number = 0;
+        let valBudgetIncomes: number = 0;
+
+        let projectCode: string = "";
+        let projectName: string = "";
+        let functionalArea: string = "";
+        let fund: string = iterResMovement.budgetRoute.fund?.number!;
+        let managementCenter = iterResMovement.budgetRoute.managementCenter;
+
+        let posPreSapi: string = iterResMovement.budgetRoute.pospreSapiencia?.number!;
+        let desPosPreSapi: string = iterResMovement.budgetRoute.pospreSapiencia?.description!;
+        let exercise: number = iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
+
+        if (exercise === year) {
+
+          const getDataProject: IDataBasicProject | null =
+            await this.getProjectGeneral(
+              Number(iterResMovement.budgetRoute.idProjectVinculation),
+              desPosPreSapi
+            );
+
+          if ( !getDataProject || getDataProject == null || getDataProject == undefined)
+            return [null, "Ocurrió un error hallando la información del proyecto, revisar consistencia de información" ];
+
+          projectCode = getDataProject.projectCode;
+          projectName = getDataProject.projectName;
+          functionalArea = getDataProject.functionalArea;
+
+          //* Calculo para si es ingreso o gasto
+          if (iterResMovement.type === "Ingreso"){
+            valBudgetIncomes += Number(iterResMovement.value);
+          }else{
+            valBudgetExpenses += Number(iterResMovement.value);
+          }
+
+          const objTransaction: IReportModifiedRoutes = {
+            "Tipo De Modificación": typeMovement,
+            "Acto Administrativo Distrito": actAdminDis,
+            "Acto Administrativo Sapiencia": actAdminSap,
+            "Centro Gestor": managementCenter,
+            "Posición Presupuestal": posPreSapi,
+            "Fondo": fund,
+            "Área Funcional": functionalArea,
+            "Proyecto": projectCode,
+            "Valor Ingreso": valBudgetIncomes,
+            "Valor Gasto": valBudgetExpenses,
+            "Nombre Proyecto": projectName,
+          };
+
+          infoArrayResult.push(objTransaction);
+
+        }
+
+      }
+
+    }
+
+    return infoArrayResult;
 
   }
 
