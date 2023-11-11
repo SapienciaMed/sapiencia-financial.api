@@ -50,13 +50,19 @@ export default class ReportService implements IReportService {
         );
         break;
       case EReportIds.reportCdpBalance:
-        dataTable = await this.reportRepository.generateReportCdpBalance(filters.year);
+        dataTable = await this.reportRepository.generateReportCdpBalance(
+          filters.year
+        );
         break;
       case EReportIds.reportTransfers:
-        dataTable = await this.reportRepository.generateReportTransfers(filters.year);
+        dataTable = await this.reportRepository.generateReportTransfers(
+          filters.year
+        );
         break;
       case EReportIds.reportModifiedRoutes:
-        dataTable = await this.reportRepository.generateReportModifiedRoutes(filters.year);
+        dataTable = await this.reportRepository.generateReportModifiedRoutes(
+          filters.year
+        );
         break;
       case EReportIds.reportRpBalance:
         dataTable = await this.reportRepository.generateReportRpBalance(
@@ -65,6 +71,11 @@ export default class ReportService implements IReportService {
         break;
       case EReportIds.reportAccountsPayable:
         dataTable = await this.reportRepository.generateReportAccountsPayable(
+          filters.year
+        );
+        break;
+      case EReportIds.reportDetailedExecution:
+        dataTable = await this.reportRepository.generateReportDetailedExecution(
           filters.year
         );
         break;
