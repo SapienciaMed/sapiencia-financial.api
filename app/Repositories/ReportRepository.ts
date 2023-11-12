@@ -14,6 +14,7 @@ import {
   IReportColumnDetailedExecution,
   IReportTransfers,
   IReportModifiedRoutes,
+  IReportColumnExecutionIncome,
 } from "../Interfaces/ReportsInterfaces";
 import { IAdditionsReport } from "../Interfaces/AdditionsInterfaces";
 import { IStrategicDirectionService } from "../Services/External/StrategicDirectionService";
@@ -43,6 +44,7 @@ export interface IReportRepository {
   generateReportRpBalance(year: number): Promise<any[]>;
   generateReportAccountsPayable(year: number): Promise<any[]>;
   generateReportDetailedExecution(year: number): Promise<any[]>;
+  generateReportExecutionIncome(year: number): Promise<any[]>;
 }
 
 export default class ReportRepository implements IReportRepository {
@@ -1804,6 +1806,160 @@ export default class ReportRepository implements IReportRepository {
         "Porcentaje de Ejecución": `${percentageExecution} %`,
       };
 
+      resObject.push(newItem);
+    }
+
+    return resObject;
+  }
+
+  //HU-093 Ejecucion de ingresos
+  async generateReportExecutionIncome(year: number): Promise<any[]> {
+    let resObject: IReportColumnExecutionIncome[] = [];
+
+    // Consulta la ruta de presupuesto para el año especificado
+    const queryBudgetRoute = await BudgetsRoutes.query()
+      .preload("budget", (subQuery) => { // Preguntar ***********************************************
+        subQuery.where("ejercise", year);
+      })
+      .preload("pospreSapiencia", (subQuery) => {
+        subQuery.where("ejercise", year);
+      })
+      .preload("funds")
+      .preload("projectVinculation")
+      .orderBy("id", "desc");
+
+    // Mapea los resultados de la consulta a objetos serializados
+    const resBudgetRoute = queryBudgetRoute
+      .map((i) => i.serialize())
+      .filter(
+        (i) =>
+          i.pospreSapiencia &&
+          i.pospreSapiencia !== null &&
+          i.budget &&
+          i.budget !== null
+      );
+
+    if (!resBudgetRoute.length) return resObject;
+
+    // Recorre los resultados y genera el informe
+    for (const rpp of resBudgetRoute) {
+      // Variables para almacenar información
+      let nameFund: string = "";
+      let nameManagementCenter: string = "";
+      let numberPospre: string = "";
+      let functionalArea: string = "";
+      let projectCode: string = "";
+      let namePospre: string = "";
+      let initialBudget: number = 0;
+      let valueReduction: number = 0;
+      let valueAddiction: number = 0;
+      let currentBudget: number = 0;
+      let credits: number = 0;
+      let againstCredits: number = 0;
+      let collected: number = 0;
+      let toBeCollected: number = 0;
+      let executionTotal: number = 0;
+      let percentageExecution: number = 0;
+
+      // Fondo
+      if (rpp.fund?.number) nameFund = rpp.fund?.number ?? "";
+
+      // Centro Gestor
+      if (rpp.managementCenter)
+        nameManagementCenter = rpp.managementCenter ?? "";
+
+      //Pospre Origen
+      numberPospre = rpp.budget.number;
+
+      // Obtener información del proyecto
+      const getDataProject: IDataBasicProject | null =
+        await this.getProjectGeneral(
+          Number(rpp.idProjectVinculation),
+          rpp.pospreSapiencia?.description!
+        );
+
+      if (
+        !getDataProject ||
+        getDataProject == null ||
+        getDataProject == undefined
+      ) {
+        // Manejo de errores en caso de que no se pueda obtener información del proyecto
+        return [
+          null,
+          "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+        ];
+      } else {
+        // Asignar datos del proyecto
+        functionalArea = getDataProject.functionalArea;
+        projectCode = getDataProject.projectCode;
+        // projectName = getDataProject.projectName;
+      }
+
+      //Nombre Pospre
+      namePospre = rpp.budget.denomination;
+
+      //Presupuesto inicial
+      initialBudget = +rpp.initialBalance;
+
+      // Reducciones y adiciones
+      const resultAdditionMovement = await getAdditionMovement(rpp.id);
+      if (resultAdditionMovement.length > 0) {
+        const sumAddiction: number = resultAdditionMovement
+          .filter((objeto) => objeto.addition.typeMovement === "Adicion")
+          .reduce((total, objeto) => total + parseInt(objeto.value, 10), 0);
+        valueAddiction = sumAddiction;
+        const sumReduction: number = resultAdditionMovement
+          .filter((objeto) => objeto.addition.typeMovement === "Disminucion")
+          .reduce((total, objeto) => total + parseInt(objeto.value, 10), 0);
+        valueReduction = sumReduction;
+      }
+
+      // Créditos y contra créditos
+      const resultCredit = await getCreditAndAgainstCredits(rpp.id);
+      if (resultCredit) {
+        if (resultCredit?.type === "Destino") {
+          credits = +resultCredit.value;
+        } else {
+          againstCredits = +resultCredit.value;
+        }
+      }
+
+      //Presupuesto actual
+      currentBudget = rpp.balance ? +rpp.balance : 0;
+
+      //Recaudado Preguntar ****************************************************************
+      //Por Recaudar Preguntar ****************************************************************
+
+      //Total de ejecucion
+      executionTotal = +collected;
+
+      // Porcentaje de Ejecución
+      percentageExecution = Number(
+        ((100 * +executionTotal) / +currentBudget).toFixed(2)
+      );
+      if (!isFinite(percentageExecution)) percentageExecution = 0;
+
+      const newItem: IReportColumnExecutionIncome = {
+        // Id: rpp.id,
+        Fondo: nameFund,
+        "Centro Gestor": nameManagementCenter,
+        "Posición Presupuestaria": numberPospre,
+        "Área Funcional": functionalArea,
+        Proyecto: projectCode,
+        "Nombre Pospre": namePospre,
+        "Ppto Inicial": +initialBudget,
+        Reducciones: valueReduction && +valueReduction,
+        Adiciones: valueAddiction && +valueAddiction,
+        Créditos: +credits,
+        "Contra créditos": againstCredits,
+        "Total Ppto Actual": currentBudget && +currentBudget,
+        Recaudado: collected,
+        "Por Recaudar": toBeCollected,
+        "Total Ejecución": +executionTotal,
+        "Porcentaje de Ejecución": `${percentageExecution} %`,
+      };
+
+      // Agregar el objeto al resultado
       resObject.push(newItem);
     }
 

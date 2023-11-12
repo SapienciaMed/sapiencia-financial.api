@@ -79,6 +79,11 @@ export default class ReportService implements IReportService {
           filters.year
         );
         break;
+      case EReportIds.reportExecutionIncome:
+        dataTable = await this.reportRepository.generateReportExecutionIncome(
+          filters.year
+        );
+        break;
 
       default:
         dataTable = [];

@@ -231,3 +231,23 @@ export interface IReportColumnDetailedExecution {
   "Total Ejecución": number;
   "Porcentaje de Ejecución": string;
 }
+
+export interface IReportColumnExecutionIncome {
+  Id?: number;
+  Fondo: string;
+  "Centro Gestor": string;
+  "Posición Presupuestaria": string;
+  "Área Funcional": string;
+  Proyecto: string;
+  "Nombre Pospre": string;
+  "Ppto Inicial": number;
+  Reducciones: number;
+  Adiciones: number;
+  Créditos: number;
+  "Contra créditos": number;
+  "Total Ppto Actual": number;
+  Recaudado: number;
+  "Por Recaudar": number;
+  "Total Ejecución": number;
+  "Porcentaje de Ejecución": string;
+}
