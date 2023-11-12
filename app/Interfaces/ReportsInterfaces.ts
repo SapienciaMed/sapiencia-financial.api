@@ -246,7 +246,7 @@ export interface IReportColumnExecutionIncome {
   Créditos: number;
   "Contra créditos": number;
   "Total Ppto Actual": number;
-  Recaudado: number;
+  Recaudo: number;
   "Por Recaudar": number;
   "Total Ejecución": number;
   "Porcentaje de Ejecución": string;
