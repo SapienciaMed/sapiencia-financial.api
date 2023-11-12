@@ -1,4 +1,3 @@
-import { IDataCredits } from "App/Interfaces/ReportsInterfaces";
 import AdditionsMovement from "App/Models/AdditionsMovement";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 import LinkRpcdp from "App/Models/LinkRpcdp";
