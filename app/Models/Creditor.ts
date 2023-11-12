@@ -44,6 +44,6 @@ export default class Creditor extends BaseModel {
   })
   public dateCreate: DateTime;
 
-  @column({ columnName: 'ACR_FECHA_MODIFICO', serializeAs: "dateModify" })
-  public dateModify: string;
+  @column.dateTime({ columnName: 'ACR_FECHA_MODIFICO', serializeAs: "dateModify" })
+  public dateModify: DateTime;
 }
