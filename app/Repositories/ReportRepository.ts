@@ -24,6 +24,7 @@ import {
   getAdditionMovement,
   getAmountBudgetAvailability,
   getCheckWhetherOrNotHaveRp,
+  getCollected,
   getCreditAndAgainstCredits,
   getInvoicesAndPaymentsVrp,
   getlinksRpCdp,
@@ -1837,7 +1838,6 @@ export default class ReportRepository implements IReportRepository {
     // Consulta la ruta de presupuesto para el año especificado
     const queryBudgetRoute = await BudgetsRoutes.query()
       .preload("budget", (subQuery) => {
-        // Preguntar ***********************************************
         subQuery.where("ejercise", year);
       })
       .preload("pospreSapiencia", (subQuery) => {
@@ -1955,8 +1955,12 @@ export default class ReportRepository implements IReportRepository {
       //Presupuesto actual
       currentBudget = rpp.balance ? +rpp.balance : 0;
 
-      //Recaudado Preguntar ****************************************************************
-      //Por Recaudar Preguntar ****************************************************************
+      //Recaudo
+      const resultCollected = await getCollected(rpp.id, year);
+      collected = resultCollected;
+
+      //Por Recaudar
+      toBeCollected = currentBudget - collected;
 
       //Total de ejecucion
       executionTotal = +collected;
@@ -1981,7 +1985,7 @@ export default class ReportRepository implements IReportRepository {
         Créditos: +credits,
         "Contra créditos": againstCredits,
         "Total Ppto Actual": currentBudget && +currentBudget,
-        Recaudado: collected,
+        Recaudo: collected,
         "Por Recaudar": toBeCollected,
         "Total Ejecución": +executionTotal,
         "Porcentaje de Ejecución": `${percentageExecution} %`,
