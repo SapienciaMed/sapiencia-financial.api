@@ -51,6 +51,9 @@ export default class AppProvider {
     const PayrollService = await import(
       "App/Services/External/PayrollService"
     );
+
+    const UploadMasiveService = await import("App/Services/UploadMasiveService");
+    const FundsUploadMasiveService = await import("App/Services/FundsUploadMasiveService");
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -61,9 +64,9 @@ export default class AppProvider {
     const ReportRepository = await import(
       "App/Repositories/ReportRepository"
     );
-    
+
     const PagPagosRepository = await import("App/Repositories/PagPagosRepository")
-    
+
     const BudgetsRepository = await import(
       "App/Repositories/BudgetsRepository"
     );
@@ -320,7 +323,7 @@ export default class AppProvider {
         new PayrollService.default()
 
     )
-    
+
 
     this.app.container.singleton(
       "core.PayrollProvider",
@@ -331,8 +334,23 @@ export default class AppProvider {
 
     )
 
+    this.app.container.singleton(
+      "core.UploadMasiveProvider",
+      () =>
+        new UploadMasiveService.default(
+
+          new PagPagosService.default(
+            new PagPagosRepository.default()
+          ),
+          new FundsUploadMasiveService.default(
+            new FundsRepository.default()
+          )
+
+        )
+    );
+
   }
-  
+
 
   public async boot() {
     // IoC container is ready

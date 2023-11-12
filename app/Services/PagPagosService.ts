@@ -1,8 +1,11 @@
 import { IPago, IPagoFilters } from 'App/Interfaces/PagPagosInterfaces';
 import { IPagingData } from 'App/Utils/ApiResponses';
 import PagoRepository, { IFileData } from 'App/Repositories/PagPagosRepository';
+import { ApiResponse } from '../Utils/ApiResponses';
+import { EResponseCodes } from '../Constants/ResponseCodesEnum';
 
 export interface IPagoService {
+  getCommunication(fileData: any): Promise<ApiResponse<any>>;
   getPagosPaginated(filters: IPagoFilters): Promise<IPagingData<IPago | null>>;
   processDocument(fileData: IFileData): Promise<void>;
 }
@@ -30,4 +33,13 @@ export default class PagoService implements IPagoService {
    /*  const pagos: IPago[] = await this.pagoRepository.readExcel(fileContent);
     await this.pagoRepository.insertPagosToDatabase(pagos, PagPagosValidator); */
   }
+
+  async getCommunication(fileData: any): Promise<ApiResponse<any>> {
+
+    console.log("Hola!");
+    console.log(fileData);
+    return new ApiResponse(null, EResponseCodes.INFO, "Llegamos hasta el servicio de PagPagos");
+
+  }
+
 }

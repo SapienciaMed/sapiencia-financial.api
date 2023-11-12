@@ -950,7 +950,6 @@ export default class ReportRepository implements IReportRepository {
       }
     }
 
-    console.log(infoArrayResult);
     return infoArrayResult;
   }
 
