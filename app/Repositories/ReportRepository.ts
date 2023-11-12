@@ -1240,14 +1240,23 @@ export default class ReportRepository implements IReportRepository {
       }
 
       // Créditos y contra créditos
-      const resultCredit = await getCreditAndAgainstCredits(rpp.id);
-      if (resultCredit) {
-        if (resultCredit?.type === "Destino") {
-          credits = +resultCredit.value;
-        } else {
-          againstCredits = +resultCredit.value;
-        }
-      }
+      const result = await getCreditAndAgainstCredits(rpp.id);
+      const resultCredit = result.filter((i) => i.type === "Destino");
+      const resultAgainstCredits = result.filter((i) => i.type === "Origen");
+
+      // Créditos
+      if (resultCredit.length > 0)
+        credits = resultCredit.reduce(
+          (total, i) => total + parseInt(i.value),
+          0
+        );
+
+      // Contra Créditos
+      if (resultAgainstCredits.length > 0)
+        againstCredits = resultAgainstCredits.reduce(
+          (total, i) => total + parseInt(i.value),
+          0
+        );
 
       // Total Ppto Actual
       if (rpp.balance) currentPpr = rpp.balance ? +rpp.balance : 0;
@@ -1731,14 +1740,23 @@ export default class ReportRepository implements IReportRepository {
       }
 
       // Créditos y contra créditos
-      const resultCredit = await getCreditAndAgainstCredits(rpp.id);
-      if (resultCredit) {
-        if (resultCredit?.type === "Destino") {
-          credits = +resultCredit.value;
-        } else {
-          againstCredits = +resultCredit.value;
-        }
-      }
+      const result = await getCreditAndAgainstCredits(rpp.id);
+      const resultCredit = result.filter((i) => i.type === "Destino");
+      const resultAgainstCredits = result.filter((i) => i.type === "Origen");
+
+      // Créditos
+      if (resultCredit.length > 0)
+        credits = resultCredit.reduce(
+          (total, i) => total + parseInt(i.value),
+          0
+        );
+
+      // Contra Créditos
+      if (resultAgainstCredits.length > 0)
+        againstCredits = resultAgainstCredits.reduce(
+          (total, i) => total + parseInt(i.value),
+          0
+        );
 
       //Presupuesto actual
       currentBudget = rpp.balance ? +rpp.balance : 0;
@@ -1818,7 +1836,8 @@ export default class ReportRepository implements IReportRepository {
 
     // Consulta la ruta de presupuesto para el año especificado
     const queryBudgetRoute = await BudgetsRoutes.query()
-      .preload("budget", (subQuery) => { // Preguntar ***********************************************
+      .preload("budget", (subQuery) => {
+        // Preguntar ***********************************************
         subQuery.where("ejercise", year);
       })
       .preload("pospreSapiencia", (subQuery) => {
@@ -1915,14 +1934,23 @@ export default class ReportRepository implements IReportRepository {
       }
 
       // Créditos y contra créditos
-      const resultCredit = await getCreditAndAgainstCredits(rpp.id);
-      if (resultCredit) {
-        if (resultCredit?.type === "Destino") {
-          credits = +resultCredit.value;
-        } else {
-          againstCredits = +resultCredit.value;
-        }
-      }
+      const result = await getCreditAndAgainstCredits(rpp.id);
+      const resultCredit = result.filter((i) => i.type === "Destino");
+      const resultAgainstCredits = result.filter((i) => i.type === "Origen");
+
+      // Créditos
+      if (resultCredit.length > 0)
+        credits = resultCredit.reduce(
+          (total, i) => total + parseInt(i.value),
+          0
+        );
+
+      // Contra Créditos
+      if (resultAgainstCredits.length > 0)
+        againstCredits = resultAgainstCredits.reduce(
+          (total, i) => total + parseInt(i.value),
+          0
+        );
 
       //Presupuesto actual
       currentBudget = rpp.balance ? +rpp.balance : 0;

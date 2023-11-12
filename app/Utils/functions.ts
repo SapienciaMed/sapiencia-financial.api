@@ -27,24 +27,15 @@ export function getStringDate(date: Date): string {
 
 //Obtiene información sobre los créditos y contra créditos relacionados con un presupuesto.
 export const getCreditAndAgainstCredits = async (
-  rpp_credits: string
-): Promise<IDataCredits | null> => {
+  rpp_credits: number
+): Promise<any[]> => {
   const resTransfersMovement = await TransfersMovement.query();
 
   const result = resTransfersMovement.map((i) => i.serialize());
 
-  const filterData = result.find((i) => i.budgetRouteId === rpp_credits);
-  // if (rpp_credits === "9232020200802") console.log({ rpp_credits, filterData });
+  const filterData = result.filter((i) => i.budgetRouteId === rpp_credits);
 
-  return filterData
-    ? {
-        id: filterData.id,
-        transferId: filterData.transferId,
-        type: filterData.type,
-        budgetRouteId: filterData.budgetRouteId,
-        value: filterData.value,
-      }
-    : null;
+  return filterData;
 };
 
 //Obtiene movimientos de adición relacionados con un presupuesto.
