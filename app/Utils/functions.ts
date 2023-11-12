@@ -203,18 +203,24 @@ export const getlinksRpCdp = async (year: number, type: string) => {
     const resPago = queryPago.map((i) => i.serialize());
 
     if (type === "RpBalance") {
-      const find = resPago.filter((i) => i.valorCausado && i.valorPagado);
+      const find = resPago.filter(
+        (i) => parseInt(i.valorCausado) > 0 && parseInt(i.valorPagado) > 0
+      );
       if (!find.length && !queryPago.length) {
         result.push(lrc);
       }
     }
     if (type === "AccountsPayable") {
-      const find = resPago.filter((i) => i.valorCausado && !i.valorPagado);
+      const find = resPago.filter(
+        (i) =>
+          parseInt(i.valorCausado) > 0 &&
+          (!parseInt(i.valorPagado) || parseInt(i.valorPagado) === 0)
+      );
       if (find.length > 0) {
         result.push(lrc);
       }
     }
   }
 
-  return result;
+  return { result };
 };

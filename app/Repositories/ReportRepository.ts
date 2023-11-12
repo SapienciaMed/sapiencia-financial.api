@@ -12,6 +12,8 @@ import {
   IReportColumnRpBalance,
   IReportColumnAccountsPayable,
   IReportColumnDetailedExecution,
+  IReportTransfers,
+  IReportModifiedRoutes,
 } from "../Interfaces/ReportsInterfaces";
 import { IAdditionsReport } from "../Interfaces/AdditionsInterfaces";
 import { IStrategicDirectionService } from "../Services/External/StrategicDirectionService";
@@ -28,10 +30,7 @@ import {
 import Transfer from "App/Models/Transfer";
 import { ITransfersReport } from "App/Interfaces/TransfersInterfaces";
 import BudgetAvailability from "App/Models/BudgetAvailability";
-import {
-  IReportTransfers,
-  IReportModifiedRoutes,
-} from "../Interfaces/ReportsInterfaces";
+import Pago from "App/Models/PagPagos";
 
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
@@ -1145,6 +1144,7 @@ export default class ReportRepository implements IReportRepository {
     return infoArrayResult;
   }
 
+  //HU-094 Reporte Ejecucion de gastos
   async generateReportExecutionExpenses(year: number): Promise<any[]> {
     // Matriz que almacenará el resultado del informe
     const resObject: IReportColumnExecutionExpenses[] = [];
@@ -1433,9 +1433,11 @@ export default class ReportRepository implements IReportRepository {
   async generateReportRpBalance(year: number): Promise<any[]> {
     let resObject: IReportColumnRpBalance[] = [];
 
-    const resultRpBalance = await getlinksRpCdp(year, "RpBalance");
+    const { result } = await getlinksRpCdp(year, "RpBalance");
 
-    for (const vrp of resultRpBalance) {
+    if (!result.length) return resObject;
+
+    for (const vrp of result) {
       // let idVrp: number = vrp.id;
       let consecutiveSap: number = 0;
       let consecutiveAurora: number = 0;
@@ -1516,14 +1518,16 @@ export default class ReportRepository implements IReportRepository {
     return resObject;
   }
 
-  //HU-097 Report Cuentas por pagar
+  //HU-097 Reporte Cuentas por pagar
   async generateReportAccountsPayable(year: number): Promise<any[]> {
     let resObject: IReportColumnAccountsPayable[] = [];
 
-    const resultAccountsPayable = await getlinksRpCdp(year, "AccountsPayable");
+    const { result } = await getlinksRpCdp(year, "AccountsPayable");
 
-    for (const vrp of resultAccountsPayable) {
-      let idVrp: number = vrp.id;
+    if (!result.length) return resObject;
+
+    for (const vrp of result) {
+      // let idVrp: number = vrp.id;
       let consecutiveSap: number = 0;
       let consecutiveAurora: number = 0;
       let positionRp: number = 0;
@@ -1536,58 +1540,70 @@ export default class ReportRepository implements IReportRepository {
       let finalAmount: number = 0;
       let valueCaused: number = 0;
 
-      // //Consecutivo RP SAP
-      // consecutiveSap = vrp.budgetRecord.consecutiveSap;
+      //Consecutivo RP SAP
+      consecutiveSap = vrp.budgetRecord.consecutiveSap;
 
-      // //Consecutivo RP Aurora
-      // consecutiveAurora = vrp.budgetRecord.id;
+      //Consecutivo RP Aurora
+      consecutiveAurora = vrp.budgetRecord.id;
 
-      // //Posición
-      // positionRp = vrp.position;
+      //Posición
+      positionRp = vrp.position;
 
-      // //Fondo
-      // fund = vrp.amountBudgetAvailability.budgetRoute.fund.number;
+      //Fondo
+      fund = vrp.amountBudgetAvailability.budgetRoute.fund.number;
 
-      // //Centro gestor
-      // nameManagementCenter =
-      //   vrp.amountBudgetAvailability.budgetRoute.managementCenter;
+      //Centro gestor
+      nameManagementCenter =
+        vrp.amountBudgetAvailability.budgetRoute.managementCenter;
 
-      // //Posicion Presupuestaria
-      // numberPospre =
-      //   vrp.amountBudgetAvailability.budgetRoute.pospreSapiencia.number;
+      //Posicion Presupuestaria
+      numberPospre =
+        vrp.amountBudgetAvailability.budgetRoute.pospreSapiencia.number;
 
-      // //Area Funcional, Proyecto y Nombre del proyecto
-      // const getDataProject: IDataBasicProject | null =
-      //   await this.getProjectGeneral(
-      //     Number(vrp.amountBudgetAvailability.budgetRoute.idProjectVinculation),
-      //     vrp.amountBudgetAvailability.budgetRoute.pospreSapiencia?.description!
-      //   );
+      //Area Funcional, Proyecto y Nombre del proyecto
+      const getDataProject: IDataBasicProject | null =
+        await this.getProjectGeneral(
+          Number(vrp.amountBudgetAvailability.budgetRoute.idProjectVinculation),
+          vrp.amountBudgetAvailability.budgetRoute.pospreSapiencia?.description!
+        );
 
-      // if (
-      //   !getDataProject ||
-      //   getDataProject == null ||
-      //   getDataProject == undefined
-      // ) {
-      //   // Manejo de errores en caso de que no se pueda obtener información del proyecto
-      //   return [
-      //     null,
-      //     "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
-      //   ];
-      // } else {
-      //   // Asignar datos del proyecto
-      //   functionalArea = getDataProject.functionalArea;
-      //   projectCode = getDataProject.projectCode;
-      //   projectName = getDataProject.projectName;
-      // }
+      if (
+        !getDataProject ||
+        getDataProject == null ||
+        getDataProject == undefined
+      ) {
+        // Manejo de errores en caso de que no se pueda obtener información del proyecto
+        return [
+          null,
+          "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+        ];
+      } else {
+        // Asignar datos del proyecto
+        functionalArea = getDataProject.functionalArea;
+        projectCode = getDataProject.projectCode;
+        projectName = getDataProject.projectName;
+      }
 
-      // //Valor Final
-      // finalAmount = vrp.finalAmount;
+      //Valor Final
+      finalAmount = vrp.finalAmount;
 
-      // //Valor Causado
-      // valueCaused = vrp.finalAmount;
+      //Valor Causado
+      const queryPago = await Pago.query().where("vinculacionRpCode", vrp.id);
+      const resPago = queryPago.map((i) => i.serialize());
+      if (resPago.length > 0) {
+        const find = resPago.filter(
+          (i) =>
+            parseInt(i.valorCausado) > 0 &&
+            (!parseInt(i.valorPagado) || parseInt(i.valorPagado) === 0)
+        );
+        valueCaused = find.reduce(
+          (total, i) => total + parseInt(i.valorCausado),
+          0
+        );
+      }
 
       const newItem: IReportColumnAccountsPayable = {
-        Id: idVrp,
+        // Id: idVrp,
         "Consecutivo RP SAP": consecutiveSap,
         "Consecutivo RP Aurora": consecutiveAurora,
         Posición: positionRp,
@@ -1608,6 +1624,7 @@ export default class ReportRepository implements IReportRepository {
     return resObject;
   }
 
+  //HU-092 Ejecucion detallada
   async generateReportDetailedExecution(year: number): Promise<any[]> {
     let resObject: IReportColumnDetailedExecution[] = [];
 
