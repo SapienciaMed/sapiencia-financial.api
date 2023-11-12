@@ -323,7 +323,7 @@ export default class AppProvider {
     
 
     this.app.container.singleton(
-      "core.PayrollProvider",
+      "core.PayProvider",
       () =>
         new PagPagosService.default(
           new PagPagosRepository.default()
