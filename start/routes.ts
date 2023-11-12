@@ -354,6 +354,8 @@ Route.group(() => {
   .middleware("auth");
 
 Route.group(() => {
+  Route.post('create-creditor','CreditorsController.createCreditor')
+  Route.post('update-creditor','CreditorsController.updateCreditor')
   Route.post(
     "/get-creditors-by-filters",
     "CreditorsController.getCreditorsByFilters"
