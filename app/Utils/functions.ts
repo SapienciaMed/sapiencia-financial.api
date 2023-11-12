@@ -1,6 +1,7 @@
 import AdditionsMovement from "App/Models/AdditionsMovement";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 import LinkRpcdp from "App/Models/LinkRpcdp";
+import Pac from "App/Models/Pac";
 import Pago from "App/Models/PagPagos";
 import TransfersMovement from "App/Models/TransfersMovement";
 
@@ -213,4 +214,38 @@ export const getlinksRpCdp = async (year: number, type: string) => {
   }
 
   return { result };
+};
+
+export const getCollected = async (rppId: number, year: number) => {
+  let result = 0;
+  const queryPac = await Pac.query()
+    .where("budgetRouteId", rppId)
+    .where("exercise", year)
+    .where("isActive", 1)
+    .preload("pacAnnualizations", (subQuery) =>
+      subQuery.where("type", "Recaudado")
+    );
+  const resPac = queryPac.map((i) => i.serialize());
+
+  if (resPac.length > 0) {
+    for (const pac of resPac) {
+      const sumOfMonths = pac.pacAnnualizations.map((obj) => {
+        const sum = Object.entries(obj)
+          .filter(
+            ([key, value]) =>
+              typeof value === "number" && key !== "id" && key !== "pacId"
+          )
+          .reduce(
+            (acc, [, value]) => acc + (typeof value === "number" ? +value : 0),
+            0
+          );
+
+        return { ...obj, sumOfMonths: sum };
+      });
+
+      result += sumOfMonths[0].sumOfMonths;
+    }
+  }
+
+  return result;
 };
