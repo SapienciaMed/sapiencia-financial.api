@@ -14,20 +14,21 @@ export default class PagoService implements IPagoService {
     return this.pagoRepository.getPagosPaginated(filters);
   }
 
-  async processDocument(fileData: IFileData): Promise<void> {
+  public async processDocument(fileData: IFileData): Promise<void> {
     const { documentType, fileContent } = fileData;
-
-    switch (documentType) {
+    await this.pagoRepository.processDocument(documentType, fileContent);
+  
+/*     switch (documentType) {
       case 'pago':
-        await this.processPagoDocument(fileContent);
+        break;
+      case 'funds':
+        await this.pagoRepository.processDocument(documentType, fileContent);
         break;
       default:
         throw new Error(`Tipo de documento no reconocido: ${documentType}`);
-    }
+    } */
   }
+  
 
-  private async processPagoDocument(_fileContent: string): Promise<void> {
-   /*  const pagos: IPago[] = await this.pagoRepository.readExcel(fileContent);
-    await this.pagoRepository.insertPagosToDatabase(pagos, PagPagosValidator); */
-  }
+
 }
