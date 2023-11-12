@@ -1696,7 +1696,7 @@ export default class ReportRepository implements IReportRepository {
       numberPospreSapiencia = rpp.pospreSapiencia.number;
 
       //Presupuesto inicial
-      initialBudget = rpp.initialBalance;
+      initialBudget = +rpp.initialBalance;
 
       // Reducciones y adiciones
       const resultAdditionMovement = await getAdditionMovement(rpp.id);
