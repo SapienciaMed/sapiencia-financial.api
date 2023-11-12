@@ -371,3 +371,9 @@ Route.group(() => {
 })
   .prefix("/api/v1/payroll")
   .middleware("auth");
+
+Route.group(() => {
+  Route.post("/uploads", "UploadMasiveController.redirectToUploadMasive");
+})
+  .prefix("/api/v1/upload-masive")
+  // .middleware("auth");
