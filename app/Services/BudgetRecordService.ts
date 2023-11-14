@@ -12,6 +12,7 @@ export interface IBudgetRecordService {
     getRpByFilters(budgetRecordFilter: IBudgetRecordFilter): Promise<ApiResponse<any>>
     getTotalValuesImports(id: number): Promise<ApiResponse<any>>;   
     updateRp(id:number,budgetRecordDataBasic:ILinkRPCDP): Promise<ApiResponse<any>>
+    getCausation(id: number): Promise<ApiResponse<any>>;
     getAllActivityObjectContracts(): Promise<ApiResponse<any>>
 }
 
@@ -143,6 +144,21 @@ export default class BudgetRecordService implements IBudgetRecordService {
                 EResponseCodes.WARN,
                 "Registro no encontrado"
             );
+        }
+        return new ApiResponse(res, EResponseCodes.OK);
+    }      
+     
+
+    async getCausation(
+        id: number
+      ): Promise<ApiResponse<any>> {
+        const res = await this.budgerRecordRepository.getCausation(id);
+        if (!res) {
+          return new ApiResponse(
+            {} as any,
+            EResponseCodes.WARN,
+            "Registro no encontrado"
+          );
         }
         return new ApiResponse(res, EResponseCodes.OK);
     }   
