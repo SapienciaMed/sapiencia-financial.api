@@ -6,8 +6,15 @@ export interface IPago {
   valorCausado: number;
   valorPagado: number;
   usuarioCreo: string;
-  fechaCreo: string; // Ajusta el tipo de fecha según el formato real en tu modelo (puede ser DateTime)
-  vinculacionRprIcd?: LinkRpcdp; // Ajusta según el modelo real de LinkRpcdp
+  fechaCreo: string; 
+  vinculacionRprIcd?: LinkRpcdp; 
+}
+
+export interface IPagoMasive {
+  id?: number;
+  posicion: number;
+  valorCausado: number;
+  valorPagado: number;
 }
 
 export interface IPagoFilters {
