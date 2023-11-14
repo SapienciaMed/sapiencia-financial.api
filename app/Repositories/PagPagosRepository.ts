@@ -5,9 +5,7 @@ import * as ExcelJS from 'exceljs';
 import { IPago, IPagoFilters } from 'App/Interfaces/PagPagosInterfaces';
 import { IPagingData } from 'App/Utils/ApiResponses';
 import PagPagos from 'App/Models/PagPagos';
-import Funds from 'App/Models/Funds';
 import PagPagosValidator from 'App/Validators/PagPagosValidator';
-import FundsValidator from 'App/Validators/FundsValidator';
 
 
 export interface IPagoRepository {
