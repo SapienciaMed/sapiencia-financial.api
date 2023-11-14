@@ -334,7 +334,7 @@ Route.group(() => {
   Route.get("/get-CDPRp-id/:id", "BudgetAvailabilityController.getRpCDP");
 })
   .prefix("/api/v1/cdp")
-  .middleware("auth");
+  /* .middleware("auth"); */
 
 Route.group(() => {
   Route.post("/create-rp", "BudgetRecordsController.createRp");
@@ -344,14 +344,15 @@ Route.group(() => {
   );
   Route.get("/get-components", "BudgetRecordsController.getComponents");
   Route.post("/get-rp-by-filters", "BudgetRecordsController.getRpByFilters");
+  Route.get("/get-all-activity-object-contracts", "BudgetRecordsController.getAllActivityObjectContracts");
   Route.get(
     "/get-totalvaluesimports/:id",
     "BudgetRecordsController.getTotalValuesImports"
   );
   Route.post("/update-data/:id", "BudgetRecordsController.updateRp");
 })
-  .prefix("/api/v1/budget-records")
-  .middleware("auth");
+  .prefix("/api/v1/budget-records");
+  /* .middleware("auth"); */
 
 Route.group(() => {
   Route.post('create-creditor','CreditorsController.createCreditor')

@@ -84,6 +84,19 @@ export default class BudgetRecordsController {
             );
         }
     }
+      
+    public async getAllActivityObjectContracts({ response }: HttpContextContract) {
+        try {
+            
+            return response.send(
+                await BudgetRecordProvider.getAllActivityObjectContracts()
+            );
+        } catch (err) {
+            return response.badRequest(
+                new ApiResponse(null, EResponseCodes.FAIL, String(err))
+            );
+        }
+    }
 
 
 }

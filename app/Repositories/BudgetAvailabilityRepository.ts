@@ -71,6 +71,9 @@ export default class BudgetAvailabilityRepository
     if (filter.consecutiveSap) {
       query.where("sapConsecutive", filter.consecutiveSap);
     }
+    if (filter.consecutiveAurora) {
+      query.where("consecutive", filter.consecutiveAurora);
+    }
 
     if (filter.contractObject) {
       query.whereILike("contractObject", `%${filter.contractObject}%`);

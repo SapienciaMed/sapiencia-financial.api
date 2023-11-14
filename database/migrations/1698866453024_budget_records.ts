@@ -15,7 +15,7 @@ export default class extends BaseSchema {
       table.integer('RPR_CODIGO_DEPENDENCIA').notNullable().comment('Codigo de la dependencia (db Nomina)')
       table.string('RPR_OBJETO_CONTRACTUAL').notNullable().comment('Descripción del acuerdo contractual')
       table.integer('RPR_CODCRP_COMPONENTE').notNullable().unsigned().references('CRP_CODIGO').inTable('CRP_COMPONENTES_REGISTRO_PRESUPUESTAL').comment('codigo Componente (FK CRP)')
-      table.integer('RPR_CONSECUTIVO_SAP').nullable().comment("Numero consecutivo SAP")
+      table.integer('RPR_CONSECUTIVO_SAP').unique().nullable().comment("Numero consecutivo SAP")
       table.string('RPR_NUMERO_CONTRATO').nullable().comment("Numero contrato del proveedor")
       table.string('RPR_DOCUMENTO_RESPONSABLE').nullable().comment("Documento del lider responsable")
       table.string('RPR_DOCUMENTO_SUPERVISOR').nullable().comment("Documento del supervisor asignado")
