@@ -9,6 +9,7 @@ import Funds from 'App/Models/Funds';
 import PagPagosValidator from 'App/Validators/PagPagosValidator';
 import FundsValidator from 'App/Validators/FundsValidator';
 
+
 export interface IPagoRepository {
   getPagosPaginated(filters: IPagoFilters): Promise<IPagingData<IPago | null>>;
   readExcel(fileBuffer: Buffer, documentType: string): Promise<IPago[]>;
@@ -20,12 +21,11 @@ export interface IFileData {
 }
 
 export default class PagoRepository implements IPagoRepository {
-  public getPagosPaginated = async (filters: IPagoFilters): Promise<IPagingData<IPago | null>> => {
-    const query = PagPagos.query();
 
-    if (filters.id) {
-      query.where('id', filters.id);
-    }
+  public getPagosPaginated = async (filters: IPagoFilters): Promise<IPagingData<IPago | null>> => {
+    
+    
+    const query = PagPagos.query();
 
     if (filters.vinculacionRpCode) {
       query.where('vinculacionRpCode', filters.vinculacionRpCode);
@@ -39,6 +39,8 @@ export default class PagoRepository implements IPagoRepository {
       meta,
     };
   };
+
+ 
 
   public readExcel = async (fileBuffer: Buffer, documentType: string): Promise<IPago[]> => {
     const workbook = new ExcelJS.Workbook();

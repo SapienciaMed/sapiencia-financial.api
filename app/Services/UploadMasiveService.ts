@@ -4,7 +4,7 @@ import { IPagoService } from './PagPagosService';
 import { IFundsUploadMasiveService } from './FundsUploadMasiveService';
 
 export interface IUploadMasiveService {
-  initialRedirect(type: string, file: any): Promise<ApiResponse<any>>;
+  initialRedirect(type: string, file: any, usuarioCreo:string): Promise<ApiResponse<any>>;
 }
 
 export default class UploadMasiveService implements IUploadMasiveService {
@@ -14,7 +14,7 @@ export default class UploadMasiveService implements IUploadMasiveService {
     private fundsUploadMasiveService: IFundsUploadMasiveService,
   ) {}
 
-  async initialRedirect(type: string, file: any): Promise<ApiResponse<any>> {
+  async initialRedirect(type: string, file: any,usuarioCreo:any): Promise<ApiResponse<any>> {
 
     let generalRes: any;
 
@@ -22,7 +22,7 @@ export default class UploadMasiveService implements IUploadMasiveService {
 
       case "Pagos":
 
-        const resultPagos = await this.pagoService.getCommunication(file);
+        const resultPagos = await this.pagoService.uploadMasivePagos(file,usuarioCreo);
 
         if (resultPagos.operation.code === "FAIL")
           return new ApiResponse(null, EResponseCodes.FAIL, "TODO: Retornamos errores para pintar en el Front (PAGOS)");
