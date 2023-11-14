@@ -23,13 +23,11 @@ export default class CreditorRepository implements ICreditorRepository {
     }
 
     updateCreditor = async (creditor: ICreditor): Promise<ICreditor | null> => {
-        const toUpdate = await Creditor.find(creditor.id);
+        const toUpdate = await Creditor.findOrFail(creditor.id);
         if (!toUpdate) {
             return null;
         }
 
-        toUpdate.typeDocument = creditor.typeDocument!;
-        toUpdate.document = creditor.typeDocument!;
         toUpdate.taxIdentification = creditor.taxIdentification!;
         toUpdate.name = creditor.name!;
         toUpdate.city = creditor.city!;
@@ -53,8 +51,17 @@ export default class CreditorRepository implements ICreditorRepository {
         if (creditorsFilter.id) {
             query.where('id', creditorsFilter.id!)
         }
+        if (creditorsFilter.typeDocument) {
+            query.where('typeDocument', creditorsFilter.typeDocument!)
+        }
         if (creditorsFilter.document) {
             query.where('document', creditorsFilter.document!)
+        }
+        if (creditorsFilter.taxIdentification) {
+            query.where('taxIdentification', creditorsFilter.taxIdentification!)
+        }
+        if (creditorsFilter.name) {
+            query.where('name', creditorsFilter.name!)
         }
 
         const res = await query.paginate(creditorsFilter.page, creditorsFilter.perPage);

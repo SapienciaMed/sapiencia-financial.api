@@ -18,7 +18,7 @@ export default class implements ICreditorService {
             const response = await this.repository.createCreditor(data)
             return new ApiResponse(
                 response,
-                EResponseCodes.FAIL,
+                EResponseCodes.OK,
                 "Acrededor creado exitosamente"
             );
 
@@ -33,18 +33,18 @@ export default class implements ICreditorService {
     
     updateCreditor = async (data: ICreditor) => {
         try {
-            const response = await this.repository.createCreditor(data)
+            const response = await this.repository.updateCreditor(data)
             return new ApiResponse(
                 response,
-                EResponseCodes.FAIL,
-                "Acrededor creado exitosamente"
+                EResponseCodes.OK,
+                "Acrededor actualizado exitosamente"
             );
 
         } catch (error) {
             return new ApiResponse(
                 null,
                 EResponseCodes.FAIL,
-                "Error al crear un acreedor" + error
+                "Error al actualizar un acreedor" + error
             );
         }
     }
@@ -54,8 +54,8 @@ export default class implements ICreditorService {
             const data = await this.repository.getCreditorsByFilters(creditorsFilter)
             return new ApiResponse(
                 data,
-                EResponseCodes.FAIL,
-                "Acrededores encontrados exitosamente"
+                EResponseCodes.OK,
+                "Acreedores encontrados exitosamente"
             );
 
         } catch (error) {

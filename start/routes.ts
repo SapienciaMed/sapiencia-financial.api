@@ -344,6 +344,7 @@ Route.group(() => {
   );
   Route.get("/get-components", "BudgetRecordsController.getComponents");
   Route.post("/get-rp-by-filters", "BudgetRecordsController.getRpByFilters");
+  Route.get("/get-all-activity-object-contracts", "BudgetRecordsController.getAllActivityObjectContracts");
   Route.get(
     "/get-totalvaluesimports/:id",
     "BudgetRecordsController.getTotalValuesImports"
