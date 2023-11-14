@@ -85,7 +85,7 @@ export default class BudgetRecordsController {
         }
     }
       
-    public async getAllActivityObjectContracts({ request,response }: HttpContextContract) {
+    public async getAllActivityObjectContracts({ response }: HttpContextContract) {
         try {
             
             return response.send(
