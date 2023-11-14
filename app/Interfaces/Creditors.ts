@@ -19,8 +19,11 @@ export interface ICreditor {
 
 
 export interface ICreditorsFilter {
-    id: number | null;
-    document?: string;
+    id?: number;
+    typeDocument?:'',
+    document?:'',
+    taxIdentification?:'',
+    name?:'',
     page: number;
     perPage: number;
 }
