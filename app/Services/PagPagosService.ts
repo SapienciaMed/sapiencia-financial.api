@@ -183,15 +183,8 @@ export default class PagoService implements IPagoService {
   private async insertItemsToDatabase(items: any[], validator: any, model: any): Promise<void> {
     for (const item of items) {
       try {
-    /*     await validator.validateAll({
-          id: item.id,
-          vinculacionRpCode: item.vinculacionRpCode,
-          valorCausado: item.valorCausado,
-          valorPagado: item.valorPagado,
-          usuarioCreo: item.usuarioCreo,
-          fechaCreo: item.fechaCreo,
-        }); */
-  
+        console.log(validator);
+        
         const res = await model.create(item);
         return res;
       } catch (error) {
