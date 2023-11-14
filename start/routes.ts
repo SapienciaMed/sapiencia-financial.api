@@ -344,6 +344,7 @@ Route.group(() => {
   );
   Route.get("/get-components", "BudgetRecordsController.getComponents");
   Route.post("/get-rp-by-filters", "BudgetRecordsController.getRpByFilters");
+  Route.get("/get-all-activity-object-contracts", "BudgetRecordsController.getAllActivityObjectContracts");
   Route.get(
     "/get-totalvaluesimports/:id",
     "BudgetRecordsController.getTotalValuesImports"
@@ -372,3 +373,9 @@ Route.group(() => {
 })
   .prefix("/api/v1/payroll")
   .middleware("auth");
+
+Route.group(() => {
+  Route.post("/uploads", "UploadMasiveController.redirectToUploadMasive");
+})
+  .prefix("/api/v1/upload-masive")
+  // .middleware("auth");

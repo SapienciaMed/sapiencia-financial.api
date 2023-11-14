@@ -1,4 +1,5 @@
 import { IBudgetRecord, IBudgetRecordFilter, ILinkRPCDP, ITotalImports } from "App/Interfaces/BudgetRecord";
+import ActivityObjectContract from "App/Models/ActivityObjectContract";
 import BudgetRecord from "App/Models/BudgetRecord";
 import Component from "App/Models/Component";
 import LinkRpcdp from "App/Models/LinkRpcdp";
@@ -11,6 +12,7 @@ export interface IBudgetRecordRepository {
     getTotalValuesImports(id: number): Promise<LinkRpcdp | null>;
     getRpById(id: number): Promise<IBudgetRecord | null>;
     updateRp(id: number, budgetRecordDataBasic: ILinkRPCDP): Promise<ILinkRPCDP | null>
+    getAllActivityObjectContracts(): Promise<ActivityObjectContract[]>
     getCausation(id: number): Promise<any | null>;
 }
 export default class BudgetRecordRepository implements IBudgetRecordRepository {
@@ -141,6 +143,10 @@ export default class BudgetRecordRepository implements IBudgetRecordRepository {
 
         await toUpdate.save();
         return toUpdate.serialize() as IBudgetRecord;
+    }
+    
+    getAllActivityObjectContracts = async(): Promise<ActivityObjectContract[]>=> {
+        return await ActivityObjectContract.query()
     }
 
     /*   async getCausation(id: number): Promise<any | null> {

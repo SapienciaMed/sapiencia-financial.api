@@ -13,6 +13,7 @@ export interface IBudgetRecordService {
     getTotalValuesImports(id: number): Promise<ApiResponse<any>>;   
     updateRp(id:number,budgetRecordDataBasic:ILinkRPCDP): Promise<ApiResponse<any>>
     getCausation(id: number): Promise<ApiResponse<any>>;
+    getAllActivityObjectContracts(): Promise<ApiResponse<any>>
 }
 
 export default class BudgetRecordService implements IBudgetRecordService {
@@ -145,7 +146,8 @@ export default class BudgetRecordService implements IBudgetRecordService {
             );
         }
         return new ApiResponse(res, EResponseCodes.OK);
-    }   
+    }      
+     
 
     async getCausation(
         id: number
@@ -159,5 +161,16 @@ export default class BudgetRecordService implements IBudgetRecordService {
           );
         }
         return new ApiResponse(res, EResponseCodes.OK);
-      }
+    }   
+    async getAllActivityObjectContracts(): Promise<ApiResponse<any>>  {
+        const res = await this.budgerRecordRepository.getAllActivityObjectContracts();
+        if (!res) {
+            return new ApiResponse(
+                {} as any,
+                EResponseCodes.WARN,
+                "Registro no encontrado"
+            );
+        }
+        return new ApiResponse(res, EResponseCodes.OK);
+    }   
 }
