@@ -100,6 +100,34 @@ export interface IReportChangeBudgets {
   Observación: string;
 }
 
+export interface IReportTransfers {
+  "Acto Administrativo Distrito": string;
+  "Acto Administrativo Sapiencia": string;
+  "Centro Gestor": string;
+  "Posición Presupuestal": string;
+  Fondo: string;
+  "Área Funcional": string;
+  Proyecto: string;
+  "Valor Contracrédito": number;
+  "Valor Crédito": number;
+  "Nombre Proyecto": string;
+  Observación: string;
+}
+
+export interface IReportModifiedRoutes {
+  "Tipo De Modificación": string;
+  "Acto Administrativo Distrito": string;
+  "Acto Administrativo Sapiencia": string;
+  "Centro Gestor": string;
+  "Posición Presupuestal": string;
+  Fondo: string;
+  "Área Funcional": string;
+  Proyecto: string;
+  "Valor Ingreso": number;
+  "Valor Gasto": number;
+  "Nombre Proyecto": string;
+}
+
 export interface IDataBasicProject {
   projectCode: string;
   projectName: string;
@@ -178,4 +206,48 @@ export interface IReportColumnAccountsPayable {
   "Nombre proyecto": string;
   "Valor Final": number;
   "Valor Causado": number;
+}
+
+export interface IReportColumnDetailedExecution {
+  Id?: number;
+  Fondo: string;
+  "Nombre Fondo": string;
+  Proyecto: string;
+  "Nombre Proyecto": string;
+  "Pospre origen": string;
+  "Nombre Pospre": string;
+  "Pospre Sapiencia": string;
+  "Presupuesto Inicial": number;
+  Reducciones: number;
+  Adiciones: number;
+  Créditos: number;
+  "Contra créditos": number;
+  "Presupuesto total": number;
+  Disponibilidad: number;
+  Compromiso: number;
+  Factura: number;
+  Pagos: number;
+  "Total Disponible Neto": number;
+  "Total Ejecución": number;
+  "Porcentaje de Ejecución": string;
+}
+
+export interface IReportColumnExecutionIncome {
+  Id?: number;
+  Fondo: string;
+  "Centro Gestor": string;
+  "Posición Presupuestaria": string;
+  "Área Funcional": string;
+  Proyecto: string;
+  "Nombre Pospre": string;
+  "Ppto Inicial": number;
+  Reducciones: number;
+  Adiciones: number;
+  Créditos: number;
+  "Contra créditos": number;
+  "Total Ppto Actual": number;
+  Recaudo: number;
+  "Por Recaudar": number;
+  "Total Ejecución": number;
+  "Porcentaje de Ejecución": string;
 }

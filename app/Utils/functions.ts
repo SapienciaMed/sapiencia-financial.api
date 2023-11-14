@@ -1,7 +1,7 @@
-import { IDataCredits } from "App/Interfaces/ReportsInterfaces";
 import AdditionsMovement from "App/Models/AdditionsMovement";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 import LinkRpcdp from "App/Models/LinkRpcdp";
+import Pac from "App/Models/Pac";
 import Pago from "App/Models/PagPagos";
 import TransfersMovement from "App/Models/TransfersMovement";
 
@@ -27,23 +27,15 @@ export function getStringDate(date: Date): string {
 
 //Obtiene información sobre los créditos y contra créditos relacionados con un presupuesto.
 export const getCreditAndAgainstCredits = async (
-  rpp_credits: string
-): Promise<IDataCredits | null> => {
+  rpp_credits: number
+): Promise<any[]> => {
   const resTransfersMovement = await TransfersMovement.query();
 
   const result = resTransfersMovement.map((i) => i.serialize());
 
-  const filterData = result.find((i) => i.budgetRouteId === rpp_credits);
+  const filterData = result.filter((i) => i.budgetRouteId === rpp_credits);
 
-  return filterData
-    ? {
-        id: filterData.id,
-        transferId: filterData.transferId,
-        type: filterData.type,
-        budgetRouteId: filterData.budgetRouteId,
-        value: filterData.value,
-      }
-    : null;
+  return filterData;
 };
 
 //Obtiene movimientos de adición relacionados con un presupuesto.
@@ -62,38 +54,47 @@ export const getAdditionMovement = async (
 
 //Obtiene información sobre la disponibilidad y compromiso presupuestario relacionados con un presupuesto.
 export const getAmountBudgetAvailability = async (
-  rpp_amount_budget_availability: string
+  rpp_amount_budget_availability: number,
+  year: number
 ): Promise<any> => {
   let availability = false;
   let availabilityValue = 0;
   let compromise = false;
   let compromiseValue = 0;
-  const queryAmountBudgetAvailability =
-    await AmountBudgetAvailability.query().where(
-      "idRppCode",
-      rpp_amount_budget_availability
-    );
 
-  const resAmountBudgetAvailability = queryAmountBudgetAvailability.map((i) =>
-    i.serialize()
-  );
+  const queryAmountBudgetAvailability = await AmountBudgetAvailability.query()
+    .where("idRppCode", rpp_amount_budget_availability)
+    .preload("budgetAvailability");
+
+  const resAmountBudgetAvailability = queryAmountBudgetAvailability
+    .map((i) => i.serialize())
+    .filter((i) => i.isActive === 1 && i.budgetAvailability.exercise == year);
 
   if (resAmountBudgetAvailability.length > 0) {
-    let idcFinalValue: number = 0;
     for (const element of resAmountBudgetAvailability) {
-      idcFinalValue += element.idcFinalValue ? +element.idcFinalValue : 0;
       const queryLinkRpcdp = await LinkRpcdp.query().where(
         "amountCdpId",
-        element.cdpCode
+        element.id
       );
+      const resLinkRpcdp = queryLinkRpcdp
+        .map((i) => i.serialize())
+        .filter((i) => i.isActive === 1);
 
-      const resLinkRpcdp = queryLinkRpcdp.map((i) => i.serialize());
       if (resLinkRpcdp.length > 0) {
+        const sumCompromiseVrp = resLinkRpcdp
+          .filter((i) => i.finalAmount)
+          .map((obj) => parseFloat(obj.finalAmount))
+          .reduce((total, value) => total + value, 0);
+
         compromise = true;
-        compromiseValue = idcFinalValue;
-      } else {
+        compromiseValue += sumCompromiseVrp;
+      }
+
+      if (!resLinkRpcdp.length) {
         availability = true;
-        availabilityValue = idcFinalValue;
+        availabilityValue += isFinite(element.idcFinalValue)
+          ? +element.idcFinalValue
+          : 0;
       }
     }
   }
@@ -113,6 +114,59 @@ export const getCheckWhetherOrNotHaveRp = async (icdId: number) => {
   if (resLinkRpcdp.length > 0) return true;
 
   return false;
+};
+
+export const getInvoicesAndPaymentsVrp = async (
+  rppId: number,
+  year: number
+): Promise<any> => {
+  let invoiceSumn: number = 0;
+  let paymentSumn: number = 0;
+  const queryAmountBudgetAvailability = await AmountBudgetAvailability.query()
+    .where("idRppCode", rppId)
+    .preload("budgetAvailability");
+
+  const resAmountBudgetAvailability = queryAmountBudgetAvailability
+    .map((i) => i.serialize())
+    .filter((i) => i.isActive === 1 && i.budgetAvailability.exercise == year);
+
+  if (resAmountBudgetAvailability.length > 0) {
+    for (const icd of resAmountBudgetAvailability) {
+      const queryLinkRpcdp = await LinkRpcdp.query().where(
+        "amountCdpId",
+        icd.id
+      );
+      const resLinkRpcdp = queryLinkRpcdp.map((i) => i.serialize());
+      if (resLinkRpcdp.length > 0) {
+        for (const linkRpcdp of resLinkRpcdp) {
+          const queryPago = await Pago.query().where(
+            "vinculacionRpCode",
+            linkRpcdp.id
+          );
+          const resPago = queryPago.map((i) => i.serialize());
+          if (resPago.length > 0) {
+            resPago.forEach((element) => {
+              const resta: number =
+                parseInt(element.valorCausado) - parseInt(element.valorPagado);
+              if (resta > 0) {
+                invoiceSumn += resta;
+              }
+            });
+
+            paymentSumn = resPago.reduce(
+              (total, i) => total + parseInt(i.valorPagado),
+              0
+            );
+          }
+        }
+      }
+    }
+  }
+
+  return {
+    invoiceSumn: invoiceSumn,
+    paymentSumn: paymentSumn,
+  };
 };
 
 export const getlinksRpCdp = async (year: number, type: string) => {
@@ -140,16 +194,56 @@ export const getlinksRpCdp = async (year: number, type: string) => {
     const resPago = queryPago.map((i) => i.serialize());
 
     if (type === "RpBalance") {
-      const find = resPago.filter((i) => i.valorCausado && i.valorPagado);
+      const find = resPago.filter(
+        (i) => parseInt(i.valorCausado) > 0 && parseInt(i.valorPagado) > 0
+      );
       if (!find.length && !queryPago.length) {
         result.push(lrc);
       }
     }
     if (type === "AccountsPayable") {
-      const find = resPago.filter((i) => i.valorCausado && !i.valorPagado);
+      const find = resPago.filter(
+        (i) =>
+          parseInt(i.valorCausado) > 0 &&
+          (!parseInt(i.valorPagado) || parseInt(i.valorPagado) === 0)
+      );
       if (find.length > 0) {
         result.push(lrc);
       }
+    }
+  }
+
+  return { result };
+};
+
+export const getCollected = async (rppId: number, year: number) => {
+  let result = 0;
+  const queryPac = await Pac.query()
+    .where("budgetRouteId", rppId)
+    .where("exercise", year)
+    .where("isActive", 1)
+    .preload("pacAnnualizations", (subQuery) =>
+      subQuery.where("type", "Recaudado")
+    );
+  const resPac = queryPac.map((i) => i.serialize());
+
+  if (resPac.length > 0) {
+    for (const pac of resPac) {
+      const sumOfMonths = pac.pacAnnualizations.map((obj) => {
+        const sum = Object.entries(obj)
+          .filter(
+            ([key, value]) =>
+              typeof value === "number" && key !== "id" && key !== "pacId"
+          )
+          .reduce(
+            (acc, [, value]) => acc + (typeof value === "number" ? +value : 0),
+            0
+          );
+
+        return { ...obj, sumOfMonths: sum };
+      });
+
+      result += sumOfMonths[0].sumOfMonths;
     }
   }
 
