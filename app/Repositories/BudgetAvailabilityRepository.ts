@@ -27,15 +27,17 @@ export interface IBudgetAvailabilityRepository {
     reasonCancellation: string
   ): Promise<BudgetAvailability>;
   linkMga(): Promise<any>;
-  getRouteCDPId(id: number): Promise<IUpdateRoutesCDP | null>;  
-  updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<IUpdateRoutesCDP | null>;
+  getRouteCDPId(id: number): Promise<IUpdateRoutesCDP | null>;
+  updateRoutesCDP(
+    updateRoutesCDP: IUpdateRoutesCDP,
+    id: number
+  ): Promise<IUpdateRoutesCDP | null>;
   getRpCDP(id: string): Promise<BudgetAvailability>;
 }
 
-
 export default class BudgetAvailabilityRepository
-  implements IBudgetAvailabilityRepository {
-
+  implements IBudgetAvailabilityRepository
+{
   getAllCdps(): Promise<any[]> {
     throw new Error("Method not implemented.");
   }
@@ -134,10 +136,9 @@ export default class BudgetAvailabilityRepository
   }
 
   async createCdps(cdpDataTotal: any) {
-    const { date, contractObject, sapConsecutive, icdArr } =
-      cdpDataTotal;
-      let dateDecode = date.toString();
-      dateDecode= dateDecode.split('T')[0];
+    const { date, contractObject, sapConsecutive, icdArr } = cdpDataTotal;
+    let dateDecode = date.toString();
+    dateDecode = dateDecode.split("T")[0];
 
     const existingCdps = await this.filterCdpsByDateAndContractObject(
       date,
@@ -150,21 +151,21 @@ export default class BudgetAvailabilityRepository
       throw new Error(alert);
     }
     const query = await BudgetAvailability.query()
-    .select('CDP_CONSECUTIVO')
-    .orderBy('CDP_CONSECUTIVO', 'desc')
-    .first();
-  
-  const ultimoRegistro = query ? query.toJSON() : null;
-  
-  const cdp = new BudgetAvailability();
-  cdp.date = dateDecode;
-  cdp.contractObject = contractObject;
-  cdp.consecutive = ultimoRegistro ? (ultimoRegistro?.consecutive + 1) : 1;
-  cdp.sapConsecutive = sapConsecutive;
-  await cdp.save();
-  await cdp.related('amounts').createMany(icdArr);
+      .select("CDP_CONSECUTIVO")
+      .orderBy("CDP_CONSECUTIVO", "desc")
+      .first();
 
-  return {'consecutive':ultimoRegistro?.consecutive + 1}
+    const ultimoRegistro = query ? query.toJSON() : null;
+
+    const cdp = new BudgetAvailability();
+    cdp.date = dateDecode;
+    cdp.contractObject = contractObject;
+    cdp.consecutive = ultimoRegistro ? ultimoRegistro?.consecutive + 1 : 1;
+    cdp.sapConsecutive = sapConsecutive;
+    await cdp.save();
+    await cdp.related("amounts").createMany(icdArr);
+
+    return { consecutive: ultimoRegistro?.consecutive + 1 };
   }
 
   async associateAmountsWithCdp(cdpId: number, amounts: any[]) {
@@ -206,7 +207,7 @@ export default class BudgetAvailabilityRepository
         });
       });
   };
-  
+
   cancelAmountCdp = async (
     id: number,
     reasonCancellation: string
@@ -266,7 +267,10 @@ export default class BudgetAvailabilityRepository
     return toUpdate.serialize() as IBudgetAvailability;
   }
 
-  async updateRoutesCDP(updateRoutesCDP: IUpdateRoutesCDP, id: number): Promise<IUpdateRoutesCDP | null> {
+  async updateRoutesCDP(
+    updateRoutesCDP: IUpdateRoutesCDP,
+    id: number
+  ): Promise<IUpdateRoutesCDP | null> {
     const toUpdate = await AmountBudgetAvailability.find(id);
 
     if (!toUpdate) {
@@ -276,7 +280,8 @@ export default class BudgetAvailabilityRepository
     toUpdate.idRppCode = updateRoutesCDP.idRppCode;
     toUpdate.cdpPosition = updateRoutesCDP.cdpPosition;
     toUpdate.amount = updateRoutesCDP.amount;
-    toUpdate.modifiedIdcCountercredit = updateRoutesCDP?.modifiedIdcCountercredit ?? 0;
+    toUpdate.modifiedIdcCountercredit =
+      updateRoutesCDP?.modifiedIdcCountercredit ?? 0;
     toUpdate.idcModifiedCredit = updateRoutesCDP?.idcModifiedCredit ?? 0;
     toUpdate.idcFixedCompleted = updateRoutesCDP?.idcFixedCompleted ?? 0;
     toUpdate.idcFinalValue = updateRoutesCDP?.idcFinalValue ?? 0;
@@ -285,30 +290,28 @@ export default class BudgetAvailabilityRepository
     return toUpdate.serialize() as IUpdateRoutesCDP;
   }
 
-
-
   async getRouteCDPId(id: number): Promise<IUpdateRoutesCDP | null> {
     const res = await AmountBudgetAvailability.query()
-    .where("id", id)
-    .preload("budgetAvailability") 
-    .preload("budgetRoute", (query) => {
-      query.preload("projectVinculation", (query) => {
-        query.preload("functionalProject");
+      .where("id", id)
+      .preload("budgetAvailability")
+      .preload("budgetRoute", (query) => {
+        query.preload("projectVinculation", (query) => {
+          query.preload("functionalProject");
+        });
+        query.preload("funds");
+        query.preload("budget");
+        query.preload("pospreSapiencia");
       });
-      query.preload("funds");
-      query.preload("budget");
-      query.preload("pospreSapiencia")
-    }) 
-    
+
     return res.length > 0 ? (res[0].serialize() as IUpdateRoutesCDP) : null;
   }
   getRpCDP = async (id: string): Promise<any> => {
     return await BudgetAvailability.query()
       .where("id", Number(id))
-   .preload("amounts", (query) => {       
+      .preload("amounts", (query) => {
         query.preload("linkRpcdps", (q) => {
           q.preload("budgetRecord", (c) => {
-            c.preload("creditor")
+            c.preload("creditor");
           });
         });
         query.preload("budgetRoute", (query) => {
@@ -319,9 +322,6 @@ export default class BudgetAvailabilityRepository
           query.preload("budget");
           query.preload("pospreSapiencia");
         });
-      });      
-    
+      });
   };
-  
-  
 }

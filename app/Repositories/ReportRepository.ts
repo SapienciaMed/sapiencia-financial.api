@@ -15,6 +15,7 @@ import {
   IReportTransfers,
   IReportModifiedRoutes,
   IReportColumnExecutionIncome,
+  IReportColumnBudgetExecution,
 } from "../Interfaces/ReportsInterfaces";
 import { IAdditionsReport } from "../Interfaces/AdditionsInterfaces";
 import { IStrategicDirectionService } from "../Services/External/StrategicDirectionService";
@@ -26,13 +27,19 @@ import {
   getCheckWhetherOrNotHaveRp,
   getCollected,
   getCreditAndAgainstCredits,
+  getIcdsByRouteAndYear,
   getInvoicesAndPaymentsVrp,
+  getValuesPaidAndCausedByVrp,
+  getVrpByIcdNotAnnulled,
   getlinksRpCdp,
+  percentValue,
 } from "App/Utils/functions";
 import Transfer from "App/Models/Transfer";
 import { ITransfersReport } from "App/Interfaces/TransfersInterfaces";
 import BudgetAvailability from "App/Models/BudgetAvailability";
 import Pago from "App/Models/PagPagos";
+import FunctionalProject from "App/Models/FunctionalProject";
+import { DateTime } from "luxon";
 
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
@@ -46,6 +53,7 @@ export interface IReportRepository {
   generateReportAccountsPayable(year: number): Promise<any[]>;
   generateReportDetailedExecution(year: number): Promise<any[]>;
   generateReportExecutionIncome(year: number): Promise<any[]>;
+  generateReportBudgetExecution(year: number): Promise<any[]>;
 }
 
 export default class ReportRepository implements IReportRepository {
@@ -1992,6 +2000,153 @@ export default class ReportRepository implements IReportRepository {
       };
 
       // Agregar el objeto al resultado
+      resObject.push(newItem);
+    }
+
+    return resObject;
+  }
+
+  //HU-89 Ejecucion Presupuestal
+  async generateReportBudgetExecution(year: number): Promise<any[]> {
+    let resObject: IReportColumnBudgetExecution[] = [];
+
+    // Consulta la ruta de presupuesto para el año especificado
+    const queryBudgetRoute = await BudgetsRoutes.query()
+      .preload("budget", (subQuery) => {
+        subQuery.where("ejercise", year);
+      })
+      .preload("projectVinculation", (subQuery) => {
+        subQuery.where("type", "Funcionamiento");
+      })
+      .orderBy("id", "desc");
+
+    // Mapea los resultados de la consulta a objetos serializados
+    const resBudgetRoute = queryBudgetRoute
+      .map((i) => i.serialize())
+      .filter(
+        (i) =>
+          i.budget &&
+          i.budget !== null &&
+          i.projectVinculation &&
+          i.projectVinculation !== null
+      );
+
+    if (!resBudgetRoute.length) return resObject;
+
+    for (const rpp of resBudgetRoute) {
+      // Variables to store information
+      // let Id: number = rpp.id;
+      let Project: string = "";
+      let Pospre: string = "";
+      let Concept: string = "";
+      let AdjustedBudget: number = 0;
+      let CDPExecution: number = 0;
+      let CDPExecutionPercentage: number = 0;
+      let RPExecution: number = 0;
+      let RPExecutionPercentage: number = 0;
+      let CausedExecution: number = 0;
+      let CausedExecutionPercentage: number = 0;
+      let PaymentsExecution: number = 0;
+      let PaymentsExecutionPercentage: number = 0;
+      let Available: number = 0;
+      let CurrentDate: string = "";
+
+      //Proyecto
+      const queryFunctionalProject = await FunctionalProject.query().where(
+        "id",
+        rpp.projectVinculation.operationProjectId
+      );
+      const resFuntionalProject = queryFunctionalProject.map((i) =>
+        i.serialize()
+      );
+      Project = resFuntionalProject[0].name;
+
+      //Pospre
+      Pospre = rpp.budget.number;
+
+      //Concepto
+      Concept = rpp.budget.denomination;
+
+      //Presupuesto Ajustado
+      AdjustedBudget = resFuntionalProject[0].budgetValue
+        ? resFuntionalProject[0].budgetValue
+        : 0;
+
+      //Ejecución CDP
+      const resultIcds = await getIcdsByRouteAndYear(rpp.id, year);
+
+      if (resultIcds.length > 0) {
+        const resultSumAmountIcds = resultIcds.reduce(
+          (total, i) => total + parseInt(i.amount),
+          0
+        );
+        CDPExecution = resultSumAmountIcds;
+
+        //Ejecución RP
+        for (const icd of resultIcds) {
+          const resultVrp = await getVrpByIcdNotAnnulled(icd.id);
+          if (resultVrp.length > 0) {
+            const sumRps = resultVrp.reduce(
+              (total, i) => total + parseInt(i.finalAmount),
+              0
+            );
+            RPExecution += sumRps;
+
+            for (const vrp of resultVrp) {
+              const { values_caused, values_paid } =
+                await getValuesPaidAndCausedByVrp(vrp.id);
+
+              //Ejecución Causados
+              CausedExecution = values_caused;
+
+              //Ejecución Pagos
+              PaymentsExecution = values_paid;
+            }
+          }
+        }
+      }
+
+      //Porcentaje Ejecución CDP
+      CDPExecutionPercentage = percentValue(CDPExecution, AdjustedBudget);
+
+      //Porcentaje Ejecución RP
+      RPExecutionPercentage = percentValue(RPExecution, AdjustedBudget);
+
+      //Porcentaje Ejecución Causados
+      CausedExecutionPercentage = percentValue(CausedExecution, AdjustedBudget);
+
+      //Porcentaje Ejecución Pagos
+      PaymentsExecutionPercentage = percentValue(
+        PaymentsExecution,
+        AdjustedBudget
+      );
+
+      //Disponible
+      Available = AdjustedBudget - CDPExecution;
+
+      //Fecha Actual en formato Dia-Mes-Año hora con Datetime
+      CurrentDate = DateTime.fromISO(new Date().toISOString()).toFormat(
+        "dd-MM-yyyy HH:mm"
+      );
+
+      const newItem: IReportColumnBudgetExecution = {
+        // Id,
+        Proyecto: Project,
+        Pospre,
+        Concepto: Concept,
+        "Presupuesto Ajustado": AdjustedBudget,
+        "Ejecución CDP": CDPExecution,
+        "Porcentaje Ejecución CDP": `${CDPExecutionPercentage} %`,
+        "Ejecución RP": RPExecution,
+        "Porcentaje Ejecución RP": `${RPExecutionPercentage} %`,
+        "Ejecución Causados": CausedExecution,
+        "Porcentaje Ejecución Causados": `${CausedExecutionPercentage} %`,
+        "Ejecución Pagos": PaymentsExecution,
+        "Porcentaje Ejecución Pagos": `${PaymentsExecutionPercentage} %`,
+        Disponible: Available,
+        "Fecha Actual": CurrentDate,
+      };
+
       resObject.push(newItem);
     }
 
