@@ -251,3 +251,21 @@ export interface IReportColumnExecutionIncome {
   "Total Ejecución": number;
   "Porcentaje de Ejecución": string;
 }
+
+export interface IReportColumnBudgetExecution {
+  Id?: number;
+  Proyecto: string;
+  Pospre: string;
+  Concepto: string;
+  "Presupuesto Ajustado": number;
+  "Ejecución CDP": number;
+  "Porcentaje Ejecución CDP": string;
+  "Ejecución RP": number;
+  "Porcentaje Ejecución RP": string;
+  "Ejecución Causados": number;
+  "Porcentaje Ejecución Causados": string;
+  "Ejecución Pagos": number;
+  "Porcentaje Ejecución Pagos": string;
+  Disponible: number;
+  "Fecha Actual": string;
+}

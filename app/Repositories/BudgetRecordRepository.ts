@@ -13,6 +13,7 @@ export interface IBudgetRecordRepository {
     getRpById(id: number): Promise<IBudgetRecord | null>;
     updateRp(id: number, budgetRecordDataBasic: ILinkRPCDP): Promise<ILinkRPCDP | null>
     getAllActivityObjectContracts(): Promise<ActivityObjectContract[]>
+    getCausation(id: number): Promise<any | null>;
 }
 export default class BudgetRecordRepository implements IBudgetRecordRepository {
     getRpById(_id: number): Promise<IBudgetRecord | null> {
@@ -147,4 +148,45 @@ export default class BudgetRecordRepository implements IBudgetRecordRepository {
     getAllActivityObjectContracts = async(): Promise<ActivityObjectContract[]>=> {
         return await ActivityObjectContract.query()
     }
+
+    /*   async getCausation(id: number): Promise<any | null> {
+        const res = await LinkRpcdp.query()
+        .where("id", id)    
+        .preload('pagos')
+        
+        return res.length > 0 ? (res[0].serialize() as any) : null;    
+      } */
+
+      async getCausation(id: number): Promise<any | null> {
+        const linkRpcdpInstances = await LinkRpcdp.query()
+            .where("id", id)
+            .preload('pagos');
+    
+        if (linkRpcdpInstances.length > 0) {
+            const linkRpcdp = linkRpcdpInstances[0];
+            await linkRpcdp.preload('pagos');
+    
+            let totalValorPagado = 0;
+            let totalValorCausado = 0;
+    
+            for (const pago of linkRpcdp.pagos) {
+                totalValorPagado += Number(pago.valorPagado) || 0;
+                totalValorCausado += Number(pago.valorCausado) || 0;
+            }
+    
+            const serializedData = linkRpcdp.serialize() as any;
+            serializedData.totalValorPagado = totalValorPagado;
+            serializedData.totalValorCausado = totalValorCausado;
+            serializedData.total = totalValorCausado + totalValorPagado;
+    
+            return serializedData;
+        }
+    
+        return null;
+    }
+    
+    
+    
+    
+    
 }

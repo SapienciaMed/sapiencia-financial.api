@@ -350,6 +350,7 @@ Route.group(() => {
     "BudgetRecordsController.getTotalValuesImports"
   );
   Route.post("/update-data/:id", "BudgetRecordsController.updateRp");
+  Route.get('/get-causation/:id', 'BudgetRecordsController.getCausation')
 })
   .prefix("/api/v1/budget-records")
   .middleware("auth");
@@ -372,3 +373,9 @@ Route.group(() => {
 })
   .prefix("/api/v1/payroll")
   .middleware("auth");
+
+Route.group(() => {
+  Route.post("/uploads", "UploadMasiveController.redirectToUploadMasive");
+})
+  .prefix("/api/v1/upload-masive")
+  // .middleware("auth");

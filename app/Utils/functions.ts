@@ -25,6 +25,67 @@ export function getStringDate(date: Date): string {
   return `${year}-${strMonth}-${strDay}`;
 }
 
+//Obtener Icds por la Ruta presupuestal, si esta activa y por el año
+export async function getIcdsByRouteAndYear(routeId: number, year: number) {
+  const queryAmountBudgetAvailability = await AmountBudgetAvailability.query()
+    .where("idRppCode", routeId)
+    .preload("budgetAvailability");
+
+  const resAmountBudgetAvailability = queryAmountBudgetAvailability
+    .map((i) => i.serialize())
+    .filter((i) => i.isActive === 1 && i.budgetAvailability.exercise == year);
+
+  return resAmountBudgetAvailability;
+}
+
+//Obtener Vrps por el codigo del Icd que no esten anulados
+export async function getVrpByIcdNotAnnulled(icdId: number) {
+  const queryLinkRpcdp = await LinkRpcdp.query().where("amountCdpId", icdId);
+  const resLinkRpcdp = queryLinkRpcdp
+    .map((i) => i.serialize())
+    .filter((i) => i.isActive === 1);
+
+  return resLinkRpcdp;
+}
+
+//Obtener porcentaje de 2 valores
+export function percentValue(value1: number, value2: number) {
+  //Si no hay valor en el primer parametro o es cero retorna 0%
+  if (!value1 || value1 === 0) return 0;
+
+  //Si no hay valor en el segundo parametro o es cero retorna 0%
+  if (!value2 || value2 === 0) return 0;
+
+  const result = ((value1 / value2) * 100).toFixed(2);
+  return parseFloat(result);
+}
+
+//Obtener Valores causados y pagados por medio de el Id de Vrp
+export async function getValuesPaidAndCausedByVrp(vrpId: number) {
+  let values_caused = 0;
+  let values_paid = 0;
+
+  const queryPago = await Pago.query().where("vinculacionRpCode", vrpId);
+  const resPago = queryPago.map((i) => i.serialize());
+
+  if (resPago.length > 0) {
+    values_caused = resPago.reduce(
+      (total, i) => total + parseInt(i.valorCausado),
+      0
+    );
+
+    values_paid = resPago.reduce(
+      (total, i) => total + parseInt(i.valorPagado),
+      0
+    );
+  }
+
+  return {
+    values_caused,
+    values_paid,
+  };
+}
+
 //Obtiene información sobre los créditos y contra créditos relacionados con un presupuesto.
 export const getCreditAndAgainstCredits = async (
   rpp_credits: number
@@ -62,23 +123,14 @@ export const getAmountBudgetAvailability = async (
   let compromise = false;
   let compromiseValue = 0;
 
-  const queryAmountBudgetAvailability = await AmountBudgetAvailability.query()
-    .where("idRppCode", rpp_amount_budget_availability)
-    .preload("budgetAvailability");
+  const resultIcds = await getIcdsByRouteAndYear(
+    rpp_amount_budget_availability,
+    year
+  );
 
-  const resAmountBudgetAvailability = queryAmountBudgetAvailability
-    .map((i) => i.serialize())
-    .filter((i) => i.isActive === 1 && i.budgetAvailability.exercise == year);
-
-  if (resAmountBudgetAvailability.length > 0) {
-    for (const element of resAmountBudgetAvailability) {
-      const queryLinkRpcdp = await LinkRpcdp.query().where(
-        "amountCdpId",
-        element.id
-      );
-      const resLinkRpcdp = queryLinkRpcdp
-        .map((i) => i.serialize())
-        .filter((i) => i.isActive === 1);
+  if (resultIcds.length > 0) {
+    for (const element of resultIcds) {
+      const resLinkRpcdp = await getVrpByIcdNotAnnulled(element.id);
 
       if (resLinkRpcdp.length > 0) {
         const sumCompromiseVrp = resLinkRpcdp
@@ -122,16 +174,10 @@ export const getInvoicesAndPaymentsVrp = async (
 ): Promise<any> => {
   let invoiceSumn: number = 0;
   let paymentSumn: number = 0;
-  const queryAmountBudgetAvailability = await AmountBudgetAvailability.query()
-    .where("idRppCode", rppId)
-    .preload("budgetAvailability");
+  const resultIcds = await getIcdsByRouteAndYear(rppId, year);
 
-  const resAmountBudgetAvailability = queryAmountBudgetAvailability
-    .map((i) => i.serialize())
-    .filter((i) => i.isActive === 1 && i.budgetAvailability.exercise == year);
-
-  if (resAmountBudgetAvailability.length > 0) {
-    for (const icd of resAmountBudgetAvailability) {
+  if (resultIcds.length > 0) {
+    for (const icd of resultIcds) {
       const queryLinkRpcdp = await LinkRpcdp.query().where(
         "amountCdpId",
         icd.id
