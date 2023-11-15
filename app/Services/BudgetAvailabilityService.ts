@@ -43,10 +43,30 @@ export default class BudgetAvailabilityService
   async searchBudgetAvailability(
     filters: IBudgetAvailabilityFilters
   ): Promise<ApiResponse<IPagingData<IBudgetAvailability>>> {
-    const res =
-      await this.budgetAvailabilityRepository.searchBudgetAvailability(filters);
+    const data = await this.budgetAvailabilityRepository.searchBudgetAvailability(filters);
+    const projectInvesment = await this.strategicDirectionService.getProjectInvestmentPaginated({ page: 1, perPage: 100000 })
 
-    return new ApiResponse(res, EResponseCodes.OK);
+    const dataFixed = data.array.map(budgetA=>{
+        return ({
+          ...budgetA,
+          amounts:Object(budgetA).amounts.map(amount=>{
+            return ({
+               ...amount,
+               projectName: amount.budgetRoute.projectVinculation.type=='Inversion'
+                    ? projectInvesment.data.array.find(p => p.id == amount.budgetRoute.projectVinculation.investmentProjectId)?.name
+                    : amount.budgetRoute.projectVinculation.functionalProject.name
+            })
+        })
+           
+        })
+    })
+
+    const respondeFixed = {
+      meta:data.meta,
+      array:dataFixed
+    } 
+
+    return new ApiResponse(respondeFixed, EResponseCodes.OK);
   }
 
   async createCdps(cdpData: ICreateCdp): Promise<ApiResponse<any>> {
