@@ -57,6 +57,9 @@ export default class BudgetAvailabilityRepository
             query.preload("functionalProject");
           });
         });
+        subq.preload('linkRpcdps',(query)=>{
+          query.preload('budgetRecord')
+        })
       })
       .orderBy("date", "desc");
 
@@ -199,6 +202,9 @@ export default class BudgetAvailabilityRepository
     return await BudgetAvailability.query()
       .where("id", Number(id))
       .preload("amounts", (query) => {
+        query.preload('linkRpcdps',(query)=>{
+          query.where('isActive',1)
+        })
         query.where("isActive", "=", true);
         query.preload("budgetRoute", (query) => {
           query.preload("projectVinculation", (query) => {

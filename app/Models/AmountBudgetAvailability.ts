@@ -20,7 +20,7 @@ export default class AmountBudgetAvailability extends BaseModel {
 
   @column({ columnName: "ICD_CODCDP", serializeAs: "cdpCode" })
   public cdpCode: number;
-  
+
   @column({
     columnName: "ICD_CODRPP_RUTA_PRESUPUESTAL",
     serializeAs: "idRppCode",
@@ -31,11 +31,11 @@ export default class AmountBudgetAvailability extends BaseModel {
   public cdpPosition: number;
 
   @column({ columnName: "ICD_VALOR", serializeAs: "amount" })
-  public amount: number; 
+  public amount: number;
 
   @column({ columnName: "ICD_ACTIVO", serializeAs: "isActive" })
   public isActive: boolean;
-  
+
   @column({ columnName: "ICD_MOTIVO_ANULACION", serializeAs: "reasonCancellation" })
   public reasonCancellation: string;
 
@@ -66,9 +66,10 @@ export default class AmountBudgetAvailability extends BaseModel {
   public budgetRoute: BelongsTo<typeof BudgetsRoutes>;
 
   @hasMany(() => LinkRpcdp, {
-    localKey: 'id', 
-    foreignKey: 'amountCdpId', 
+    localKey: 'id',
+    foreignKey: 'amountCdpId',
   })
   public linkRpcdps: HasMany<typeof LinkRpcdp>;
-  
+
+
 }
