@@ -1,10 +1,14 @@
-import { ApiResponse,
-         IPagingData } from "App/Utils/ApiResponses";
+import {
+  ApiResponse,
+  IPagingData
+} from "App/Utils/ApiResponses";
 
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
 
-import { IActivityMGA,
-         IVinculationMgaWithMultipleV2 } from "App/Interfaces/VinculationMGAInterfaces";
+import {
+  IActivityMGA,
+  IVinculationMgaWithMultipleV2
+} from "App/Interfaces/VinculationMGAInterfaces";
 import { IFiltersVinculationMGA } from "App/Interfaces/VinculationMGAInterfaces";
 import { IDesvinculationMgaV2 } from '../Interfaces/VinculationMGAInterfaces';
 
@@ -20,8 +24,9 @@ export interface IVinculationMGAService {
   deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<ApiResponse<IDesvinculationMgaV2 | boolean>>;
   getActivitiesDetail(data: any): Promise<ApiResponse<any>>;
   createVinculationMga(data: ICDPVinculateMGA): Promise<ApiResponse<ICDPVinculateMGA[]>>;
+  validateVinculationMga(data: any): Promise<ApiResponse<any>>;
 
-}//ICDPVinculateMGA
+}
 
 export default class VinculationMGAService implements IVinculationMGAService {
   constructor(private vinculationMGARepository: IVinculationMGARepository,
@@ -53,7 +58,7 @@ export default class VinculationMGAService implements IVinculationMGAService {
   async createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaWithMultipleV2): Promise<ApiResponse<IVinculationMgaWithMultipleV2>> {
 
 
-    for( let i of vinculationMGA.elementsDetail ){
+    for (let i of vinculationMGA.elementsDetail) {
 
       await this.vinculationMGARepository.createVinculationWithPlanningV2(i);
 
@@ -63,7 +68,7 @@ export default class VinculationMGAService implements IVinculationMGAService {
 
   }
 
-  async deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<ApiResponse<IDesvinculationMgaV2 | boolean>>{
+  async deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<ApiResponse<IDesvinculationMgaV2 | boolean>> {
 
     const res = await this.vinculationMGARepository.deleteVinculationWithPlanningV2(vinculationMGA, id);
 
@@ -74,7 +79,7 @@ export default class VinculationMGAService implements IVinculationMGAService {
     try {
       const datos = await this.strategicDirectionService.getActivitiesFilters(data);
       // Asume que el primer elemento es el que necesitas      
-      
+
 
       return new ApiResponse(
         datos.data,
@@ -89,35 +94,81 @@ export default class VinculationMGAService implements IVinculationMGAService {
       );
     }
   }
-  
-//
-async createVinculationMga(data: ICDPVinculateMGA): Promise<ApiResponse<ICDPVinculateMGA[]>> {
-  try {
+
+  //
+  async createVinculationMga(data: ICDPVinculateMGA): Promise<ApiResponse<ICDPVinculateMGA[]>> {
+    try {
       // Asumiendo que `createVinculationMga` en el repositorio devuelve un arreglo de `ICDPVinculateMGA`
       const res = await this.vinculationMGARepository.createVinculationMga(data);
-      
+
       // Verifica si `res` está vacío o no
       if (res.length === 0) {
-          return new ApiResponse(
-              [],
-              EResponseCodes.FAIL,
-              "No se crearon vínculos"
-          );
+        return new ApiResponse(
+          [],
+          EResponseCodes.FAIL,
+          "No se crearon vínculos"
+        );
       }
 
       return new ApiResponse(
-          res,
-          EResponseCodes.OK,
-          "Vínculos creados exitosamente"
+        res,
+        EResponseCodes.OK,
+        "Vínculos creados exitosamente"
       );
-  } catch (error) {
+    } catch (error) {
       // Manejo de errores
       return new ApiResponse(
+        [],
+        EResponseCodes.FAIL,
+        "Error al crear vínculos: " + error.message
+      );
+    }
+  }
+
+  async validateVinculationMga(data: any): Promise<ApiResponse<any>> {
+    try {
+      // Asumiendo que `validateVinculationMga` en el repositorio devuelve un arreglo de `ICDPVinculateMGA`
+      const res = await this.vinculationMGARepository.validateVinculationMga(data);
+
+      if (res <= 0) {
+        return new ApiResponse(
           [],
           EResponseCodes.FAIL,
-          "Error al crear vínculos: " + error.message
+          "No se encuentran valores del cdp"
+        );
+      }
+
+      if (res > data.costMGA) {
+        return new ApiResponse(
+          [],
+          EResponseCodes.FAIL,
+          "Ya tiene esta actividad asociadas a diferentes CDPs que con esta nueva asociación da un valor mayor que el costo que tiene esa actividad."
+        );
+      }
+
+      // Verifica si `res` está vacío o no
+      if (res.length === 0) {
+        return new ApiResponse(
+          [],
+          EResponseCodes.FAIL,
+          "No se encontraron CDPS"
+        );      }
+
+     
+      return new ApiResponse(
+        [],
+        EResponseCodes.OK,
+        "Se puede agregar"
       );
+    
+    } catch (error) {
+      // Manejo de errores
+      return new ApiResponse(
+        [],
+        EResponseCodes.FAIL,
+        "Error al crear vínculos: " + error.message
+      );
+    }
   }
-}
 
 }

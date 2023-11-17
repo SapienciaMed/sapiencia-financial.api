@@ -18,6 +18,7 @@ import { IBudgets } from '../../Interfaces/BudgetsInterfaces';
 import { IDesvinculationMgaV2 } from '../../Interfaces/VinculationMGAInterfaces';
 import { IPosPreSapiencia } from '../../Interfaces/PosPreSapienciaInterfaces';
 import CdpVinculateMGAValidator from "App/Validators/CdpVinculateMGAValidator";
+import validateVinculateMGA from "App/Validators/validateVinculateMGA";
 
 export default class VinculationMGAController {
 
@@ -228,6 +229,26 @@ export default class VinculationMGAController {
       );     
      // return data;
       return response.send(await VinculationMGAProvider.createVinculationMga(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  public async validateVinculationMga({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = await request.validate(
+        validateVinculateMGA
+      );     
+     //return data;
+      return response.send(await VinculationMGAProvider.validateVinculationMga(data));
 
     } catch (err) {
 

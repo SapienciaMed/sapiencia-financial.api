@@ -1,18 +1,13 @@
 import { schema,  CustomMessages } from '@ioc:Adonis/Core/Validator'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
-export default class CdpVinculateMGAValidator {
+export default class validateVinculateMGA {
     constructor(protected ctx: HttpContextContract) {}
 
     public schema = schema.create({
-        datos: schema.array().members(
-            schema.object().members({
-                activitieMga: schema.number(),
-                activitieDetailMga: schema.number(),
-                percentageAfected: schema.number(),
-                cdpCode: schema.number(),
-            })
-        )
+        cdpId: schema.number(),
+        costMGA: schema.number(),
+
     });
 
     public messages: CustomMessages = {

@@ -112,6 +112,7 @@ Route.group(() => {
   );
   Route.post("/get-activities-detail", "VinculationMGAController.getActivitiesDetail")
   Route.post("/create-vinculation-mga", "VinculationMGAController.createVinculationMga")
+  Route.post("/validate", "VinculationMGAController.validateVinculationMga")
 }).prefix("/api/v1/vinculation-mga")
 //.middleware("auth");
 
