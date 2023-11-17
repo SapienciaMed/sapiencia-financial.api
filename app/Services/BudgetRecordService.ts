@@ -109,7 +109,7 @@ export default class BudgetRecordService implements IBudgetRecordService {
             
             let res = {
                 ...data[0].$attributes,
-                creditor: data[0].$preloaded.creditor.$attributes,
+                creditor: data[0].$preloaded.creditor?.$attributes,
                 linksRp:data.map(ev=>{
                     return ev.$preloaded.linksRp.map(e=>{
                         return {
