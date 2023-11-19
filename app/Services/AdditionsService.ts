@@ -23,7 +23,6 @@ import { IStrategicDirectionService } from "./External/StrategicDirectionService
 import { tranformProjectsVinculation } from "App/Utils/sub-services";
 import { IBudgetsRoutes } from "App/Interfaces/BudgetsRoutesInterfaces";
 export interface IAdditionsService {
-
   getBudgetForCdp(
     projectId: number,
     foundId: number,
@@ -75,10 +74,8 @@ export default class AdditionsService implements IAdditionsService {
     private pospreSapRepository: IPosPreSapienciaRepository,
     private budgetRepository: IBudgetsRepository,
     private budgetRouteRepository: IBudgetsRoutesRepository,
-    private strategicDirectionRepository: IStrategicDirectionService,
-    //private budgetsRoutesRepository2: IBudgetsRoutesRepository // Cambio de nombre aquí
+    private strategicDirectionRepository: IStrategicDirectionService //private budgetsRoutesRepository2: IBudgetsRoutesRepository // Cambio de nombre aquí
   ) {}
-
 
   //?OBTENER PAGINADO Y FILTRADO LAS ADICIONES CON SUS MOVIMIENTOS
   async getAdditionsPaginated(
@@ -222,7 +219,11 @@ export default class AdditionsService implements IAdditionsService {
   ): Promise<IBudgetsRoutes | null> {
     try {
       // Reemplaza este bloque con la lógica adecuada para obtener el presupuesto
-      const budget = await this.budgetRepository.getBudgetForCdp(projectId, foundId, posPreId);
+      const budget = await this.budgetRepository.getBudgetForCdp(
+        projectId,
+        foundId,
+        posPreId
+      );
       return budget;
     } catch (error) {
       console.error("Error al obtener el presupuesto para CDP:", error);
@@ -516,13 +517,13 @@ export default class AdditionsService implements IAdditionsService {
     return `OK-${idCard}`;
   }
 
-
   getStrategicProjects = async (projectId: string) => {
-    let strategicProjects = await this.strategicDirectionRepository.getProjectInvestmentPaginated({
-      nameOrCode: projectId,
-      page: 1,
-      perPage: 1000,
-    });
+    let strategicProjects =
+      await this.strategicDirectionRepository.getProjectInvestmentPaginated({
+        nameOrCode: projectId,
+        page: 1,
+        perPage: 1000,
+      });
     return strategicProjects.data.array;
   };
 
@@ -571,7 +572,12 @@ export default class AdditionsService implements IAdditionsService {
           value: i.value,
         });
 
-        await toCreate.save();
+        // await toCreate.save();
+
+        await this.additionsRepository.updateAdditionValues(
+          toCreate.serialize(),
+          add.typeMovement
+        );
       }
     } else {
       return new ApiResponse(

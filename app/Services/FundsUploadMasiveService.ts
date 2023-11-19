@@ -24,7 +24,7 @@ export default class FundsUploadMasiveService implements IFundsUploadMasiveServi
 
   async uploadMasiveFunds(file: string): Promise<any> {
 
-    console.log(this.fundsRepository);
+    // console.log(this.fundsRepository);
     const result = await this.processBase64(file);
 
     return result;

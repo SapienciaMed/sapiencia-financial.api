@@ -694,7 +694,7 @@ export default class PacRepository implements IPacRepository {
   async updatePac(data: IEditPac): Promise<IResultEditPac | null>{
 
     const { pacId } = data;
-    console.log(pacId);
+    // console.log(pacId);
 
     const toUpdateProgramming = await PacAnnualization.find(Number(data.annProgrammingPac!.id));
     const toUpdateCollected = await PacAnnualization.find(Number(data.annCollectyerPac!.id));

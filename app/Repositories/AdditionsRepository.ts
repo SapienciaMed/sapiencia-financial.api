@@ -8,6 +8,7 @@ import Additions from "../Models/Addition";
 import { IPagingData } from "App/Utils/ApiResponses";
 // import { DateTime } from "luxon";
 import AdditionsMovement from "../Models/AdditionsMovement";
+import BudgetsRoutes from "App/Models/BudgetsRoutes";
 
 export interface IAdditionsRepository {
   getAdditionsPaginated(
@@ -16,6 +17,7 @@ export interface IAdditionsRepository {
   createAdditions(addition: IAdditions): Promise<IAdditions>;
   getAllAdditionsList(list: string): Promise<IAdditions[] | any>;
   getAdditionById(id: number): Promise<IAdditionsFull | null>;
+  updateAdditionValues(data: any, typeMovement: string): Promise<any>;
 }
 
 export default class AdditionsRepository implements IAdditionsRepository {
@@ -114,5 +116,39 @@ export default class AdditionsRepository implements IAdditionsRepository {
       head: head.serialize() as IAdditions,
       details: details.map((i) => i.serialize() as IAdditionsMovement),
     };
+  }
+
+  async updateAdditionValues(data: any, typeMovement: string): Promise<any> {
+    const toUpdateOld = await BudgetsRoutes.find(data.budgetRouteId);
+    const toUpdate = await BudgetsRoutes.find(data.budgetRouteId);
+
+    if (!toUpdate) {
+      return null;
+    }
+
+    const toUpdateBalance = +toUpdate.balance;
+    switch (typeMovement) {
+      case "Adicion":
+        toUpdate.balance = toUpdateBalance + data.value;
+        break;
+      case "Disminucion":
+        toUpdate.balance = toUpdateBalance - data.value;
+        break;
+      case "Traslado":
+        console.log({ data, typeMovement });
+        break;
+      default:
+        break;
+    }
+
+    console.log({
+      typeMovement,
+      dataId: data.budgetRouteId,
+      data,
+      toUpdateOld: toUpdateOld?.serialize(),
+      toUpdate: toUpdate.serialize(),
+    });
+
+    // return toUpdate.serialize();
   }
 }
