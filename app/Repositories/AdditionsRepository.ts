@@ -119,7 +119,6 @@ export default class AdditionsRepository implements IAdditionsRepository {
   }
 
   async updateAdditionValues(data: any, typeMovement: string): Promise<any> {
-    const toUpdateOld = await BudgetsRoutes.find(data.budgetRouteId);
     const toUpdate = await BudgetsRoutes.find(data.budgetRouteId);
 
     if (!toUpdate) {
@@ -135,7 +134,10 @@ export default class AdditionsRepository implements IAdditionsRepository {
         toUpdate.balance = toUpdateBalance - data.value;
         break;
       case "Traslado":
-        console.log({ data, typeMovement });
+        if (data.type === "Origen")
+          toUpdate.balance = toUpdateBalance + data.value;
+        if (data.type === "Destino")
+          toUpdate.balance = toUpdateBalance - data.value;
         break;
       default:
         break;
@@ -145,7 +147,6 @@ export default class AdditionsRepository implements IAdditionsRepository {
       typeMovement,
       dataId: data.budgetRouteId,
       data,
-      toUpdateOld: toUpdateOld?.serialize(),
       toUpdate: toUpdate.serialize(),
     });
 
