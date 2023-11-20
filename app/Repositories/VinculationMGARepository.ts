@@ -23,6 +23,7 @@ export interface IVinculationMGARepository {
   getVinculationMGAByPosPreOrg(id: number): Promise<IActivityMGA[] | any>;
   createVinculationMga(data: ICDPVinculateMGA): Promise<ICDPVinculateMGA[]>;
   validateVinculationMga(data: any): Promise<any>;
+  validateAllCdp(data: any): Promise<any>;
 
 }
 
@@ -129,6 +130,35 @@ export default class VinculationMGARepository implements IVinculationMGAReposito
     // Devuelves la suma total.
     return totalSum; 
 }
+  async validateAllCdp(data: any): Promise<any> {
+
+    const query = await CdpVinculationMga.query().where("activitieDetailMga", data.activitieId);
+
+    // Crear un conjunto para almacenar códigos CDP únicos.
+    const uniqueCdpCodes = new Set<string>();
+
+    // Recorrer cada elemento en la consulta y añadir su cdpCode al conjunto.
+    query.forEach(datos => {
+      uniqueCdpCodes.add(String(datos.cdpCode));
+    });
+
+    // Convertir el conjunto en un array para devolverlo.
+    const uniqueCdpCodesArray = Array.from(uniqueCdpCodes);  
+
+    const queryCdp = await AmountBudgetAvailability.query().whereIn("cdpCode", uniqueCdpCodesArray).where('isActive',1);
+
+
+    let totalSum:number = 0;
+
+    // Iteras sobre cada registro y sumas el valor de 'idcFinalValue'.
+    queryCdp.forEach(record => {
+        totalSum += Number(record.idcFinalValue);
+    });
+    
+    // Devuelves la suma total.
+    return totalSum; 
+   
+  }
 
 
 }

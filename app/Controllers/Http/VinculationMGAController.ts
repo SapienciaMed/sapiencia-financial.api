@@ -19,6 +19,7 @@ import { IDesvinculationMgaV2 } from '../../Interfaces/VinculationMGAInterfaces'
 import { IPosPreSapiencia } from '../../Interfaces/PosPreSapienciaInterfaces';
 import CdpVinculateMGAValidator from "App/Validators/CdpVinculateMGAValidator";
 import validateVinculateMGA from "App/Validators/validateVinculateMGA";
+import validateAllCdp from "App/Validators/validateAllCdpValidate";
 
 export default class VinculationMGAController {
 
@@ -249,6 +250,26 @@ export default class VinculationMGAController {
       );     
      //return data;
       return response.send(await VinculationMGAProvider.validateVinculationMga(data));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  public async validateAallCdp({ request, response }: HttpContextContract) {
+
+    try {
+
+      const data = await request.validate(
+        validateAllCdp
+      );
+
+      return response.send(await VinculationMGAProvider.validateAllCdp(data));
 
     } catch (err) {
 
