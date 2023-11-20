@@ -9,6 +9,9 @@ import VinculationMGA from "App/Models/VinculationMGA";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { IVinculationMgaV2,
          IDesvinculationMgaV2 } from '../Interfaces/VinculationMGAInterfaces';
+import { ICDPVinculateMGA } from "App/Interfaces/ICDPVinculateMGAInterface.ts";
+import CdpVinculationMga from "App/Models/CdpVinculationMga";
+import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 
 export interface IVinculationMGARepository {
 
@@ -18,6 +21,8 @@ export interface IVinculationMGARepository {
   createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaV2): Promise<IVinculationMgaV2>;
   deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<IDesvinculationMgaV2 | boolean>;
   getVinculationMGAByPosPreOrg(id: number): Promise<IActivityMGA[] | any>;
+  createVinculationMga(data: ICDPVinculateMGA): Promise<ICDPVinculateMGA[]>;
+  validateVinculationMga(data: any): Promise<any>;
 
 }
 
@@ -93,5 +98,37 @@ export default class VinculationMGARepository implements IVinculationMGAReposito
     return query;
 
   }
+
+  async createVinculationMga(data:  ICDPVinculateMGA): Promise<ICDPVinculateMGA[]> {
+    const createdRecords: ICDPVinculateMGA[] = [];
+
+    for (const item of data.datos) {
+        const toCreate = new CdpVinculationMga(); 
+        toCreate.fill(item);
+        await toCreate.save();
+        createdRecords.push(toCreate.serialize() as ICDPVinculateMGA);
+    }
+
+    return createdRecords;
+  }
+
+  async validateVinculationMga(data: any): Promise<number> {
+    // Realizas la consulta.
+    const query = await AmountBudgetAvailability.query().where("cdpCode", data.cdpId);
+
+    // Inicializas una variable para sumar los valores.
+    let totalSum:number = 0;
+
+    // Iteras sobre cada registro y sumas el valor de 'idcFinalValue'.
+    query.forEach(record => {
+        totalSum += Number(record.idcFinalValue);
+    });
+
+    
+
+    // Devuelves la suma total.
+    return totalSum; 
+}
+
 
 }
