@@ -100,6 +100,7 @@ export default class BudgetRecordRepository implements IBudgetRecordRepository {
             .preload('creditor')
             .preload('linksRp', (query) => {
                 query.where('isActive', true)
+                query.preload('pagos')
                 query.preload('amountBudgetAvailability', (query) => {
                     query.preload('budgetRoute', (query) => {
                         query.preload('budget')
