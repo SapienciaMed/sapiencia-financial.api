@@ -1454,7 +1454,21 @@ export default class ReportRepository implements IReportRepository {
 
     const { result } = await getlinksRpCdp(year, "RpBalance");
 
-    if (!result.length) return resObject;
+    if (!result.length)
+      return (resObject = [
+        {
+          "Consecutivo RP SAP": 0,
+          "Consecutivo RP Aurora": 0,
+          Posición: 0,
+          Fondo: "",
+          "Centro Gestor": "",
+          "Posicion Presupuestaria": "",
+          "Area Funcional": "",
+          Proyecto: "",
+          "Nombre proyecto": "",
+          "Valor Final": 0,
+        },
+      ]);
 
     for (const vrp of result) {
       // let idVrp: number = vrp.id;
@@ -1542,6 +1556,8 @@ export default class ReportRepository implements IReportRepository {
     let resObject: IReportColumnAccountsPayable[] = [];
 
     const { result } = await getlinksRpCdp(year, "AccountsPayable");
+
+    console.log({ result, resObject });
 
     if (!result.length) return resObject;
 
@@ -2068,7 +2084,7 @@ export default class ReportRepository implements IReportRepository {
 
       //Presupuesto Ajustado
       AdjustedBudget = resFuntionalProject[0].budgetValue
-        ? resFuntionalProject[0].budgetValue
+        ? parseInt(resFuntionalProject[0].budgetValue)
         : 0;
 
       //Ejecución CDP
@@ -2076,7 +2092,7 @@ export default class ReportRepository implements IReportRepository {
 
       if (resultIcds.length > 0) {
         const resultSumAmountIcds = resultIcds.reduce(
-          (total, i) => total + parseInt(i.amount),
+          (total, i) => total + parseInt(i.idcFinalValue ? i.idcFinalValue : 0),
           0
         );
         CDPExecution = resultSumAmountIcds;
@@ -2086,7 +2102,7 @@ export default class ReportRepository implements IReportRepository {
           const resultVrp = await getVrpByIcdNotAnnulled(icd.id);
           if (resultVrp.length > 0) {
             const sumRps = resultVrp.reduce(
-              (total, i) => total + parseInt(i.finalAmount),
+              (total, i) => total + parseInt(i.finalAmount ? i.finalAmount : 0),
               0
             );
             RPExecution += sumRps;
