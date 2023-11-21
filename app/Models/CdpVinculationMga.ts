@@ -2,22 +2,24 @@ import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
 export default class CdpVinculationMga extends BaseModel {
 
-  public static table = "CDP_VINCULACION_MGA";
+  public static table = "VCM_VINCULACION_CDP_MGA";
 
-  @column({ isPrimary: true, columnName: "CDP_CODIGO", serializeAs: "id" })
+  @column({ isPrimary: true, columnName: "VCM_CODIGO", serializeAs: "id" })
   public id: number;
 
-  @column({ columnName: "CDP_ACTIVIDAD_MGA", serializeAs: "activitieMga" })
+  @column({ columnName: "VCM_ACTIVIDAD_MGA", serializeAs: "activitieMga" })
   public activitieMga: number;
 
-  @column({ columnName: "CDP_ACTIVIDAD_DETALLADA_MGA", serializeAs: "activitieDetailMga" })
+  @column({ columnName: "VCM_ACTIVIDAD_DETALLADA_MGA", serializeAs: "activitieDetailMga" })
   public activitieDetailMga: number;
 
-  @column({ columnName: "CDP_PORCENTAJE_AFECTACION", serializeAs: "percentageAfected" })
+  @column({ columnName: "VCM_PORCENTAJE_AFECTACION", serializeAs: "percentageAfected" })
   public percentageAfected: number;
 
-
-  @column({ columnName: "CDP_CODCDP", serializeAs: "cdpCode" })
+  @column({ columnName: "VCM_CODCDP", serializeAs: "cdpCode" })
   public cdpCode: number;
+
+  @column({ columnName: "VCM_CODCPC_CLASIFICADOR_PRODUCTOS", serializeAs: "cpcCode" })
+  public cpcCode: number;
 }
 
