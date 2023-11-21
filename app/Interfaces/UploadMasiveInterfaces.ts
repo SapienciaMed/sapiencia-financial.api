@@ -8,6 +8,7 @@ export interface IResponseUploadMasive {
 export interface IErrorsUploadMasive {
   row: number;
   description: string;
+  additionalDef?: string;
 }
 
 export interface IFundsUploadMasive {

@@ -13,12 +13,8 @@ export interface IFundsRepository {
   createFund(fund: IFunds): Promise<IFunds>;
   updateFund(fund: IFunds, id: number): Promise<IFunds | null>;
   getAllFunds(): Promise<IFunds[]>;
-  getFundsList(
-    filters: IProjectAdditionFilters
-  ): Promise<IPagingData<IFundsAdditionList>>;
-  getFundsByNumber(
-    number: string
-  ): Promise<IPagingData<IFundsAdditionList | null>>;
+  getFundsList(filters: IProjectAdditionFilters): Promise<IPagingData<IFundsAdditionList>>;
+  getFundsByNumber(number: string): Promise<IPagingData<IFundsAdditionList | null>>;
 }
 
 export default class FundsRepository implements IFundsRepository {
@@ -125,9 +121,7 @@ export default class FundsRepository implements IFundsRepository {
     };
   }
 
-  async getFundsByNumber(
-    number: string
-  ): Promise<IPagingData<IFundsAdditionList | null>> {
+  async getFundsByNumber(number: string): Promise<IPagingData<IFundsAdditionList | null>> {
     const res = Funds.query();
     res.where("number", number);
     await res.preload("entity");

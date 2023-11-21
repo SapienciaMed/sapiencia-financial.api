@@ -38,7 +38,7 @@ export default class BudgetsRepository implements IBudgetsRepository {
       const serializedBudgetRoutes = JSON.stringify(budgetRoutes);
       const objInfo = JSON.parse(serializedBudgetRoutes);
       const idRoute = objInfo[0].id;
-      const sumValues = await AmountBudgetAvailability.query().where("ICD_CODRPP_RUTA_PRESUPUESTAL", idRoute).sum('IDC_VALOR_FINAL as sumatotal');
+      const sumValues = await AmountBudgetAvailability.query().where("ICD_CODRPP_RUTA_PRESUPUESTAL", idRoute).where("ICD_ACTIVO", 1 ).sum('IDC_VALOR_FINAL as sumatotal');
       let value = sumValues[0]['$extras']['sumatotal'] !== null ? parseFloat(sumValues[0]['$extras']['sumatotal']) : 0;
       const dataRoute = budgetRoutes[0]['$original'];
 

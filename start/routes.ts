@@ -134,9 +134,12 @@ Route.group(() => {
     "/update-vinculation-multiple",
     "VinculationMGAController.updateMultipleVinculation"
   );
-})
-  .prefix("/api/v1/vinculation-mga")
-  .middleware("auth");
+  Route.post("/get-activities-detail", "VinculationMGAController.getActivitiesDetail")
+  Route.post("/create-vinculation-mga", "VinculationMGAController.createVinculationMga")
+  Route.post("/validate", "VinculationMGAController.validateVinculationMga")
+  Route.post("/validate-all-Cdp", "VinculationMGAController.validateAallCdp")
+}).prefix("/api/v1/vinculation-mga")
+.middleware("auth");
 
   
 
@@ -371,8 +374,8 @@ Route.group(() => {
   ).middleware('auth:CDP_RUTAS_EDITAR');
   Route.get("/get-CDPRp-id/:id", "BudgetAvailabilityController.getRpCDP").middleware('auth:CDP_VISUALIZAR_RP');
 })
-  .prefix("/api/v1/cdp")
-  .middleware("auth");
+  .prefix("/api/v1/cdp").middleware("auth");
+
 
 Route.group(() => {
   Route.post("/create-rp", "BudgetRecordsController.createRp").middleware('auth:RP_CREAR');
@@ -399,8 +402,14 @@ Route.group(() => {
   Route.post(
     "/get-creditors-by-filters",
     "CreditorsController.getCreditorsByFilters"
+<<<<<<< HEAD
   ).middleware('auth:ACREEDOR_CONSULTAR');
 }).prefix("/api/v1/creditors");
+=======
+  );
+}).prefix("/api/v1/creditors").middleware("auth");
+
+>>>>>>> e30552866eba0196b131d14c49abfd9a3dd43cc8
 
 Route.group(() => {
   Route.get("/get-all-dependencies", "PayrollsController.getAllDependencies");
