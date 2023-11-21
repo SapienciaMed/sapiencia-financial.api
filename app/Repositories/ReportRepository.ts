@@ -40,6 +40,15 @@ import BudgetAvailability from "App/Models/BudgetAvailability";
 import Pago from "App/Models/PagPagos";
 import FunctionalProject from "App/Models/FunctionalProject";
 import { DateTime } from "luxon";
+import {
+  InitialReportAccountsPayable,
+  InitialReportBudgetExecution,
+  InitialReportCdpBalance,
+  InitialReportDetailedExecution,
+  InitialReportExecutionExpenses,
+  InitialReportExecutionIncome,
+  InitialReportRpBalance,
+} from "App/Constants/ReportConstants";
 
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
@@ -1157,7 +1166,7 @@ export default class ReportRepository implements IReportRepository {
   //HU-094 Reporte Ejecucion de gastos
   async generateReportExecutionExpenses(year: number): Promise<any[]> {
     // Matriz que almacenará el resultado del informe
-    const resObject: IReportColumnExecutionExpenses[] = [];
+    let resObject: IReportColumnExecutionExpenses[] = [];
 
     // Consulta la ruta de presupuesto para el año especificado
     const queryBudgetRoute = await BudgetsRoutes.query()
@@ -1172,6 +1181,8 @@ export default class ReportRepository implements IReportRepository {
     const resBudgetRoute = queryBudgetRoute
       .map((i) => i.serialize())
       .filter((i) => i.pospreSapiencia && i.pospreSapiencia !== null);
+
+    if (!resBudgetRoute.length) return InitialReportExecutionExpenses;
 
     // Recorre los resultados y genera el informe
     for (const rpp of resBudgetRoute) {
@@ -1340,7 +1351,7 @@ export default class ReportRepository implements IReportRepository {
 
   //HU-095 Reporte CDP con saldo
   async generateReportCdpBalance(year: number): Promise<any[]> {
-    const resObject: IReportColumnCdpBalance[] = [];
+    let resObject: IReportColumnCdpBalance[] = [];
 
     const queryBudgetAvailability = await BudgetAvailability.query()
       .where("exercise", year)
@@ -1356,6 +1367,8 @@ export default class ReportRepository implements IReportRepository {
     const resBudgetAvailability = queryBudgetAvailability.map((i) =>
       i.serialize()
     );
+
+    if (!resBudgetAvailability.length) return InitialReportCdpBalance;
 
     for (const cdp of resBudgetAvailability) {
       let idCdp: number = cdp.id;
@@ -1454,21 +1467,7 @@ export default class ReportRepository implements IReportRepository {
 
     const { result } = await getlinksRpCdp(year, "RpBalance");
 
-    if (!result.length)
-      return (resObject = [
-        {
-          "Consecutivo RP SAP": 0,
-          "Consecutivo RP Aurora": 0,
-          Posición: 0,
-          Fondo: "",
-          "Centro Gestor": "",
-          "Posicion Presupuestaria": "",
-          "Area Funcional": "",
-          Proyecto: "",
-          "Nombre proyecto": "",
-          "Valor Final": 0,
-        },
-      ]);
+    if (!result.length) return InitialReportRpBalance;
 
     for (const vrp of result) {
       // let idVrp: number = vrp.id;
@@ -1557,9 +1556,7 @@ export default class ReportRepository implements IReportRepository {
 
     const { result } = await getlinksRpCdp(year, "AccountsPayable");
 
-    console.log({ result, resObject });
-
-    if (!result.length) return resObject;
+    if (!result.length) return InitialReportAccountsPayable;
 
     for (const vrp of result) {
       // let idVrp: number = vrp.id;
@@ -1685,6 +1682,8 @@ export default class ReportRepository implements IReportRepository {
           i.budget &&
           i.budget !== null
       );
+
+    if (!resBudgetRoute.length) return InitialReportDetailedExecution;
 
     for (const rpp of resBudgetRoute) {
       // let rppId: number = rpp.id;
@@ -1881,7 +1880,7 @@ export default class ReportRepository implements IReportRepository {
           i.budget !== null
       );
 
-    if (!resBudgetRoute.length) return resObject;
+    if (!resBudgetRoute.length) return InitialReportExecutionIncome;
 
     // Recorre los resultados y genera el informe
     for (const rpp of resBudgetRoute) {
@@ -2046,7 +2045,7 @@ export default class ReportRepository implements IReportRepository {
           i.projectVinculation !== null
       );
 
-    if (!resBudgetRoute.length) return resObject;
+    if (!resBudgetRoute.length) return InitialReportBudgetExecution;
 
     for (const rpp of resBudgetRoute) {
       // Variables to store information
