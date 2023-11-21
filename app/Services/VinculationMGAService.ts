@@ -25,6 +25,7 @@ export interface IVinculationMGAService {
   getActivitiesDetail(data: any): Promise<ApiResponse<any>>;
   createVinculationMga(data: ICDPVinculateMGA): Promise<ApiResponse<ICDPVinculateMGA[]>>;
   validateVinculationMga(data: any): Promise<ApiResponse<any>>;
+  validateAllCdp(data: any): Promise<ApiResponse<any>>;
 
 }
 
@@ -152,7 +153,8 @@ export default class VinculationMGAService implements IVinculationMGAService {
           [],
           EResponseCodes.FAIL,
           "No se encontraron CDPS"
-        );      }
+        );
+      }
 
      
       return new ApiResponse(
@@ -166,7 +168,52 @@ export default class VinculationMGAService implements IVinculationMGAService {
       return new ApiResponse(
         [],
         EResponseCodes.FAIL,
-        "Error al crear vínculos: " + error.message
+        "Error: " + error.message
+      );
+    }
+  }
+
+  async validateAllCdp(data: any): Promise<ApiResponse<any>> {
+    try {
+      // Asumiendo que `validateVinculationMga` en el repositorio devuelve un arreglo de `ICDPVinculateMGA`
+      const res = await this.vinculationMGARepository.validateAllCdp(data);
+
+      if (res <= 0) {
+        return new ApiResponse(
+          [],
+          EResponseCodes.FAIL,
+          "No se encuentran valores del cdp"
+        );
+      }
+
+      if ((res+data.valueFinal) > data.activitieCost) {
+        return new ApiResponse(
+          [],
+          EResponseCodes.FAIL,
+          "Ya tiene esta actividad asociadas a diferentes CDPs que con esta nueva asociación da un valor mayor que el costo que tiene esa actividad."
+        );
+      }
+
+      if (res.length === 0) {
+        return new ApiResponse(
+          [],
+          EResponseCodes.FAIL,
+          "No se encontraron CDPS"
+        );
+      }
+      
+      return new ApiResponse(
+        [],
+        EResponseCodes.OK,
+        "Se puede agregar"
+      );
+
+    } catch (error) {
+      // Manejo de errores
+      return new ApiResponse(
+        [],
+        EResponseCodes.FAIL,
+        "Error: " + error.message
       );
     }
   }
