@@ -7,6 +7,7 @@ import { IFundsRepository } from "App/Repositories/FundsRepository";
 import { IFundsUploadMasive, IErrorsUploadMasive, IResponseUploadMasive } from '../Interfaces/UploadMasiveInterfaces';
 import { ApiResponse } from '../Utils/ApiResponses';
 import { EResponseCodes } from '../Constants/ResponseCodesEnum';
+import Funds from 'App/Models/Funds';
 
 export interface IFundsUploadMasiveService {
   uploadMasiveFunds(file: string): Promise<any>;
@@ -358,6 +359,18 @@ export default class FundsUploadMasiveService implements IFundsUploadMasiveServi
     if( band ) return this.arrayErrorDates;
     return null;
 
+  }
+
+
+  async insertFundsinfo(items: any[], model: any): Promise<void>{
+    for (const item of items) {
+      try {
+        const res = await model.create(item);
+        return res;
+      } catch (error) {
+        console.error(`Error de validación para el item: ${error}`);
+      }
+    }
   }
 
 
