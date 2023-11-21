@@ -3,7 +3,7 @@ import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 export default class extends BaseSchema {
   protected tableName = 'ADC_ADICIONES'
 
-  public async up () {
+  public async up() {
     this.schema.createTable(this.tableName, (table) => {
 
       table.comment(
@@ -28,6 +28,11 @@ export default class extends BaseSchema {
         .comment("Numero del documento del ultimo usuario que hizo una modificacion");
 
       table
+        .string("ADC_TIPO", 15)
+        .notNullable()
+        .comment("Indicador de tipo de movimiento (Disminucion / Adicion)");
+
+      table
         .datetime("ADC_FECHA_MODIFICO")
         .nullable()
         .comment("Fecha y hora de la última modificación");
@@ -36,14 +41,14 @@ export default class extends BaseSchema {
         .notNullable()
         .comment("Número del documento del usuario que creó el registro");
       table
-        .datetime("ADC_FECHA_CREO")
+        .timestamp("ADC_FECHA_CREO")
         .notNullable()
         .comment("Fecha y hora de creación del registro");
 
     })
   }
 
-  public async down () {
+  public async down() {
     this.schema.dropTable(this.tableName)
   }
 }

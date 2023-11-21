@@ -1,3 +1,4 @@
+import { EProjectTypes } from "App/Constants/ProjectsEnums";
 import {
   IFunctionalArea,
   IFunctionalAreaFilters,
@@ -8,25 +9,30 @@ import ProjectsVinculation from "App/Models/ProjectsVinculation";
 import { IPagingData } from "App/Utils/ApiResponses";
 
 export interface IFunctionalAreaRepository {
+
   getFunctionalAreaById(id: number): Promise<IFunctionalArea | null>;
-  getFunctionalAreaPaginated(
-    filters: IFunctionalAreaFilters
-  ): Promise<IPagingData<IFunctionalArea>>;
+  getFunctionalAreaPaginated(filters: IFunctionalAreaFilters): Promise<IPagingData<IFunctionalArea>>;
   createFunctionalArea(functionalArea: IFunctionalArea): Promise<IFunctionalArea>;
   updateFunctionalArea(functionalArea: IFunctionalArea, id: number): Promise<IFunctionalArea | null>;
   createProjectFunctionalArea(projectsVinculate: IProjectsVinculate): Promise<IProjectsVinculation[]>;
   updateProjectFunctionalArea(projectsVinculate: IProjectsVinculate): Promise<IProjectsVinculation[] | null>;
   deleteProjectFunctionalArea(projectVinculate: number): Promise<boolean>;
   getAllProjectFunctionalArea():Promise<IProjectsVinculation[]>;
-  getProjectFunctionalAreaPaginated(
-    filters: IProjectsVinculateFilters
-  ): Promise<IPagingData<IProjectsVinculation>>;
+  getProjectFunctionalAreaPaginated(filters: IProjectsVinculateFilters): Promise<IPagingData<IProjectsVinculation>>;
   getAllFunctionalAreas():Promise<IFunctionalArea[]>;
+  getFunctionalAreaByNumber(number: string): Promise<IPagingData<IFunctionalArea>>;
+  getAllInvestmentProjectIds(): Promise<number[]>
+
 }
 
 export default class FunctionalAreaRepository
   implements IFunctionalAreaRepository {
   constructor() { }
+
+  async getAllInvestmentProjectIds(): Promise<number[]> {
+    const res = await ProjectsVinculation.query().where('type', EProjectTypes.investment)
+    return res.map(i=> i.investmentProjectId)
+  }
 
   async getFunctionalAreaById(id: number): Promise<IFunctionalArea | null> {
     const res = await FunctionalArea.find(id);
@@ -34,9 +40,12 @@ export default class FunctionalAreaRepository
   }
 
   async getFunctionalAreaPaginated(filters: IFunctionalAreaFilters): Promise<IPagingData<IFunctionalArea>> {
-    const query = FunctionalArea.query();
+
+    const query = FunctionalArea.query().preload("projectsVinculation");
+    query.orderBy("number", "asc");
+
     if (filters.number) {
-      await query.where("number", filters.number);
+      await query.whereILike("number", `%${filters.number}%`);
     }
 
     const res = await query.paginate(filters.page, filters.perPage);
@@ -73,14 +82,21 @@ export default class FunctionalAreaRepository
   async createProjectFunctionalArea(projectsVinculate: IProjectsVinculate): Promise<IProjectsVinculation[]> {
     const vinculations: IProjectsVinculation[] = [];
     await Promise.all(projectsVinculate.projects.map(async (project) => {
-      const toCreateProjectsVinculation = new ProjectsVinculation();
-      toCreateProjectsVinculation.functionalAreaId = projectsVinculate.idFunctionalArea;
-      toCreateProjectsVinculation.projectId = project.id;
-      toCreateProjectsVinculation.budgetValue = 0;
-      toCreateProjectsVinculation.linked = project.linked;
-      if (projectsVinculate.userCreate) toCreateProjectsVinculation.userCreate = projectsVinculate.userCreate;
-      await toCreateProjectsVinculation.save();
-      vinculations.push(toCreateProjectsVinculation.serialize() as IProjectsVinculation);
+      const toCreate = new ProjectsVinculation();
+      toCreate.functionalAreaId = projectsVinculate.idFunctionalArea;
+      if(project.type)
+      toCreate.type = project.type
+
+      if(project.type == EProjectTypes.investment) {
+        toCreate.investmentProjectId = project.id
+      }
+      else {
+        toCreate.operationProjectId = project.id
+      }
+      toCreate.linked = project.linked;
+      if (projectsVinculate.userCreate) toCreate.userCreate = projectsVinculate.userCreate;
+      await toCreate.save();
+      vinculations.push(toCreate.serialize() as IProjectsVinculation);
     }));
     return vinculations;
   }
@@ -118,12 +134,13 @@ export default class FunctionalAreaRepository
   }
 
   async getAllProjectFunctionalArea():Promise<IProjectsVinculation[]> {
-    const res = await ProjectsVinculation.query();
-    return res as IProjectsVinculation[];
+    const res = await ProjectsVinculation.query().preload("areaFuntional").preload("functionalProject");
+    return res.map(i => i.serialize() as IProjectsVinculation)
   }
 
+
   async getProjectFunctionalAreaPaginated(filters: IProjectsVinculateFilters): Promise<IPagingData<IProjectsVinculation>> {
-    const query = ProjectsVinculation.query();
+    const query = ProjectsVinculation.query().preload("functionalProject");
     if (filters.id) {
       await query.where("functionalAreaId", filters.id);
     }
@@ -142,4 +159,24 @@ export default class FunctionalAreaRepository
     const res = await FunctionalArea.query();
     return res as IFunctionalArea[];
   }
+
+  async getFunctionalAreaByNumber(number: string): Promise<IPagingData<IFunctionalArea>> {
+
+    const query = FunctionalArea.query();
+    query.where("number", number);
+    query.orderBy("number", "asc");
+
+    const page = 1;
+    const perPage = 1;
+
+    const res = await query.paginate(page, perPage);
+    const { data, meta } = res.serialize();
+
+    return {
+      array: data as IFunctionalArea[],
+      meta,
+    };
+
+  }
+
 }

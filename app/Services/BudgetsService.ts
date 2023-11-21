@@ -4,7 +4,7 @@ import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
 
 export interface IBudgetsService {
-  
+
     //updateBudgets(data: { name: string; description: string; aplicationId: number; userCreate: string | undefined; userModify: string | undefined; actions: { id: number; optionId: number; name: string; order: number; indicator: string; url: string | undefined; }[] | undefined; }, id: any): any;
     getBudgetsById(id: number): Promise<ApiResponse<IBudgets>>;
     getBudgetsPaginated(
@@ -36,14 +36,27 @@ export default class BudgetsService implements IBudgetsService {
     filters: IFilterBudgets
   ): Promise<ApiResponse<IPagingData<IBudgets>>> {
     const res = await this.budgetsRepository.getBudgetsPaginated(filters);
-  
+
     return new ApiResponse(res, EResponseCodes.OK);
   }
 
 
   async createBudgets(budgets: IBudgets): Promise<ApiResponse<IBudgets>> {
+
+    //No pueden repetirse budget.
+    const validNumber = await this.budgetsRepository.getBudgetsByNumber(budgets.number);
+
+    if(validNumber.array.length > 0) {
+      return new ApiResponse(
+        {} as IBudgets,
+        EResponseCodes.FAIL,
+        `Se ha encontrado un error, pospre ya existente.`
+      );
+    }
+
     const res = await this.budgetsRepository.createBudgets(budgets);
     return new ApiResponse(res, EResponseCodes.OK);
+
   }
 
   async updateBudgets(budgets: IBudgets, id: number): Promise<ApiResponse<IBudgets>> {

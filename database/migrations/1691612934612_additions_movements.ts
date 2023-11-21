@@ -26,33 +26,12 @@ export default class extends BaseSchema {
         .comment("Tipo de movimiento (Ingreso / Gasto)");
 
       table
-        .string("MAD_CENTRO_GESTOR", 20)
-        .notNullable()
-        .comment("Código del centro gestor");
-
-      table
-        .integer("MAD_CODVPY_PROYECTO")
+        .integer("MAD_CODRPP_RUTA_PRESUPUESTAL")
         .notNullable()
         .unsigned()
-        .references("VPY_CODIGO")
-        .inTable("VPY_VINCULACIONES_PROYECTO")
-        .comment("Código del proyecto (FK VPY_VINCULACIONES_PROYECTO)");
-
-      table
-        .integer("MAD_CODFND_FONDO")
-        .notNullable()
-        .unsigned()
-        .references("FND_CODIGO")
-        .inTable("FND_FONDOS")
-        .comment("Código del fondo (FK FND_FONDOS)");
-
-      table
-        .integer("MAD_CODPPS_POSPRE_SAPIENCIA")
-        .notNullable()
-        .unsigned()
-        .references("PPS_CODIGO")
-        .inTable("PPS_POSICIONES_PRESUPUESTARIAS_SAPIENCIA")
-        .comment("Código del pospre sapiencia (FK PPS)");
+        .references("RPP_CODIGO")
+        .inTable("RPP_RUTAS_PRESUPUESTALES")
+        .comment("Codigo de la ruta presupuestal (FK RPP)");
 
       table
         .decimal("MAD_VALOR", 20,2)

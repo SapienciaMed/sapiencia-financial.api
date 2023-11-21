@@ -1,14 +1,27 @@
 import { DateTime } from "luxon";
+import { IBudgetsRoutes } from "./BudgetsRoutesInterfaces";
 
 export interface IAdditionsMovements {
+  idCard? : string;
   id?: number;
   additionId?: number;
   type: string;
   managerCenter: string;
-  projectId: number;
+  projectId: number //Referencia a la otra API de planeación
   fundId: number;
   budgetPosition: number;
   value: number;
+  typeMovement: string;
+}
+
+export interface IAdditionsMovement
+{
+  id: number,
+  additionId: number,
+  type: string,
+  budgetRouteId: number,
+  value: string,
+  budgetRoute: IBudgetsRoutes
 }
 
 export interface IAdditions {
@@ -18,13 +31,34 @@ export interface IAdditions {
   userModify?: string;
   dateModify?: Date;
   userCreate?: string;
-  dateCreate?: DateTime
+  dateCreate?: DateTime,
+  typeMovement: string;
+}
+
+export interface IAdditionsReport {
+  id?: number;
+  actAdminDistrict: string;
+  actAdminSapiencia: string;
+  userModify?: string;
+  dateModify?: Date;
+  userCreate?: string;
+  dateCreate?: Date,
+  typeMovement: string;
+  additionMove: IAdditionsMovement[]
 }
 
 export interface IAdditionsWithMovements {
-  headAdditon: IAdditions,
+  id?: number;                //Para edición
+  headAdditon?: IAdditions,   //Opcional porque en edición no lo requerimos
   additionMove: IAdditionsMovements[]
 }
+
+
+export interface IAdditionsFull {
+  head: IAdditions,
+  details: IAdditionsMovement[]
+}
+
 
 //Lo dejarémos genérico para todos los elementos subyacentes
 export interface IAdditionsFilters {
@@ -35,6 +69,7 @@ export interface IAdditionsFilters {
   adminSapiencia?: string;
   budgetId?: number;
   number?: string;
+  typeMovement?: string;
 }
 
 //* ***********************************
@@ -48,19 +83,13 @@ export interface IFunctionalAreaAddition {
 export interface IProjectAddition {
   id : number;
   functionalAreaId : number;
-  projectId : string;
+  projectId : number;
   budgetValue : number;
   linked : boolean;
 }
 
-export interface IProjectAdditionList {
-  id : number;
-  functionalAreaId : number;
-  projectId : string;
-  budgetValue : number;
-  linked : boolean;
-  areaFuntional?: IFunctionalAreaAddition
-}
+
+
 
 export interface IEntitiesAddition {
   id: number;

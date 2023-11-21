@@ -2,15 +2,19 @@ import { IFunds, IFundsFilters } from "App/Interfaces/FundsInterfaces";
 import Funds from "../Models/Funds";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
-import { IProjectAdditionFilters, IFundsAdditionList } from '../Interfaces/AdditionsInterfaces';
+import {
+  IProjectAdditionFilters,
+  IFundsAdditionList,
+} from "../Interfaces/AdditionsInterfaces";
 
 export interface IFundsRepository {
   getFundsById(id: number): Promise<IFunds | null>;
   getFundsPaginated(filters: IFundsFilters): Promise<IPagingData<IFunds>>;
   createFund(fund: IFunds): Promise<IFunds>;
   updateFund(fund: IFunds, id: number): Promise<IFunds | null>;
-  getAllFunds():Promise<IFunds[]>;
+  getAllFunds(): Promise<IFunds[]>;
   getFundsList(filters: IProjectAdditionFilters): Promise<IPagingData<IFundsAdditionList>>;
+  getFundsByNumber(number: string): Promise<IPagingData<IFundsAdditionList | null>>;
 }
 
 export default class FundsRepository implements IFundsRepository {
@@ -18,12 +22,15 @@ export default class FundsRepository implements IFundsRepository {
 
   async getFundsById(id: number): Promise<IFunds | null> {
     const res = await Funds.find(id);
-    await res?.load('entity');
+    await res?.load("entity");
     return res ? (res.serialize() as IFunds) : null;
   }
 
-  async getFundsPaginated(filters: IFundsFilters): Promise<IPagingData<IFunds>> {
+  async getFundsPaginated(
+    filters: IFundsFilters
+  ): Promise<IPagingData<IFunds>> {
     const query = Funds.query();
+    query.orderBy("dateFrom", "desc");
 
     if (filters.number) {
       query.where("number", filters.number);
@@ -34,14 +41,14 @@ export default class FundsRepository implements IFundsRepository {
     }
 
     if (filters.dateFrom) {
-      query.where("dateFrom", ">=" , filters.dateFrom.toLocaleString());
+      query.where("dateFrom", ">=", filters.dateFrom.toLocaleString());
     }
 
     if (filters.dateTo) {
       query.where("dateTo", "<=", filters.dateTo.toLocaleString());
     }
 
-    await query.preload('entity');
+    await query.preload("entity");
 
     const res = await query.paginate(filters.page, filters.perPage);
 
@@ -55,7 +62,11 @@ export default class FundsRepository implements IFundsRepository {
 
   async createFund(fund: IFunds): Promise<IFunds> {
     const toCreateFund = new Funds();
-    toCreateFund.fill({ ...fund, dateTo: new Date(fund.dateTo.toJSDate()), dateFrom: new Date(fund.dateFrom.toJSDate())});
+    toCreateFund.fill({
+      ...fund,
+      dateTo: new Date(fund.dateTo.toJSDate()),
+      dateFrom: new Date(fund.dateFrom.toJSDate()),
+    });
     await toCreateFund.save();
 
     return toCreateFund.serialize() as IFunds;
@@ -74,7 +85,7 @@ export default class FundsRepository implements IFundsRepository {
     toUpdate.dateFrom = new Date(fund.dateFrom.toJSDate());
     toUpdate.dateTo = new Date(fund.dateTo.toJSDate());
     toUpdate.dateModify = DateTime.local().toJSDate();
-    if(fund.userModify) {
+    if (fund.userModify) {
       toUpdate.userModify = fund.userModify;
     }
 
@@ -82,14 +93,15 @@ export default class FundsRepository implements IFundsRepository {
     return toUpdate.serialize() as IFunds;
   }
 
-  async getAllFunds():Promise<IFunds[]> {
+  async getAllFunds(): Promise<IFunds[]> {
     const res = await Funds.query();
     return res as unknown as IFunds[];
   }
 
-  async getFundsList(filters: IProjectAdditionFilters): Promise<IPagingData<IFundsAdditionList>> {
-
-    let { page , perPage } = filters;
+  async getFundsList(
+    filters: IProjectAdditionFilters
+  ): Promise<IPagingData<IFundsAdditionList>> {
+    let { page, perPage } = filters;
 
     const res = Funds.query();
 
@@ -107,7 +119,24 @@ export default class FundsRepository implements IFundsRepository {
       array: dataArray as IFundsAdditionList[],
       meta,
     };
-
   }
 
+  async getFundsByNumber(number: string): Promise<IPagingData<IFundsAdditionList | null>> {
+    const res = Funds.query();
+    res.where("number", number);
+    await res.preload("entity");
+
+    const page = 1;
+    const perPage = 1;
+
+    const fundsPaginated = await res.paginate(page, perPage);
+
+    const { data, meta } = fundsPaginated.serialize();
+    const dataArray = data ?? [];
+
+    return {
+      array: dataArray as IFundsAdditionList[],
+      meta,
+    };
+  }
 }

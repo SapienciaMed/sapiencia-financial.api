@@ -1,7 +1,10 @@
-import { IBudgets, IFilterBudgets} from "App/Interfaces/BudgetsInterfaces";
+import { IBudgets, IFilterBudgets } from "App/Interfaces/BudgetsInterfaces";
 import Budgets from "../Models/Budgets";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
+import { IBudgetsRoutes } from "App/Interfaces/BudgetsRoutesInterfaces";
+import BudgetsRoutes from "../Models/BudgetsRoutes";
+import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 
 export interface IBudgetsRepository {
   updateBudgets(budgets: IBudgets, id: number): Promise<IBudgets | null>;
@@ -9,18 +12,64 @@ export interface IBudgetsRepository {
   getBudgetsPaginated(filters: IFilterBudgets): Promise<IPagingData<IBudgets>>;
   createBudgets(role: IBudgets): Promise<IBudgets>;
   getAllBudgets(): Promise<IBudgets[]>;
+  getBudgetsByNumber(number: string): Promise<IPagingData<IBudgets>>;
+  getBudgetForCdp(projectId: number, foundId: number, posPreId: number): Promise<IBudgetsRoutes | null>;
 }
 
 export default class BudgetsRepository implements IBudgetsRepository {
-  constructor() {}
+  constructor() { }
 
   async getBudgetsById(id: number): Promise<IBudgets | null> {
     const res = await Budgets.find(id);
     return res ? (res.serialize() as IBudgets) : null;
   }
-  
+
+  async getBudgetForCdp(
+    projectId: number,
+    foundId: number,
+    posPreId: number
+  ): Promise<IBudgetsRoutes | null> {
+    const budgetRoutes: IBudgetsRoutes[] = await BudgetsRoutes.query()
+      .where("RPP_CODVPY_PROYECTO", projectId)
+      .where("RPP_CODFND_FONDO", foundId)
+      .where("RPP_CODPPS_POSPRE_SAPIENCIA", posPreId);
+
+    if (budgetRoutes && budgetRoutes.length > 0) {
+      const serializedBudgetRoutes = JSON.stringify(budgetRoutes);
+      const objInfo = JSON.parse(serializedBudgetRoutes);
+      const idRoute = objInfo[0].id;
+      const sumValues = await AmountBudgetAvailability.query().where("ICD_CODRPP_RUTA_PRESUPUESTAL", idRoute).where("ICD_ACTIVO", 1 ).sum('IDC_VALOR_FINAL as sumatotal');
+      let value = sumValues[0]['$extras']['sumatotal'] !== null ? parseFloat(sumValues[0]['$extras']['sumatotal']) : 0;
+      const dataRoute = budgetRoutes[0]['$original'];
+
+      const information = { 
+        ...dataRoute,
+        totalIdc: value
+      };
+
+      return information;
+    } else {
+      return null;
+    }
+  }
   async getBudgetsPaginated(filters: IFilterBudgets): Promise<IPagingData<IBudgets>> {
     const query = Budgets.query();
+
+    query.preload("pospresap", (q) => {
+      q.preload("budget")
+    });
+
+    query.preload("vinculationmga", (q) => {
+      q.select("id",
+        "activityId",
+        "consecutiveActivityDetailed",
+        "detailedActivityId",
+        "userCreate",
+        "dateCreate"
+      )
+    });
+
+    query.orderBy("denomination", "asc");
 
     if (filters.entity) {
       query.where("entityId", filters.entity);
@@ -33,7 +82,7 @@ export default class BudgetsRepository implements IBudgetsRepository {
     if (filters.denomination) {
       query.where("denomination", filters.denomination);
     }
-    
+
     if (filters.number) {
       query.where("number", filters.number);
     }
@@ -70,16 +119,43 @@ export default class BudgetsRepository implements IBudgetsRepository {
     toUpdate.description = budgets.description;
     toUpdate.ejercise = budgets.ejercise;
     toUpdate.dateModify = DateTime.local().toJSDate();
-    if(budgets.userModify) {
+    if (budgets.userModify) {
       toUpdate.userModify = budgets.userModify;
     }
-    
+
     await toUpdate.save();
     return toUpdate.serialize() as IBudgets;
   }
 
-  async getAllBudgets():Promise<IBudgets[]> {
-    const res = await Budgets.query();
+  async getAllBudgets(): Promise<IBudgets[]> {
+    const query = Budgets.query();
+    query.preload("entity");
+    query.preload("pospresap");
+    query.preload("vinculationmga");
+    query.preload("cpcs");
+    const res = await query;
+
     return res as IBudgets[];
   }
+
+  async getBudgetsByNumber(number: string): Promise<IPagingData<IBudgets>> {
+
+    const query = Budgets.query();
+    query.where("number", number);
+
+    await query.preload("entity");
+
+    const page = 1;
+    const perPage = 1;
+
+    const res = await query.paginate(page, perPage);
+
+    const { data, meta } = res.serialize();
+
+    return {
+      array: data as IBudgets[],
+      meta,
+    };
+  }
+
 }

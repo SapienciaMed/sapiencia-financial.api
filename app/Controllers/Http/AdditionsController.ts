@@ -63,6 +63,7 @@ export default class AdditionsController {
   }
 
   //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO
+  //! IMPORTANTE => Este nos servirá para las validaciones que no se harán en FRONT.
   public async createAdditions({ request, response }: HttpContextContract) {
 
       try {
@@ -82,6 +83,27 @@ export default class AdditionsController {
 
   }
 
+  //?CREACIÓN DE ADICIÓN CON SUS MOVIMIENTOS EN PARALELO
+  //! IMPORTANTE => ESTE REALIZARÁ LA ACCIÓN DE GUARDAR LUEGO VALIDADOS DATOS FRONT
+  public async executeCreateAdditions({ request, response }: HttpContextContract) {
+
+    try {
+
+      const addition = request.body() as IAdditionsWithMovements;
+      return response.send(
+        await AdditionsProvider.executeCreateAdditions(addition)
+      );
+
+    } catch (error) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(error))
+      );
+
+    }
+
+}
+
   //?OBTENER UNA ADICIÓN CON SUS MOVIMIENTOS EN PARALELO A TRAVÉS DE UN ID PARAM
   public async getAdditionById({ response, request }: HttpContextContract) {
 
@@ -100,24 +122,7 @@ export default class AdditionsController {
 
   }
 
-  //?OBTENER LISTADO DE PROYECTOS CON SU ÁREA FUNCIONAL VINCULADA
-  public async getProjectsList({ request, response }: HttpContextContract) {
 
-    try {
-
-      const data = request.body() as IProjectAdditionFilters;
-
-      return response.send(await AdditionsProvider.getProjectsList(data));
-
-    } catch (err) {
-
-      return response.badRequest(
-        new ApiResponse(null, EResponseCodes.FAIL, String(err))
-      );
-
-    }
-
-  }
 
   //?OBTENER LISTADO DE FONDOS
   public async getFundsList({ request, response }: HttpContextContract) {
@@ -172,5 +177,62 @@ export default class AdditionsController {
     }
 
   }
+
+  //?ACTUALIZAR UNA ADICIÓN CON SUS MOVIMIENTOS INCLUIDOS
+  public async updateAdditionWithMov({ request, response }: HttpContextContract) {
+
+    try {
+
+      const { id } = request.params();
+      const additions = request.body() as IAdditionsWithMovements;
+
+      return response.send(await AdditionsProvider.updateAdditionWithMov(id, additions));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
+  public async budgetCdp({ request, response }: HttpContextContract) {
+    try {
+      const { projectId, foundId, posPreId } = request.body();
+      const result = await AdditionsProvider.getBudgetForCdp(
+        projectId,
+        foundId,
+        posPreId
+      );
+      return response.send(result);
+    } catch (err) {
+      console.log(err)
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+        
+      );
+    }
+  }
+
+  public async executeUpdateAdditionWithMov({ request, response }: HttpContextContract) {
+
+    try {
+
+      const { id } = request.params();
+      const addition = request.body() as IAdditionsWithMovements;
+      return response.send(await AdditionsProvider.executeUpdateAdditionWithMov(id, addition));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
+
 
 }
