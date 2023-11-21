@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import Entities from "./Entities";
 import PosPreSapiencia from './PosPreSapiencia';
 import VinculationMGA from './VinculationMGA';
+import CPC from './CPC';
 
 export default class Budgets extends BaseModel {
   public static table = "PPR_POSICIONES_PRESUPUESTARIAS";
@@ -62,5 +63,11 @@ export default class Budgets extends BaseModel {
     serializeAs: "vinculationmga",
   })
   public vinculationmga: HasMany<typeof VinculationMGA>;
+
+  @hasMany(() => CPC, {
+    foreignKey: "budgetId",
+    serializeAs: "cpcs",
+  })
+  public cpcs: HasMany<typeof CPC>;
 
 }

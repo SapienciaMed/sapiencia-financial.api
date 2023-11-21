@@ -1,6 +1,7 @@
-import { BaseModel, BelongsTo, belongsTo, column } from "@ioc:Adonis/Lucid/Orm";
+import { BaseModel, BelongsTo, HasMany, belongsTo, column, hasMany } from "@ioc:Adonis/Lucid/Orm";
 import AmountBudgetAvailability from "./AmountBudgetAvailability";
 import BudgetRecord from "./BudgetRecord";
+import Pago from "./PagPagos";
 
 export default class LinkRpcdp extends BaseModel {
   public static table = "VRP_VINCULACION_RPR_ICD";
@@ -66,4 +67,12 @@ export default class LinkRpcdp extends BaseModel {
     serializeAs: "budgetRecord",
   })
   public budgetRecord: BelongsTo<typeof BudgetRecord>;
+
+  @hasMany(() => Pago, {
+    foreignKey: 'vinculacionRpCode', 
+    localKey: 'id',
+  })
+  public pagos: HasMany<typeof Pago>;
+
+  
 }

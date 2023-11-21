@@ -11,6 +11,11 @@ import {
   IReportColumnCdpBalance,
   IReportColumnRpBalance,
   IReportColumnAccountsPayable,
+  IReportColumnDetailedExecution,
+  IReportTransfers,
+  IReportModifiedRoutes,
+  IReportColumnExecutionIncome,
+  IReportColumnBudgetExecution,
 } from "../Interfaces/ReportsInterfaces";
 import { IAdditionsReport } from "../Interfaces/AdditionsInterfaces";
 import { IStrategicDirectionService } from "../Services/External/StrategicDirectionService";
@@ -20,21 +25,37 @@ import {
   getAdditionMovement,
   getAmountBudgetAvailability,
   getCheckWhetherOrNotHaveRp,
+  getCollected,
   getCreditAndAgainstCredits,
+  getIcdsByRouteAndYear,
+  getInvoicesAndPaymentsVrp,
+  getValuesPaidAndCausedByVrp,
+  getVrpByIcdNotAnnulled,
   getlinksRpCdp,
+  percentValue,
 } from "App/Utils/functions";
 import Transfer from "App/Models/Transfer";
 import { ITransfersReport } from "App/Interfaces/TransfersInterfaces";
 import BudgetAvailability from "App/Models/BudgetAvailability";
+import Pago from "App/Models/PagPagos";
+import FunctionalProject from "App/Models/FunctionalProject";
+import { DateTime } from "luxon";
+//import LinkRpcdp from "App/Models/LinkRpcdp";
 
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
   generateReportDetailChangeBudgets(year: number): Promise<any[]>;
   generateReportExecutionExpenses(year: number): Promise<any[]>;
   generateReportOverviewBudgetModifications(year: number): Promise<any[]>;
+  generateReportTransfers(year: number): Promise<any[]>;
+  generateReportModifiedRoutes(year: number): Promise<any[]>;
   generateReportCdpBalance(year: number): Promise<any[]>;
   generateReportRpBalance(year: number): Promise<any[]>;
   generateReportAccountsPayable(year: number): Promise<any[]>;
+  generateReportDetailedExecution(year: number): Promise<any[]>;
+  generateReportExecutionIncome(year: number): Promise<any[]>;
+  generateReportBudgetExecution(year: number): Promise<any[]>;
+  generateReportCdpRpPayMga(year: number): Promise<any[]>;
 }
 
 export default class ReportRepository implements IReportRepository {
@@ -269,8 +290,10 @@ export default class ReportRepository implements IReportRepository {
       projectName = getDataProject.projectName;
 
       //? **************************************************************************************************************
-      //? Ahora traigamos las anualizaciones
-      //? Calculo los totales asociados a los valores programados
+
+      //* ****************** *//
+      //* PROGRAMADO DEL AÑO
+      //* ****************** *//
       budgetSapi =
         Number(pac.pacAnnualizations![0].jan) +
         Number(pac.pacAnnualizations![0].feb) +
@@ -285,31 +308,60 @@ export default class ReportRepository implements IReportRepository {
         Number(pac.pacAnnualizations![0].nov) +
         Number(pac.pacAnnualizations![0].dec);
 
+      //* ****************** *//
+      //* PROGRAMADO POR MES
+      //* ****************** *//
       programmingJan = Number(pac.pacAnnualizations![0].jan);
-      if (isNaN(programmingJan)) programmingJan = 0.0;
-      programmingFeb = Number(pac.pacAnnualizations![0].feb);
-      if (isNaN(programmingFeb)) programmingFeb = 0.0;
-      programmingMar = Number(pac.pacAnnualizations![0].mar);
-      if (isNaN(programmingMar)) programmingMar = 0.0;
-      programmingApr = Number(pac.pacAnnualizations![0].abr);
-      if (isNaN(programmingApr)) programmingApr = 0.0;
-      programmingMay = Number(pac.pacAnnualizations![0].may);
-      if (isNaN(programmingMay)) programmingMay = 0.0;
-      programmingJun = Number(pac.pacAnnualizations![0].jun);
-      if (isNaN(programmingJun)) programmingJun = 0.0;
-      programmingJul = Number(pac.pacAnnualizations![0].jul);
-      if (isNaN(programmingJul)) programmingJul = 0.0;
-      programmingAug = Number(pac.pacAnnualizations![0].ago);
-      if (isNaN(programmingAug)) programmingAug = 0.0;
-      programmingSep = Number(pac.pacAnnualizations![0].sep);
-      if (isNaN(programmingSep)) programmingSep = 0.0;
-      programmingOct = Number(pac.pacAnnualizations![0].oct);
-      if (isNaN(programmingOct)) programmingOct = 0.0;
-      programmingNov = Number(pac.pacAnnualizations![0].nov);
-      if (isNaN(programmingNov)) programmingNov = 0.0;
-      programmingDec = Number(pac.pacAnnualizations![0].dec);
-      if (isNaN(programmingDec)) programmingDec = 0.0;
+      if (isNaN(programmingJan) || programmingJan === Number("Infinity"))
+        programmingJan = 0.0;
 
+      programmingFeb = Number(pac.pacAnnualizations![0].feb);
+      if (isNaN(programmingFeb) || programmingFeb === Number("Infinity"))
+        programmingFeb = 0.0;
+
+      programmingMar = Number(pac.pacAnnualizations![0].mar);
+      if (isNaN(programmingMar) || programmingMar === Number("Infinity"))
+        programmingMar = 0.0;
+
+      programmingApr = Number(pac.pacAnnualizations![0].abr);
+      if (isNaN(programmingApr) || programmingApr === Number("Infinity"))
+        programmingApr = 0.0;
+
+      programmingMay = Number(pac.pacAnnualizations![0].may);
+      if (isNaN(programmingMay) || programmingMay === Number("Infinity"))
+        programmingMay = 0.0;
+
+      programmingJun = Number(pac.pacAnnualizations![0].jun);
+      if (isNaN(programmingJun) || programmingJun === Number("Infinity"))
+        programmingJun = 0.0;
+
+      programmingJul = Number(pac.pacAnnualizations![0].jul);
+      if (isNaN(programmingJul) || programmingJul === Number("Infinity"))
+        programmingJul = 0.0;
+
+      programmingAug = Number(pac.pacAnnualizations![0].ago);
+      if (isNaN(programmingAug) || programmingAug === Number("Infinity"))
+        programmingAug = 0.0;
+
+      programmingSep = Number(pac.pacAnnualizations![0].sep);
+      if (isNaN(programmingSep) || programmingSep === Number("Infinity"))
+        programmingSep = 0.0;
+
+      programmingOct = Number(pac.pacAnnualizations![0].oct);
+      if (isNaN(programmingOct) || programmingOct === Number("Infinity"))
+        programmingOct = 0.0;
+
+      programmingNov = Number(pac.pacAnnualizations![0].nov);
+      if (isNaN(programmingNov) || programmingNov === Number("Infinity"))
+        programmingNov = 0.0;
+
+      programmingDec = Number(pac.pacAnnualizations![0].dec);
+      if (isNaN(programmingDec) || programmingDec === Number("Infinity"))
+        programmingDec = 0.0;
+
+      //* ****************** *//
+      //* RECAUDADO DEL AÑO
+      //* ****************** *//
       collected =
         Number(pac.pacAnnualizations![1].jan) +
         Number(pac.pacAnnualizations![1].feb) +
@@ -324,80 +376,158 @@ export default class ReportRepository implements IReportRepository {
         Number(pac.pacAnnualizations![1].nov) +
         Number(pac.pacAnnualizations![1].dec);
 
+      //* ****************** *//
+      //* RECAUDADO POR MES
+      //* ****************** *//
       collectedJan = Number(pac.pacAnnualizations![1].jan);
-      if (isNaN(collectedJan)) collectedJan = 0.0;
+      if (isNaN(collectedJan) || collectedJan === Number("Infinity"))
+        collectedJan = 0.0;
+
       collectedFeb = Number(pac.pacAnnualizations![1].feb);
-      if (isNaN(collectedFeb)) collectedFeb = 0.0;
+      if (isNaN(collectedFeb) || collectedFeb === Number("Infinity"))
+        collectedFeb = 0.0;
+
       collectedMar = Number(pac.pacAnnualizations![1].mar);
-      if (isNaN(collectedMar)) collectedMar = 0.0;
+      if (isNaN(collectedMar) || collectedMar === Number("Infinity"))
+        collectedMar = 0.0;
+
       collectedApr = Number(pac.pacAnnualizations![1].abr);
-      if (isNaN(collectedApr)) collectedApr = 0.0;
+      if (isNaN(collectedApr) || collectedApr === Number("Infinity"))
+        collectedApr = 0.0;
+
       collectedMay = Number(pac.pacAnnualizations![1].may);
-      if (isNaN(collectedMay)) collectedMay = 0.0;
+      if (isNaN(collectedMay) || collectedMay === Number("Infinity"))
+        collectedMay = 0.0;
+
       collectedJun = Number(pac.pacAnnualizations![1].jun);
-      if (isNaN(collectedJun)) collectedJun = 0.0;
+      if (isNaN(collectedJun) || collectedJun === Number("Infinity"))
+        collectedJun = 0.0;
+
       collectedJul = Number(pac.pacAnnualizations![1].jul);
-      if (isNaN(collectedJul)) collectedJul = 0.0;
+      if (isNaN(collectedJul) || collectedJul === Number("Infinity"))
+        collectedJul = 0.0;
+
       collectedAug = Number(pac.pacAnnualizations![1].ago);
-      if (isNaN(collectedAug)) collectedAug = 0.0;
+      if (isNaN(collectedAug) || collectedAug === Number("Infinity"))
+        collectedAug = 0.0;
+
       collectedSep = Number(pac.pacAnnualizations![1].sep);
-      if (isNaN(collectedSep)) collectedSep = 0.0;
+      if (isNaN(collectedSep) || collectedSep === Number("Infinity"))
+        collectedSep = 0.0;
+
       collectedOct = Number(pac.pacAnnualizations![1].oct);
-      if (isNaN(collectedOct)) collectedOct = 0.0;
+      if (isNaN(collectedOct) || collectedOct === Number("Infinity"))
+        collectedOct = 0.0;
+
       collectedNov = Number(pac.pacAnnualizations![1].nov);
-      if (isNaN(collectedNov)) collectedNov = 0.0;
+      if (isNaN(collectedNov) || collectedNov === Number("Infinity"))
+        collectedNov = 0.0;
+
       collectedDec = Number(pac.pacAnnualizations![1].dec);
-      if (isNaN(collectedDec)) collectedDec = 0.0;
+      if (isNaN(collectedDec) || collectedDec === Number("Infinity"))
+        collectedDec = 0.0;
 
+      //* ****************** *//
+      //* EJECUTADO POR MES
+      //* ****************** *//
       executeJan = Number(((100 * collectedJan) / programmingJan).toFixed(2));
-      if (isNaN(executeJan)) executeJan = 0.0;
-      executeFeb = Number(((100 * collectedFeb) / programmingFeb).toFixed(2));
-      if (isNaN(executeFeb)) executeFeb = 0.0;
-      executeMar = Number(((100 * collectedMar) / programmingMar).toFixed(2));
-      if (isNaN(executeMar)) executeMar = 0.0;
-      executeApr = Number(((100 * collectedApr) / programmingApr).toFixed(2));
-      if (isNaN(executeApr)) executeApr = 0.0;
-      executeMay = Number(((100 * collectedMay) / programmingMay).toFixed(2));
-      if (isNaN(executeMay)) executeMay = 0.0;
-      executeJun = Number(((100 * collectedJun) / programmingJun).toFixed(2));
-      if (isNaN(executeJun)) executeJun = 0.0;
-      executeJul = Number(((100 * collectedJul) / programmingJul).toFixed(2));
-      if (isNaN(executeJul)) executeJul = 0.0;
-      executeAug = Number(((100 * collectedAug) / programmingAug).toFixed(2));
-      if (isNaN(executeAug)) executeAug = 0.0;
-      executeSep = Number(((100 * collectedSep) / programmingSep).toFixed(2));
-      if (isNaN(executeSep)) executeSep = 0.0;
-      executeOct = Number(((100 * collectedOct) / programmingOct).toFixed(2));
-      if (isNaN(executeOct)) executeOct = 0.0;
-      executeNov = Number(((100 * collectedNov) / programmingNov).toFixed(2));
-      if (isNaN(executeNov)) executeNov = 0.0;
-      executeDec = Number(((100 * collectedDec) / programmingDec).toFixed(2));
-      if (isNaN(executeDec)) executeDec = 0.0;
+      if (isNaN(executeJan) || executeJan === Number("Infinity"))
+        executeJan = 0.0;
 
+      executeFeb = Number(((100 * collectedFeb) / programmingFeb).toFixed(2));
+      if (isNaN(executeFeb) || executeFeb === Number("Infinity"))
+        executeFeb = 0.0;
+
+      executeMar = Number(((100 * collectedMar) / programmingMar).toFixed(2));
+      if (isNaN(executeMar) || executeMar === Number("Infinity"))
+        executeMar = 0.0;
+
+      executeApr = Number(((100 * collectedApr) / programmingApr).toFixed(2));
+      if (isNaN(executeApr) || executeApr === Number("Infinity"))
+        executeApr = 0.0;
+
+      executeMay = Number(((100 * collectedMay) / programmingMay).toFixed(2));
+      if (isNaN(executeMay) || executeMay === Number("Infinity"))
+        executeMay = 0.0;
+
+      executeJun = Number(((100 * collectedJun) / programmingJun).toFixed(2));
+      if (isNaN(executeJun) || executeJun === Number("Infinity"))
+        executeJun = 0.0;
+
+      executeJul = Number(((100 * collectedJul) / programmingJul).toFixed(2));
+      if (isNaN(executeJul) || executeJul === Number("Infinity"))
+        executeJul = 0.0;
+
+      executeAug = Number(((100 * collectedAug) / programmingAug).toFixed(2));
+      if (isNaN(executeAug) || executeAug === Number("Infinity"))
+        executeAug = 0.0;
+
+      executeSep = Number(((100 * collectedSep) / programmingSep).toFixed(2));
+      if (isNaN(executeSep) || executeSep === Number("Infinity"))
+        executeSep = 0.0;
+
+      executeOct = Number(((100 * collectedOct) / programmingOct).toFixed(2));
+      if (isNaN(executeOct) || executeOct === Number("Infinity"))
+        executeOct = 0.0;
+
+      executeNov = Number(((100 * collectedNov) / programmingNov).toFixed(2));
+      if (isNaN(executeNov) || executeNov === Number("Infinity"))
+        executeNov = 0.0;
+
+      executeDec = Number(((100 * collectedDec) / programmingDec).toFixed(2));
+      if (isNaN(executeDec) || executeDec === Number("Infinity"))
+        executeDec = 0.0;
+
+      //* ****************** *//
+      //* DIFERENCIA POR MES
+      //* ****************** *//
       diferenceJan = Number((collectedJan - programmingJan).toFixed(2));
-      if (isNaN(diferenceJan)) diferenceJan = 0.0;
+      if (isNaN(diferenceJan) || diferenceJan === Number("Infinity"))
+        diferenceJan = 0.0;
+
       diferenceFeb = Number((collectedFeb - programmingFeb).toFixed(2));
-      if (isNaN(diferenceFeb)) diferenceFeb = 0.0;
+      if (isNaN(diferenceFeb) || diferenceFeb === Number("Infinity"))
+        diferenceFeb = 0.0;
+
       diferenceMar = Number((collectedMar - programmingMar).toFixed(2));
-      if (isNaN(diferenceMar)) diferenceMar = 0.0;
+      if (isNaN(diferenceMar) || diferenceMar === Number("Infinity"))
+        diferenceMar = 0.0;
+
       diferenceApr = Number((collectedApr - programmingApr).toFixed(2));
-      if (isNaN(diferenceApr)) diferenceApr = 0.0;
+      if (isNaN(diferenceApr) || diferenceApr === Number("Infinity"))
+        diferenceApr = 0.0;
+
       diferenceMay = Number((collectedMay - programmingMay).toFixed(2));
-      if (isNaN(diferenceMay)) diferenceMay = 0.0;
+      if (isNaN(diferenceMay) || diferenceMay === Number("Infinity"))
+        diferenceMay = 0.0;
+
       diferenceJun = Number((collectedJun - programmingJun).toFixed(2));
-      if (isNaN(diferenceJun)) diferenceJun = 0.0;
+      if (isNaN(diferenceJun) || diferenceJun === Number("Infinity"))
+        diferenceJun = 0.0;
+
       diferenceJul = Number((collectedJul - programmingJul).toFixed(2));
-      if (isNaN(diferenceJul)) diferenceJul = 0.0;
+      if (isNaN(diferenceJul) || diferenceJul === Number("Infinity"))
+        diferenceJul = 0.0;
+
       diferenceAug = Number((collectedAug - programmingAug).toFixed(2));
-      if (isNaN(diferenceAug)) diferenceAug = 0.0;
+      if (isNaN(diferenceAug) || diferenceAug === Number("Infinity"))
+        diferenceAug = 0.0;
+
       diferenceSep = Number((collectedSep - programmingSep).toFixed(2));
-      if (isNaN(diferenceSep)) diferenceSep = 0.0;
+      if (isNaN(diferenceSep) || diferenceSep === Number("Infinity"))
+        diferenceSep = 0.0;
+
       diferenceOct = Number((collectedOct - programmingOct).toFixed(2));
-      if (isNaN(diferenceOct)) diferenceOct = 0.0;
+      if (isNaN(diferenceOct) || diferenceOct === Number("Infinity"))
+        diferenceOct = 0.0;
+
       diferenceNov = Number((collectedNov - programmingNov).toFixed(2));
-      if (isNaN(diferenceNov)) diferenceNov = 0.0;
+      if (isNaN(diferenceNov) || diferenceNov === Number("Infinity"))
+        diferenceNov = 0.0;
+
       diferenceDec = Number((collectedDec - programmingDec).toFixed(2));
-      if (isNaN(diferenceDec)) diferenceDec = 0.0;
+      if (isNaN(diferenceDec) || diferenceDec === Number("Infinity"))
+        diferenceDec = 0.0;
 
       percentExecute = Number(((100 * collected) / budgetSapi).toFixed(2));
       forCollected = Number(budgetSapi - collected);
@@ -733,18 +863,20 @@ export default class ReportRepository implements IReportRepository {
           total = Number(iterResMovement.value);
           millionsTotal = Number((total / 1000000).toFixed(2));
           millionsLiquid = Number((initialBudget / 1000000).toFixed(2));
-          percentUpInitialValue = Number(millionsTotal / millionsLiquid);
+          percentUpInitialValue = Number(
+            (millionsTotal / millionsLiquid).toFixed(2)
+          );
 
           //! Por si nos quedan valores que podrían dividirse en 0
-          millionsTotal === Number("Infinity")
-            ? (millionsTotal = 0)
-            : (millionsTotal = millionsTotal);
-          millionsLiquid === Number("Infinity")
-            ? (millionsLiquid = 0)
-            : (millionsLiquid = millionsLiquid);
-          percentUpInitialValue === Number("Infinity")
-            ? (percentUpInitialValue = 0)
-            : (percentUpInitialValue = percentUpInitialValue);
+          if (millionsTotal === Number("Infinity") || isNaN(millionsTotal))
+            millionsTotal = 0;
+          if (millionsLiquid === Number("Infinity") || isNaN(millionsLiquid))
+            millionsLiquid = 0;
+          if (
+            percentUpInitialValue === Number("Infinity") ||
+            isNaN(percentUpInitialValue)
+          )
+            percentUpInitialValue = 0;
 
           //Organizo objeto para infoArrayAddition
           const objTransaction: IReportChangeBudgets = {
@@ -824,6 +956,196 @@ export default class ReportRepository implements IReportRepository {
             "Valor En Millones": millionsTotal,
             "Porcentaje Sobre El Presupuesto Inicial": percentUpInitialValue,
             Observación: observation,
+          };
+
+          infoArrayResult.push(objTransaction);
+        }
+      }
+    }
+
+    return infoArrayResult;
+  }
+
+  //HU-088 Reporte Traslados
+  async generateReportTransfers(year: number): Promise<any[]> {
+    let infoArrayResult: IReportTransfers[] = []; //Para los traslados.
+
+    //** *************** **//
+    //** Grupo Traslados **//
+    //** *************** **//
+    const getTransfers = await Transfer.query()
+      .orderBy("actAdminDistrict", "asc")
+      .preload("transferMove", (s) => {
+        s.preload("budgetRoute", (t) => {
+          t.preload("projectVinculation"),
+            t.preload("funds"),
+            t.preload("budget"),
+            t.preload("pospreSapiencia");
+        });
+      });
+
+    const getGeneralTransferResponse: any[] = getTransfers.map((i) =>
+      i.serialize()
+    );
+    const getAdjustDataTransfer =
+      getGeneralTransferResponse as ITransfersReport[];
+
+    for (const transfer of getAdjustDataTransfer) {
+      const actAdminDis: string = transfer.actAdminDistrict;
+      const actAdminSap: string = transfer.actAdminSapiencia;
+      const observation: string = transfer.observations;
+
+      for (const movements of transfer.transferMove!) {
+        let credit: number = 0;
+        let againstCredit: number = 0;
+
+        if (movements.type === "Origen") {
+          credit = movements.value;
+          againstCredit = 0;
+        } else {
+          againstCredit = movements.value;
+          credit = 0;
+        }
+
+        let projectCode: string = "";
+        let projectName: string = "";
+        let functionalArea: string = "";
+        let fund: string = movements.budgetRoute.fund?.number!;
+        let managementCenter = movements.budgetRoute.managementCenter;
+
+        let posPreSapi: string = movements.budgetRoute.pospreSapiencia?.number!;
+        let desPosPreSapi: string =
+          movements.budgetRoute.pospreSapiencia?.description!;
+        let exercise: number = movements.budgetRoute.pospreSapiencia?.ejercise!;
+
+        if (exercise === year) {
+          const getDataProject: IDataBasicProject | null =
+            await this.getProjectGeneral(
+              Number(movements.budgetRoute.idProjectVinculation),
+              desPosPreSapi
+            );
+
+          if (
+            !getDataProject ||
+            getDataProject == null ||
+            getDataProject == undefined
+          )
+            return [
+              null,
+              "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+            ];
+
+          projectCode = getDataProject.projectCode;
+          projectName = getDataProject.projectName;
+          functionalArea = getDataProject.functionalArea;
+
+          const objTransaction: IReportTransfers = {
+            "Acto Administrativo Distrito": actAdminDis,
+            "Acto Administrativo Sapiencia": actAdminSap,
+            "Centro Gestor": managementCenter,
+            "Posición Presupuestal": posPreSapi,
+            Fondo: fund,
+            "Área Funcional": functionalArea,
+            Proyecto: projectCode,
+            "Valor Contracrédito": againstCredit,
+            "Valor Crédito": credit,
+            "Nombre Proyecto": projectName,
+            Observación: observation,
+          };
+
+          infoArrayResult.push(objTransaction);
+        }
+      }
+    }
+
+    return infoArrayResult;
+  }
+
+  async generateReportModifiedRoutes(year: number): Promise<any[]> {
+    let infoArrayResult: IReportModifiedRoutes[] = []; //Para adición y disminución.
+
+    //** *************************** **//
+    //** Grupo Adición y Disminución **//
+    //** *************************** **//
+    const getAdditions = await Additions.query()
+      .orderBy("actAdminDistrict", "asc")
+      .preload("additionMove", (q) => {
+        q.preload("budgetRoute", (r) => {
+          r.preload("projectVinculation"),
+            r.preload("funds"),
+            r.preload("budget"),
+            r.preload("pospreSapiencia");
+        });
+      });
+
+    const getGeneralAddAndRedResponse: any[] = getAdditions.map((i) =>
+      i.serialize()
+    );
+    const getAdjustDataAddAndRed =
+      getGeneralAddAndRedResponse as IAdditionsReport[];
+
+    for (const iterAdditions of getAdjustDataAddAndRed) {
+      const actAdminDis: string = iterAdditions.actAdminDistrict;
+      const actAdminSap: string = iterAdditions.actAdminSapiencia;
+      const typeMovement: string = iterAdditions.typeMovement;
+
+      for (const iterResMovement of iterAdditions.additionMove) {
+        let valBudgetExpenses: number = 0;
+        let valBudgetIncomes: number = 0;
+
+        let projectCode: string = "";
+        let projectName: string = "";
+        let functionalArea: string = "";
+        let fund: string = iterResMovement.budgetRoute.fund?.number!;
+        let managementCenter = iterResMovement.budgetRoute.managementCenter;
+
+        let posPreSapi: string =
+          iterResMovement.budgetRoute.pospreSapiencia?.number!;
+        let desPosPreSapi: string =
+          iterResMovement.budgetRoute.pospreSapiencia?.description!;
+        let exercise: number =
+          iterResMovement.budgetRoute.pospreSapiencia?.ejercise!;
+
+        if (exercise === year) {
+          const getDataProject: IDataBasicProject | null =
+            await this.getProjectGeneral(
+              Number(iterResMovement.budgetRoute.idProjectVinculation),
+              desPosPreSapi
+            );
+
+          if (
+            !getDataProject ||
+            getDataProject == null ||
+            getDataProject == undefined
+          )
+            return [
+              null,
+              "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+            ];
+
+          projectCode = getDataProject.projectCode;
+          projectName = getDataProject.projectName;
+          functionalArea = getDataProject.functionalArea;
+
+          //* Calculo para si es ingreso o gasto
+          if (iterResMovement.type === "Ingreso") {
+            valBudgetIncomes += Number(iterResMovement.value);
+          } else {
+            valBudgetExpenses += Number(iterResMovement.value);
+          }
+
+          const objTransaction: IReportModifiedRoutes = {
+            "Tipo De Modificación": typeMovement,
+            "Acto Administrativo Distrito": actAdminDis,
+            "Acto Administrativo Sapiencia": actAdminSap,
+            "Centro Gestor": managementCenter,
+            "Posición Presupuestal": posPreSapi,
+            Fondo: fund,
+            "Área Funcional": functionalArea,
+            Proyecto: projectCode,
+            "Valor Ingreso": valBudgetIncomes,
+            "Valor Gasto": valBudgetExpenses,
+            "Nombre Proyecto": projectName,
           };
 
           infoArrayResult.push(objTransaction);
@@ -916,38 +1238,62 @@ export default class ReportRepository implements IReportRepository {
 
       // Reducciones y adiciones
       const resultAdditionMovement = await getAdditionMovement(rpp.id);
-
       if (resultAdditionMovement.length > 0) {
-        for (const additionMovement of resultAdditionMovement) {
-          if (additionMovement.addition.typeMovement === "Adicion")
-            valueAddiction += +additionMovement.value;
-          if (additionMovement.addition.typeMovement === "Disminucion")
-            valueReduction += +additionMovement.value;
-        }
+        const sumAddiction: number = resultAdditionMovement
+          .filter((objeto) => objeto.addition.typeMovement === "Adicion")
+          .reduce((total, objeto) => total + parseInt(objeto.value, 10), 0);
+        valueAddiction = sumAddiction;
+        const sumReduction: number = resultAdditionMovement
+          .filter((objeto) => objeto.addition.typeMovement === "Disminucion")
+          .reduce((total, objeto) => total + parseInt(objeto.value, 10), 0);
+        valueReduction = sumReduction;
       }
 
       // Créditos y contra créditos
-      const resultCredit = await getCreditAndAgainstCredits(rpp.id);
-      if (resultCredit) {
-        if (resultCredit?.type === "Destino") {
-          credits = +resultCredit.value;
-        } else {
-          againstCredits = +resultCredit.value;
-        }
-      }
+      const result = await getCreditAndAgainstCredits(rpp.id);
+      const resultCredit = result.filter((i) => i.type === "Destino");
+      const resultAgainstCredits = result.filter((i) => i.type === "Origen");
+
+      // Créditos
+      if (resultCredit.length > 0)
+        credits = resultCredit.reduce(
+          (total, i) => total + parseInt(i.value),
+          0
+        );
+
+      // Contra Créditos
+      if (resultAgainstCredits.length > 0)
+        againstCredits = resultAgainstCredits.reduce(
+          (total, i) => total + parseInt(i.value),
+          0
+        );
 
       // Total Ppto Actual
       if (rpp.balance) currentPpr = rpp.balance ? +rpp.balance : 0;
 
-      // Disponibilidad
+      // Disponibilidad y Compromiso
       const resultAmountBudgetAvailability = await getAmountBudgetAvailability(
-        rpp.id
+        rpp.id,
+        year
       );
-
+      // Disponibilidad
       if (resultAmountBudgetAvailability?.availability)
         availability = +resultAmountBudgetAvailability?.availabilityValue;
+      // Compromiso
       if (resultAmountBudgetAvailability?.compromise)
         compromise = +resultAmountBudgetAvailability?.compromiseValue;
+
+      //Factura y Pagos
+      const resultInvoicesAndPayments = await getInvoicesAndPaymentsVrp(
+        rpp.id,
+        year
+      );
+
+      //Factura
+      invoices = resultInvoicesAndPayments.invoiceSumn;
+
+      //Pagos
+      payments = resultInvoicesAndPayments.paymentSumn;
 
       // Disponible Neto
       availabilityNet =
@@ -957,7 +1303,9 @@ export default class ReportRepository implements IReportRepository {
       execution = +compromise + +invoices + +payments;
 
       // Porcentaje de Ejecución
-      percentageExecution = Number(+execution / +currentPpr);
+      percentageExecution = Number(
+        ((100 * +execution) / +currentPpr).toFixed(2)
+      );
       if (!isFinite(percentageExecution)) percentageExecution = 0;
 
       // Crear un nuevo objeto de informe
@@ -1106,9 +1454,11 @@ export default class ReportRepository implements IReportRepository {
   async generateReportRpBalance(year: number): Promise<any[]> {
     let resObject: IReportColumnRpBalance[] = [];
 
-    const resultRpBalance = await getlinksRpCdp(year, "RpBalance");
+    const { result } = await getlinksRpCdp(year, "RpBalance");
 
-    for (const vrp of resultRpBalance) {
+    if (!result.length) return resObject;
+
+    for (const vrp of result) {
       // let idVrp: number = vrp.id;
       let consecutiveSap: number = 0;
       let consecutiveAurora: number = 0;
@@ -1189,14 +1539,16 @@ export default class ReportRepository implements IReportRepository {
     return resObject;
   }
 
-  //HU-097 Report Cuentas por pagar
+  //HU-097 Reporte Cuentas por pagar
   async generateReportAccountsPayable(year: number): Promise<any[]> {
     let resObject: IReportColumnAccountsPayable[] = [];
 
-    const resultAccountsPayable = await getlinksRpCdp(year, "AccountsPayable");
+    const { result } = await getlinksRpCdp(year, "AccountsPayable");
 
-    for (const vrp of resultAccountsPayable) {
-      let idVrp: number = vrp.id;
+    if (!result.length) return resObject;
+
+    for (const vrp of result) {
+      // let idVrp: number = vrp.id;
       let consecutiveSap: number = 0;
       let consecutiveAurora: number = 0;
       let positionRp: number = 0;
@@ -1209,58 +1561,70 @@ export default class ReportRepository implements IReportRepository {
       let finalAmount: number = 0;
       let valueCaused: number = 0;
 
-      // //Consecutivo RP SAP
-      // consecutiveSap = vrp.budgetRecord.consecutiveSap;
+      //Consecutivo RP SAP
+      consecutiveSap = vrp.budgetRecord.consecutiveSap;
 
-      // //Consecutivo RP Aurora
-      // consecutiveAurora = vrp.budgetRecord.id;
+      //Consecutivo RP Aurora
+      consecutiveAurora = vrp.budgetRecord.id;
 
-      // //Posición
-      // positionRp = vrp.position;
+      //Posición
+      positionRp = vrp.position;
 
-      // //Fondo
-      // fund = vrp.amountBudgetAvailability.budgetRoute.fund.number;
+      //Fondo
+      fund = vrp.amountBudgetAvailability.budgetRoute.fund.number;
 
-      // //Centro gestor
-      // nameManagementCenter =
-      //   vrp.amountBudgetAvailability.budgetRoute.managementCenter;
+      //Centro gestor
+      nameManagementCenter =
+        vrp.amountBudgetAvailability.budgetRoute.managementCenter;
 
-      // //Posicion Presupuestaria
-      // numberPospre =
-      //   vrp.amountBudgetAvailability.budgetRoute.pospreSapiencia.number;
+      //Posicion Presupuestaria
+      numberPospre =
+        vrp.amountBudgetAvailability.budgetRoute.pospreSapiencia.number;
 
-      // //Area Funcional, Proyecto y Nombre del proyecto
-      // const getDataProject: IDataBasicProject | null =
-      //   await this.getProjectGeneral(
-      //     Number(vrp.amountBudgetAvailability.budgetRoute.idProjectVinculation),
-      //     vrp.amountBudgetAvailability.budgetRoute.pospreSapiencia?.description!
-      //   );
+      //Area Funcional, Proyecto y Nombre del proyecto
+      const getDataProject: IDataBasicProject | null =
+        await this.getProjectGeneral(
+          Number(vrp.amountBudgetAvailability.budgetRoute.idProjectVinculation),
+          vrp.amountBudgetAvailability.budgetRoute.pospreSapiencia?.description!
+        );
 
-      // if (
-      //   !getDataProject ||
-      //   getDataProject == null ||
-      //   getDataProject == undefined
-      // ) {
-      //   // Manejo de errores en caso de que no se pueda obtener información del proyecto
-      //   return [
-      //     null,
-      //     "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
-      //   ];
-      // } else {
-      //   // Asignar datos del proyecto
-      //   functionalArea = getDataProject.functionalArea;
-      //   projectCode = getDataProject.projectCode;
-      //   projectName = getDataProject.projectName;
-      // }
+      if (
+        !getDataProject ||
+        getDataProject == null ||
+        getDataProject == undefined
+      ) {
+        // Manejo de errores en caso de que no se pueda obtener información del proyecto
+        return [
+          null,
+          "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+        ];
+      } else {
+        // Asignar datos del proyecto
+        functionalArea = getDataProject.functionalArea;
+        projectCode = getDataProject.projectCode;
+        projectName = getDataProject.projectName;
+      }
 
-      // //Valor Final
-      // finalAmount = vrp.finalAmount;
+      //Valor Final
+      finalAmount = vrp.finalAmount;
 
-      // //Valor Causado
-      // valueCaused = vrp.finalAmount;
+      //Valor Causado
+      const queryPago = await Pago.query().where("vinculacionRpCode", vrp.id);
+      const resPago = queryPago.map((i) => i.serialize());
+      if (resPago.length > 0) {
+        const find = resPago.filter(
+          (i) =>
+            parseInt(i.valorCausado) > 0 &&
+            (!parseInt(i.valorPagado) || parseInt(i.valorPagado) === 0)
+        );
+        valueCaused = find.reduce(
+          (total, i) => total + parseInt(i.valorCausado),
+          0
+        );
+      }
 
       const newItem: IReportColumnAccountsPayable = {
-        Id: idVrp,
+        // Id: idVrp,
         "Consecutivo RP SAP": consecutiveSap,
         "Consecutivo RP Aurora": consecutiveAurora,
         Posición: positionRp,
@@ -1280,4 +1644,587 @@ export default class ReportRepository implements IReportRepository {
 
     return resObject;
   }
+
+  //HU-092 Ejecucion detallada
+  async generateReportDetailedExecution(year: number): Promise<any[]> {
+    let resObject: IReportColumnDetailedExecution[] = [];
+
+    // Consulta la ruta de presupuesto para el año especificado
+    const queryBudgetRoute = await BudgetsRoutes.query()
+      .preload("budget", (subQuery) => {
+        subQuery.where("ejercise", year);
+      })
+      .preload("pospreSapiencia", (subQuery) => {
+        subQuery.where("ejercise", year);
+      })
+      .preload("funds")
+      .preload("projectVinculation")
+      .orderBy("id", "desc");
+
+    // Mapea los resultados de la consulta a objetos serializados
+    const resBudgetRoute = queryBudgetRoute
+      .map((i) => i.serialize())
+      .filter(
+        (i) =>
+          i.pospreSapiencia &&
+          i.pospreSapiencia !== null &&
+          i.budget &&
+          i.budget !== null
+      );
+
+    for (const rpp of resBudgetRoute) {
+      // let rppId: number = rpp.id;
+      let numberFund: string = "";
+      let nameFund: string = "";
+      let numberProject: string = "";
+      let nameProject: string = "";
+      let numberPospre: string = "";
+      let namePospre: string = "";
+      let numberPospreSapiencia: string = "";
+      let initialBudget: number = 0;
+      let valueReduction: number = 0;
+      let valueAddiction: number = 0;
+      let credits: number = 0;
+      let againstCredits: number = 0;
+      let currentBudget: number = 0;
+      let availability: number = 0;
+      let compromise: number = 0;
+      let invoices: number = 0;
+      let payments: number = 0;
+      let availabilityNet: number = 0;
+      let executionTotal: number = 0;
+      let percentageExecution: number = 0;
+
+      //Fondo
+      numberFund = rpp.fund.number;
+
+      //Nombre del Fondo
+      nameFund = rpp.fund.denomination;
+
+      // Obtener información del proyecto
+      const getDataProject: IDataBasicProject | null =
+        await this.getProjectGeneral(
+          Number(rpp.idProjectVinculation),
+          rpp.pospreSapiencia?.description!
+        );
+
+      if (
+        !getDataProject ||
+        getDataProject == null ||
+        getDataProject == undefined
+      ) {
+        // Manejo de errores en caso de que no se pueda obtener información del proyecto
+        return [
+          null,
+          "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+        ];
+      } else {
+        // Asignar datos del proyecto
+        numberProject = getDataProject.projectCode;
+        nameProject = getDataProject.projectName;
+      }
+
+      //Pospre Origen
+      numberPospre = rpp.budget.number;
+
+      //Nombre Pospre
+      namePospre = rpp.budget.denomination;
+
+      //Pospre Sapiencia
+      numberPospreSapiencia = rpp.pospreSapiencia.number;
+
+      //Presupuesto inicial
+      initialBudget = +rpp.initialBalance;
+
+      // Reducciones y adiciones
+      const resultAdditionMovement = await getAdditionMovement(rpp.id);
+      if (resultAdditionMovement.length > 0) {
+        const sumAddiction: number = resultAdditionMovement
+          .filter((objeto) => objeto.addition.typeMovement === "Adicion")
+          .reduce((total, objeto) => total + parseInt(objeto.value, 10), 0);
+        valueAddiction = sumAddiction;
+        const sumReduction: number = resultAdditionMovement
+          .filter((objeto) => objeto.addition.typeMovement === "Disminucion")
+          .reduce((total, objeto) => total + parseInt(objeto.value, 10), 0);
+        valueReduction = sumReduction;
+      }
+
+      // Créditos y contra créditos
+      const result = await getCreditAndAgainstCredits(rpp.id);
+      const resultCredit = result.filter((i) => i.type === "Destino");
+      const resultAgainstCredits = result.filter((i) => i.type === "Origen");
+
+      // Créditos
+      if (resultCredit.length > 0)
+        credits = resultCredit.reduce(
+          (total, i) => total + parseInt(i.value),
+          0
+        );
+
+      // Contra Créditos
+      if (resultAgainstCredits.length > 0)
+        againstCredits = resultAgainstCredits.reduce(
+          (total, i) => total + parseInt(i.value),
+          0
+        );
+
+      //Presupuesto actual
+      currentBudget = rpp.balance ? +rpp.balance : 0;
+
+      // Disponibilidad y Compromiso
+      const resultAmountBudgetAvailability = await getAmountBudgetAvailability(
+        rpp.id,
+        year
+      );
+
+      // Disponibilidad
+      if (resultAmountBudgetAvailability?.availability)
+        availability = +resultAmountBudgetAvailability?.availabilityValue;
+
+      // Compromiso
+      if (resultAmountBudgetAvailability?.compromise)
+        compromise = +resultAmountBudgetAvailability?.compromiseValue;
+
+      //Factura y Pagos
+      const resultInvoicesAndPayments = await getInvoicesAndPaymentsVrp(
+        rpp.id,
+        year
+      );
+
+      //Factura
+      invoices = resultInvoicesAndPayments.invoiceSumn;
+
+      //Pagos
+      payments = resultInvoicesAndPayments.paymentSumn;
+
+      // Disponible Neto
+      availabilityNet =
+        +currentBudget - (availability + compromise + invoices + payments);
+
+      // Total de Ejecución
+      executionTotal = +compromise + +invoices + +payments;
+
+      // Porcentaje de Ejecución
+      percentageExecution = Number(
+        ((100 * +executionTotal) / +currentBudget).toFixed(2)
+      );
+      if (!isFinite(percentageExecution)) percentageExecution = 0;
+
+      const newItem: IReportColumnDetailedExecution = {
+        // Id: rppId,
+        Fondo: numberFund,
+        "Nombre Fondo": nameFund,
+        Proyecto: numberProject,
+        "Nombre Proyecto": nameProject,
+        "Pospre origen": numberPospre,
+        "Nombre Pospre": namePospre,
+        "Pospre Sapiencia": numberPospreSapiencia,
+        "Presupuesto Inicial": initialBudget,
+        Reducciones: valueReduction,
+        Adiciones: valueAddiction,
+        Créditos: credits,
+        "Contra créditos": againstCredits,
+        "Presupuesto total": currentBudget,
+        Disponibilidad: availability,
+        Compromiso: compromise,
+        Factura: invoices,
+        Pagos: payments,
+        "Total Disponible Neto": availabilityNet,
+        "Total Ejecución": executionTotal,
+        "Porcentaje de Ejecución": `${percentageExecution} %`,
+      };
+
+      resObject.push(newItem);
+    }
+
+    return resObject;
+  }
+
+  //HU-093 Ejecucion de ingresos
+  async generateReportExecutionIncome(year: number): Promise<any[]> {
+    let resObject: IReportColumnExecutionIncome[] = [];
+
+    // Consulta la ruta de presupuesto para el año especificado
+    const queryBudgetRoute = await BudgetsRoutes.query()
+      .preload("budget", (subQuery) => {
+        subQuery.where("ejercise", year);
+      })
+      .preload("pospreSapiencia", (subQuery) => {
+        subQuery.where("ejercise", year);
+      })
+      .preload("funds")
+      .preload("projectVinculation")
+      .orderBy("id", "desc");
+
+    // Mapea los resultados de la consulta a objetos serializados
+    const resBudgetRoute = queryBudgetRoute
+      .map((i) => i.serialize())
+      .filter(
+        (i) =>
+          i.pospreSapiencia &&
+          i.pospreSapiencia !== null &&
+          i.budget &&
+          i.budget !== null
+      );
+
+    if (!resBudgetRoute.length) return resObject;
+
+    // Recorre los resultados y genera el informe
+    for (const rpp of resBudgetRoute) {
+      // Variables para almacenar información
+      let nameFund: string = "";
+      let nameManagementCenter: string = "";
+      let numberPospre: string = "";
+      let functionalArea: string = "";
+      let projectCode: string = "";
+      let namePospre: string = "";
+      let initialBudget: number = 0;
+      let valueReduction: number = 0;
+      let valueAddiction: number = 0;
+      let currentBudget: number = 0;
+      let credits: number = 0;
+      let againstCredits: number = 0;
+      let collected: number = 0;
+      let toBeCollected: number = 0;
+      let executionTotal: number = 0;
+      let percentageExecution: number = 0;
+
+      // Fondo
+      if (rpp.fund?.number) nameFund = rpp.fund?.number ?? "";
+
+      // Centro Gestor
+      if (rpp.managementCenter)
+        nameManagementCenter = rpp.managementCenter ?? "";
+
+      //Pospre Origen
+      numberPospre = rpp.budget.number;
+
+      // Obtener información del proyecto
+      const getDataProject: IDataBasicProject | null =
+        await this.getProjectGeneral(
+          Number(rpp.idProjectVinculation),
+          rpp.pospreSapiencia?.description!
+        );
+
+      if (
+        !getDataProject ||
+        getDataProject == null ||
+        getDataProject == undefined
+      ) {
+        // Manejo de errores en caso de que no se pueda obtener información del proyecto
+        return [
+          null,
+          "Ocurrió un error hallando la información del proyecto, revisar consistencia de información",
+        ];
+      } else {
+        // Asignar datos del proyecto
+        functionalArea = getDataProject.functionalArea;
+        projectCode = getDataProject.projectCode;
+        // projectName = getDataProject.projectName;
+      }
+
+      //Nombre Pospre
+      namePospre = rpp.budget.denomination;
+
+      //Presupuesto inicial
+      initialBudget = +rpp.initialBalance;
+
+      // Reducciones y adiciones
+      const resultAdditionMovement = await getAdditionMovement(rpp.id);
+      if (resultAdditionMovement.length > 0) {
+        const sumAddiction: number = resultAdditionMovement
+          .filter((objeto) => objeto.addition.typeMovement === "Adicion")
+          .reduce((total, objeto) => total + parseInt(objeto.value, 10), 0);
+        valueAddiction = sumAddiction;
+        const sumReduction: number = resultAdditionMovement
+          .filter((objeto) => objeto.addition.typeMovement === "Disminucion")
+          .reduce((total, objeto) => total + parseInt(objeto.value, 10), 0);
+        valueReduction = sumReduction;
+      }
+
+      // Créditos y contra créditos
+      const result = await getCreditAndAgainstCredits(rpp.id);
+      const resultCredit = result.filter((i) => i.type === "Destino");
+      const resultAgainstCredits = result.filter((i) => i.type === "Origen");
+
+      // Créditos
+      if (resultCredit.length > 0)
+        credits = resultCredit.reduce(
+          (total, i) => total + parseInt(i.value),
+          0
+        );
+
+      // Contra Créditos
+      if (resultAgainstCredits.length > 0)
+        againstCredits = resultAgainstCredits.reduce(
+          (total, i) => total + parseInt(i.value),
+          0
+        );
+
+      //Presupuesto actual
+      currentBudget = rpp.balance ? +rpp.balance : 0;
+
+      //Recaudo
+      const resultCollected = await getCollected(rpp.id, year);
+      collected = resultCollected;
+
+      //Por Recaudar
+      toBeCollected = currentBudget - collected;
+
+      //Total de ejecucion
+      executionTotal = +collected;
+
+      // Porcentaje de Ejecución
+      percentageExecution = Number(
+        ((100 * +executionTotal) / +currentBudget).toFixed(2)
+      );
+      if (!isFinite(percentageExecution)) percentageExecution = 0;
+
+      const newItem: IReportColumnExecutionIncome = {
+        // Id: rpp.id,
+        Fondo: nameFund,
+        "Centro Gestor": nameManagementCenter,
+        "Posición Presupuestaria": numberPospre,
+        "Área Funcional": functionalArea,
+        Proyecto: projectCode,
+        "Nombre Pospre": namePospre,
+        "Ppto Inicial": +initialBudget,
+        Reducciones: valueReduction && +valueReduction,
+        Adiciones: valueAddiction && +valueAddiction,
+        Créditos: +credits,
+        "Contra créditos": againstCredits,
+        "Total Ppto Actual": currentBudget && +currentBudget,
+        Recaudo: collected,
+        "Por Recaudar": toBeCollected,
+        "Total Ejecución": +executionTotal,
+        "Porcentaje de Ejecución": `${percentageExecution} %`,
+      };
+
+      // Agregar el objeto al resultado
+      resObject.push(newItem);
+    }
+
+    return resObject;
+  }
+
+  //HU-89 Ejecucion Presupuestal
+  async generateReportBudgetExecution(year: number): Promise<any[]> {
+    let resObject: IReportColumnBudgetExecution[] = [];
+
+    // Consulta la ruta de presupuesto para el año especificado
+    const queryBudgetRoute = await BudgetsRoutes.query()
+      .preload("budget", (subQuery) => {
+        subQuery.where("ejercise", year);
+      })
+      .preload("projectVinculation", (subQuery) => {
+        subQuery.where("type", "Funcionamiento");
+      })
+      .orderBy("id", "desc");
+
+    // Mapea los resultados de la consulta a objetos serializados
+    const resBudgetRoute = queryBudgetRoute
+      .map((i) => i.serialize())
+      .filter(
+        (i) =>
+          i.budget &&
+          i.budget !== null &&
+          i.projectVinculation &&
+          i.projectVinculation !== null
+      );
+
+    if (!resBudgetRoute.length) return resObject;
+
+    for (const rpp of resBudgetRoute) {
+      // Variables to store information
+      // let Id: number = rpp.id;
+      let Project: string = "";
+      let Pospre: string = "";
+      let Concept: string = "";
+      let AdjustedBudget: number = 0;
+      let CDPExecution: number = 0;
+      let CDPExecutionPercentage: number = 0;
+      let RPExecution: number = 0;
+      let RPExecutionPercentage: number = 0;
+      let CausedExecution: number = 0;
+      let CausedExecutionPercentage: number = 0;
+      let PaymentsExecution: number = 0;
+      let PaymentsExecutionPercentage: number = 0;
+      let Available: number = 0;
+      let CurrentDate: string = "";
+
+      //Proyecto
+      const queryFunctionalProject = await FunctionalProject.query().where(
+        "id",
+        rpp.projectVinculation.operationProjectId
+      );
+      const resFuntionalProject = queryFunctionalProject.map((i) =>
+        i.serialize()
+      );
+      Project = resFuntionalProject[0].name;
+
+      //Pospre
+      Pospre = rpp.budget.number;
+
+      //Concepto
+      Concept = rpp.budget.denomination;
+
+      //Presupuesto Ajustado
+      AdjustedBudget = resFuntionalProject[0].budgetValue
+        ? resFuntionalProject[0].budgetValue
+        : 0;
+
+      //Ejecución CDP
+      const resultIcds = await getIcdsByRouteAndYear(rpp.id, year);
+
+      if (resultIcds.length > 0) {
+        const resultSumAmountIcds = resultIcds.reduce(
+          (total, i) => total + parseInt(i.amount),
+          0
+        );
+        CDPExecution = resultSumAmountIcds;
+
+        //Ejecución RP
+        for (const icd of resultIcds) {
+          const resultVrp = await getVrpByIcdNotAnnulled(icd.id);
+          if (resultVrp.length > 0) {
+            const sumRps = resultVrp.reduce(
+              (total, i) => total + parseInt(i.finalAmount),
+              0
+            );
+            RPExecution += sumRps;
+
+            for (const vrp of resultVrp) {
+              const { values_caused, values_paid } =
+                await getValuesPaidAndCausedByVrp(vrp.id);
+
+              //Ejecución Causados
+              CausedExecution = values_caused;
+
+              //Ejecución Pagos
+              PaymentsExecution = values_paid;
+            }
+          }
+        }
+      }
+
+      //Porcentaje Ejecución CDP
+      CDPExecutionPercentage = percentValue(CDPExecution, AdjustedBudget);
+
+      //Porcentaje Ejecución RP
+      RPExecutionPercentage = percentValue(RPExecution, AdjustedBudget);
+
+      //Porcentaje Ejecución Causados
+      CausedExecutionPercentage = percentValue(CausedExecution, AdjustedBudget);
+
+      //Porcentaje Ejecución Pagos
+      PaymentsExecutionPercentage = percentValue(
+        PaymentsExecution,
+        AdjustedBudget
+      );
+
+      //Disponible
+      Available = AdjustedBudget - CDPExecution;
+
+      //Fecha Actual en formato Dia-Mes-Año hora con Datetime
+      CurrentDate = DateTime.fromISO(new Date().toISOString()).toFormat(
+        "dd-MM-yyyy HH:mm"
+      );
+
+      const newItem: IReportColumnBudgetExecution = {
+        // Id,
+        Proyecto: Project,
+        Pospre,
+        Concepto: Concept,
+        "Presupuesto Ajustado": AdjustedBudget,
+        "Ejecución CDP": CDPExecution,
+        "Porcentaje Ejecución CDP": `${CDPExecutionPercentage} %`,
+        "Ejecución RP": RPExecution,
+        "Porcentaje Ejecución RP": `${RPExecutionPercentage} %`,
+        "Ejecución Causados": CausedExecution,
+        "Porcentaje Ejecución Causados": `${CausedExecutionPercentage} %`,
+        "Ejecución Pagos": PaymentsExecution,
+        "Porcentaje Ejecución Pagos": `${PaymentsExecutionPercentage} %`,
+        Disponible: Available,
+        "Fecha Actual": CurrentDate,
+      };
+
+      resObject.push(newItem);
+    }
+
+    return resObject;
+  }
+
+  async generateReportCdpRpPayMga(year: number): Promise<any[]> {
+    let result: any[] = [];
+    console.log(year);
+    
+    // Obtener datos no anulados de la vigencia ingresada
+/*     const cdps = await BudgetAvailability.query()
+      .where('exercise', year)
+      .preload('amounts', (subQuery) => {
+        subQuery.whereNot('isActive', false);
+      })
+      .preload('amounts.linkRpcdps', (subQuery) => {
+        subQuery.whereNot('isActive', false);
+      })
+      .preload('amounts.linkRpcdps.budgetRecord')
+      .preload('amounts.linkRpcdps.budgetRecord.rp')
+      .preload('amounts.linkRpcdps.budgetRecord.rp.functionalProject')
+      .preload('amounts.linkRpcdps.budgetRecord.rp.functionalProject.funds'); */
+  
+      /* const cdps = await BudgetAvailability.query()
+      .where('exercise', year)
+      .preload('amounts', (subQuery) => {
+        subQuery.whereNot('isActive', false);
+      })
+      .preload('amounts', (subQuery) => {
+        subQuery.preload(LinkRpcdp, (subSubQuery) => {
+          subSubQuery.whereNot('isActive', false);
+        });
+        subQuery.preload('linkRpcdp.budgetRecord.rp.functionalProject.funds');
+      });
+    
+
+    for (const cdp of cdps) {
+      for (const amount of cdp.amounts) {
+        for (const linkRpcdp of amount.linkRpcdps) {
+          const rp = linkRpcdp.budgetRecord.rp;
+          const rpFunctionalProject = rp.functionalProject;
+          const funds = rpFunctionalProject.funds;
+  
+          // Calcular el valor final (valor inicial + modificado crédito - modificado contraCrédito - fijado concluido)
+          const finalValue = amount.amount + linkRpcdp.modifiedCredit - linkRpcdp.modifiedIdcCountercredit - linkRpcdp.idcFixedCompleted;
+  
+          // Resto de los campos
+          const newItem = {
+            'N°': cdp.consecutive,
+            'Mes Expedición CDP': cdp.date.getMonth() + 1,
+            'Fecha Documento CDP': getStringDate(cdp.date),
+            'Objeto Contractual CDP': cdp.contractObject,
+            'Valor Inicial CDP': amount.amount,
+            'Modificado Contracrédito CDP': linkRpcdp.modifiedIdcCountercredit,
+            'Modificado Crédito CDP': linkRpcdp.modifiedCredit,
+            'Fijado Concluido CDP': linkRpcdp.idcFixedCompleted,
+            'Valor Final CDP': finalValue,
+            'Nombre Proyecto CDP': rpFunctionalProject.name,
+            'Pospre CDP': cdp.budget.number,
+            'Centro Gestor CDP': funds.name,
+          
+            'Producto MGA': '', 
+            'Actividad MGA': '', 
+            'Actividad detallada MGA': '', 
+            'CPC': '', 
+          };
+  
+          result.push(newItem);
+        }
+      }
+    } */
+  
+    return result;
+  }
+  
+  
+
+
 }

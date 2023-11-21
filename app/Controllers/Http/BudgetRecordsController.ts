@@ -3,7 +3,6 @@ import BudgetRecordProvider from '@ioc:core.BudgetRecordProvider'
 import { EResponseCodes } from 'App/Constants/ResponseCodesEnum';
 import { IBudgetRecordFilter } from 'App/Interfaces/BudgetRecord';
 import { ApiResponse } from 'App/Utils/ApiResponses';
-import BudgetRecordUpdateBasicRpValidator from 'App/Validators/BudgetRecordUpdateBasicRpValidator';
 import BudgetRecordValidator from 'App/Validators/BudgetRecordValidator';
 
 
@@ -24,7 +23,7 @@ export default class BudgetRecordsController {
     
     public async updateDataBasicRp({ request,response }: HttpContextContract) {
         try {
-            const budgetRecordDataBasic = await request.validate(BudgetRecordUpdateBasicRpValidator);
+            const budgetRecordDataBasic = await request.validate(BudgetRecordValidator);
             return response.send(
                 await BudgetRecordProvider.updateDataBasicRp(budgetRecordDataBasic)
             );
@@ -85,6 +84,29 @@ export default class BudgetRecordsController {
             );
         }
     }
+      
+    public async getAllActivityObjectContracts({ response }: HttpContextContract) {
+        try {
+            
+            return response.send(
+                await BudgetRecordProvider.getAllActivityObjectContracts()
+            );
+        } catch (err) {
+            return response.badRequest(
+                new ApiResponse(null, EResponseCodes.FAIL, String(err))
+            );
+        }
+    }
 
-
+//getCausation
+public async getCausation({ request, response }: HttpContextContract) {
+    try {
+      const { id } = request.params();
+      return response.send(await BudgetRecordProvider.getCausation(id));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
 }

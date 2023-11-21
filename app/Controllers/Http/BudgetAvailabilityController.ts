@@ -133,10 +133,8 @@ export default class BudgetAvailabilityController {
 
   public async associateAmountsWithCdp({ request, response }: HttpContextContract) {
     try {
-      const { cdpId, amounts } = request.body() as {
-        cdpId: number;
-        amounts: any[];
-      };
+      const { cdpId, amounts } = request.body();
+
       await BudgetAvailabilityProvider.associateAmountsWithCdp(cdpId, amounts);
       return response.send(new ApiResponse("Importes asociados con éxito", EResponseCodes.OK, "null"));
     } catch (err) {

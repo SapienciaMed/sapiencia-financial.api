@@ -26,10 +26,10 @@ Route.get("/", async () => {
 
 Route.group(() => {
   Route.post("/generate-basic-excel", "ReportController.generateExcelReport");
-}).prefix("/api/v1/reports");
-// .middleware("auth");
+})
+  .prefix("/api/v1/reports")
+  .middleware("auth");
 // http://127.0.0.1:4204/api/v1/reports/generate-basic-excel
-
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "FundsController.getFundsById");
@@ -37,8 +37,14 @@ Route.group(() => {
   Route.post("/create", "FundsController.createFund");
   Route.put("/update/:id", "FundsController.updateFund");
   Route.get("/get-all", "FundsController.getAllFunds");
-}).prefix("/api/v1/funds");
-// .middleware("auth");
+})
+  .prefix("/api/v1/funds")
+  .middleware("auth");
+
+Route.group(() => {
+  Route.post("/get-paginated", "PagPagosController.getPagosPaginated");
+  Route.post("/create", "PagPagosController.processDocument");
+}).prefix("/api/v1/pag-pagos");
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "BudgetsController.getBudgetsById");
@@ -46,13 +52,15 @@ Route.group(() => {
   Route.post("/create", "BudgetsController.createBudgets");
   Route.put("/update/:id", "BudgetsController.updateBudgets");
   Route.get("/get-all", "BudgetsController.getAllBudgets");
-}).prefix("/api/v1/budgets");
-// .middleware("auth");
+})
+  .prefix("/api/v1/budgets")
+  .middleware("auth");
 
 Route.group(() => {
   Route.get("/get-all", "EntitiesController.getEntities");
-}).prefix("/api/v1/entities");
-// .middleware("auth");
+})
+  .prefix("/api/v1/entities")
+  .middleware("auth");
 
 Route.group(() => {
   Route.post(
@@ -77,8 +85,9 @@ Route.group(() => {
     "/update-pospresap-vinculation/:id",
     "PosPreSapienciaController.updatePosPreSapVinculation"
   );
-}).prefix("/api/v1/pospre-sapiencia");
-// .middleware("auth");
+})
+  .prefix("/api/v1/pospre-sapiencia")
+  .middleware("auth");
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "VinculationMGAController.getVinculationMGAById");
@@ -115,7 +124,7 @@ Route.group(() => {
   Route.post("/validate", "VinculationMGAController.validateVinculationMga")
   Route.post("/validate-all-Cdp", "VinculationMGAController.validateAallCdp")
 }).prefix("/api/v1/vinculation-mga")
-//.middleware("auth");
+.middleware("auth");
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "FunctionalAreaController.getFunctionalAreaById");
@@ -142,8 +151,9 @@ Route.group(() => {
     "/link/get-paginated",
     "FunctionalAreaController.getProjectFunctionalAreaPaginated"
   );
-}).prefix("/api/v1/functional-area");
-// .middleware("auth");
+})
+  .prefix("/api/v1/functional-area")
+  .middleware("auth");
 
 Route.group(() => {
   Route.post("/get-paginated", "ProjectsController.getProjectsPaginated");
@@ -152,8 +162,9 @@ Route.group(() => {
     "/get-unrelated-projects",
     "ProjectsController.getUnrelatedProjects"
   );
-}).prefix("/api/v1/projects");
-// .middleware("auth");
+})
+  .prefix("/api/v1/projects")
+  .middleware("auth");
 
 Route.group(() => {
   Route.get(
@@ -164,22 +175,31 @@ Route.group(() => {
     "/get-paginated",
     "ManagementCenterController.getManagementCenterPaginated"
   );
-}).prefix("/api/v1/management-center");
-// .middleware("auth");
+})
+  .prefix("/api/v1/management-center")
+  .middleware("auth");
 
 Route.group(() => {
   Route.get("/get-all", "TypesTransfersController.getTypeTransfers");
-}).prefix("/api/v1/type-transfers");
-// .middleware("auth");
+})
+  .prefix("/api/v1/type-transfers")
+  .middleware("auth");
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "BudgetsRoutesController.getBudgetsRoutesById");
-  Route.post("/get-paginated", "BudgetsRoutesController.getBudgetsRoutesPaginated");
-  Route.get("/get-data", "BudgetsRoutesController.getBudgetsRoutesWithoutPagination");
+  Route.post(
+    "/get-paginated",
+    "BudgetsRoutesController.getBudgetsRoutesPaginated"
+  );
+  Route.get(
+    "/get-data",
+    "BudgetsRoutesController.getBudgetsRoutesWithoutPagination"
+  );
   Route.post("/create", "BudgetsRoutesController.createBudgetsRoutes");
   Route.put("/update/:id", "BudgetsRoutesController.updateBudgetsRoutes");
-}).prefix("/api/v1/budget-routes");
-// .middleware("auth");
+})
+  .prefix("/api/v1/budget-routes")
+  .middleware("auth");
 
 Route.group(() => {
   Route.post("/get-paginated", "AdditionsController.getAdditionsPaginated");
@@ -201,11 +221,15 @@ Route.group(() => {
   );
   Route.get("/get-by-id/:id", "AdditionsController.getAdditionById");
   Route.post("/update/:id", "AdditionsController.updateAdditionWithMov"); //Como acción de validación
-  Route.post("/update-save/:id", "AdditionsController.executeUpdateAdditionWithMov"); //Como acción de guardado/actualizado
+  Route.post(
+    "/update-save/:id",
+    "AdditionsController.executeUpdateAdditionWithMov"
+  ); //Como acción de guardado/actualizado
   Route.post("/get-info-filter", "AdditionsController.budgetCdp"); //Como acción de guardado/actualizado
-  "AdditionsController.executeUpdateAdditionWithMov"
-
-}).prefix("/api/v1/additions")
+  ("AdditionsController.executeUpdateAdditionWithMov");
+})
+  .prefix("/api/v1/additions")
+  .middleware("auth");
 
 Route.group(() => {
   Route.post("/get-paginated", "TransfersController.getTransfersPaginated");
@@ -230,9 +254,10 @@ Route.group(() => {
   Route.post(
     "/update-save/:id",
     "TransfersController.executeUpdateTransferWithMov"
-  ); //Como acción de guardado/actualizado
-}).prefix("/api/v1/transfers");
-// .middleware("auth");
+  );
+})
+  .prefix("/api/v1/transfers")
+  .middleware("auth");
 
 Route.group(() => {
   Route.get(
@@ -248,62 +273,113 @@ Route.group(() => {
     "/update-save/:id",
     "FunctionalProjectsController.updateFunctionalProject"
   );
-}).prefix("/api/v1/projectOperation");
+})
+  .prefix("/api/v1/projectOperation")
+  .middleware("auth");
 
 Route.group(() => {
-
-  Route.post('/upload-pac', 'PacsController.uploadPac');
-  Route.post('/review-budgetroute', 'PacsController.reviewBudgetsRoute');
-  Route.post('/transfers-pac', 'PacsController.transfersOnPac');
-  Route.post('/validity-list', 'PacsController.validityList');
-  Route.post('/resources-type-list', 'PacsController.resourcesTypeList');
-  Route.post('/lists-dinamics-routes', 'PacsController.listDinamicsRoutes');
-  Route.post('/search-annualdata-routes', 'PacsController.searchAnnualDataRoutes');
-  Route.post('/get-ultimate-version', 'PacsController.getUltimateVersion');
-  Route.post('/search-pacs', 'PacsController.searchPacs');
-  Route.post('/get-routes-by-validity', 'PacsController.getRoutesByValidity');
-  Route.post('/lists-dinamics-association', 'PacsController.listDinamicsAssociations');
-  Route.post('/create-association', 'PacsController.createAssociations');
-  Route.post('/edit-pac', 'PacsController.editPac');
-  Route.get('/get-pac-by-id/:id', 'PacsController.getPacById');
-  Route.post('/get-view-pac', 'PacsController.viewPacComplete');
-
-}).prefix("/api/v1/pac")
+  Route.post("/upload-pac", "PacsController.uploadPac");
+  Route.post("/review-budgetroute", "PacsController.reviewBudgetsRoute");
+  Route.post("/transfers-pac", "PacsController.transfersOnPac");
+  Route.post("/validity-list", "PacsController.validityList");
+  Route.post("/resources-type-list", "PacsController.resourcesTypeList");
+  Route.post("/lists-dinamics-routes", "PacsController.listDinamicsRoutes");
+  Route.post(
+    "/search-annualdata-routes",
+    "PacsController.searchAnnualDataRoutes"
+  );
+  Route.post("/get-ultimate-version", "PacsController.getUltimateVersion");
+  Route.post("/search-pacs", "PacsController.searchPacs");
+  Route.post("/get-routes-by-validity", "PacsController.getRoutesByValidity");
+  Route.post(
+    "/lists-dinamics-association",
+    "PacsController.listDinamicsAssociations"
+  );
+  Route.post("/create-association", "PacsController.createAssociations");
+  Route.post("/edit-pac", "PacsController.editPac");
+  Route.get("/get-pac-by-id/:id", "PacsController.getPacById");
+  Route.post("/get-view-pac", "PacsController.viewPacComplete");
+})
+  .prefix("/api/v1/pac")
+  .middleware("auth");
 
 Route.group(() => {
-  Route.post("/search-cdps", "BudgetAvailabilityController.searchBudgetAvailability");
-  Route.post("/create-cdp", "BudgetAvailabilityController.createCdpsCertificationBudgetAvailability");
-  Route.post("/asociate-amounts", "BudgetAvailabilityController.associateAmountsWithCdp");
+  Route.post(
+    "/search-cdps",
+    "BudgetAvailabilityController.searchBudgetAvailability"
+  );
+  Route.post(
+    "/create-cdp",
+    "BudgetAvailabilityController.createCdpsCertificationBudgetAvailability"
+  );
+  Route.post(
+    "/asociate-amounts",
+    "BudgetAvailabilityController.associateAmountsWithCdp"
+  );
   Route.post(
     "/edit-cdp/:id",
     "BudgetAvailabilityController.editBudgetAvailabilityBasicDataCDP"
   );
-  Route.get("/get-by-id/:id", "BudgetAvailabilityController.getBudgetAvailabilityById");
+  Route.get(
+    "/get-by-id/:id",
+    "BudgetAvailabilityController.getBudgetAvailabilityById"
+  );
   Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
   Route.post("/link-mga/", "BudgetAvailabilityController.linkMga");
-  Route.get("/get-routeCDP-id/:id", "BudgetAvailabilityController.getRouteCDPId");
-  Route.put("/updateRouteCDP/:id", "BudgetAvailabilityController.updateRoutesCDP");
+  Route.get(
+    "/get-routeCDP-id/:id",
+    "BudgetAvailabilityController.getRouteCDPId"
+  );
+  Route.put(
+    "/updateRouteCDP/:id",
+    "BudgetAvailabilityController.updateRoutesCDP"
+  );
   Route.get("/get-CDPRp-id/:id", "BudgetAvailabilityController.getRpCDP");
-}).prefix("/api/v1/cdp").middleware("auth");
-
-Route.group(() => {
-  Route.post('/create-rp', 'BudgetRecordsController.createRp')
-  Route.post('/update-data-basic-rp', 'BudgetRecordsController.updateDataBasicRp')
-  Route.get('/get-components', 'BudgetRecordsController.getComponents')
-  Route.post('/get-rp-by-filters', 'BudgetRecordsController.getRpByFilters')
-  Route.get('/get-totalvaluesimports/:id', 'BudgetRecordsController.getTotalValuesImports')
-  Route.post('/update-data/:id', 'BudgetRecordsController.updateRp')
-}).prefix('/api/v1/budget-records')
-.middleware("auth");
+})
+  .prefix("/api/v1/cdp").middleware("auth");
 
 
 Route.group(() => {
-  Route.post('/get-creditors-by-filters', 'CreditorsController.getCreditorsByFilters')
-}).prefix('/api/v1/creditors')
+  Route.post("/create-rp", "BudgetRecordsController.createRp");
+  Route.post(
+    "/update-data-basic-rp",
+    "BudgetRecordsController.updateDataBasicRp"
+  );
+  Route.get("/get-components", "BudgetRecordsController.getComponents");
+  Route.post("/get-rp-by-filters", "BudgetRecordsController.getRpByFilters");
+  Route.get("/get-all-activity-object-contracts", "BudgetRecordsController.getAllActivityObjectContracts");
+  Route.get(
+    "/get-totalvaluesimports/:id",
+    "BudgetRecordsController.getTotalValuesImports"
+  );
+  Route.post("/update-data/:id", "BudgetRecordsController.updateRp");
+  Route.get('/get-causation/:id', 'BudgetRecordsController.getCausation')
+})
+  .prefix("/api/v1/budget-records")
+  .middleware("auth");
 
 Route.group(() => {
-  Route.get('/get-all-dependencies', 'PayrollsController.getAllDependencies')
-  Route.post('/get-contractors-by-documents', 'PayrollsController.getContractorsByDocuments')
-}).prefix('/api/v1/payroll').middleware('auth')
+  Route.post('create-creditor','CreditorsController.createCreditor')
+  Route.post('update-creditor','CreditorsController.updateCreditor')
+  Route.post(
+    "/get-creditors-by-filters",
+    "CreditorsController.getCreditorsByFilters"
+  );
+}).prefix("/api/v1/creditors").middleware("auth");
 
 
+Route.group(() => {
+  Route.get("/get-all-dependencies", "PayrollsController.getAllDependencies");
+  Route.post(
+    "/get-contractors-by-documents",
+    "PayrollsController.getContractorsByDocuments"
+  );
+})
+  .prefix("/api/v1/payroll")
+  .middleware("auth");
+
+Route.group(() => {
+  Route.post("/uploads", "UploadMasiveController.redirectToUploadMasive");
+})
+  .prefix("/api/v1/upload-masive")
+  // .middleware("auth");

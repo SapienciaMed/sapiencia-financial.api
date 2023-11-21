@@ -11,4 +11,5 @@ export enum EReportIds {
   reportAccountsPayable = "accounts_payable",
   reportExecutionIncome = "execution_income",
   reportExecutionExpenses = "execution_expenses",
+  reportCdpRpPayMga = "cdp_rp_payments_mga",
 }
