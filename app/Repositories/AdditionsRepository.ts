@@ -3,6 +3,8 @@ import {
   IAdditionsFilters,
   IAdditionsFull,
   IAdditionsMovement,
+  IFilterUpdateAdditionValues,
+  IUpdateAdditionValues,
 } from "App/Interfaces/AdditionsInterfaces";
 import Additions from "../Models/Addition";
 import { IPagingData } from "App/Utils/ApiResponses";
@@ -118,7 +120,10 @@ export default class AdditionsRepository implements IAdditionsRepository {
     };
   }
 
-  async updateAdditionValues(data: any, typeMovement: string): Promise<any> {
+  async updateAdditionValues(
+    data: IFilterUpdateAdditionValues,
+    typeMovement: string
+  ): Promise<IUpdateAdditionValues | null> {
     const toUpdate = await BudgetsRoutes.find(data.budgetRouteId);
 
     if (!toUpdate) {
@@ -143,13 +148,8 @@ export default class AdditionsRepository implements IAdditionsRepository {
         break;
     }
 
-    console.log({
-      typeMovement,
-      dataId: data.budgetRouteId,
-      data,
-      toUpdate: toUpdate.serialize(),
-    });
+    await toUpdate.save();
 
-    // return toUpdate.serialize();
+    return toUpdate.serialize() as IUpdateAdditionValues;
   }
 }

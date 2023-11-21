@@ -22,6 +22,7 @@ import Transfer from "../Models/Transfer";
 import TransfersMovement from "../Models/TransfersMovement";
 import { tranformProjectsVinculation } from "App/Utils/sub-services";
 import { IAdditionsRepository } from "App/Repositories/AdditionsRepository";
+import { IStrategicDirectionService } from "./External/StrategicDirectionService";
 
 export interface ITransfersService {
   getTransfersPaginated(
@@ -77,7 +78,8 @@ export default class TransfersService implements ITransfersService {
     private pospreSapRepository: IPosPreSapienciaRepository,
     private budgetRepository: IBudgetsRepository,
     private budgetRouteRepository: IBudgetsRoutesRepository,
-    private additionsRepository: IAdditionsRepository
+    private additionsRepository: IAdditionsRepository,
+    private strategicDirectionRepository: IStrategicDirectionService
   ) {}
 
   //?OBTENER PAGINADO Y FILTRADO LAS ADICIONES CON SUS MOVIMIENTOS
@@ -528,6 +530,18 @@ export default class TransfersService implements ITransfersService {
     return `OK-${idCard}`;
   }
 
+  async validationGetTotalCostsByFilter(object: any) {
+    // console.log({ validationGetTotalCostsByFilter: object });
+
+    let totalCostsByFilter =
+      await this.strategicDirectionRepository.getTotalCostsByFilter({
+        validityYear: new Date(object.validityYear).getFullYear(),
+        projectId: parseInt(object.projectId),
+        pospreId: object.posPreOriginId,
+      });
+    return totalCostsByFilter;
+  }
+
   //? EJECUTAMOS EL GUARDADO
   async executeCreateTransfers(
     transfer: ITransfersWithMovements
@@ -587,11 +601,35 @@ export default class TransfersService implements ITransfersService {
             value: j.value,
           });
 
-          // await toCreate.save();
-          const result = await this.additionsRepository.updateAdditionValues(
-            toCreate.serialize(),
-            "Traslado"
+          //! Validacion si no movimiento existente en direccion estrategica
+          const objectValidationGetTotalCostsByFilter = {
+            ...toCreate.serialize(),
+            posPreOriginId,
+            projectId: j.projectId,
+            validityYear: transfer.headTransfer!.dateModify,
+          };
+          const isValidMovement = await this.validationGetTotalCostsByFilter(
+            objectValidationGetTotalCostsByFilter
           );
+
+          if (
+            isValidMovement.operation.code === EResponseCodes.OK &&
+            isValidMovement.data === toCreate.value
+          ) {
+            await this.additionsRepository.updateAdditionValues(
+              toCreate.serialize(),
+              "Traslado"
+            );
+            await toCreate.save();
+          } else {
+            const transferData = await Transfer.findOrFail(addToHead.id);
+            await transferData.delete();
+            return new ApiResponse(
+              transfer,
+              EResponseCodes.FAIL,
+              "El traslado no puede realizarse porque el valor no coincide con el valor de planeación."
+            );
+          }
         }
       }
     } else {

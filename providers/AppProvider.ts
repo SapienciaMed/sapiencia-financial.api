@@ -242,7 +242,10 @@ export default class AppProvider {
           new PosPreSapienciaRepository.default(),
           new BudgetsRepository.default(),
           new BudgetsRoutesRepository.default(),
-          new AdditionsRepository.default()
+          new AdditionsRepository.default(),
+          new StrategicDirectionService.default(
+            new VinculationMGARepository.default()
+          )
         )
     );
 

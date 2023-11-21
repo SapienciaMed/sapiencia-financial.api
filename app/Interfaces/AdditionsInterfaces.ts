@@ -2,26 +2,25 @@ import { DateTime } from "luxon";
 import { IBudgetsRoutes } from "./BudgetsRoutesInterfaces";
 
 export interface IAdditionsMovements {
-  idCard? : string;
+  idCard?: string;
   id?: number;
   additionId?: number;
   type: string;
   managerCenter: string;
-  projectId: number //Referencia a la otra API de planeación
+  projectId: number; //Referencia a la otra API de planeación
   fundId: number;
   budgetPosition: number;
   value: number;
   typeMovement: string;
 }
 
-export interface IAdditionsMovement
-{
-  id: number,
-  additionId: number,
-  type: string,
-  budgetRouteId: number,
-  value: string,
-  budgetRoute: IBudgetsRoutes
+export interface IAdditionsMovement {
+  id: number;
+  additionId: number;
+  type: string;
+  budgetRouteId: number;
+  value: string;
+  budgetRoute: IBudgetsRoutes;
 }
 
 export interface IAdditions {
@@ -31,7 +30,7 @@ export interface IAdditions {
   userModify?: string;
   dateModify?: Date;
   userCreate?: string;
-  dateCreate?: DateTime,
+  dateCreate?: DateTime;
   typeMovement: string;
 }
 
@@ -42,23 +41,21 @@ export interface IAdditionsReport {
   userModify?: string;
   dateModify?: Date;
   userCreate?: string;
-  dateCreate?: Date,
+  dateCreate?: Date;
   typeMovement: string;
-  additionMove: IAdditionsMovement[]
+  additionMove: IAdditionsMovement[];
 }
 
 export interface IAdditionsWithMovements {
-  id?: number;                //Para edición
-  headAdditon?: IAdditions,   //Opcional porque en edición no lo requerimos
-  additionMove: IAdditionsMovements[]
+  id?: number; //Para edición
+  headAdditon?: IAdditions; //Opcional porque en edición no lo requerimos
+  additionMove: IAdditionsMovements[];
 }
-
 
 export interface IAdditionsFull {
-  head: IAdditions,
-  details: IAdditionsMovement[]
+  head: IAdditions;
+  details: IAdditionsMovement[];
 }
-
 
 //Lo dejarémos genérico para todos los elementos subyacentes
 export interface IAdditionsFilters {
@@ -81,15 +78,12 @@ export interface IFunctionalAreaAddition {
 }
 
 export interface IProjectAddition {
-  id : number;
-  functionalAreaId : number;
-  projectId : number;
-  budgetValue : number;
-  linked : boolean;
+  id: number;
+  functionalAreaId: number;
+  projectId: number;
+  budgetValue: number;
+  linked: boolean;
 }
-
-
-
 
 export interface IEntitiesAddition {
   id: number;
@@ -122,21 +116,21 @@ export interface IFundsAdditionList {
   dateModify?: Date;
   userCreate?: string;
   dateCreate?: DateTime;
-  entity?: IEntitiesAddition
+  entity?: IEntitiesAddition;
 }
 
 export interface IBudgetsAddition {
   id?: number;
   entityId: number;
   ejercise: number;
-  number:string;
-  denomination:string;
-  description:string;
+  number: string;
+  denomination: string;
+  description: string;
   userModify?: string;
   dateModify?: Date;
   userCreate?: string;
   dateCreate?: DateTime;
-  entity?: IEntitiesAddition
+  entity?: IEntitiesAddition;
 }
 
 export interface IPosPreSapienciaAdditionList {
@@ -158,9 +152,9 @@ export interface IBudgetsAddition {
   id?: number;
   entityId: number;
   ejercise: number;
-  number:string;
-  denomination:string;
-  description:string;
+  number: string;
+  denomination: string;
+  description: string;
   userModify?: string;
   dateModify?: Date;
   userCreate?: string;
@@ -182,10 +176,10 @@ export interface IPosPreAddition {
 }
 
 export interface IPosPreAddition {
-  budget : IBudgetsAddition;
-  pospre : IPosPreAddition;
-  posPreSapArray : string[];
-  posPreArray : string[];
+  budget: IBudgetsAddition;
+  pospre: IPosPreAddition;
+  posPreSapArray: string[];
+  posPreArray: string[];
 }
 
 export interface IProjectAdditionFilters {
@@ -193,3 +187,31 @@ export interface IProjectAdditionFilters {
   perPage?: number;
 }
 
+export interface IFilterUpdateAdditionValues {
+  additionId: number;
+  type: string;
+  budgetRouteId: number;
+  value: number;
+}
+
+export interface IUpdateAdditionValues {
+  id: number;
+  idProjectVinculation: number;
+  managementCenter: string;
+  div: string;
+  idBudget: number;
+  idPospreSapiencia: number;
+  idFund: number;
+  initialBalance: string;
+  balance: number;
+  userModify: string;
+  dateModify: Date;
+  userCreate: string;
+  dateCreate: Date;
+}
+
+export interface IFiltersValidationGetTotalCostsByFilter {
+  validityYear: Date | undefined;
+  projectId: number;
+  posPreOriginId: number;
+}

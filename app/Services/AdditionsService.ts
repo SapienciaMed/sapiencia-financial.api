@@ -3,6 +3,7 @@ import {
   IAdditionsFilters,
   IAdditionsFull,
   IAdditionsWithMovements,
+  IFiltersValidationGetTotalCostsByFilter,
   IFundsAdditionList,
   IPosPreAddition,
   IPosPreSapienciaAdditionList,
@@ -527,6 +528,20 @@ export default class AdditionsService implements IAdditionsService {
     return strategicProjects.data.array;
   };
 
+  async validationGetTotalCostsByFilter(
+    filters: IFiltersValidationGetTotalCostsByFilter
+  ) {
+    let totalCostsByFilter =
+      await this.strategicDirectionRepository.getTotalCostsByFilter({
+        validityYear: new Date(
+          filters.validityYear ? filters.validityYear : ""
+        ).getFullYear(),
+        projectId: filters.projectId,
+        pospreId: filters.posPreOriginId,
+      });
+    return totalCostsByFilter;
+  }
+
   //? ACCIÓN DIRECTA PARA CREAR LA ADICIÓN (AQUÍ YA NO HAY VALIDACIONES, SE ASUME QUE YA PASO POR EL VALIDADOR)
   async executeCreateAdditions(
     addition: IAdditionsWithMovements
@@ -572,12 +587,39 @@ export default class AdditionsService implements IAdditionsService {
           value: i.value,
         });
 
-        // await toCreate.save();
-
-        await this.additionsRepository.updateAdditionValues(
-          toCreate.serialize(),
-          add.typeMovement
+        //! Validacion si no movimiento existente en direccion estrategica
+        const objectValidationGetTotalCostsByFilter: IFiltersValidationGetTotalCostsByFilter =
+          {
+            posPreOriginId,
+            projectId: i.projectId,
+            validityYear: addition.headAdditon!.dateModify,
+          };
+        const isValidMovement = await this.validationGetTotalCostsByFilter(
+          objectValidationGetTotalCostsByFilter
         );
+
+        if (
+          isValidMovement.operation.code === EResponseCodes.OK &&
+          isValidMovement.data === toCreate.value
+        ) {
+          if (toCreate.type === "Gasto") {
+            await this.additionsRepository.updateAdditionValues(
+              toCreate.serialize(),
+              add.typeMovement
+            );
+          }
+          await toCreate.save();
+        } else {
+          const addData = await Addition.findOrFail(add.id);
+          await addData.delete();
+          return new ApiResponse(
+            addition,
+            EResponseCodes.FAIL,
+            add.typeMovement === "Adicion"
+              ? "La adición no puede realizarse porque el valor no coincide con el valor de planeación."
+              : "La disminución no puede realizarse porque el valor no coincide con el valor de planeación."
+          );
+        }
       }
     } else {
       return new ApiResponse(
