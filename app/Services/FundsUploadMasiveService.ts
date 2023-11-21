@@ -7,7 +7,7 @@ import { IFundsRepository } from "App/Repositories/FundsRepository";
 import { IFundsUploadMasive, IErrorsUploadMasive, IResponseUploadMasive } from '../Interfaces/UploadMasiveInterfaces';
 import { ApiResponse } from '../Utils/ApiResponses';
 import { EResponseCodes } from '../Constants/ResponseCodesEnum';
-import Funds from 'App/Models/Funds';
+//import Funds from 'App/Models/Funds';
 
 export interface IFundsUploadMasiveService {
   uploadMasiveFunds(file: string): Promise<any>;
