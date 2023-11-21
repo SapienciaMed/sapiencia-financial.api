@@ -52,6 +52,7 @@ Route.group(() => {
   Route.post("/create", "BudgetsController.createBudgets");
   Route.put("/update/:id", "BudgetsController.updateBudgets");
   Route.get("/get-all", "BudgetsController.getAllBudgets");
+  Route.get("/get-all-cpc", "BudgetsController.getAllCpc");
 })
   .prefix("/api/v1/budgets")
   .middleware("auth");

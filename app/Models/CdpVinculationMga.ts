@@ -19,7 +19,7 @@ export default class CdpVinculationMga extends BaseModel {
   @column({ columnName: "VCM_CODCDP", serializeAs: "cdpCode" })
   public cdpCode: number;
 
-  @column({ columnName: "VCM_CODCPC_CLASIFICADOR_PRODUCTOS", serializeAs: "cpcCode" })
+  @column({ columnName: "VCM_CODCPC", serializeAs: "cpcCode" })
   public cpcCode: number;
 }
 

@@ -14,7 +14,7 @@ export default class extends BaseSchema {
       table.integer('VCM_PORCENTAJE_AFECTACION').notNullable().comment('Porcentaje')      
 
       table.integer('VCM_CODCDP').notNullable().unsigned().references('CDP_CODIGO').inTable('CDP_CERTIFICADO_DISPONIBILIDAD_PRESUPUESTAL').comment('Codigo del CDP (FK CDP)')
-      table.integer('VCM_CODCPC_CLASIFICADOR_PRODUCTOS').notNullable().unsigned().references('CPC_CODIGO').inTable('CPC_CLASIFICACION_CENTRAL_PRODUCTOS').comment('codigo cpc (FK CPC)')
+      table.integer('VCM_CODCPC').notNullable().unsigned().references('CPC_CODIGO').inTable('CPC_CLASIFICACION_CENTRAL_PRODUCTOS').comment('codigo cpc (FK CPC)')
     })
   }
 

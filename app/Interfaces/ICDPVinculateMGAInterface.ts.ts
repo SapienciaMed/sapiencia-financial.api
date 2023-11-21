@@ -8,5 +8,6 @@ export interface IActivitieDetail {
     activitieDetailMga: number;
     percentageAfected: number;
     cdpCode: number;
+    cpcCode: number;
 }
 
