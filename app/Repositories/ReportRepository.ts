@@ -40,7 +40,7 @@ import BudgetAvailability from "App/Models/BudgetAvailability";
 import Pago from "App/Models/PagPagos";
 import FunctionalProject from "App/Models/FunctionalProject";
 import { DateTime } from "luxon";
-import LinkRpcdp from "App/Models/LinkRpcdp";
+//import LinkRpcdp from "App/Models/LinkRpcdp";
 
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
@@ -2156,6 +2156,7 @@ export default class ReportRepository implements IReportRepository {
 
   async generateReportCdpRpPayMga(year: number): Promise<any[]> {
     let result: any[] = [];
+    console.log(year);
     
     // Obtener datos no anulados de la vigencia ingresada
 /*     const cdps = await BudgetAvailability.query()
