@@ -33,7 +33,7 @@ export default class extends BaseSchema {
       table.string('APA_FECHA_CREO').nullable()
 
       /**
-       * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
+       * Uses datetimetz for PostgreSQL and DATETIME2 for MSSQL
        */
       /* table
         .datetime("APA_FECHA_MODIFICO")

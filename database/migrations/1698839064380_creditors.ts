@@ -17,7 +17,7 @@ export default class extends BaseSchema {
       table.string('ACR_USUARIO_MODIFICO',15).nullable().comment('Numero del documento del ultimo usuario que hizo una modificacion')
       table.string('ACR_USUARIO_CREO',15).nullable().comment('Numero del documento del usuario que creo el registro')
       table
-        .timestamp("ACR_FECHA_CREO")
+        .datetime("ACR_FECHA_CREO")
         .notNullable()
         .comment("Fecha y hora de creación del registro");
         
