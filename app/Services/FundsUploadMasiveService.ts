@@ -7,7 +7,7 @@ import { IFundsRepository } from "App/Repositories/FundsRepository";
 import { IFundsUploadMasive, IErrorsUploadMasive, IResponseUploadMasive } from '../Interfaces/UploadMasiveInterfaces';
 import { ApiResponse } from '../Utils/ApiResponses';
 import { EResponseCodes } from '../Constants/ResponseCodesEnum';
-import Funds from 'App/Models/Funds';
+//import Funds from 'App/Models/Funds';
 
 export interface IFundsUploadMasiveService {
   uploadMasiveFunds(file: string): Promise<any>;
@@ -40,7 +40,7 @@ export default class FundsUploadMasiveService implements IFundsUploadMasiveServi
 
     const fileBuffer = Buffer.from(fileContent, 'base64');
     const fileExtension = mimeTypes.extension('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    const tempFilePath = path.join(__dirname, '/tmp/uploads', `tempFile.${fileExtension}`);
+    const tempFilePath = path.join(__dirname, '/files/uploads', `tempFile.${fileExtension}`);
 
     try {
       fs.writeFileSync(tempFilePath, fileBuffer);
