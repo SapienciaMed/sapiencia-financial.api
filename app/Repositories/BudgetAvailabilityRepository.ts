@@ -181,11 +181,11 @@ export default class BudgetAvailabilityRepository
       const cdp = await BudgetAvailability.findOrFail(cdpId);
     
       // Imprimir los importes existentes para depuración
-      const existingAmounts = await cdp
+     /*  const existingAmounts = await cdp
         .related("amounts")
         .query()
         .select("idRppCode")
-        .exec();
+        .exec(); */
      
       // Obtener los códigos existentes
      /*  const existingIdRppCodes = existingAmounts.map(

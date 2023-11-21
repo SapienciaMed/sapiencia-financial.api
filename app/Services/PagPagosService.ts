@@ -37,8 +37,10 @@ export default class PagoService implements IPagoService {
   }
 
   async uploadMasivePagos(fileData: any,usuarioCreo:any): Promise<ApiResponse<any>> {
+ 
     const result = await this.processBase64(fileData);
     let responseData;
+   
   
     if (Object.keys(result).length > 0) {
       const items = result?.data?.items;
@@ -58,8 +60,6 @@ export default class PagoService implements IPagoService {
               usuarioCreo: usuarioCreo,
               fechaCreo: new Date().toISOString().slice(0, 19).replace('T', ' '),
             };
-  
-            console.log(pago);
             responseData = await this.insertItemsToDatabase([pago], PagPagosValidator, PagPagos);
           }
         }
@@ -71,7 +71,7 @@ export default class PagoService implements IPagoService {
     }
   
     // Retorna un valor predeterminado en caso de que ninguna de las condiciones anteriores se cumpla
-    return new ApiResponse(responseData, EResponseCodes.INFO, 'Llegamos hasta el servicio de PagPagos');
+    return new ApiResponse(responseData, EResponseCodes.OK, 'Pagos cargados correctamente!');
   }
   
 
@@ -84,7 +84,7 @@ export default class PagoService implements IPagoService {
     try {
       fs.writeFileSync(tempFilePath, fileBuffer);
     } catch (error) {
-      throw new Error(error);
+      throw new Error(`Error al escribir el archivo temporal: ${error.message}`);
     }
 
     const readInfo = await this.readExcel(fileBuffer);
