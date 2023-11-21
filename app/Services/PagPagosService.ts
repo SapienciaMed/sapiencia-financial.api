@@ -79,7 +79,7 @@ export default class PagoService implements IPagoService {
 
     const fileBuffer = Buffer.from(fileContent, 'base64');
     const fileExtension = mimeTypes.extension('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    const tempFilePath = path.join(__dirname, '/tmp/uploads', `tempFile.${fileExtension}`);
+    const tempFilePath = path.join(__dirname, '/files/uploads', `tempFile.${fileExtension}`);
 
     try {
       fs.writeFileSync(tempFilePath, fileBuffer);
