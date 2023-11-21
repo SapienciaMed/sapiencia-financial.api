@@ -119,9 +119,12 @@ Route.group(() => {
     "/update-vinculation-multiple",
     "VinculationMGAController.updateMultipleVinculation"
   );
-})
-  .prefix("/api/v1/vinculation-mga")
-  .middleware("auth");
+  Route.post("/get-activities-detail", "VinculationMGAController.getActivitiesDetail")
+  Route.post("/create-vinculation-mga", "VinculationMGAController.createVinculationMga")
+  Route.post("/validate", "VinculationMGAController.validateVinculationMga")
+  Route.post("/validate-all-Cdp", "VinculationMGAController.validateAallCdp")
+}).prefix("/api/v1/vinculation-mga")
+.middleware("auth");
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "FunctionalAreaController.getFunctionalAreaById");
@@ -333,8 +336,8 @@ Route.group(() => {
   );
   Route.get("/get-CDPRp-id/:id", "BudgetAvailabilityController.getRpCDP");
 })
-  .prefix("/api/v1/cdp")
-  .middleware("auth");
+  .prefix("/api/v1/cdp").middleware("auth");
+
 
 Route.group(() => {
   Route.post("/create-rp", "BudgetRecordsController.createRp");
@@ -362,7 +365,8 @@ Route.group(() => {
     "/get-creditors-by-filters",
     "CreditorsController.getCreditorsByFilters"
   );
-}).prefix("/api/v1/creditors");
+}).prefix("/api/v1/creditors").middleware("auth");
+
 
 Route.group(() => {
   Route.get("/get-all-dependencies", "PayrollsController.getAllDependencies");

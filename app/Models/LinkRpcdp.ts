@@ -73,4 +73,6 @@ export default class LinkRpcdp extends BaseModel {
     localKey: 'id',
   })
   public pagos: HasMany<typeof Pago>;
+
+  
 }
