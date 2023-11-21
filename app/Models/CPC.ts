@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import Budgets from './Budgets';
 
 export default class CPC extends BaseModel {
-  public static table = "CPCS";
+  public static table = "CPC_CLASIFICACION_CENTRAL_PRODUCTOS";
 
   @column({ isPrimary: true, columnName: "CPC_CODIGO", serializeAs: "id" })
   public id: number;

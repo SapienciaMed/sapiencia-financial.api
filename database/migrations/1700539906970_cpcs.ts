@@ -1,7 +1,7 @@
 import BaseSchema from "@ioc:Adonis/Lucid/Schema";
 
 export default class extends BaseSchema {
-  protected tableName = "CPCS";
+  protected tableName = "CPC_CLASIFICACION_CENTRAL_PRODUCTOS";
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
@@ -31,14 +31,14 @@ export default class extends BaseSchema {
           "Número del documento del último usuario que hizo una modificación"
         );
       table
-        .timestamp("CPC_FECHA_MODIFICO")
+        .datetime("CPC_FECHA_MODIFICO")
         .comment("Fecha y hora de la última modificación");
       table
         .string("CPC_USUARIO_CREO", 15)
         .notNullable()
         .comment("Número del documento del usuario que creó el registro");
       table
-        .timestamp("CPC_FECHA_CREO")
+        .datetime("CPC_FECHA_CREO")
         .notNullable()
         .comment("Fecha y hora de creación del registro");
     });
