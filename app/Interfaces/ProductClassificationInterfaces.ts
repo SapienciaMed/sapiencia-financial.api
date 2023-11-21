@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 
-export interface ICPC {
+export interface IProductClassification {
   id?: number;
   number: string;
   description: string;
