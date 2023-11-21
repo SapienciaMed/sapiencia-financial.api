@@ -35,7 +35,7 @@ Route.group(() => {
 
 
 Route.group(() => {
-  Route.get("/get-by-id/:id", "FundsController.getFundsById").middleware('auth:FONDOS_CONSULTAR');
+  Route.get("/get-by-id/:id", "FundsController.getFundsById").middleware('auth:FONDOS_VISUALIZAR');
   Route.post("/get-paginated", "FundsController.getFundsPaginated").middleware('auth:FONDOS_CONSULTAR');
   Route.post("/create", "FundsController.createFund").middleware('auth:FONDOS_CREAR');
   Route.put("/update/:id", "FundsController.updateFund").middleware('auth:FONDOS_EDITAR');
@@ -156,7 +156,7 @@ Route.group(() => {
   Route.post(
     "/link/create",
     "FunctionalAreaController.createProjectFunctionalArea"
-  );
+  ).middleware('auth:AREA_FUNCIONAL_AGREGAR_PROYECTO');
   Route.post(
     "/link/update",
     "FunctionalAreaController.updateProjectFunctionalArea"
@@ -164,7 +164,7 @@ Route.group(() => {
   Route.delete(
     "/link/delete/:id",
     "FunctionalAreaController.deleteProjectFunctionalArea"
-  ).middleware('auth:AREA_FUNCIONAL_ELIMINARs');
+  ).middleware('auth:AREA_FUNCIONAL_ELIMINAR');
   Route.post(
     "/link/get-paginated",
     "FunctionalAreaController.getProjectFunctionalAreaPaginated"
@@ -360,7 +360,7 @@ Route.group(() => {
     "BudgetAvailabilityController.getBudgetAvailabilityById"
   ).middleware('auth:auth:CDP_VISUALIZAR');
   Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
-  Route.post("/link-mga/", "BudgetAvailabilityController.linkMga");
+  Route.post("/link-mga/", "BudgetAvailabilityController.linkMga").middleware('auth:CDP_MGA_VINCULAR');
   Route.get(
     "/get-routeCDP-id/:id",
     "BudgetAvailabilityController.getRouteCDPId"
@@ -369,7 +369,7 @@ Route.group(() => {
     "/updateRouteCDP/:id",
     "BudgetAvailabilityController.updateRoutesCDP"
   ).middleware('auth:CDP_RUTAS_EDITAR');
-  Route.get("/get-CDPRp-id/:id", "BudgetAvailabilityController.getRpCDP");
+  Route.get("/get-CDPRp-id/:id", "BudgetAvailabilityController.getRpCDP").middleware('auth:CDP_VISUALIZAR_RP');
 })
   .prefix("/api/v1/cdp")
   .middleware("auth");
