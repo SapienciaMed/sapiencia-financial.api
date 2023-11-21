@@ -402,14 +402,8 @@ Route.group(() => {
   Route.post(
     "/get-creditors-by-filters",
     "CreditorsController.getCreditorsByFilters"
-<<<<<<< HEAD
   ).middleware('auth:ACREEDOR_CONSULTAR');
 }).prefix("/api/v1/creditors");
-=======
-  );
-}).prefix("/api/v1/creditors").middleware("auth");
-
->>>>>>> e30552866eba0196b131d14c49abfd9a3dd43cc8
 
 Route.group(() => {
   Route.get("/get-all-dependencies", "PayrollsController.getAllDependencies");
