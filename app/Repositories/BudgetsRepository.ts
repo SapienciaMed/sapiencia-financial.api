@@ -128,7 +128,13 @@ export default class BudgetsRepository implements IBudgetsRepository {
   }
 
   async getAllBudgets(): Promise<IBudgets[]> {
-    const res = await Budgets.query();
+    const query = Budgets.query();
+    query.preload("entity");
+    query.preload("pospresap");
+    query.preload("vinculationmga");
+    query.preload("cpcs");
+    const res = await query;
+
     return res as IBudgets[];
   }
 
