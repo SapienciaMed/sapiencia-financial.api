@@ -228,7 +228,7 @@ export default class VinculationMGAController {
       const data = await request.validate(
         CdpVinculateMGAValidator
       );     
-     // return data;
+   
       return response.send(await VinculationMGAProvider.createVinculationMga(data));
 
     } catch (err) {
