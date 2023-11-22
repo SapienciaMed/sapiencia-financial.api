@@ -7,7 +7,7 @@ export default class extends BaseSchema {
       table.comment('Tabla que contine los acreedores que no son contratistas en nomina')
       table.increments('ACR_CODIGO').comment('llave primaria - autogenerado')
       table.string('ACR_TIPO_DOCUMENTO',4).notNullable().comment('codigo del tipo de documento (Listados Generico)')
-      table.string('ACR_NUMERO_DOCUMENTO',20).notNullable().comment('numero del documento')
+      table.string('ACR_NUMERO_DOCUMENTO',20).notNullable().unique().comment('numero del documento')
       table.string('ACR_IDENTIFICACION_FISCAL',20).notNullable().comment('Numero de identificacion fiscal')
       table.string('ACR_NOMBRE',200).notNullable().comment('Nombre / Razon social')
       table.string('ACR_CIUDAD',50).notNullable().comment('nombre de la ciudad')
