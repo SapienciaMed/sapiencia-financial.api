@@ -27,7 +27,7 @@ Route.get("/", async () => {
 
 Route.group(() => {
   Route.post("/generate-basic-excel", "ReportController.generateExcelReport");
-})
+}).middleware('auth:REPORTE_VISUALIZAR')
   .prefix("/api/v1/reports")
   .middleware("auth");
 // http://127.0.0.1:4204/api/v1/reports/generate-basic-excel
@@ -54,11 +54,11 @@ Route.group(() => {
 
 
 Route.group(() => {
-  Route.get("/get-by-id/:id", "BudgetsController.getBudgetsById");
-  Route.post("/get-paginated", "BudgetsController.getBudgetsPaginated");
-  Route.post("/create", "BudgetsController.createBudgets");
-  Route.put("/update/:id", "BudgetsController.updateBudgets");
-  Route.get("/get-all", "BudgetsController.getAllBudgets");
+  Route.get("/get-by-id/:id", "BudgetsController.getBudgetsById").middleware('auth:RUTA_PRESUPUESTAL_VISUALIZAR');
+  Route.post("/get-paginated", "BudgetsController.getBudgetsPaginated").middleware('auth:RUTA_PRESUPUESTAL_CONSULTAR');
+  Route.post("/create", "BudgetsController.createBudgets").middleware('auth:RUTA_PRESUPUESTAL_CREAR');
+  Route.put("/update/:id", "BudgetsController.updateBudgets").middleware('auth:RUTA_PRESUPUESTAL_EDITAR');
+  Route.get("/get-all", "BudgetsController.getAllBudgets").middleware('auth:RUTA_PRESUPUESTAL_CONSULTAR');
 })
   .prefix("/api/v1/budgets")
   .middleware("auth");
@@ -80,7 +80,7 @@ Route.group(() => {
     "PosPreSapienciaController.getPosPreSapienciaPaginated"
   ).middleware('auth:POSICION_PRESUPUESTAL_CONSULTAR');
   Route.put("/update/:id", "PosPreSapienciaController.updatePosPreSapiencia").middleware('auth:POSPRE_EDITAR');
-  Route.get("/get-all", "PosPreSapienciaController.getAllPosPreSapiencia");
+  Route.get("/get-all", "PosPreSapienciaController.getAllPosPreSapiencia").middleware('auth:POSICION_PRESUPUESTAL_CONSULTAR');
   Route.get(
     "/get-posprevinculation-by-id/:id",
     "PosPreSapienciaController.getPosPreSapienciaById"
@@ -88,7 +88,7 @@ Route.group(() => {
   Route.post(
     "/get-list-pospresap-vinculation-paginated",
     "PosPreSapienciaController.getListPosPreSapVinculationPaginated"
-  );
+  ).middleware('auth:MGA_VINCULAR');
   Route.post(
     "/create-pospresap-vinculation",
     "PosPreSapienciaController.createPosPreSapVinculation"
