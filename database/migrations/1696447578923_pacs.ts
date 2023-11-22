@@ -33,11 +33,11 @@ export default class extends BaseSchema {
 
 
       /* table
-        .timestamp("PAC_FECHA_MODIFICO")
+        .datetime("PAC_FECHA_MODIFICO")
         .nullable()
         .comment("Fecha y hora de la última modificación");
       table
-        .timestamp("PAC_FECHA_CREO")
+        .datetime("PAC_FECHA_CREO")
         .notNullable()
         .comment("Fecha y hora de creación del registro");
  */

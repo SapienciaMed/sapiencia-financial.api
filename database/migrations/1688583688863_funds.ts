@@ -32,11 +32,11 @@ export default class extends BaseSchema {
         .notNullable()
         .comment("Descripción");
       table
-        .timestamp("FND_VIGENTE_DESDE")
+        .date("FND_VIGENTE_DESDE")
         .notNullable()
         .comment("Fecha de inicio de la vigencia");
       table
-        .timestamp("FND_VIGENTE_HASTA")
+        .date("FND_VIGENTE_HASTA")
         .notNullable()
         .comment("Fecha de finalizacion de la vigencia");
       table

@@ -36,7 +36,7 @@ export default class extends BaseSchema {
         .notNullable()
         .comment("Numero del documento del usuario que creo el registro");
       table
-        .timestamp("VMG_FECHA_CREO")
+        .datetime("VMG_FECHA_CREO")
         .notNullable()
         .comment("Fecha y hora de creación del registro");
     });
