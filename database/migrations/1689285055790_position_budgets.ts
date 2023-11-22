@@ -39,14 +39,14 @@ export default class extends BaseSchema {
         .string("PPS_USUARIO_MODIFICO", 15)
         .comment("Número del documento del último usuario que hizo una modificación");
       table
-        .timestamp("PPS_FECHA_MODIFICO")
+        .datetime("PPS_FECHA_MODIFICO")
         .comment("Fecha y hora de la última modificación");
       table
         .string("PPS_USUARIO_CREO", 15)
         .notNullable()
         .comment("Número del documento del usuario que creó el registro");
       table
-        .timestamp("PPS_FECHA_CREO")
+        .datetime("PPS_FECHA_CREO")
         .notNullable()
         .comment("Fecha y hora de creación del registro");
 

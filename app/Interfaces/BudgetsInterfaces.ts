@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { IEntities } from "./EntitiesInterfaces";
-import { ICPC } from "./CPCInterfaces";
+import { IProductClassification } from "./ProductClassificationInterfaces";
 
 export interface IBudgets {
   id?: number;
@@ -14,7 +14,7 @@ export interface IBudgets {
   userCreate?: string;
   dateCreate?: DateTime;
   entity?: IEntities;
-  cpcs?: ICPC[];
+  productClassifications?: IProductClassification[];
 }
 
 export interface IFilterBudgets {

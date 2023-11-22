@@ -2,7 +2,7 @@
 import { DateTime } from "luxon";
 import Budgets from './Budgets';
 
-export default class CPC extends BaseModel {
+export default class ProductClassification extends BaseModel {
   public static table = "CPC_CLASIFICACION_CENTRAL_PRODUCTOS";
 
   @column({ isPrimary: true, columnName: "CPC_CODIGO", serializeAs: "id" })
@@ -11,10 +11,10 @@ export default class CPC extends BaseModel {
   @column({ columnName: 'CPC_NUMERO', serializeAs: "number"})
   public number: string;
 
-  @column({ columnName: 'CPC_DESCRIPCION',  serializeAs: "ejercise" })
+  @column({ columnName: 'CPC_DESCRIPCION',  serializeAs: "description" })
   public description: string;
 
-  @column({ columnName: 'CPC_CODPPR_POSPRE', serializeAs: "entityId" })
+  @column({ columnName: 'CPC_CODPPR_POSPRE', serializeAs: "budgetId" })
   public budgetId: number;
 
   @column({ columnName: 'CPC_USUARIO_MODIFICO',serializeAs: "userModify"})

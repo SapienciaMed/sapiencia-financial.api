@@ -23,7 +23,7 @@ export default class extends BaseSchema {
       table.string('RPR_USUARIO_CREO').nullable().comment('Numero del documento del usuario que creo el registro')
       
       table
-        .timestamp("RPR_FECHA_CREO")
+        .datetime("RPR_FECHA_CREO")
         .notNullable()
         .comment("Fecha y hora de creación del registro");
         

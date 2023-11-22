@@ -67,7 +67,7 @@ export default class extends BaseSchema {
       .comment("Número del documento del usuario que creó el registro");
 
       table
-      .timestamp("VPY_FECHA_CREO")
+      .datetime("VPY_FECHA_CREO")
       .notNullable()
       .comment("Fecha y hora de creación del registro");
 

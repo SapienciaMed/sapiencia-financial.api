@@ -134,7 +134,7 @@ export default class BudgetsRepository implements IBudgetsRepository {
     query.preload("entity");
     query.preload("pospresap");
     query.preload("vinculationmga");
-    query.preload("cpcs");
+    query.preload("productClassifications");
     const res = await query;
 
     return res as IBudgets[];
