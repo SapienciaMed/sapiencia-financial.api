@@ -156,8 +156,8 @@ export default class extends BaseSeeder {
       {
         id: 22,
         budgetId: 32,
-        number: "Partes y accesorios de material plástico para elementos de protección",
-        description: "",
+        number: "3699051",
+        description: "Partes y accesorios de material plástico para elementos de protección",
         dateCreate: DateTime.now(),
       },
       {
