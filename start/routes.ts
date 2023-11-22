@@ -275,8 +275,8 @@ Route.group(() => {
     "/get-pospre-sapiencia",
     "TransfersController.getPosPreSapienciaList"
   );
-  Route.post("/save-data", "TransfersController.executeCreateTransfers"); //Como acción de guardado
-  Route.post("/create", "TransfersController.createTransfers"); //Como acción validación
+  Route.post("/save-data", "TransfersController.executeCreateTransfers").middleware('auth:TRASLADO_CREAR'); //Como acción de guardado
+  Route.post("/create", "TransfersController.createTransfers").middleware('auth:TRASLADO_CREAR'); //Como acción validación
   Route.get(
     "/get-actadmin-district",
     "TransfersController.getAllTransfersByDistrict"
@@ -284,13 +284,13 @@ Route.group(() => {
   Route.get(
     "/get-actadmin-sapiencia",
     "TransfersController.getAllTransfersBySapiencia"
-  );
-  Route.get("/get-by-id/:id", "TransfersController.getTransferById");
-  Route.post("/update/:id", "TransfersController.updateTransferWithMov"); //Como acción de validación
+  ).middleware('auth:TRASLADO_CONSULTAR');
+  Route.get("/get-by-id/:id", "TransfersController.getTransferById").middleware('auth:TRASLADO_VISUALIZAR');;
+  Route.post("/update/:id", "TransfersController.updateTransferWithMov").middleware('auth:TRASLADO_EDITAR'); //Como acción de validación
   Route.post(
     "/update-save/:id",
     "TransfersController.executeUpdateTransferWithMov"
-  );
+  ).middleware('auth:TRASLADO_EDITAR');;
 })
   .prefix("/api/v1/transfers")
   .middleware("auth");
