@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 import { IBudgetsRoutes } from "App/Interfaces/BudgetsRoutesInterfaces";
 import BudgetsRoutes from "../Models/BudgetsRoutes";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
-import CPC from "App/Models/CPC";
+import ProductClassification from "App/Models/ProductClassification";
 
 export interface IBudgetsRepository {
   updateBudgets(budgets: IBudgets, id: number): Promise<IBudgets | null>;
@@ -161,7 +161,7 @@ export default class BudgetsRepository implements IBudgetsRepository {
   }
   
   async getAllCpc(): Promise<IBudgets[]> {
-    const query = CPC.query();
+    const query = ProductClassification.query();
    
     const res = await query;
 
