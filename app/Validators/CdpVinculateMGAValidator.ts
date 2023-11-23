@@ -11,6 +11,8 @@ export default class CdpVinculateMGAValidator {
                 activitieDetailMga: schema.number(),
                 percentageAfected: schema.number(),
                 cdpCode: schema.number(),
+                cpcCode: schema.number(),
+                userCreate: schema.string.optional(),
             })
         )
     });

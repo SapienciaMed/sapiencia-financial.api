@@ -5,6 +5,7 @@ import { DateTime } from "luxon";
 import { IBudgetsRoutes } from "App/Interfaces/BudgetsRoutesInterfaces";
 import BudgetsRoutes from "../Models/BudgetsRoutes";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
+import ProductClassification from "App/Models/ProductClassification";
 
 export interface IBudgetsRepository {
   updateBudgets(budgets: IBudgets, id: number): Promise<IBudgets | null>;
@@ -14,6 +15,7 @@ export interface IBudgetsRepository {
   getAllBudgets(): Promise<IBudgets[]>;
   getBudgetsByNumber(number: string): Promise<IPagingData<IBudgets>>;
   getBudgetForCdp(projectId: number, foundId: number, posPreId: number): Promise<IBudgetsRoutes | null>;
+  getAllCpc(): Promise<any[]>;
 }
 
 export default class BudgetsRepository implements IBudgetsRepository {
@@ -132,12 +134,12 @@ export default class BudgetsRepository implements IBudgetsRepository {
     query.preload("entity");
     query.preload("pospresap");
     query.preload("vinculationmga");
-    query.preload("cpcs");
+    query.preload("productClassifications");
     const res = await query;
 
     return res as IBudgets[];
   }
-
+  
   async getBudgetsByNumber(number: string): Promise<IPagingData<IBudgets>> {
 
     const query = Budgets.query();
@@ -157,5 +159,12 @@ export default class BudgetsRepository implements IBudgetsRepository {
       meta,
     };
   }
+  
+  async getAllCpc(): Promise<IBudgets[]> {
+    const query = ProductClassification.query();
+   
+    const res = await query;
 
+    return res as any[];
+  }
 }
