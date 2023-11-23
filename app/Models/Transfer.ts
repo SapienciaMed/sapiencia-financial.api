@@ -9,9 +9,6 @@ export default class Transfer extends BaseModel {
   @column({ isPrimary: true, columnName: "TRA_CODIGO", serializeAs: "id" })
   public id: number;
 
-  @column({ columnName: "TRA_CODTTR_TIPO_TRASLADO", serializeAs: "transferId" })
-  public transferId: number;
-
   @column({ columnName: "TRA_ACTO_ADMINISTRATIVO_DISTRITO", serializeAs: "actAdminDistrict" })
   public actAdminDistrict: string;
 

@@ -1,20 +1,24 @@
-import BaseSchema from '@ioc:Adonis/Lucid/Schema'
+import BaseSchema from "@ioc:Adonis/Lucid/Schema";
 
 export default class extends BaseSchema {
-  protected tableName = 'CDP_CERTIFICADO_DISPONIBILIDAD_PRESUPUESTAL'
+  protected tableName = "CDP_CERTIFICADO_DISPONIBILIDAD_PRESUPUESTAL";
 
-  public async up () {
+  public async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.increments('CDP_CODIGO').primary()
-      table.string('CDP_EJERCICIO',50).notNullable();
-      table.date('CDP_FECHA').notNullable()
-      table.string('CDP_OBJETO_CONTRACTUAL', 5000).notNullable()
-      table.integer('CDP_CONSECUTIVO').notNullable()
-      table.integer('CDP_CONSECUTIVO_SAP').unique().nullable()
-    })
+      table.increments("CDP_CODIGO").primary();
+      table.string("CDP_EJERCICIO", 50).notNullable();
+      table.date("CDP_FECHA").notNullable();
+      table.string("CDP_OBJETO_CONTRACTUAL", 5000).notNullable();
+      table.integer("CDP_CONSECUTIVO").notNullable();
+      table.integer("CDP_CONSECUTIVO_SAP").nullable();
+
+      table.unique(["CDP_CONSECUTIVO_SAP"], {
+        indexName: "UNIQUE_CDP_CONSECUTIVO_SAP'",
+      });
+    });
   }
 
-  public async down () {
-    this.schema.dropTable(this.tableName)
+  public async down() {
+    this.schema.dropTable(this.tableName);
   }
 }
