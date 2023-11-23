@@ -1,4 +1,5 @@
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
+import { DateTime } from 'luxon';
 
 export default class CdpVinculationMga extends BaseModel {
 
@@ -21,5 +22,14 @@ export default class CdpVinculationMga extends BaseModel {
 
   @column({ columnName: "VCM_CODCPC", serializeAs: "cpcCode" })
   public cpcCode: number;
-}
 
+  @column({ columnName: "VCM_USUARIO_CREO", serializeAs: "userCreate" })
+  public userCreate: string;
+
+  @column.dateTime({
+    autoCreate: true,
+    columnName: "VCM_FECHA_CREO",
+    serializeAs: "dateCreate",
+  })
+  public dateCreate: DateTime;
+}
