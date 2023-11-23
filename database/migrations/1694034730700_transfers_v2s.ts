@@ -13,11 +13,7 @@ export default class extends BaseSchema {
         .increments("TRA_CODIGO")
         .primary()
         .comment("Llave primaria");
-      table
-        .integer("TRA_CODTTR_TIPO_TRASLADO")
-        .notNullable()
-        .unsigned()
-        .comment("Codigo tipo traslado (FK TTR_TIPOS_TRASLADOS)");
+
       table
         .string("TRA_ACTO_ADMINISTRATIVO_DISTRITO",200)
         .notNullable()
@@ -51,10 +47,6 @@ export default class extends BaseSchema {
         .notNullable()
         .comment("Fecha y hora de creación del registro");
 
-
-      table.foreign("TRA_CODTTR_TIPO_TRASLADO", "FK_TRA_TTR")
-      .references("TTR_CODIGO")
-      .inTable("TTR_TIPOS_TRASLADOS")
     })
 
   }
