@@ -12,7 +12,7 @@ export default class extends BaseSchema {
       table.string('ACR_NOMBRE',200).notNullable().comment('Nombre / Razon social')
       table.string('ACR_CIUDAD',50).notNullable().comment('nombre de la ciudad')
       table.string('ACR_DIRECCION',50).notNullable().comment('direccion')
-      table.integer('ACR_TELEFONO').notNullable().comment('numero de telefono')
+      table.bigInteger('ACR_TELEFONO').notNullable().comment('numero de telefono')
       table.string('ACR_CORREO_ELECTRONICO',50).notNullable().comment('Correo electronico')
       table.string('ACR_USUARIO_MODIFICO',15).nullable().comment('Numero del documento del ultimo usuario que hizo una modificacion')
       table.string('ACR_USUARIO_CREO',15).nullable().comment('Numero del documento del usuario que creo el registro')

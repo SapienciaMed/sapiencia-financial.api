@@ -204,17 +204,11 @@ Route.group(() => {
   .middleware("auth");
 
 
-
-
-
 Route.group(() => {
   Route.get("/get-all", "TypesTransfersController.getTypeTransfers");
 })
   .prefix("/api/v1/type-transfers")
   .middleware("auth");
-
-
-
 
   
 Route.group(() => {
@@ -232,9 +226,6 @@ Route.group(() => {
 })
   .prefix("/api/v1/budget-routes")
   .middleware("auth");
-
-
-
 
 
 Route.group(() => {
@@ -419,4 +410,4 @@ Route.group(() => {
   Route.post("/uploads", "UploadMasiveController.redirectToUploadMasive");
 })
   .prefix("/api/v1/upload-masive")
-  // .middleware("auth");
+  .middleware("auth");
