@@ -17,7 +17,7 @@ export default class CreditorValidator {
     userModify: schema.string.optional(),
     userCreate: schema.string.optional(),
     dateCreate: schema.date.optional(),
-    dateModify: schema.date.optional()
+    dateModify: schema.string.optional()
     
   })
 
