@@ -12,6 +12,7 @@ export default class CdpVinculateMGAValidator {
                 percentageAfected: schema.number(),
                 cdpCode: schema.number(),
                 cpcCode: schema.number(),
+                userCreate: schema.string.optional(),
             })
         )
     });
