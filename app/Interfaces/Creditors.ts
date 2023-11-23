@@ -13,7 +13,7 @@ export interface ICreditor {
     userModify?: string;
     userCreate?: string;
     dateCreate?: DateTime;
-    dateModify?: DateTime;
+    dateModify?: string;
 
 }
 

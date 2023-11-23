@@ -37,7 +37,7 @@ export default class CreditorRepository implements ICreditorRepository {
         toUpdate.userModify = creditor.userModify!;
         toUpdate.userCreate = creditor.userCreate!;
         toUpdate.dateCreate = creditor.dateCreate!;
-        toUpdate.dateModify = creditor.dateModify!;
+        toUpdate.dateModify = new Date().toISOString();
         if (creditor.userModify) {
             toUpdate.userModify = creditor.userModify;
         }
