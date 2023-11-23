@@ -59,6 +59,7 @@ Route.group(() => {
   Route.post("/create", "BudgetsController.createBudgets").middleware('auth:RUTA_PRESUPUESTAL_CREAR');
   Route.put("/update/:id", "BudgetsController.updateBudgets").middleware('auth:RUTA_PRESUPUESTAL_EDITAR');
   Route.get("/get-all", "BudgetsController.getAllBudgets").middleware('auth:RUTA_PRESUPUESTAL_CONSULTAR');
+  Route.get("/get-all-cpc", "BudgetsController.getAllCpc");
 })
   .prefix("/api/v1/budgets")
   .middleware("auth");

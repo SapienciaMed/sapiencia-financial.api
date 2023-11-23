@@ -178,13 +178,13 @@ export default class VinculationMGAService implements IVinculationMGAService {
       // Asumiendo que `validateVinculationMga` en el repositorio devuelve un arreglo de `ICDPVinculateMGA`
       const res = await this.vinculationMGARepository.validateAllCdp(data);
 
-      if (res <= 0) {
+     /*  if (res <= 0) {
         return new ApiResponse(
           [],
           EResponseCodes.FAIL,
           "No se encuentran valores del cdp"
         );
-      }
+      } */
 
       if ((res+data.valueFinal) > data.activitieCost) {
         return new ApiResponse(

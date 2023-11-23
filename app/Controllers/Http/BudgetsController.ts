@@ -75,4 +75,18 @@ export default class BudgetsController {
 
     }
   }
+
+  public async getAllCpc({ response }: HttpContextContract) {
+    try {
+
+      return response.send(await BudgetsProvider.getAllCpc());
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+  }
 }
