@@ -173,7 +173,10 @@ export default class AppProvider {
       "core.VinculationMGAProvider",
       () =>
         new VinculationMGAService.default(
-          new VinculationMGARepository.default()
+          new VinculationMGARepository.default(),
+          new StrategicDirectionService.default(
+            new VinculationMGARepository.default()
+          )
         )
     );
     this.app.container.singleton(

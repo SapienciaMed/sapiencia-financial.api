@@ -63,6 +63,7 @@ export interface IReportRepository {
   generateReportDetailedExecution(year: number): Promise<any[]>;
   generateReportExecutionIncome(year: number): Promise<any[]>;
   generateReportBudgetExecution(year: number): Promise<any[]>;
+  generateReportCdpRpPayMga(year: number): Promise<any[]>;
 }
 
 export default class ReportRepository implements IReportRepository {
@@ -2165,5 +2166,75 @@ export default class ReportRepository implements IReportRepository {
     }
 
     return resObject;
+  }
+
+  async generateReportCdpRpPayMga(year: number): Promise<any[]> {
+    let result: any[] = [];
+    console.log(year);
+
+    // Obtener datos no anulados de la vigencia ingresada
+    /*     const cdps = await BudgetAvailability.query()
+      .where('exercise', year)
+      .preload('amounts', (subQuery) => {
+        subQuery.whereNot('isActive', false);
+      })
+      .preload('amounts.linkRpcdps', (subQuery) => {
+        subQuery.whereNot('isActive', false);
+      })
+      .preload('amounts.linkRpcdps.budgetRecord')
+      .preload('amounts.linkRpcdps.budgetRecord.rp')
+      .preload('amounts.linkRpcdps.budgetRecord.rp.functionalProject')
+      .preload('amounts.linkRpcdps.budgetRecord.rp.functionalProject.funds'); */
+
+    /* const cdps = await BudgetAvailability.query()
+      .where('exercise', year)
+      .preload('amounts', (subQuery) => {
+        subQuery.whereNot('isActive', false);
+      })
+      .preload('amounts', (subQuery) => {
+        subQuery.preload(LinkRpcdp, (subSubQuery) => {
+          subSubQuery.whereNot('isActive', false);
+        });
+        subQuery.preload('linkRpcdp.budgetRecord.rp.functionalProject.funds');
+      });
+    
+
+    for (const cdp of cdps) {
+      for (const amount of cdp.amounts) {
+        for (const linkRpcdp of amount.linkRpcdps) {
+          const rp = linkRpcdp.budgetRecord.rp;
+          const rpFunctionalProject = rp.functionalProject;
+          const funds = rpFunctionalProject.funds;
+  
+          // Calcular el valor final (valor inicial + modificado crédito - modificado contraCrédito - fijado concluido)
+          const finalValue = amount.amount + linkRpcdp.modifiedCredit - linkRpcdp.modifiedIdcCountercredit - linkRpcdp.idcFixedCompleted;
+  
+          // Resto de los campos
+          const newItem = {
+            'N°': cdp.consecutive,
+            'Mes Expedición CDP': cdp.date.getMonth() + 1,
+            'Fecha Documento CDP': getStringDate(cdp.date),
+            'Objeto Contractual CDP': cdp.contractObject,
+            'Valor Inicial CDP': amount.amount,
+            'Modificado Contracrédito CDP': linkRpcdp.modifiedIdcCountercredit,
+            'Modificado Crédito CDP': linkRpcdp.modifiedCredit,
+            'Fijado Concluido CDP': linkRpcdp.idcFixedCompleted,
+            'Valor Final CDP': finalValue,
+            'Nombre Proyecto CDP': rpFunctionalProject.name,
+            'Pospre CDP': cdp.budget.number,
+            'Centro Gestor CDP': funds.name,
+          
+            'Producto MGA': '', 
+            'Actividad MGA': '', 
+            'Actividad detallada MGA': '', 
+            'CPC': '', 
+          };
+  
+          result.push(newItem);
+        }
+      }
+    } */
+
+    return result;
   }
 }

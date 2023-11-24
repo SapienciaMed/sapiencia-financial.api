@@ -58,7 +58,7 @@ export default class extends BaseSchema {
         .nullable()
         .comment("Numero del documento del ultimo usuario que hizo una modificacion");
       table
-        .timestamp("RPP_FECHA_MODIFICO")
+        .datetime("RPP_FECHA_MODIFICO")
         .nullable()
         .comment("Fecha y hora de la ultima modificacion");
       table
@@ -66,7 +66,7 @@ export default class extends BaseSchema {
         .notNullable()
         .comment("Número del documento del usuario que creó el registro");
       table
-        .timestamp("RPP_FECHA_CREO")
+        .datetime("RPP_FECHA_CREO")
         .notNullable()
         .comment("Fecha y hora de creación del registro");
     })

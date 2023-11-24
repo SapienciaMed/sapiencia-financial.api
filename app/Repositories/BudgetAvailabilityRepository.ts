@@ -57,6 +57,9 @@ export default class BudgetAvailabilityRepository
             query.preload("functionalProject");
           });
         });
+        subq.preload('linkRpcdps',(query)=>{
+          query.preload('budgetRecord')
+        })
       })
       .orderBy("date", "desc");
 
@@ -172,33 +175,39 @@ export default class BudgetAvailabilityRepository
   }
 
   async associateAmountsWithCdp(cdpId: number, amounts: any[]) {
+
+    
     try {
       const cdp = await BudgetAvailability.findOrFail(cdpId);
-      const existingAmounts = await cdp
+    
+      // Imprimir los importes existentes para depuración
+     /*  const existingAmounts = await cdp
         .related("amounts")
         .query()
         .select("idRppCode")
-        .exec();
-      const existingIdRppCodes = existingAmounts.map(
+        .exec(); */
+     
+      // Obtener los códigos existentes
+     /*  const existingIdRppCodes = existingAmounts.map(
         (amount) => amount.idRppCode
-      );
-
-      const newAmounts = amounts.filter((amount) => {
-        return (
-          amount.cdpId === cdpId &&
-          !existingIdRppCodes.includes(amount.idRppCode)
-        );
-      });
-
-      await cdp.related("amounts").createMany(newAmounts);
+      ); */
+    
+      // Insertar todos los importes sin realizar ninguna verificación
+      await cdp.related("amounts").createMany(amounts);
     } catch (error) {
       throw new Error("Error al asociar importes al CDP: " + error.message);
     }
+    
   }
+
+
   getBudgetAvailabilityById = async (id: string): Promise<any> => {
     return await BudgetAvailability.query()
       .where("id", Number(id))
       .preload("amounts", (query) => {
+        query.preload('linkRpcdps',(query)=>{
+          query.where('isActive',1)
+        })
         query.where("isActive", "=", true);
         query.preload("budgetRoute", (query) => {
           query.preload("projectVinculation", (query) => {

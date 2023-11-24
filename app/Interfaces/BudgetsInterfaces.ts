@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import { IEntities } from "./EntitiesInterfaces";
+import { IProductClassification } from "./ProductClassificationInterfaces";
 
 export interface IBudgets {
   id?: number;
@@ -12,7 +13,8 @@ export interface IBudgets {
   dateModify?: Date;
   userCreate?: string;
   dateCreate?: DateTime;
-  entity?: IEntities
+  entity?: IEntities;
+  productClassifications?: IProductClassification[];
 }
 
 export interface IFilterBudgets {

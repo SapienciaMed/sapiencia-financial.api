@@ -5,6 +5,7 @@ import { DateTime } from "luxon";
 import { IBudgetsRoutes } from "App/Interfaces/BudgetsRoutesInterfaces";
 import BudgetsRoutes from "../Models/BudgetsRoutes";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
+import ProductClassification from "App/Models/ProductClassification";
 
 export interface IBudgetsRepository {
   updateBudgets(budgets: IBudgets, id: number): Promise<IBudgets | null>;
@@ -14,6 +15,7 @@ export interface IBudgetsRepository {
   getAllBudgets(): Promise<IBudgets[]>;
   getBudgetsByNumber(number: string): Promise<IPagingData<IBudgets>>;
   getBudgetForCdp(projectId: number, foundId: number, posPreId: number): Promise<IBudgetsRoutes | null>;
+  getAllCpc(): Promise<any[]>;
 }
 
 export default class BudgetsRepository implements IBudgetsRepository {
@@ -38,7 +40,7 @@ export default class BudgetsRepository implements IBudgetsRepository {
       const serializedBudgetRoutes = JSON.stringify(budgetRoutes);
       const objInfo = JSON.parse(serializedBudgetRoutes);
       const idRoute = objInfo[0].id;
-      const sumValues = await AmountBudgetAvailability.query().where("ICD_CODRPP_RUTA_PRESUPUESTAL", idRoute).sum('IDC_VALOR_FINAL as sumatotal');
+      const sumValues = await AmountBudgetAvailability.query().where("ICD_CODRPP_RUTA_PRESUPUESTAL", idRoute).where("ICD_ACTIVO", 1 ).sum('IDC_VALOR_FINAL as sumatotal');
       let value = sumValues[0]['$extras']['sumatotal'] !== null ? parseFloat(sumValues[0]['$extras']['sumatotal']) : 0;
       const dataRoute = budgetRoutes[0]['$original'];
 
@@ -128,10 +130,16 @@ export default class BudgetsRepository implements IBudgetsRepository {
   }
 
   async getAllBudgets(): Promise<IBudgets[]> {
-    const res = await Budgets.query();
+    const query = Budgets.query();
+    query.preload("entity");
+    query.preload("pospresap");
+    query.preload("vinculationmga");
+    query.preload("productClassifications");
+    const res = await query;
+
     return res as IBudgets[];
   }
-
+  
   async getBudgetsByNumber(number: string): Promise<IPagingData<IBudgets>> {
 
     const query = Budgets.query();
@@ -151,5 +159,12 @@ export default class BudgetsRepository implements IBudgetsRepository {
       meta,
     };
   }
+  
+  async getAllCpc(): Promise<IBudgets[]> {
+    const query = ProductClassification.query();
+   
+    const res = await query;
 
+    return res as any[];
+  }
 }

@@ -20,7 +20,7 @@ export default class CreatePagosTable extends BaseSchema {
       table.decimal('PAG_VALOR_PAGADO', 15, 2).notNullable().comment('Valor pagado');
 
       table.string('PAG_USUARIO_CREO', 15).notNullable().comment('Numero del documento del usuario que creo el registro');
-      table.timestamp('PAG_FECHA_CREO').notNullable().comment('Fecha y hora de creacion del registro');
+      table.datetime('PAG_FECHA_CREO').notNullable().comment('Fecha y hora de creacion del registro');
     });
   }
 

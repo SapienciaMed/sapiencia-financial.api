@@ -51,4 +51,8 @@ export class StrategicDirectionServiceFake
   ): Promise<ApiResponse<any>> {
     throw new Error("Method not implemented.");
   }
+
+  getActivitiesFilters(_data: any): Promise<ApiResponse<any>> {
+    throw new Error("Method not implemented.");
+  }
 }

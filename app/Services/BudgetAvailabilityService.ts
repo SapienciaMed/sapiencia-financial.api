@@ -125,6 +125,7 @@ export default class BudgetAvailabilityService
         e.$attributes['projectName'] = projectName
         e.$attributes['fundCode'] = e.$preloaded.budgetRoute.$preloaded.funds.$attributes.number;
         e.$attributes['pospreSapienciaCode'] = e.$preloaded.budgetRoute.$preloaded.pospreSapiencia.$attributes.number;
+        e.$attributes['linkRpcdps'] = e.$preloaded.linkRpcdps;
         return e.$attributes;
       }
       )
