@@ -23,6 +23,7 @@ import { IBudgetsRoutesRepository } from "../Repositories/BudgetsRoutesRepositor
 import { IStrategicDirectionService } from "./External/StrategicDirectionService";
 import { tranformProjectsVinculation } from "App/Utils/sub-services";
 import { IBudgetsRoutes } from "App/Interfaces/BudgetsRoutesInterfaces";
+import { filterMovementsByTypeAndPospreAddAndTransfer } from "App/Utils/functions";
 export interface IAdditionsService {
   getBudgetForCdp(
     projectId: number,
@@ -533,9 +534,7 @@ export default class AdditionsService implements IAdditionsService {
   ) {
     let totalCostsByFilter =
       await this.strategicDirectionRepository.getTotalCostsByFilter({
-        validityYear: new Date(
-          filters.validityYear ? filters.validityYear : ""
-        ).getFullYear(),
+        validityYear: filters.validityYear,
         projectId: filters.projectId,
         pospreId: filters.posPreOriginId,
       });
@@ -563,52 +562,32 @@ export default class AdditionsService implements IAdditionsService {
 
     //* Agregar detalles de adición
     if (add.id) {
-      for (let i of addition.additionMove) {
-        //* Al pasar las validaciones, garantizamos que tenemos rutas presupuestales.
-        //* Obtengamos el pospre origen a partir del sapiencia para contra validar la ruta:
-        const query = await this.pospreSapRepository.getPosPreSapienciaById(
-          i.budgetPosition
-        );
-        const posPreOriginId = Number(query?.budget?.id);
-        const getRouteId =
-          await this.budgetRouteRepository.getBudgetForAdditions(
-            i.projectId,
-            i.fundId,
-            posPreOriginId,
-            i.budgetPosition
+      let isValidAccordingToPlanning = true;
+      const resultPospreOriginIds:
+        | IFiltersValidationGetTotalCostsByFilter[]
+        | undefined = await filterMovementsByTypeAndPospreAddAndTransfer(
+        addition.additionMove
+      );
+
+      if (resultPospreOriginIds && resultPospreOriginIds?.length > 0) {
+        let isValid = 0;
+
+        // //! Validacion si no movimiento existente en direccion estrategica
+        for (const res of resultPospreOriginIds) {
+          const isValidMovement = await this.validationGetTotalCostsByFilter(
+            res
           );
-        const routeId = Number(getRouteId?.id);
-        const toCreate = new AdditionsMovement();
 
-        toCreate.fill({
-          additionId: add.id,
-          type: i.type,
-          budgetRouteId: routeId,
-          value: i.value,
-        });
-
-        //! Validacion si no movimiento existente en direccion estrategica
-        const objectValidationGetTotalCostsByFilter: IFiltersValidationGetTotalCostsByFilter =
-          {
-            posPreOriginId,
-            projectId: i.projectId,
-            validityYear: addition.headAdditon!.dateModify,
-          };
-        const isValidMovement = await this.validationGetTotalCostsByFilter(
-          objectValidationGetTotalCostsByFilter
-        );
-
-        if (
-          isValidMovement.operation.code === EResponseCodes.OK &&
-          isValidMovement.data === toCreate.value
-        ) {
-          if (toCreate.type === "Gasto") {
-            await this.additionsRepository.updateAdditionValues(
-              toCreate.serialize(),
-              add.typeMovement
-            );
+          if (
+            isValidMovement.operation.code === EResponseCodes.OK &&
+            isValidMovement.data !== res.total
+          ) {
+            isValid += 1;
           }
-          await toCreate.save();
+        }
+
+        if (isValid === 0) {
+          isValidAccordingToPlanning = true;
         } else {
           const addData = await Addition.findOrFail(add.id);
           await addData.delete();
@@ -619,6 +598,40 @@ export default class AdditionsService implements IAdditionsService {
               ? "La adición no puede realizarse porque el valor no coincide con el valor de planeación."
               : "La disminución no puede realizarse porque el valor no coincide con el valor de planeación."
           );
+        }
+      }
+
+      if (isValidAccordingToPlanning) {
+        for (let i of addition.additionMove) {
+          //* Al pasar las validaciones, garantizamos que tenemos rutas presupuestales.
+          //* Obtengamos el pospre origen a partir del sapiencia para contra validar la ruta:
+          const query = await this.pospreSapRepository.getPosPreSapienciaById(
+            i.budgetPosition
+          );
+          const posPreOriginId = Number(query?.budget?.id);
+          const getRouteId =
+            await this.budgetRouteRepository.getBudgetForAdditions(
+              i.projectId,
+              i.fundId,
+              posPreOriginId,
+              i.budgetPosition
+            );
+          const routeId = Number(getRouteId?.id);
+          const toCreate = new AdditionsMovement();
+
+          toCreate.fill({
+            additionId: add.id,
+            type: i.type,
+            budgetRouteId: routeId,
+            value: i.value,
+          });
+
+          await this.additionsRepository.updateAdditionValues(
+            toCreate.serialize(),
+            add.typeMovement
+          );
+
+          await toCreate.save();
         }
       }
     } else {

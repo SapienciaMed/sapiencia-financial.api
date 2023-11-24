@@ -3,7 +3,7 @@ import * as mimeTypes from 'mime-types';
 import * as path from 'path';
 import * as ExcelJS from 'exceljs';
 
-import { IFundsRepository } from "App/Repositories/FundsRepository";
+// import { IFundsRepository } from "App/Repositories/FundsRepository";
 import { IFundsUploadMasive, IErrorsUploadMasive, IResponseUploadMasive } from '../Interfaces/UploadMasiveInterfaces';
 import { ApiResponse } from '../Utils/ApiResponses';
 import { EResponseCodes } from '../Constants/ResponseCodesEnum';
@@ -14,7 +14,7 @@ export interface IFundsUploadMasiveService {
 
 export default class FundsUploadMasiveService implements IFundsUploadMasiveService {
 
-  constructor(private fundsRepository: IFundsRepository) {}
+  // constructor(private fundsRepository: IFundsRepository) {}
 
   public bandErrors: boolean = false;
   public validArrayStructure: string[] = ["ENTIDAD CP",	"CODIGO",	"DENOMINACION", "DESCRIPCION",	"VALIDEZ DE",	"VALIDEZ A"];

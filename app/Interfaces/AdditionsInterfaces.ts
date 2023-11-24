@@ -211,7 +211,10 @@ export interface IUpdateAdditionValues {
 }
 
 export interface IFiltersValidationGetTotalCostsByFilter {
-  validityYear: Date | undefined;
+  validityYear: number;
   projectId: number;
   posPreOriginId: number;
+  valueTotalExpenses: number;
+  sumBalancesBudgetRoutes: number;
+  total: number;
 }

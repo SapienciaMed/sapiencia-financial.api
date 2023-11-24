@@ -344,20 +344,23 @@ Route.group(() => {
   );
   Route.get("/get-components", "BudgetRecordsController.getComponents");
   Route.post("/get-rp-by-filters", "BudgetRecordsController.getRpByFilters");
-  Route.get("/get-all-activity-object-contracts", "BudgetRecordsController.getAllActivityObjectContracts");
+  Route.get(
+    "/get-all-activity-object-contracts",
+    "BudgetRecordsController.getAllActivityObjectContracts"
+  );
   Route.get(
     "/get-totalvaluesimports/:id",
     "BudgetRecordsController.getTotalValuesImports"
   );
   Route.post("/update-data/:id", "BudgetRecordsController.updateRp");
-  Route.get('/get-causation/:id', 'BudgetRecordsController.getCausation')
+  Route.get("/get-causation/:id", "BudgetRecordsController.getCausation");
 })
   .prefix("/api/v1/budget-records")
   .middleware("auth");
 
 Route.group(() => {
-  Route.post('create-creditor','CreditorsController.createCreditor')
-  Route.post('update-creditor','CreditorsController.updateCreditor')
+  Route.post("create-creditor", "CreditorsController.createCreditor");
+  Route.post("update-creditor", "CreditorsController.updateCreditor");
   Route.post(
     "/get-creditors-by-filters",
     "CreditorsController.getCreditorsByFilters"
@@ -376,6 +379,5 @@ Route.group(() => {
 
 Route.group(() => {
   Route.post("/uploads", "UploadMasiveController.redirectToUploadMasive");
-})
-  .prefix("/api/v1/upload-masive")
-  // .middleware("auth");
+}).prefix("/api/v1/upload-masive");
+// .middleware("auth");
