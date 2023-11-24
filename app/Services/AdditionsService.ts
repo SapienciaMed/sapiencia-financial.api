@@ -562,11 +562,12 @@ export default class AdditionsService implements IAdditionsService {
 
     //* Agregar detalles de adición
     if (add.id) {
-      let isValidAccordingToPlanning = true;
+      let isValidAccordingToPlanning = false;
       const resultPospreOriginIds:
         | IFiltersValidationGetTotalCostsByFilter[]
         | undefined = await filterMovementsByTypeAndPospreAddAndTransfer(
-        addition.additionMove
+        addition.additionMove,
+        add.typeMovement
       );
 
       if (resultPospreOriginIds && resultPospreOriginIds?.length > 0) {

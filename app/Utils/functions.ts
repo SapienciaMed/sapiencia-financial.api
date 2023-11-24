@@ -302,7 +302,8 @@ export const getCollected = async (rppId: number, year: number) => {
 };
 
 export const filterMovementsByTypeAndPospreAddAndTransfer = async (
-  movements: any[]
+  movements: any[],
+  typeMovement: string
 ) => {
   if (!movements.length) return;
 
@@ -383,7 +384,9 @@ export const filterMovementsByTypeAndPospreAddAndTransfer = async (
 
   uniqueObjExpenses.forEach((expense) => {
     expense.total =
-      expense.valueTotalExpenses + expense.sumBalancesBudgetRoutes;
+      typeMovement === "Adicion"
+        ? expense.sumBalancesBudgetRoutes + expense.valueTotalExpenses
+        : expense.sumBalancesBudgetRoutes - expense.valueTotalExpenses;
   });
 
   // Imprimir el array de objExpense único
