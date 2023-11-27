@@ -6,7 +6,6 @@ import { IPago, IPagoFilters, IPagoResponse } from 'App/Interfaces/PagPagosInter
 import { IPagingData } from 'App/Utils/ApiResponses';
 import PagPagos from 'App/Models/PagPagos';
 import PagPagosValidator from 'App/Validators/PagPagosValidator';
-import LinkRpcdp from 'App/Models/LinkRpcdp';
 
 export interface IPagoRepository {
   getPagosPaginated(filters: IPagoFilters): Promise<IPagingData<any | null>>; 
