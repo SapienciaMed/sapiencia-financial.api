@@ -140,9 +140,9 @@ export default class AdditionsRepository implements IAdditionsRepository {
         break;
       case "Traslado":
         if (data.type === "Origen")
-          toUpdate.balance = toUpdateBalance + data.value;
-        if (data.type === "Destino")
           toUpdate.balance = toUpdateBalance - data.value;
+        if (data.type === "Destino")
+          toUpdate.balance = toUpdateBalance + data.value;
         break;
       default:
         break;

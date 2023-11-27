@@ -315,9 +315,12 @@ export const filterMovementsByTypeAndPospreAddAndTransfer = async (
   const valueMovements: any[] = [];
 
   // Filtrar los movimientos por tipo 'Gasto'
-  const expenseMovements = movements.filter(
-    (movement) => movement.type === "Gasto"
-  );
+  let expenseMovements = movements;
+  if (typeMovement !== "Transfer") {
+    expenseMovements = movements.filter(
+      (movement) => movement.type === "Gasto"
+    );
+  }
 
   for (const expense of expenseMovements) {
     //Obtener el pospreOriginId
@@ -330,11 +333,26 @@ export const filterMovementsByTypeAndPospreAddAndTransfer = async (
     const posPreOriginId = Number(queryPospreOrigin?.budget?.id);
     const validityYearMovements = Number(queryPospreOrigin?.budget?.ejercise);
 
+    let idBudgetRoute: number = 0;
+    if (typeMovement === "Transfer") {
+      const res = await BudgetsRoutes.query()
+        .where("idProjectVinculation", expense.projectId)
+        .andWhere("idBudget", posPreOriginId)
+        .andWhere("idPospreSapiencia", expense.budgetPosition)
+        .andWhere("idFund", expense.fundId)
+        .first();
+
+      const resultRes = res ? (res.serialize() as IBudgetsRoutes) : null;
+      idBudgetRoute = Number(resultRes?.id);
+    }
+
     //Guardo las rutas con su pospre origen
     valueMovements.push({
       budgetPosition: expense.budgetPosition,
       valueMovement: expense.value,
       posPreOriginId,
+      type: expense.type,
+      idBudgetRoute: idBudgetRoute,
     });
 
     // Verificar si posPreOriginId ya está en el conjunto
@@ -353,15 +371,17 @@ export const filterMovementsByTypeAndPospreAddAndTransfer = async (
     }
   }
 
-  // Sumar los valueMovement para cada posPreOriginId
-  valueMovements.forEach((movement) => {
-    const objExpense = uniqueObjExpenses.find(
-      (expense) => expense.posPreOriginId === movement.posPreOriginId
-    );
-    if (objExpense) {
-      objExpense.valueTotalExpenses += movement.valueMovement;
-    }
-  });
+  if (typeMovement !== "Transfer") {
+    // Sumar los valueMovement para cada posPreOriginId
+    valueMovements.forEach((movement) => {
+      const objExpense = uniqueObjExpenses.find(
+        (expense) => expense.posPreOriginId === movement.posPreOriginId
+      );
+      if (objExpense) {
+        objExpense.valueTotalExpenses += movement.valueMovement;
+      }
+    });
+  }
 
   //Obtener la ruta presupuestal
   for (let index = 0; index < uniqueObjExpenses.length; index++) {
@@ -370,15 +390,29 @@ export const filterMovementsByTypeAndPospreAddAndTransfer = async (
       .where("idProjectVinculation", expense.projectId)
       .andWhere("idBudget", expense.posPreOriginId);
     const queryBudgetRoute = res.map((i) => i.serialize() as IBudgetsRoutes);
-
     const sumBalancesBudgetRoutes =
       queryBudgetRoute.length > 0
-        ? queryBudgetRoute.reduce(
-            (total, i: IBudgetsRoutes) => total + (i.balance ? +i.balance : 0),
-            0
-          )
-        : 0;
+        ? queryBudgetRoute.reduce((total, i: IBudgetsRoutes) => {
+            let value = i.balance ? +i.balance : 0;
+            if (typeMovement === "Transfer") {
+              const findIdBudgetRoute = valueMovements.find(
+                (movement) => movement.idBudgetRoute === i.id
+              );
 
+              if (findIdBudgetRoute) {
+                value =
+                  findIdBudgetRoute.type === "Origen"
+                    ? value - findIdBudgetRoute.valueMovement
+                    : findIdBudgetRoute.type === "Destino"
+                    ? value + findIdBudgetRoute.valueMovement
+                    : value;
+
+                if (value < 0) value = 0;
+              }
+            }
+            return total + value;
+          }, 0)
+        : 0;
     uniqueObjExpenses[index].sumBalancesBudgetRoutes = sumBalancesBudgetRoutes;
   }
 
@@ -386,7 +420,11 @@ export const filterMovementsByTypeAndPospreAddAndTransfer = async (
     expense.total =
       typeMovement === "Adicion"
         ? expense.sumBalancesBudgetRoutes + expense.valueTotalExpenses
-        : expense.sumBalancesBudgetRoutes - expense.valueTotalExpenses;
+        : typeMovement === "Disminucion"
+        ? expense.sumBalancesBudgetRoutes - expense.valueTotalExpenses
+        : typeMovement === "Transfer"
+        ? expense.sumBalancesBudgetRoutes
+        : 0;
   });
 
   // Imprimir el array de objExpense único
