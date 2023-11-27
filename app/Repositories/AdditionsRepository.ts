@@ -3,11 +3,14 @@ import {
   IAdditionsFilters,
   IAdditionsFull,
   IAdditionsMovement,
+  IFilterUpdateAdditionValues,
+  IUpdateAdditionValues,
 } from "App/Interfaces/AdditionsInterfaces";
 import Additions from "../Models/Addition";
 import { IPagingData } from "App/Utils/ApiResponses";
 // import { DateTime } from "luxon";
 import AdditionsMovement from "../Models/AdditionsMovement";
+import BudgetsRoutes from "App/Models/BudgetsRoutes";
 
 export interface IAdditionsRepository {
   getAdditionsPaginated(
@@ -16,6 +19,7 @@ export interface IAdditionsRepository {
   createAdditions(addition: IAdditions): Promise<IAdditions>;
   getAllAdditionsList(list: string): Promise<IAdditions[] | any>;
   getAdditionById(id: number): Promise<IAdditionsFull | null>;
+  updateAdditionValues(data: any, typeMovement: string): Promise<any>;
 }
 
 export default class AdditionsRepository implements IAdditionsRepository {
@@ -114,5 +118,38 @@ export default class AdditionsRepository implements IAdditionsRepository {
       head: head.serialize() as IAdditions,
       details: details.map((i) => i.serialize() as IAdditionsMovement),
     };
+  }
+
+  async updateAdditionValues(
+    data: IFilterUpdateAdditionValues,
+    typeMovement: string
+  ): Promise<IUpdateAdditionValues | null> {
+    const toUpdate = await BudgetsRoutes.find(data.budgetRouteId);
+
+    if (!toUpdate) {
+      return null;
+    }
+
+    const toUpdateBalance = +toUpdate.balance;
+    switch (typeMovement) {
+      case "Adicion":
+        toUpdate.balance = toUpdateBalance + data.value;
+        break;
+      case "Disminucion":
+        toUpdate.balance = toUpdateBalance - data.value;
+        break;
+      case "Traslado":
+        if (data.type === "Origen")
+          toUpdate.balance = toUpdateBalance + data.value;
+        if (data.type === "Destino")
+          toUpdate.balance = toUpdateBalance - data.value;
+        break;
+      default:
+        break;
+    }
+
+    await toUpdate.save();
+
+    return toUpdate.serialize() as IUpdateAdditionValues;
   }
 }

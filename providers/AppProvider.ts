@@ -1,7 +1,7 @@
 import type { ApplicationContract } from "@ioc:Adonis/Core/Application";
 
 export default class AppProvider {
-  constructor(protected app: ApplicationContract) { }
+  constructor(protected app: ApplicationContract) {}
 
   public async register() {
     // Register your own bindings
@@ -41,19 +41,25 @@ export default class AppProvider {
       "App/Services/External/StrategicDirectionService"
     );
     const PacService = await import("App/Services/PacService");
-    const CdpService = await import("App/Services/BudgetAvailabilityService")
-    const PacSubImplementsService = await import("App/Services/PacSubImplementsService");
+    const CdpService = await import("App/Services/BudgetAvailabilityService");
+    const PacSubImplementsService = await import(
+      "App/Services/PacSubImplementsService"
+    );
     const PagPagosService = await import("App/Services/PagPagosService");
-    const BudgetRecordService = await import("App/Services/BudgetRecordService");
+    const BudgetRecordService = await import(
+      "App/Services/BudgetRecordService"
+    );
 
     const CreditorService = await import("App/Services/CreditorService");
 
-    const PayrollService = await import(
-      "App/Services/External/PayrollService"
-    );
+    const PayrollService = await import("App/Services/External/PayrollService");
 
-    const UploadMasiveService = await import("App/Services/UploadMasiveService");
-    const FundsUploadMasiveService = await import("App/Services/FundsUploadMasiveService");
+    const UploadMasiveService = await import(
+      "App/Services/UploadMasiveService"
+    );
+    const FundsUploadMasiveService = await import(
+      "App/Services/FundsUploadMasiveService"
+    );
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -61,11 +67,11 @@ export default class AppProvider {
     /**************************************************************************/
     /******************************** REPOSITORIES ****************************/
     /**************************************************************************/
-    const ReportRepository = await import(
-      "App/Repositories/ReportRepository"
-    );
+    const ReportRepository = await import("App/Repositories/ReportRepository");
 
-    const PagPagosRepository = await import("App/Repositories/PagPagosRepository")
+    const PagPagosRepository = await import(
+      "App/Repositories/PagPagosRepository"
+    );
 
     const BudgetsRepository = await import(
       "App/Repositories/BudgetsRepository"
@@ -112,27 +118,34 @@ export default class AppProvider {
     );
 
     const PacRepository = await import("App/Repositories/PacRepository");
-    const CdpRepository = await import("App/Repositories/BudgetAvailabilityRepository")
+    const CdpRepository = await import(
+      "App/Repositories/BudgetAvailabilityRepository"
+    );
 
-    const BudgetRecordRepository = await import("App/Repositories/BudgetRecordRepository")
+    const BudgetRecordRepository = await import(
+      "App/Repositories/BudgetRecordRepository"
+    );
 
-    const CreditorRepository = await import("App/Repositories/CreditorRepository")
+    const CreditorRepository = await import(
+      "App/Repositories/CreditorRepository"
+    );
     /**************************************************************************/
     /******************************** CORE  ***********************************/
     /**************************************************************************/
 
-
     this.app.container.singleton(
       "core.ReportProvider",
       () =>
-        new ReportService.default(new ReportRepository.default(
-          new StrategicDirectionService.default(
-            new VinculationMGARepository.default()
+        new ReportService.default(
+          new ReportRepository.default(
+            new StrategicDirectionService.default(
+              new VinculationMGARepository.default()
+            )
           )
-        ))
+        )
     );
 
-/*     this.app.container.singleton('core.PagoProvider', async () => {
+    /*     this.app.container.singleton('core.PagoProvider', async () => {
       const pagPagosRepository = await PagPagosRepository.default;
       return new PagPagosService.default(pagPagosRepository);
     });
@@ -231,10 +244,13 @@ export default class AppProvider {
           new FundsRepository.default(),
           new PosPreSapienciaRepository.default(),
           new BudgetsRepository.default(),
-          new BudgetsRoutesRepository.default()
+          new BudgetsRoutesRepository.default(),
+          new AdditionsRepository.default(),
+          new StrategicDirectionService.default(
+            new VinculationMGARepository.default()
+          )
         )
     );
-
 
     //API EXTERNA
     this.app.container.singleton(
@@ -305,55 +321,32 @@ export default class AppProvider {
             new VinculationMGARepository.default()
           )
         )
-
-    )
-
-
-
+    );
 
     this.app.container.singleton(
       "core.CreditorsProvider",
-      () =>
-        new CreditorService.default(
-          new CreditorRepository.default()
-        )
-
-    )
+      () => new CreditorService.default(new CreditorRepository.default())
+    );
 
     this.app.container.singleton(
       "core.PayrollProvider",
-      () =>
-        new PayrollService.default()
-
-    )
-
+      () => new PayrollService.default()
+    );
 
     this.app.container.singleton(
       "core.PayProvider",
-      () =>
-        new PagPagosService.default(
-          new PagPagosRepository.default()
-        )
-
-    )
+      () => new PagPagosService.default(new PagPagosRepository.default())
+    );
 
     this.app.container.singleton(
       "core.UploadMasiveProvider",
       () =>
         new UploadMasiveService.default(
-
-          new PagPagosService.default(
-            new PagPagosRepository.default()
-          ),
-          new FundsUploadMasiveService.default(
-            new FundsRepository.default()
-          )
-
+          new PagPagosService.default(new PagPagosRepository.default()),
+          new FundsUploadMasiveService.default(new FundsRepository.default())
         )
     );
-
   }
-
 
   public async boot() {
     // IoC container is ready
