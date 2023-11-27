@@ -2,14 +2,14 @@ import * as fs from 'fs';
 import * as mimeTypes from 'mime-types';
 import * as path from 'path';
 import * as ExcelJS from 'exceljs';
-import { IPago, IPagoFilters } from 'App/Interfaces/PagPagosInterfaces';
+import { IPago, IPagoFilters, IPagoResponse } from 'App/Interfaces/PagPagosInterfaces';
 import { IPagingData } from 'App/Utils/ApiResponses';
 import PagPagos from 'App/Models/PagPagos';
 import PagPagosValidator from 'App/Validators/PagPagosValidator';
-
+import LinkRpcdp from 'App/Models/LinkRpcdp';
 
 export interface IPagoRepository {
-  getPagosPaginated(filters: IPagoFilters): Promise<IPagingData<IPago | null>>;
+  getPagosPaginated(filters: IPagoFilters): Promise<IPagingData<any | null>>; 
   readExcel(fileBuffer: Buffer, documentType: string): Promise<IPago[]>;
 }
 
@@ -20,24 +20,120 @@ export interface IFileData {
 
 export default class PagoRepository implements IPagoRepository {
 
-  public getPagosPaginated = async (filters: IPagoFilters): Promise<IPagingData<IPago | null>> => {
+
+  mapPagoResponse(data: any[]): IPagoResponse[] {
+    console.log(data);
+    
+    return data.map((item) => ({
+      PAG_MES: item.mes,
+      CONSECUTIVO_SAP: item.id,
+      PAG_VALOR_CAUSADO: item.valorCausado,
+      PAG_VALOR_PAGADO: item.valorPagado,
+      VRP_POSICION: item['$extras'].VRP_POSICION,
+      VRP_VALOR_FINAL: item['$extras'].VRP_VALOR_FINAL,
+    }));
+  }
+
+
+  public getPagosPaginated = async (filters: IPagoFilters): Promise<IPagingData<IPagoResponse | null>> => {
     
     
     const query = PagPagos.query();
-
     if (filters.vinculacionRpCode) {
-      query.where('vinculacionRpCode', filters.vinculacionRpCode);
+      query
+        .innerJoin(
+          'VRP_VINCULACION_RPR_ICD',
+          'PAG_PAGOS.PAG_CODVRP_VINCULACION_RP',
+          'VRP_VINCULACION_RPR_ICD.VRP_CODIGO'
+        )
+        .select([
+          'PAG_PAGOS.*', // Selecciona todas las columnas de PAG_PAGOS
+          'VRP_VINCULACION_RPR_ICD.*', // Selecciona todas las columnas de VRP_VINCULACION_RPR_ICD
+        ])
+        .where('VRP_VINCULACION_RPR_ICD.VRP_CODIGO', filters.vinculacionRpCode);    }
+    
+    if (filters.mes) {
+      query.where('PAG_PAGOS.PAG_MES', filters.mes);
     }
-
+  
     const res = await query.paginate(filters.page, filters.perPage);
+    const dataExtra: any[] = [];
+    res.forEach(element => {
+      dataExtra.push(element['$extras']);
+    });
+
     const { data, meta } = res.serialize();
 
+    const newData = data.map((dataItem, index) => {
+      return {
+        ...dataItem,  // Mantén las propiedades originales de dataItem
+        '$extras': dataExtra[index],  // Agrega las propiedades de dataExtra correspondientes
+      };
+    });
+
+
+    console.log(newData);
+    
+    // console.log(JSON.stringify(data, null, 2));
+    const responseData: IPagoResponse[] = this.mapPagoResponse(newData as any) || [];
+   console.log("hola entramos aqui", responseData);
+   
     return {
-      array: data !== null ? (data as IPago[]) : [],
+      array: responseData,
       meta,
     };
   };
 
+  public getRPInformationPaginated = async (filters: IPagoFilters): Promise<IPagingData<IPagoResponse | null>> => {
+    
+    
+    const query = PagPagos.query();
+    if (filters.vinculacionRpCode) {
+      query
+        .innerJoin(
+          'VRP_VINCULACION_RPR_ICD',
+          'PAG_PAGOS.PAG_CODVRP_VINCULACION_RP',
+          'VRP_VINCULACION_RPR_ICD.VRP_CODIGO'
+        )
+        .select([
+          'PAG_PAGOS.*', // Selecciona todas las columnas de PAG_PAGOS
+          'VRP_VINCULACION_RPR_ICD.*', // Selecciona todas las columnas de VRP_VINCULACION_RPR_ICD
+        ])
+        .where('VRP_VINCULACION_RPR_ICD.VRP_CODIGO', filters.vinculacionRpCode);    }
+    
+    if (filters.mes) {
+      query.where('PAG_PAGOS.PAG_MES', filters.mes);
+    }
+  
+    const res = await query.paginate(filters.page, filters.perPage);
+    const dataExtra: any[] = [];
+    res.forEach(element => {
+      dataExtra.push(element['$extras']);
+    });
+
+    const { data, meta } = res.serialize();
+
+    const newData = data.map((dataItem, index) => {
+      return {
+        ...dataItem,  // Mantén las propiedades originales de dataItem
+        '$extras': dataExtra[index],  // Agrega las propiedades de dataExtra correspondientes
+      };
+    });
+
+
+    console.log(newData);
+    
+    // console.log(JSON.stringify(data, null, 2));
+    const responseData: IPagoResponse[] = this.mapPagoResponse(newData as any) || [];
+   console.log("hola entramos aqui", responseData);
+   
+    return {
+      array: responseData,
+      meta,
+    };
+  };
+
+ 
  
 
   public readExcel = async (fileBuffer: Buffer, documentType: string): Promise<IPago[]> => {
