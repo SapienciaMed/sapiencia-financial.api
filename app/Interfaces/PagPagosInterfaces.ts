@@ -1,4 +1,3 @@
-import LinkRpcdp from 'App/Models/LinkRpcdp';
 
 export interface IPago {
   id?: number;

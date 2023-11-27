@@ -3,13 +3,12 @@ import * as mimeTypes from 'mime-types';
 import * as path from 'path';
 import * as ExcelJS from 'exceljs';
 
-import { IPago, IPagoFilters, IPagoMasive,IPagoResponse,IPagoMasiveSave } from 'App/Interfaces/PagPagosInterfaces';
+import { IPagoFilters,IPagoResponse,IPagoMasiveSave } from 'App/Interfaces/PagPagosInterfaces';
 import { IPagingData } from 'App/Utils/ApiResponses';
 import PagoRepository, { IFileData } from 'App/Repositories/PagPagosRepository';
 import { ApiResponse } from '../Utils/ApiResponses';
 import { EResponseCodes } from '../Constants/ResponseCodesEnum';
 import { IResponseUploadMasive, IErrorsUploadMasive } from 'App/Interfaces/UploadMasiveInterfaces';
-import LinkRpcdp from 'App/Models/LinkRpcdp';
 import PagPagosValidator from 'App/Validators/PagPagosValidator';
 import PagPagos from 'App/Models/PagPagos';
 export interface IPagoService {
@@ -86,14 +85,14 @@ export default class PagoService implements IPagoService {
       throw new Error(`Error al escribir el archivo temporal: ${error.message}`);
     }
 
-    const readInfo = await this.readExcel(fileBuffer,mes);
+    const readInfo = await this.readExcel(fileBuffer);
     fs.unlinkSync(tempFilePath);
 
     return readInfo;
 
   }
 
-  public readExcel = async (fileBuffer: Buffer, usuarioCreo:any): Promise<ApiResponse<IResponseUploadMasive | null>> => {
+  public readExcel = async (fileBuffer: Buffer): Promise<ApiResponse<IResponseUploadMasive | null>> => {
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(fileBuffer);
 
@@ -140,10 +139,11 @@ export default class PagoService implements IPagoService {
   private async insertItemsToDatabase(items: any[], validator: any, model: any): Promise<void> {
     for (const item of items) {
    
+      console.log(validator);
       
       try {
         const res = await model.create(item);
-        // Hacer algo con res si es necesario
+        return res;
       } catch (error) {
         console.error(`Error de validación para el item: ${error}`);
       }
