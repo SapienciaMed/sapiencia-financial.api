@@ -22,6 +22,9 @@ export default class Pago extends BaseModel {
   @column({ columnName: 'PAG_FECHA_CREO', serializeAs: 'fechaCreo' })
   public fechaCreo: string;
 
+  @column({ columnName: 'PAG_MES', serializeAs: 'mes' }) // Nueva columna agregada
+  public mes: number;
+
   @belongsTo(() => LinkRpcdp, {
     localKey: 'vinculacionRpCode',
     foreignKey: 'VRP_CODIGO',
