@@ -7,11 +7,11 @@ export default class UploadMasiveController {
 
   public async redirectToUploadMasive({ request , response }: HttpContextContract) {
 
-    const { documentType, fileContent,usuarioCreo } = request.body();
+    const { documentType, fileContent,usuarioCreo,mes } = request.body();
 
     try {
 
-      return response.send(await UploadMasiveProvider.initialRedirect(documentType, fileContent,usuarioCreo));
+      return response.send(await UploadMasiveProvider.initialRedirect(documentType, fileContent,usuarioCreo,mes));
 
     } catch (err) {
 

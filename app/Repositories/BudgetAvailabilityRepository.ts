@@ -120,6 +120,7 @@ export default class BudgetAvailabilityRepository
       array: data as IBudgetAvailability[],
     };
   }
+  
   async filterCdpsByDateAndContractObject(
     date: string,
     contractObject: string
