@@ -247,7 +247,7 @@ Route.group(() => {
     "/get-actadmin-sapiencia",
     "AdditionsController.getAllAdditionsBySapiencia"
   );
-  Route.get("/get-by-id/:id", "AdditionsController.getAdditionById").middleware('auth:ADICION_CONSULTAR');
+  Route.get("/get-by-id/:id", "AdditionsController.getAdditionById").middleware('auth:ADICION_VISUALIZAR');
   Route.post("/update/:id", "AdditionsController.updateAdditionWithMov").middleware('auth:ADICION_EDITAR'); //Como acción de validación
   Route.post(
     "/update-save/:id",
