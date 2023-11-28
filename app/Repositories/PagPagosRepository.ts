@@ -6,10 +6,13 @@ import { IPago, IPagoFilters, IPagoResponse } from 'App/Interfaces/PagPagosInter
 import { IPagingData } from 'App/Utils/ApiResponses';
 import PagPagos from 'App/Models/PagPagos';
 import PagPagosValidator from 'App/Validators/PagPagosValidator';
+import BudgetRecord from 'App/Models/BudgetRecord';
+import LinkRpcdp from 'App/Models/LinkRpcdp';
 
 export interface IPagoRepository {
-  getPagosPaginated(filters: IPagoFilters): Promise<IPagingData<any | null>>; 
+  getPagosPaginated(filters: IPagoFilters): Promise<IPagingData<any | null>>;
   readExcel(fileBuffer: Buffer, documentType: string): Promise<IPago[]>;
+  validarExistenciaRP(posicion: number, consecutivoSap: number);
 }
 
 export interface IFileData {
@@ -21,8 +24,6 @@ export default class PagoRepository implements IPagoRepository {
 
 
   mapPagoResponse(data: any[]): IPagoResponse[] {
-    console.log(data);
-    
     return data.map((item) => ({
       PAG_MES: item.mes,
       CONSECUTIVO_SAP: item.id,
@@ -34,9 +35,55 @@ export default class PagoRepository implements IPagoRepository {
   }
 
 
+  public validarExistenciaRP = async (posicion: number, consecutivoSap: number): Promise<any> => {
+    try {
+      // Consultar en BudgetRecord
+      const rprRegistroPresupuestal = await BudgetRecord.query()
+        .select('RPR_CODIGO')
+        .where('RPR_CONSECUTIVO_SAP', consecutivoSap)
+        .first();
+
+      if (rprRegistroPresupuestal) {
+        const rprCodigo = rprRegistroPresupuestal ? rprRegistroPresupuestal.$attributes.id : null;
+
+        // Consultar en LinkRpcdp
+        const vinculacionRprIcd = await LinkRpcdp.query()
+          .select('VRP_CODRPR_REGISTRO_PRESUPUESTAL', 'VRP_VALOR_FINAL')
+          .where('VRP_POSICION', posicion)
+          .andWhere('VRP_CODRPR_REGISTRO_PRESUPUESTAL', rprCodigo)
+          .first();
+
+        if (vinculacionRprIcd) {
+
+          const vrpCodigo = vinculacionRprIcd ? vinculacionRprIcd.$attributes.rpId : null;
+          const vrpFinalAmount = vinculacionRprIcd ? vinculacionRprIcd.$attributes.finalAmount : null;
+          let vrpFinalAmountF;
+          if (vrpFinalAmount == null) {
+            vrpFinalAmountF = 0;
+          }else{
+            vrpFinalAmountF = vrpFinalAmount
+          }
+          const datas = { 'valorFinal': vrpFinalAmountF, 'rpCodigo': vrpCodigo }
+
+          return { datas };
+        } else {
+          console.error(`No se encontró una coincidencia para la posición ${posicion} y consecutivo SAP ${consecutivoSap}`);
+          return false;
+        }
+      } else {
+        console.error(`No se encontró un registro en BudgetRecord con consecutivo SAP ${consecutivoSap}`);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error al realizar las consultas:', error);
+      return false;
+    }
+  }
+
+
   public getPagosPaginated = async (filters: IPagoFilters): Promise<IPagingData<IPagoResponse | null>> => {
-    
-    
+
+
     const query = PagPagos.query();
     if (filters.vinculacionRpCode) {
       query
@@ -49,12 +96,13 @@ export default class PagoRepository implements IPagoRepository {
           'PAG_PAGOS.*', // Selecciona todas las columnas de PAG_PAGOS
           'VRP_VINCULACION_RPR_ICD.*', // Selecciona todas las columnas de VRP_VINCULACION_RPR_ICD
         ])
-        .where('VRP_VINCULACION_RPR_ICD.VRP_CODIGO', filters.vinculacionRpCode);    }
-    
+        .where('VRP_VINCULACION_RPR_ICD.VRP_CODIGO', filters.vinculacionRpCode);
+    }
+
     if (filters.mes) {
       query.where('PAG_PAGOS.PAG_MES', filters.mes);
     }
-  
+
     const res = await query.paginate(filters.page, filters.perPage);
     const dataExtra: any[] = [];
     res.forEach(element => {
@@ -72,11 +120,11 @@ export default class PagoRepository implements IPagoRepository {
 
 
     console.log(newData);
-    
+
     // console.log(JSON.stringify(data, null, 2));
     const responseData: IPagoResponse[] = this.mapPagoResponse(newData as any) || [];
-   console.log("hola entramos aqui", responseData);
-   
+    console.log("hola entramos aqui", responseData);
+
     return {
       array: responseData,
       meta,
@@ -84,8 +132,8 @@ export default class PagoRepository implements IPagoRepository {
   };
 
   public getRPInformationPaginated = async (filters: IPagoFilters): Promise<IPagingData<IPagoResponse | null>> => {
-    
-    
+
+
     const query = PagPagos.query();
     if (filters.vinculacionRpCode) {
       query
@@ -98,12 +146,13 @@ export default class PagoRepository implements IPagoRepository {
           'PAG_PAGOS.*', // Selecciona todas las columnas de PAG_PAGOS
           'VRP_VINCULACION_RPR_ICD.*', // Selecciona todas las columnas de VRP_VINCULACION_RPR_ICD
         ])
-        .where('VRP_VINCULACION_RPR_ICD.VRP_CODIGO', filters.vinculacionRpCode);    }
-    
+        .where('VRP_VINCULACION_RPR_ICD.VRP_CODIGO', filters.vinculacionRpCode);
+    }
+
     if (filters.mes) {
       query.where('PAG_PAGOS.PAG_MES', filters.mes);
     }
-  
+
     const res = await query.paginate(filters.page, filters.perPage);
     const dataExtra: any[] = [];
     res.forEach(element => {
@@ -121,19 +170,19 @@ export default class PagoRepository implements IPagoRepository {
 
 
     console.log(newData);
-    
+
     // console.log(JSON.stringify(data, null, 2));
     const responseData: IPagoResponse[] = this.mapPagoResponse(newData as any) || [];
-   console.log("hola entramos aqui", responseData);
-   
+    console.log("hola entramos aqui", responseData);
+
     return {
       array: responseData,
       meta,
     };
   };
 
- 
- 
+
+
 
   public readExcel = async (fileBuffer: Buffer, documentType: string): Promise<IPago[]> => {
     const workbook = new ExcelJS.Workbook();
@@ -233,16 +282,16 @@ export default class PagoRepository implements IPagoRepository {
   }
 
   public async processDocument(documentType: string, fileContent: string): Promise<void> {
-      await this.processDocumentType(fileContent, PagPagosValidator, PagPagos, documentType);
-  /*   switch (documentType) {
-      case 'pago':
-        break;
-      case 'funds':
-        await this.processDocumentType(fileContent, FundsValidator, Funds, documentType);
-        break;
-      default:
-        throw new Error(`Tipo de documento no reconocido: ${documentType}`);
-    } */
+    await this.processDocumentType(fileContent, PagPagosValidator, PagPagos, documentType);
+    /*   switch (documentType) {
+        case 'pago':
+          break;
+        case 'funds':
+          await this.processDocumentType(fileContent, FundsValidator, Funds, documentType);
+          break;
+        default:
+          throw new Error(`Tipo de documento no reconocido: ${documentType}`);
+      } */
   }
 
   private async processDocumentType(fileContent: string, validator: any, model: any, documentType: string): Promise<void> {
@@ -265,8 +314,8 @@ export default class PagoRepository implements IPagoRepository {
           data: item,
         });
 
-      const res = await model.create(item);
-      return res
+        const res = await model.create(item);
+        return res
       } catch (error) {
         console.error(`Error de validación para el item: ${error.messages}`);
       }
