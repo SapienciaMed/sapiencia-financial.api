@@ -53,13 +53,10 @@ Route.group(() => {
   .middleware("auth");
 
 Route.group(() => {
-  Route.post(
-    "/get-paginated",
-    "PagPagosController.getPagosPaginated"
-  ).middleware("auth:PAGOS_CONSULTAR");
-  Route.post("/create", "PagPagosController.processDocument").middleware(
-    "auth:PAGOS_CARGAR"
-  );
+Route.post("/get-paginated", "PagPagosController.getPagosPaginated").middleware("auth:PAGOS_CONSULTAR");
+Route.post("/create", "PagPagosController.processDocument").middleware("auth:PAGOS_CONSULTAR");
+Route.post("/validate-rp", "PagPagosController.validarExistenciaRP").middleware("auth:PAGOS_CONSULTAR");
+
 }).prefix("/api/v1/pag-pagos");
 
 Route.group(() => {
