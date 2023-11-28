@@ -410,7 +410,7 @@ Route.group(() => {
   Route.post(
     "/asociate-amounts",
     "BudgetAvailabilityController.associateAmountsWithCdp"
-  );
+  ).middleware("auth:CDP_ASOCIAR");
   Route.post(
     "/edit-cdp/:id",
     "BudgetAvailabilityController.editBudgetAvailabilityBasicDataCDP"
