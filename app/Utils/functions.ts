@@ -1,6 +1,7 @@
 import { IFiltersValidationGetTotalCostsByFilter } from "App/Interfaces/AdditionsInterfaces";
 import { IBudgetsRoutes } from "App/Interfaces/BudgetsRoutesInterfaces";
 import { IPosPreSapiencia } from "App/Interfaces/PosPreSapienciaInterfaces";
+import { IProjectsVinculation } from "App/Interfaces/ProjectsVinculationInterfaces";
 import AdditionsMovement from "App/Models/AdditionsMovement";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 import BudgetsRoutes from "App/Models/BudgetsRoutes";
@@ -8,6 +9,7 @@ import LinkRpcdp from "App/Models/LinkRpcdp";
 import Pac from "App/Models/Pac";
 import Pago from "App/Models/PagPagos";
 import PosPreSapiencia from "App/Models/PosPreSapiencia";
+import ProjectsVinculation from "App/Models/ProjectsVinculation";
 import TransfersMovement from "App/Models/TransfersMovement";
 
 export function getStringDate(date: Date): string {
@@ -316,6 +318,7 @@ export const filterMovementsByTypeAndPospreAddAndTransfer = async (
 
   // Filtrar los movimientos por tipo 'Gasto'
   let expenseMovements = movements;
+
   if (typeMovement !== "Transfer") {
     expenseMovements = movements.filter(
       (movement) => movement.type === "Gasto"
@@ -330,6 +333,17 @@ export const filterMovementsByTypeAndPospreAddAndTransfer = async (
       ? (res.serialize() as IPosPreSapiencia)
       : null;
 
+    const resProject = await ProjectsVinculation.find(expense.projectId);
+    const queryProject = resProject
+      ? (resProject.serialize() as IProjectsVinculation)
+      : null;
+
+    const projectId = Number(
+      queryProject?.type === "Inversion"
+        ? queryProject?.investmentProjectId
+        : queryProject?.type === "Funcionamiento" &&
+            queryProject?.operationProjectId
+    );
     const posPreOriginId = Number(queryPospreOrigin?.budget?.id);
     const validityYearMovements = Number(queryPospreOrigin?.budget?.ejercise);
 
@@ -363,7 +377,7 @@ export const filterMovementsByTypeAndPospreAddAndTransfer = async (
       // Crear objExpense y agregarlo al array
       const objExpense = {
         posPreOriginId,
-        projectId: +expense.projectId,
+        projectId: projectId,
         validityYear: validityYearMovements,
         valueTotalExpenses: 0,
       };
