@@ -44,6 +44,7 @@ Route.group(() => {
 Route.group(() => {
   Route.post("/get-paginated", "PagPagosController.getPagosPaginated");
   Route.post("/create", "PagPagosController.processDocument");
+  Route.post("/validate-rp", "PagPagosController.validarExistenciaRP");
 }).prefix("/api/v1/pag-pagos");
 
 Route.group(() => {
