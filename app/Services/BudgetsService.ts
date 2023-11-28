@@ -13,6 +13,7 @@ export interface IBudgetsService {
     createBudgets(budgets: IBudgets): Promise<ApiResponse<IBudgets>>;
     updateBudgets(fund: IBudgets, id: number): Promise<ApiResponse<IBudgets>>;
     getAllBudgets(): Promise<ApiResponse<IBudgets[]>>;
+    getAllCpc(): Promise<ApiResponse<any[]>>;
 }
 
 export default class BudgetsService implements IBudgetsService {
@@ -75,6 +76,12 @@ export default class BudgetsService implements IBudgetsService {
 
   async getAllBudgets(): Promise<ApiResponse<IBudgets[]>> {
     const res = await this.budgetsRepository.getAllBudgets();
+
+    return new ApiResponse(res, EResponseCodes.OK);
+  }
+
+  async getAllCpc(): Promise<ApiResponse<IBudgets[]>> {
+    const res = await this.budgetsRepository.getAllCpc();
 
     return new ApiResponse(res, EResponseCodes.OK);
   }

@@ -40,7 +40,15 @@ import BudgetAvailability from "App/Models/BudgetAvailability";
 import Pago from "App/Models/PagPagos";
 import FunctionalProject from "App/Models/FunctionalProject";
 import { DateTime } from "luxon";
-//import LinkRpcdp from "App/Models/LinkRpcdp";
+import {
+  InitialReportAccountsPayable,
+  InitialReportBudgetExecution,
+  InitialReportCdpBalance,
+  InitialReportDetailedExecution,
+  InitialReportExecutionExpenses,
+  InitialReportExecutionIncome,
+  InitialReportRpBalance,
+} from "App/Constants/ReportConstants";
 
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
@@ -1159,7 +1167,7 @@ export default class ReportRepository implements IReportRepository {
   //HU-094 Reporte Ejecucion de gastos
   async generateReportExecutionExpenses(year: number): Promise<any[]> {
     // Matriz que almacenará el resultado del informe
-    const resObject: IReportColumnExecutionExpenses[] = [];
+    let resObject: IReportColumnExecutionExpenses[] = [];
 
     // Consulta la ruta de presupuesto para el año especificado
     const queryBudgetRoute = await BudgetsRoutes.query()
@@ -1174,6 +1182,8 @@ export default class ReportRepository implements IReportRepository {
     const resBudgetRoute = queryBudgetRoute
       .map((i) => i.serialize())
       .filter((i) => i.pospreSapiencia && i.pospreSapiencia !== null);
+
+    if (!resBudgetRoute.length) return InitialReportExecutionExpenses;
 
     // Recorre los resultados y genera el informe
     for (const rpp of resBudgetRoute) {
@@ -1342,7 +1352,7 @@ export default class ReportRepository implements IReportRepository {
 
   //HU-095 Reporte CDP con saldo
   async generateReportCdpBalance(year: number): Promise<any[]> {
-    const resObject: IReportColumnCdpBalance[] = [];
+    let resObject: IReportColumnCdpBalance[] = [];
 
     const queryBudgetAvailability = await BudgetAvailability.query()
       .where("exercise", year)
@@ -1358,6 +1368,8 @@ export default class ReportRepository implements IReportRepository {
     const resBudgetAvailability = queryBudgetAvailability.map((i) =>
       i.serialize()
     );
+
+    if (!resBudgetAvailability.length) return InitialReportCdpBalance;
 
     for (const cdp of resBudgetAvailability) {
       let idCdp: number = cdp.id;
@@ -1456,7 +1468,7 @@ export default class ReportRepository implements IReportRepository {
 
     const { result } = await getlinksRpCdp(year, "RpBalance");
 
-    if (!result.length) return resObject;
+    if (!result.length) return InitialReportRpBalance;
 
     for (const vrp of result) {
       // let idVrp: number = vrp.id;
@@ -1545,7 +1557,7 @@ export default class ReportRepository implements IReportRepository {
 
     const { result } = await getlinksRpCdp(year, "AccountsPayable");
 
-    if (!result.length) return resObject;
+    if (!result.length) return InitialReportAccountsPayable;
 
     for (const vrp of result) {
       // let idVrp: number = vrp.id;
@@ -1671,6 +1683,8 @@ export default class ReportRepository implements IReportRepository {
           i.budget &&
           i.budget !== null
       );
+
+    if (!resBudgetRoute.length) return InitialReportDetailedExecution;
 
     for (const rpp of resBudgetRoute) {
       // let rppId: number = rpp.id;
@@ -1817,8 +1831,8 @@ export default class ReportRepository implements IReportRepository {
         Proyecto: numberProject,
         "Nombre Proyecto": nameProject,
         "Pospre origen": numberPospre,
-        "Nombre Pospre": namePospre,
         "Pospre Sapiencia": numberPospreSapiencia,
+        "Nombre Pospre": namePospre,
         "Presupuesto Inicial": initialBudget,
         Reducciones: valueReduction,
         Adiciones: valueAddiction,
@@ -1867,7 +1881,7 @@ export default class ReportRepository implements IReportRepository {
           i.budget !== null
       );
 
-    if (!resBudgetRoute.length) return resObject;
+    if (!resBudgetRoute.length) return InitialReportExecutionIncome;
 
     // Recorre los resultados y genera el informe
     for (const rpp of resBudgetRoute) {
@@ -2032,7 +2046,7 @@ export default class ReportRepository implements IReportRepository {
           i.projectVinculation !== null
       );
 
-    if (!resBudgetRoute.length) return resObject;
+    if (!resBudgetRoute.length) return InitialReportBudgetExecution;
 
     for (const rpp of resBudgetRoute) {
       // Variables to store information
@@ -2070,7 +2084,7 @@ export default class ReportRepository implements IReportRepository {
 
       //Presupuesto Ajustado
       AdjustedBudget = resFuntionalProject[0].budgetValue
-        ? resFuntionalProject[0].budgetValue
+        ? parseInt(resFuntionalProject[0].budgetValue)
         : 0;
 
       //Ejecución CDP
@@ -2078,7 +2092,7 @@ export default class ReportRepository implements IReportRepository {
 
       if (resultIcds.length > 0) {
         const resultSumAmountIcds = resultIcds.reduce(
-          (total, i) => total + parseInt(i.amount),
+          (total, i) => total + parseInt(i.idcFinalValue ? i.idcFinalValue : 0),
           0
         );
         CDPExecution = resultSumAmountIcds;
@@ -2088,7 +2102,7 @@ export default class ReportRepository implements IReportRepository {
           const resultVrp = await getVrpByIcdNotAnnulled(icd.id);
           if (resultVrp.length > 0) {
             const sumRps = resultVrp.reduce(
-              (total, i) => total + parseInt(i.finalAmount),
+              (total, i) => total + parseInt(i.finalAmount ? i.finalAmount : 0),
               0
             );
             RPExecution += sumRps;
@@ -2156,12 +2170,32 @@ export default class ReportRepository implements IReportRepository {
 
   async generateReportCdpRpPayMga(year: number): Promise<any[]> {
     let result: any[] = [];
+  console.log(year);
   
  /*    const cdps = await BudgetAvailability.query()
+    console.log(year);
+
+    // Obtener datos no anulados de la vigencia ingresada
+    /*     const cdps = await BudgetAvailability.query()
       .where('exercise', year)
       .preload('amounts', (subQuery) => {
         subQuery.whereNot('isActive', false);
-        subQuery.preload('linkRpcdps', (subSubQuery) => {
+      })
+      .preload('amounts.linkRpcdps', (subQuery) => {
+        subQuery.whereNot('isActive', false);
+      })
+      .preload('amounts.linkRpcdps.budgetRecord')
+      .preload('amounts.linkRpcdps.budgetRecord.rp')
+      .preload('amounts.linkRpcdps.budgetRecord.rp.functionalProject')
+      .preload('amounts.linkRpcdps.budgetRecord.rp.functionalProject.funds'); */
+  
+      /* const cdps = await BudgetAvailability.query()
+      .where('exercise', year)
+      .preload('amounts', (subQuery) => {
+        subQuery.whereNot('isActive', false);
+      })
+      .preload('amounts', (subQuery) => {
+        subQuery.preload(LinkRpcdp, (subSubQuery) => {
           subSubQuery.whereNot('isActive', false);
           subSubQuery.preload('budgetRecord.rp.functionalProject.funds');
         });
@@ -2210,14 +2244,9 @@ export default class ReportRepository implements IReportRepository {
         }
       }
     } */
-  
+
     return result;
   }
-  
-  
-  
-  
-  
   
   
 

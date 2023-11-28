@@ -13,13 +13,7 @@ export default class extends BaseSchema {
         .increments("TRA_CODIGO")
         .primary()
         .comment("Llave primaria");
-      table
-        .integer("TRA_CODTTR_TIPO_TRASLADO")
-        .notNullable()
-        .unsigned()
-        .references("TTR_CODIGO")
-        .inTable("TTR_TIPOS_TRASLADOS")
-        .comment("Codigo tipo traslado (FK TTR_TIPOS_TRASLADOS)");
+
       table
         .string("TRA_ACTO_ADMINISTRATIVO_DISTRITO",200)
         .notNullable()
@@ -49,9 +43,10 @@ export default class extends BaseSchema {
         .notNullable()
         .comment("Número del documento del usuario que creó el registro");
       table
-        .timestamp("TRA_FECHA_CREO")
+        .datetime("TRA_FECHA_CREO")
         .notNullable()
         .comment("Fecha y hora de creación del registro");
+
     })
 
   }

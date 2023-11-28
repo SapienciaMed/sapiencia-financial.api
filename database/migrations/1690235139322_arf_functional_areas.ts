@@ -26,7 +26,7 @@ export default class extends BaseSchema {
       .notNullable()
       .comment("Número del documento del usuario que creó el registro");
       table
-      .timestamp("ARF_FECHA_CREO")
+      .datetime("ARF_FECHA_CREO")
       .notNullable()
       .comment("Fecha y hora de creación del registro");
     })

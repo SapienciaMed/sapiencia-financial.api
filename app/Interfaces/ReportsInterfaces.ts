@@ -215,8 +215,8 @@ export interface IReportColumnDetailedExecution {
   Proyecto: string;
   "Nombre Proyecto": string;
   "Pospre origen": string;
-  "Nombre Pospre": string;
   "Pospre Sapiencia": string;
+  "Nombre Pospre": string;
   "Presupuesto Inicial": number;
   Reducciones: number;
   Adiciones: number;
