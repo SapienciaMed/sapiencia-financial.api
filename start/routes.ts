@@ -61,20 +61,21 @@ Route.post("/validate-rp", "PagPagosController.validarExistenciaRP").middleware(
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "BudgetsController.getBudgetsById").middleware(
-    "auth:RUTA_PRESUPUESTAL_VISUALIZAR"
+    "auth:POSPRE_VISUALIZAR"
   );
   Route.post(
     "/get-paginated",
     "BudgetsController.getBudgetsPaginated"
-  ).middleware("auth:RUTA_PRESUPUESTAL_CONSULTAR");
+  ).middleware("auth:POSICION_PRESUPUESTAL_CONSULTAR");
   Route.post("/create", "BudgetsController.createBudgets").middleware(
-    "auth:RUTA_PRESUPUESTAL_CREAR"
+    "auth:POSPRE_CREAR"
   );
   Route.put("/update/:id", "BudgetsController.updateBudgets").middleware(
-    "auth:RUTA_PRESUPUESTAL_EDITAR"
+    "auth:POSPRE_EDITAR"
+    //"auth:RUTA_PRESUPUESTAL_EDITAR"
   );
   Route.get("/get-all", "BudgetsController.getAllBudgets").middleware(
-    "auth:RUTA_PRESUPUESTAL_CONSULTAR"
+    "auth:POSICION_PRESUPUESTAL_CONSULTAR"
   );
   Route.get("/get-all-cpc", "BudgetsController.getAllCpc");
 })
