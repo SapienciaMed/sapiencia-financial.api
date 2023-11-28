@@ -538,7 +538,7 @@ export default class TransfersService implements ITransfersService {
     let totalCostsByFilter =
       await this.strategicDirectionRepository.getTotalCostsByFilter({
         validityYear: filters.validityYear,
-        projectId: filters.projectId,
+        projectId: filters.projectIdPlanning,
         pospreId: filters.posPreOriginId,
       });
     return totalCostsByFilter;
@@ -578,7 +578,7 @@ export default class TransfersService implements ITransfersService {
 
     if (addToHead.id) {
       //* Agreguemos los detalles del traslado
-      let isValidAccordingToPlanning = true;
+      let isValidAccordingToPlanning = false;
       const resultPospreOriginIds =
         await filterMovementsByTypeAndPospreAddAndTransfer(
           transfer.transferMovesGroups[0].data,
