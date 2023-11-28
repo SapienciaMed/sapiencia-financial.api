@@ -377,13 +377,16 @@ export const filterMovementsByTypeAndPospreAddAndTransfer = async (
       // Crear objExpense y agregarlo al array
       const objExpense = {
         posPreOriginId,
-        projectId: projectId,
+        projectIdPlanning: projectId,
+        projectIdRpp: +expense.projectId,
         validityYear: validityYearMovements,
         valueTotalExpenses: 0,
       };
       uniqueObjExpenses.push(objExpense);
     }
   }
+
+  // console.log({ uniqueObjExpenses });
 
   if (typeMovement !== "Transfer") {
     // Sumar los valueMovement para cada posPreOriginId
@@ -401,7 +404,7 @@ export const filterMovementsByTypeAndPospreAddAndTransfer = async (
   for (let index = 0; index < uniqueObjExpenses.length; index++) {
     const expense = uniqueObjExpenses[index];
     const res = await BudgetsRoutes.query()
-      .where("idProjectVinculation", expense.projectId)
+      .where("idProjectVinculation", expense.projectIdRpp)
       .andWhere("idBudget", expense.posPreOriginId);
     const queryBudgetRoute = res.map((i) => i.serialize() as IBudgetsRoutes);
     const sumBalancesBudgetRoutes =
@@ -427,8 +430,11 @@ export const filterMovementsByTypeAndPospreAddAndTransfer = async (
             return total + value;
           }, 0)
         : 0;
+
     uniqueObjExpenses[index].sumBalancesBudgetRoutes = sumBalancesBudgetRoutes;
   }
+
+  // console.log({ uniqueObjExpenses });
 
   uniqueObjExpenses.forEach((expense) => {
     expense.total =
