@@ -578,7 +578,7 @@ export default class TransfersService implements ITransfersService {
 
     if (addToHead.id) {
       //* Agreguemos los detalles del traslado
-      let isValidAccordingToPlanning = true;
+      let isValidAccordingToPlanning = false;
       const resultPospreOriginIds =
         await filterMovementsByTypeAndPospreAddAndTransfer(
           transfer.transferMovesGroups[0].data,
