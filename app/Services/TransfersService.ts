@@ -538,7 +538,7 @@ export default class TransfersService implements ITransfersService {
     let totalCostsByFilter =
       await this.strategicDirectionRepository.getTotalCostsByFilter({
         validityYear: filters.validityYear,
-        projectId: filters.projectId,
+        projectId: filters.projectIdPlanning,
         pospreId: filters.posPreOriginId,
       });
     return totalCostsByFilter;
