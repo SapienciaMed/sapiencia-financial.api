@@ -95,17 +95,28 @@ export default class PagoService implements IPagoService {
   
     if (Object.keys(result).length > 0) {
       const items = result?.data?.items;
-
-     
       
       if (items && Array.isArray(items) && items.length > 0) {
         for (const item of items) {
-       /*    const vinculacionRprIcd = await LinkRpcdp.query()
-          .select('VRP_CODIGO')
-          .where('VRP_CODRPR_REGISTRO_PRESUPUESTAL', item.posicion)
-          .first(); */
+
+          const rprRegistroPresupuestal = await BudgetRecord.query()
+          .select('RPR_CODIGO')
+          .where('RPR_CONSECUTIVO_SAP', item.vinculacionRpCode)
+          .first();
+
+          const rprCodigo = rprRegistroPresupuestal ? rprRegistroPresupuestal.$attributes.id : null;
+
+
+          const vinculacionRprIcd = await LinkRpcdp.query()
+          .select('VRP_CODRPR_REGISTRO_PRESUPUESTAL', 'VRP_VALOR_FINAL','VRP_CODIGO')
+          .where('VRP_POSICION', item.posicion)
+          .andWhere('VRP_CODRPR_REGISTRO_PRESUPUESTAL', rprCodigo)
+          .first();
+
+          const vrpCodigo = vinculacionRprIcd ? vinculacionRprIcd.$attributes.id : null;
+
             const pago: IPagoMasiveSave = {
-              vinculacionRpCode: item.vinculacionRpCode,
+              vinculacionRpCode: vrpCodigo,
               valorCausado: parseFloat(item.valorCausado),
               valorPagado: parseFloat(item.valorPagado),
               usuarioCreo: usuarioCreo,

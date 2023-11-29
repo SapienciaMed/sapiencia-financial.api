@@ -21,12 +21,12 @@ export interface IFileData {
 }
 
 export default class PagoRepository implements IPagoRepository {
-
-
+  
+ 
   mapPagoResponse(data: any[]): IPagoResponse[] {
     return data.map((item) => ({
       PAG_MES: item.mes,
-      CONSECUTIVO_SAP: item.id,
+      CONSECUTIVO_SAP: item['$extras'].RPR_CONSECUTIVO_SAP,
       PAG_VALOR_CAUSADO: item.valorCausado,
       PAG_VALOR_PAGADO: item.valorPagado,
       VRP_POSICION: item['$extras'].VRP_POSICION,
@@ -89,19 +89,26 @@ export default class PagoRepository implements IPagoRepository {
       query
         .innerJoin(
           'VRP_VINCULACION_RPR_ICD',
-          'PAG_PAGOS.PAG_CODVRP_VINCULACION_RP',
-          'VRP_VINCULACION_RPR_ICD.VRP_CODIGO'
+          'PAG_CODVRP_VINCULACION_RP',
+          'VRP_CODIGO'
+        )
+        .innerJoin(
+          'RPR_REGISTRO_PRESUPUESTAL',
+          'VRP_CODRPR_REGISTRO_PRESUPUESTAL',
+          'RPR_CODIGO'
         )
         .select([
-          'PAG_PAGOS.*', // Selecciona todas las columnas de PAG_PAGOS
-          'VRP_VINCULACION_RPR_ICD.*', // Selecciona todas las columnas de VRP_VINCULACION_RPR_ICD
+          'PAG_PAGOS.*', 
+          'VRP_VINCULACION_RPR_ICD.*', 
+          'RPR_REGISTRO_PRESUPUESTAL.RPR_CONSECUTIVO_SAP', 
         ])
-        .where('VRP_VINCULACION_RPR_ICD.VRP_CODIGO', filters.vinculacionRpCode);
+        .where('RPR_CONSECUTIVO_SAP', filters.vinculacionRpCode);
     }
 
     if (filters.mes) {
-      query.where('PAG_PAGOS.PAG_MES', filters.mes);
+      query.where('PAG_MES', filters.mes);
     }
+    
 
     const res = await query.paginate(filters.page, filters.perPage);
     const dataExtra: any[] = [];
@@ -113,17 +120,12 @@ export default class PagoRepository implements IPagoRepository {
 
     const newData = data.map((dataItem, index) => {
       return {
-        ...dataItem,  // Mantén las propiedades originales de dataItem
-        '$extras': dataExtra[index],  // Agrega las propiedades de dataExtra correspondientes
+        ...dataItem, 
+        '$extras': dataExtra[index],  
       };
     });
 
-
-    console.log(newData);
-
-    // console.log(JSON.stringify(data, null, 2));
     const responseData: IPagoResponse[] = this.mapPagoResponse(newData as any) || [];
-    console.log("hola entramos aqui", responseData);
 
     return {
       array: responseData,
@@ -169,11 +171,9 @@ export default class PagoRepository implements IPagoRepository {
     });
 
 
-    console.log(newData);
 
     // console.log(JSON.stringify(data, null, 2));
     const responseData: IPagoResponse[] = this.mapPagoResponse(newData as any) || [];
-    console.log("hola entramos aqui", responseData);
 
     return {
       array: responseData,
