@@ -579,11 +579,24 @@ export default class TransfersService implements ITransfersService {
     if (addToHead.id) {
       //* Agreguemos los detalles del traslado
       let isValidAccordingToPlanning = false;
+      let arraytransferMovesGroups: any[] = [];
+      if (transfer.transferMovesGroups.length > 1) {
+        for (const transferMoves of transfer.transferMovesGroups) {
+          arraytransferMovesGroups.push(...transferMoves.data);
+        }
+      } else {
+        arraytransferMovesGroups = transfer.transferMovesGroups[0].data;
+      }
       const resultPospreOriginIds =
         await filterMovementsByTypeAndPospreAddAndTransfer(
-          transfer.transferMovesGroups[0].data,
+          arraytransferMovesGroups,
           "Transfer"
         );
+
+      // console.log({
+      //   resultPospreOriginIds,
+      //   arraytransferMovesGroups,
+      // });
 
       if (resultPospreOriginIds && resultPospreOriginIds?.length > 0) {
         let isValid = 0;
@@ -594,6 +607,8 @@ export default class TransfersService implements ITransfersService {
             res
           );
 
+          // console.log({ res, isValidMovement });
+
           if (
             isValidMovement.operation.code === EResponseCodes.OK &&
             isValidMovement.data !== res.total
@@ -603,6 +618,8 @@ export default class TransfersService implements ITransfersService {
         }
 
         if (isValid === 0) {
+          // console.log("Paso.....................................");
+
           isValidAccordingToPlanning = true;
         } else {
           const addData = await Transfer.findOrFail(addToHead.id);
