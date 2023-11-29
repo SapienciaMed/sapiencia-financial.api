@@ -75,7 +75,7 @@ Route.group(() => {
     //"auth:RUTA_PRESUPUESTAL_EDITAR"
   );
   Route.get("/get-all", "BudgetsController.getAllBudgets").middleware(
-    "auth:POSICION_PRESUPUESTAL_CONSULTAR"
+    "auth:POSICION_PRESUPUESTAL_CONSULTAR,PROYECTO_CONSULTAR"
   );
   Route.get("/get-all-cpc", "BudgetsController.getAllCpc");
 })

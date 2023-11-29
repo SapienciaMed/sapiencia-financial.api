@@ -121,7 +121,7 @@ export default class extends BaseSeeder {
       {
         id: 17,
         budgetId: 24,
-        number: "3899998",
+        number: "84222",
         description: "Servicios de acceso a Internet de banda ancha",
         dateCreate: DateTime.now(),
       },
@@ -359,14 +359,14 @@ export default class extends BaseSeeder {
       {
         id: 51,
         budgetId: 37,
-        number: "3899998",
+        number: "92410",
         description: "Servicios de educación postsecundaria no superior",
         dateCreate: DateTime.now(),
       },
       {
         id: 52,
         budgetId: 37,
-        number: "3899998",
+        number: "94110",
         description: "Servicios de alcantarillado y tratamiento de aguas residuales",
         dateCreate: DateTime.now(),
       }
