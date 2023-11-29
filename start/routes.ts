@@ -45,9 +45,7 @@ Route.group(() => {
   Route.put("/update/:id", "FundsController.updateFund").middleware(
     "auth:FONDOS_EDITAR"
   );
-  Route.get("/get-all", "FundsController.getAllFunds").middleware(
-    "auth:FONDOS_CONSULTAR"
-  );
+  Route.get("/get-all", "FundsController.getAllFunds")
 })
   .prefix("/api/v1/funds")
   .middleware("auth");
@@ -74,9 +72,9 @@ Route.group(() => {
     "auth:POSPRE_EDITAR"
     //"auth:RUTA_PRESUPUESTAL_EDITAR"
   );
-  Route.get("/get-all", "BudgetsController.getAllBudgets").middleware(
+  Route.get("/get-all", "BudgetsController.getAllBudgets")/* .middleware(
     "auth:POSICION_PRESUPUESTAL_CONSULTAR"
-  );
+  ); */
   Route.get("/get-all-cpc", "BudgetsController.getAllCpc");
 })
   .prefix("/api/v1/budgets")
@@ -100,7 +98,7 @@ Route.group(() => {
   Route.get(
     "/get-all",
     "PosPreSapienciaController.getAllPosPreSapiencia"
-  ).middleware("auth:POSICION_PRESUPUESTAL_CONSULTAR");
+  );
   Route.get(
     "/get-posprevinculation-by-id/:id",
     "PosPreSapienciaController.getPosPreSapienciaById"
@@ -185,7 +183,7 @@ Route.group(() => {
   Route.get(
     "/get-all",
     "FunctionalAreaController.getAllFunctionalAreas"
-  ).middleware("auth:AREA_FUNCIONAL_CONSULTAR");
+  )/* .middleware("auth:AREA_FUNCIONAL_CONSULTAR"); */
   Route.post(
     "/link/create",
     "FunctionalAreaController.createProjectFunctionalArea"
