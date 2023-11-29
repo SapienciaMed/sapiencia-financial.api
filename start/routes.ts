@@ -70,11 +70,8 @@ Route.group(() => {
   );
   Route.put("/update/:id", "BudgetsController.updateBudgets").middleware(
     "auth:POSPRE_EDITAR"
-    //"auth:RUTA_PRESUPUESTAL_EDITAR"
   );
-  Route.get("/get-all", "BudgetsController.getAllBudgets")/* .middleware(
-    "auth:POSICION_PRESUPUESTAL_CONSULTAR"
-  ); */
+  Route.get("/get-all", "BudgetsController.getAllBudgets");
   Route.get("/get-all-cpc", "BudgetsController.getAllCpc");
 })
   .prefix("/api/v1/budgets")
@@ -183,7 +180,7 @@ Route.group(() => {
   Route.get(
     "/get-all",
     "FunctionalAreaController.getAllFunctionalAreas"
-  )/* .middleware("auth:AREA_FUNCIONAL_CONSULTAR"); */
+  )
   Route.post(
     "/link/create",
     "FunctionalAreaController.createProjectFunctionalArea"
