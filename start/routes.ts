@@ -45,9 +45,7 @@ Route.group(() => {
   Route.put("/update/:id", "FundsController.updateFund").middleware(
     "auth:FONDOS_EDITAR"
   );
-  Route.get("/get-all", "FundsController.getAllFunds").middleware(
-    "auth:FONDOS_CONSULTAR"
-  );
+  Route.get("/get-all", "FundsController.getAllFunds")
 })
   .prefix("/api/v1/funds")
   .middleware("auth");
@@ -61,21 +59,20 @@ Route.post("/validate-rp", "PagPagosController.validarExistenciaRP").middleware(
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "BudgetsController.getBudgetsById").middleware(
-    "auth:RUTA_PRESUPUESTAL_VISUALIZAR"
+    "auth:POSPRE_VISUALIZAR"
   );
   Route.post(
     "/get-paginated",
     "BudgetsController.getBudgetsPaginated"
-  ).middleware("auth:RUTA_PRESUPUESTAL_CONSULTAR");
+  ).middleware("auth:POSICION_PRESUPUESTAL_CONSULTAR");
   Route.post("/create", "BudgetsController.createBudgets").middleware(
-    "auth:RUTA_PRESUPUESTAL_CREAR"
+    "auth:POSPRE_CREAR"
   );
   Route.put("/update/:id", "BudgetsController.updateBudgets").middleware(
-    "auth:RUTA_PRESUPUESTAL_EDITAR"
+    "auth:POSPRE_EDITAR"
+    //"auth:RUTA_PRESUPUESTAL_EDITAR"
   );
-  Route.get("/get-all", "BudgetsController.getAllBudgets").middleware(
-    "auth:RUTA_PRESUPUESTAL_CONSULTAR"
-  );
+  Route.get("/get-all", "BudgetsController.getAllBudgets")
   Route.get("/get-all-cpc", "BudgetsController.getAllCpc");
 })
   .prefix("/api/v1/budgets")
@@ -99,7 +96,7 @@ Route.group(() => {
   Route.get(
     "/get-all",
     "PosPreSapienciaController.getAllPosPreSapiencia"
-  ).middleware("auth:POSICION_PRESUPUESTAL_CONSULTAR");
+  )
   Route.get(
     "/get-posprevinculation-by-id/:id",
     "PosPreSapienciaController.getPosPreSapienciaById"
@@ -410,7 +407,7 @@ Route.group(() => {
   Route.post(
     "/asociate-amounts",
     "BudgetAvailabilityController.associateAmountsWithCdp"
-  ).middleware("auth:CDP_ASOCIAR");
+  )
   Route.post(
     "/edit-cdp/:id",
     "BudgetAvailabilityController.editBudgetAvailabilityBasicDataCDP"
@@ -418,7 +415,7 @@ Route.group(() => {
   Route.get(
     "/get-by-id/:id",
     "BudgetAvailabilityController.getBudgetAvailabilityById"
-  ).middleware("auth:auth:CDP_VISUALIZAR");
+  )
   Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
   Route.post("/link-mga/", "BudgetAvailabilityController.linkMga").middleware(
     "auth:CDP_MGA_VINCULAR"
