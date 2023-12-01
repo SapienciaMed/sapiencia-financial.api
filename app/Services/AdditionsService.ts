@@ -535,7 +535,7 @@ export default class AdditionsService implements IAdditionsService {
     let totalCostsByFilter =
       await this.strategicDirectionRepository.getTotalCostsByFilter({
         validityYear: filters.validityYear,
-        projectId: filters.projectId,
+        projectId: filters.projectIdPlanning,
         pospreId: filters.posPreOriginId,
       });
     return totalCostsByFilter;
@@ -570,6 +570,8 @@ export default class AdditionsService implements IAdditionsService {
         add.typeMovement
       );
 
+      // console.log({ resultPospreOriginIds });
+
       if (resultPospreOriginIds && resultPospreOriginIds?.length > 0) {
         let isValid = 0;
 
@@ -578,6 +580,7 @@ export default class AdditionsService implements IAdditionsService {
           const isValidMovement = await this.validationGetTotalCostsByFilter(
             res
           );
+          // console.log({ res, isValidMovement });
 
           if (
             isValidMovement.operation.code === EResponseCodes.OK &&
@@ -588,6 +591,7 @@ export default class AdditionsService implements IAdditionsService {
         }
 
         if (isValid === 0) {
+          // console.log("Paso................................................");
           isValidAccordingToPlanning = true;
         } else {
           const addData = await Addition.findOrFail(add.id);

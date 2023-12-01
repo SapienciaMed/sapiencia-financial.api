@@ -23,6 +23,8 @@ import TransfersMovement from "../Models/TransfersMovement";
 import { tranformProjectsVinculation } from "App/Utils/sub-services";
 import { IAdditionsRepository } from "App/Repositories/AdditionsRepository";
 import { IStrategicDirectionService } from "./External/StrategicDirectionService";
+import { filterMovementsByTypeAndPospreAddAndTransfer } from "App/Utils/functions";
+import { IFiltersValidationGetTotalCostsByFilter } from "App/Interfaces/AdditionsInterfaces";
 
 export interface ITransfersService {
   getTransfersPaginated(
@@ -530,14 +532,14 @@ export default class TransfersService implements ITransfersService {
     return `OK-${idCard}`;
   }
 
-  async validationGetTotalCostsByFilter(object: any) {
-    // console.log({ validationGetTotalCostsByFilter: object });
-
+  async validationGetTotalCostsByFilter(
+    filters: IFiltersValidationGetTotalCostsByFilter
+  ) {
     let totalCostsByFilter =
       await this.strategicDirectionRepository.getTotalCostsByFilter({
-        validityYear: new Date(object.validityYear).getFullYear(),
-        projectId: parseInt(object.projectId),
-        pospreId: object.posPreOriginId,
+        validityYear: filters.validityYear,
+        projectId: filters.projectIdPlanning,
+        pospreId: filters.posPreOriginId,
       });
     return totalCostsByFilter;
   }
@@ -576,59 +578,89 @@ export default class TransfersService implements ITransfersService {
 
     if (addToHead.id) {
       //* Agreguemos los detalles del traslado
-      for (let i of transfer.transferMovesGroups) {
-        for (let j of i.data) {
-          //Obtengamos primero PosPreOrigen para procesar en la ruta.
-          const q = await this.pospreSapRepository.getPosPreSapienciaById(
-            j.budgetPosition
-          );
-          const posPreOriginId = Number(q?.budget?.id);
-          const getRouteId =
-            await this.budgetRouteRepository.getBudgetForAdditions(
-              j.projectId,
-              j.fundId,
-              posPreOriginId,
-              j.budgetPosition
-            );
+      let isValidAccordingToPlanning = false;
+      let arraytransferMovesGroups: any[] = [];
+      if (transfer.transferMovesGroups.length > 1) {
+        for (const transferMoves of transfer.transferMovesGroups) {
+          arraytransferMovesGroups.push(...transferMoves.data);
+        }
+      } else {
+        arraytransferMovesGroups = transfer.transferMovesGroups[0].data;
+      }
+      const resultPospreOriginIds =
+        await filterMovementsByTypeAndPospreAddAndTransfer(
+          arraytransferMovesGroups,
+          "Transfer"
+        );
 
-          const routeId = Number(getRouteId?.id);
-          const toCreate = new TransfersMovement();
+      // console.log({
+      //   resultPospreOriginIds,
+      //   arraytransferMovesGroups,
+      // });
 
-          toCreate.fill({
-            transferId: addToHead.id,
-            type: j.type,
-            budgetRouteId: routeId,
-            value: j.value,
-          });
+      if (resultPospreOriginIds && resultPospreOriginIds?.length > 0) {
+        let isValid = 0;
 
-          //! Validacion si no movimiento existente en direccion estrategica
-          const objectValidationGetTotalCostsByFilter = {
-            ...toCreate.serialize(),
-            posPreOriginId,
-            projectId: j.projectId,
-            validityYear: transfer.headTransfer!.dateModify,
-          };
+        // //! Validacion si no movimiento existente en direccion estrategica
+        for (const res of resultPospreOriginIds) {
           const isValidMovement = await this.validationGetTotalCostsByFilter(
-            objectValidationGetTotalCostsByFilter
+            res
           );
+
+          // console.log({ res, isValidMovement });
 
           if (
             isValidMovement.operation.code === EResponseCodes.OK &&
-            isValidMovement.data === toCreate.value
+            isValidMovement.data !== res.total
           ) {
+            isValid += 1;
+          }
+        }
+
+        if (isValid === 0) {
+          // console.log("Paso.....................................");
+
+          isValidAccordingToPlanning = true;
+        } else {
+          const addData = await Transfer.findOrFail(addToHead.id);
+          await addData.delete();
+          return new ApiResponse(
+            transfer,
+            EResponseCodes.FAIL,
+            "El traslado no puede realizarse porque el valor no coincide con el valor de planeación."
+          );
+        }
+      }
+
+      if (isValidAccordingToPlanning) {
+        for (let i of transfer.transferMovesGroups) {
+          for (let j of i.data) {
+            //Obtengamos primero PosPreOrigen para procesar en la ruta.
+            const q = await this.pospreSapRepository.getPosPreSapienciaById(
+              j.budgetPosition
+            );
+            const posPreOriginId = Number(q?.budget?.id);
+            const getRouteId =
+              await this.budgetRouteRepository.getBudgetForAdditions(
+                j.projectId,
+                j.fundId,
+                posPreOriginId,
+                j.budgetPosition
+              );
+            const routeId = Number(getRouteId?.id);
+            const toCreate = new TransfersMovement();
+            toCreate.fill({
+              transferId: addToHead.id,
+              type: j.type,
+              budgetRouteId: routeId,
+              value: j.value,
+            });
+
             await this.additionsRepository.updateAdditionValues(
               toCreate.serialize(),
               "Traslado"
             );
             await toCreate.save();
-          } else {
-            const transferData = await Transfer.findOrFail(addToHead.id);
-            await transferData.delete();
-            return new ApiResponse(
-              transfer,
-              EResponseCodes.FAIL,
-              "El traslado no puede realizarse porque el valor no coincide con el valor de planeación."
-            );
           }
         }
       }

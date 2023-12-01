@@ -25,6 +25,25 @@ export default class PagPagosController {
     }
   }
 
+
+  public async validarExistenciaRP({ request, response }: HttpContextContract) {
+    try {
+      const { posicion, consecutivoSap } = request.body(); // Asegúrate de enviar estos parámetros en el cuerpo de la solicitud
+      const exists = await this.pagoService.validarExistenciaRP(posicion, consecutivoSap);
+
+      if (exists) {
+        
+        return response.send(new ApiResponse(exists, EResponseCodes.OK, 'La relación existe.'));
+      } else {
+        return response.send(new ApiResponse(0, EResponseCodes.FAIL, 'La relación no existe.'));
+      }
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
+
   public async processDocument({ request, response }: HttpContextContract) {
     try {
       const { documentType, fileContent } = request.body();
