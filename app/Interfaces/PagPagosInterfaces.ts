@@ -49,6 +49,7 @@ export interface IPagoResponse {
   PAG_VALOR_PAGADO: number;
   VRP_POSICION: number;
   VRP_VALOR_FINAL: number;
+  [key: string]: any;
 }
 
 
