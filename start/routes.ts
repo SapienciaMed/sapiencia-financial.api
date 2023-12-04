@@ -27,9 +27,9 @@ Route.get("/", async () => {
 Route.group(() => {
   Route.post("/generate-basic-excel", "ReportController.generateExcelReport");
 })
-  .middleware("auth:REPORTE_VISUALIZAR")
-  .prefix("/api/v1/reports")
-  .middleware("auth");
+.prefix("/api/v1/reports")
+.middleware("auth");
+//.middleware("auth:REPORTE_VISUALIZAR")
 // http://127.0.0.1:4204/api/v1/reports/generate-basic-excel
 
 Route.group(() => {
@@ -181,7 +181,7 @@ Route.group(() => {
   Route.get(
     "/get-all",
     "FunctionalAreaController.getAllFunctionalAreas"
-  ).middleware("auth:AREA_FUNCIONAL_CONSULTAR");
+  )
   Route.post(
     "/link/create",
     "FunctionalAreaController.createProjectFunctionalArea"

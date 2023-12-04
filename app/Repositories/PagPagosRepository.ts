@@ -24,8 +24,14 @@ export default class PagoRepository implements IPagoRepository {
   
  
   mapPagoResponse(data: any[]): IPagoResponse[] {
+
+    const mesesDelAnio = [
+      "enero", "febrero", "marzo", "abril", "mayo", "junio",
+      "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+    ];
+      
     return data.map((item) => ({
-      PAG_MES: item.mes,
+      PAG_MES: mesesDelAnio[item.mes - 1],
       CONSECUTIVO_SAP: item['$extras'].RPR_CONSECUTIVO_SAP,
       PAG_VALOR_CAUSADO: item.valorCausado,
       PAG_VALOR_PAGADO: item.valorPagado,
@@ -108,8 +114,7 @@ export default class PagoRepository implements IPagoRepository {
     if (filters.mes) {
       query.where('PAG_MES', filters.mes);
     }
-    
-
+     
     const res = await query.paginate(filters.page, filters.perPage);
     const dataExtra: any[] = [];
     res.forEach(element => {
