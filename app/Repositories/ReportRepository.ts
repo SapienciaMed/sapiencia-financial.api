@@ -2250,11 +2250,11 @@ export default class ReportRepository implements IReportRepository {
           .where('vinculacionRpCode', vrpLinks[0].id)
           .orderBy("id", "asc").toSQL();
       
-          const getDataProject: IDataBasicProject | null =
-          await this.getProjectGeneral(
-            Number(element.budgetRoute.idProjectVinculation),
-            element.budgetRoute.pospreSapiencia?.description!
-          );
+          // const getDataProject: IDataBasicProject | null =
+          // await this.getProjectGeneral(
+          //   Number(element.budgetRoute.idProjectVinculation),
+          //   element.budgetRoute.pospreSapiencia?.description!
+          // );
         console.log(queryPays);
         // Further processing...
       }

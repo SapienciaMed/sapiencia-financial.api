@@ -5,7 +5,7 @@ import {
 import BudgetsRoutes from "../Models/BudgetsRoutes";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
-import { IPosPreSapiencia } from "App/Interfaces/PosPreSapienciaInterfaces";
+
 
 export interface IBudgetsRoutesRepository {
   updateBudgetsRoutes(
