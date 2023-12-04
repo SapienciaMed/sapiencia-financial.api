@@ -27,9 +27,9 @@ Route.get("/", async () => {
 Route.group(() => {
   Route.post("/generate-basic-excel", "ReportController.generateExcelReport");
 })
-  .middleware("auth:REPORTE_VISUALIZAR")
-  .prefix("/api/v1/reports")
-  .middleware("auth");
+.prefix("/api/v1/reports")
+.middleware("auth");
+//.middleware("auth:REPORTE_VISUALIZAR")
 // http://127.0.0.1:4204/api/v1/reports/generate-basic-excel
 
 Route.group(() => {
@@ -70,8 +70,9 @@ Route.group(() => {
   );
   Route.put("/update/:id", "BudgetsController.updateBudgets").middleware(
     "auth:POSPRE_EDITAR"
+    //"auth:RUTA_PRESUPUESTAL_EDITAR"
   );
-  Route.get("/get-all", "BudgetsController.getAllBudgets");
+  Route.get("/get-all", "BudgetsController.getAllBudgets")
   Route.get("/get-all-cpc", "BudgetsController.getAllCpc");
 })
   .prefix("/api/v1/budgets")
@@ -95,7 +96,7 @@ Route.group(() => {
   Route.get(
     "/get-all",
     "PosPreSapienciaController.getAllPosPreSapiencia"
-  );
+  )
   Route.get(
     "/get-posprevinculation-by-id/:id",
     "PosPreSapienciaController.getPosPreSapienciaById"
@@ -406,7 +407,7 @@ Route.group(() => {
   Route.post(
     "/asociate-amounts",
     "BudgetAvailabilityController.associateAmountsWithCdp"
-  );
+  )
   Route.post(
     "/edit-cdp/:id",
     "BudgetAvailabilityController.editBudgetAvailabilityBasicDataCDP"
@@ -414,7 +415,7 @@ Route.group(() => {
   Route.get(
     "/get-by-id/:id",
     "BudgetAvailabilityController.getBudgetAvailabilityById"
-  ).middleware("auth:auth:CDP_VISUALIZAR");
+  )
   Route.post("/cancel-amount/", "BudgetAvailabilityController.cancelAmountCdp");
   Route.post("/link-mga/", "BudgetAvailabilityController.linkMga").middleware(
     "auth:CDP_MGA_VINCULAR"
