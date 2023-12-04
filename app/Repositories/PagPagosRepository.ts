@@ -336,7 +336,7 @@ export default class PagoRepository implements IPagoRepository {
           data: item,
         });
 
-        const res = await model.create(item);
+        const res = await model.createOrUpdate(item);
         return res
       } catch (error) {
         console.error(`Error de validación para el item: ${error.messages}`);
