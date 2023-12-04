@@ -214,6 +214,7 @@ export default class StrategicDirectionService
 
       const objResult: IApiPlanningDetailedActivitiesSpecify = {
         //* Info Actividad General
+        idProject: res.activity.idProject,
         activityId: res.activity.id,
         codeMga: res.activity.objetiveActivity,
         codeConsecutiveProductMga: res.activity.productMGA,
@@ -327,6 +328,7 @@ export default class StrategicDirectionService
 
         const objResult: IApiPlanningDetailedActivitiesSpecify = {
           //* Info Actividad General
+          idProject: resDetailtedActitivyList.activity.idProject,
           activityId: resDetailtedActitivyList.activity.id,
           codeMga: resDetailtedActitivyList.activity.objetiveActivity,
           codeConsecutiveProductMga:
@@ -466,7 +468,7 @@ export default class StrategicDirectionService
         const objResult: IApiPlanningDetailedActivitiesSpecify = {
           //* Info Vinculación MGA
           id: vinculationMga,
-
+          idProject:resDetailtedActitivyList.activity.idProject,
           //* Info Actividad General
           activityId: resDetailtedActitivyList.activity.id,
           codeMga: resDetailtedActitivyList.activity.objetiveActivity,
@@ -589,6 +591,7 @@ export default class StrategicDirectionService
 
         const objResult: IApiPlanningDetailedActivitiesSpecify = {
           //* Info Actividad General
+          idProject:resDetailtedActitivyList.activity.idProject,
           activityId: resDetailtedActitivyList.activity.id,
           codeMga: resDetailtedActitivyList.activity.objetiveActivity,
           codeConsecutiveProductMga:

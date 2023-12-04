@@ -209,15 +209,26 @@ export default class PagoService implements IPagoService {
   ): Promise<void> {
     for (const item of items) {
       try {
-        const res = await model.create(item);
-        return res;
+        const { vinculacionRpCode, mes } = item;
+        const existingRecord = await model.query()
+          .where('PAG_CODVRP_VINCULACION_RP', vinculacionRpCode)
+          .where('PAG_MES', mes)
+          .first();
+  
+        if (existingRecord) {
+          await existingRecord.merge(item).save();
+        } else {
+          await model.create(item);
+        }
       } catch (error) {
         console.error(`Error de validación para el item: ${error}`);
       }
     }
   }
+  
 
-
+  
+  
 
 
 }

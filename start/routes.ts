@@ -258,6 +258,14 @@ Route.group(() => {
     "/update/:id",
     "BudgetsRoutesController.updateBudgetsRoutes"
   ).middleware("auth:RUTA_PRESUPUESTAL_EDITAR");
+  Route.get(
+    "/get-funds-by-project/:id",
+    "BudgetsRoutesController.getFundsByProject"
+  );
+  Route.get(
+    "/get-pospre-by-project/:projectId/fund/:fundId",
+    "BudgetsRoutesController.getPospreByProjectAndFund"
+  );
 })
   .prefix("/api/v1/budget-routes")
   .middleware("auth");
