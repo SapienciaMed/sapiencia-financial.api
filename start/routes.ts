@@ -121,7 +121,7 @@ Route.group(() => {
   Route.get("/get-by-id/:id", "VinculationMGAController.getVinculationMGAById");
   Route.post(
     "/get-paginated",
-    "VinculationMGAController.getVinculationMGAPaginated"
+    "VinculationMGAController.getActivityMGAPaginated"
   );
   Route.post(
     "/get-detailed-activities-api-planning",
@@ -138,6 +138,11 @@ Route.group(() => {
   Route.post(
     "/get-detailed-activities-api-planning-yesuseonpospre/:pospreorgid",
     "VinculationMGAController.getDetailedActivitiesYesUseOnPosPre"
+  );
+
+  Route.post(
+    "/get-detailed-activities-paginated/",
+    "VinculationMGAController.getDetailedActivitiesPaginated"
   );
   Route.get(
     "/get-detailed-activities-api-planning-by-id/:id",
@@ -253,6 +258,14 @@ Route.group(() => {
     "/update/:id",
     "BudgetsRoutesController.updateBudgetsRoutes"
   ).middleware("auth:RUTA_PRESUPUESTAL_EDITAR");
+  Route.get(
+    "/get-funds-by-project/:id",
+    "BudgetsRoutesController.getFundsByProject"
+  );
+  Route.get(
+    "/get-pospre-by-project/:projectId/fund/:fundId",
+    "BudgetsRoutesController.getPospreByProjectAndFund"
+  );
 })
   .prefix("/api/v1/budget-routes")
   .middleware("auth");
