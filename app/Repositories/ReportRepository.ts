@@ -49,7 +49,8 @@ import {
   InitialReportExecutionIncome,
   InitialReportRpBalance,
 } from "App/Constants/ReportConstants";
-
+import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
+import LinkRpcdp from "App/Models/LinkRpcdp";
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
   generateReportDetailChangeBudgets(year: number): Promise<any[]>;
@@ -67,7 +68,7 @@ export interface IReportRepository {
 }
 
 export default class ReportRepository implements IReportRepository {
-  constructor(private strategicDirectionService: IStrategicDirectionService) {}
+  constructor(private strategicDirectionService: IStrategicDirectionService) { }
 
   //? Este array nos va permitir contener la información que busquemos de planeación, como una especie de "histórico"
   //? de esta manera, si ya tenemos cargada la información, no tenemos porque hacer nuevas consultas a la API de planeación
@@ -2169,86 +2170,170 @@ export default class ReportRepository implements IReportRepository {
   }
 
   async generateReportCdpRpPayMga(year: number): Promise<any[]> {
-    let result: any[] = [];
-  console.log(year);
-  
- /*    const cdps = await BudgetAvailability.query()
-    console.log(year);
+    let result = [];
 
-    // Obtener datos no anulados de la vigencia ingresada
-    /*     const cdps = await BudgetAvailability.query()
-      .where('exercise', year)
-      .preload('amounts', (subQuery) => {
-        subQuery.whereNot('isActive', false);
+    const queryAmountAvailabily = await AmountBudgetAvailability.query()
+      .preload("budgetAvailability", (subQuery) => {
+        subQuery.where("exercise", year);
       })
-      .preload('amounts.linkRpcdps', (subQuery) => {
-        subQuery.whereNot('isActive', false);
+      .preload("budgetRoute", (subQuery) => {
+        subQuery.preload("funds")
+        subQuery.preload("projectVinculation")
+        subQuery.preload("budget")
       })
-      .preload('amounts.linkRpcdps.budgetRecord')
-      .preload('amounts.linkRpcdps.budgetRecord.rp')
-      .preload('amounts.linkRpcdps.budgetRecord.rp.functionalProject')
-      .preload('amounts.linkRpcdps.budgetRecord.rp.functionalProject.funds'); */
+      .preload("linkRpcdps")
+      .orderBy("id", "desc");
+
+    const resAmountAvailabily = queryAmountAvailabily
+      .map((i) => i.serialize());
+      
+      for (const element of resAmountAvailabily) {
+        let MonthExpeditionCdp: string = "";
+        let DateDocumentCdp: string = "";
+        let ContractualObject: string = "";
+        let InitialValue: number = 0;
+        let ModifiedAgainstCredit: number = 0;
+        let ModifiedCredit: number = 0;
+        let FixedCompleted: number = 0;
+        let FinalValue: number = 0;
+        let ProjectName: string = "";
+        let Pospre: string = "";
+        let ManagementCenter: string = "";
+        let Funds: number = 0;
+        let FunctionalArea: string = "";
+        let Project: string = "";
+        let Div: string = "";
+        let NumberSapCdp: number = 0;
+        let TaxIdentification: string = "";
+        let Cdp: number = 0;
+        let Rp: number = 0;
+        let JanuaryIncurred: number = 0;
+        let JanuaryPaid: number = 0;
+        let FebruaryIncurred: number = 0;
+        let FebruaryPaid: number = 0;
+        let MarchIncurred: number = 0;
+        let MarchPaid: number = 0;
+        let AprilIncurred: number = 0;
+        let AprilPaid: number = 0;
+        let MayIncurred: number = 0;
+        let MayPaid: number = 0;
+        let JuneIncurred: number = 0;
+        let JunePaid: number = 0;
+        let JulyIncurred: number = 0;
+        let JulyPaid: number = 0;
+        let AugustIncurred: number = 0;
+        let AugustPaid: number = 0;
+        let SeptemberIncurred: number = 0;
+        let SeptemberPaid: number = 0;
+        let OctoberIncurred: number = 0;
+        let OctoberPaid: number = 0;
+        let NovemberIncurred: number = 0;
+        let NovemberPaid: number = 0;
+        let DecemberIncurred: number = 0;
+        let DecemberPaid: number = 0;
+        let LeaderOfTheProcessRP: string = "";
+        let SupervisorRP: string = "";
+        let ProductMGA: string = "";
+        let ActivityMGA: string = "";
+        let DetailedActivityMGA: string = "";
+        let CPC: string = "";
   
-      /* const cdps = await BudgetAvailability.query()
-      .where('exercise', year)
-      .preload('amounts', (subQuery) => {
-        subQuery.whereNot('isActive', false);
-      })
-      .preload('amounts', (subQuery) => {
-        subQuery.preload(LinkRpcdp, (subSubQuery) => {
-          subSubQuery.whereNot('isActive', false);
-          subSubQuery.preload('budgetRecord.rp.functionalProject.funds');
-        });
-      }); */
-  
-/*     for (const cdp of cdps) {
-      for (const amount of cdp.amounts) {
-        for (const linkRpcdp of amount.linkRpcdps) {
-          // Asegurémonos de que todos los niveles de relaciones existan antes de acceder a ellos
-          if (
-            linkRpcdp &&
-            linkRpcdp.budgetRecord &&
-            linkRpcdp.budgetRecord.rp &&
-            linkRpcdp.budgetRecord.rp.functionalProject &&
-            linkRpcdp.budgetRecord.rp.functionalProject.funds
-          ) {
-            const rp = linkRpcdp.budgetRecord.rp;
-            const rpFunctionalProject = rp.functionalProject;
-            const funds = rpFunctionalProject.funds;
-  
-            const finalValue =
-              amount.amount +
-              linkRpcdp.modifiedCredit -
-              linkRpcdp.modifiedIdcCountercredit -
-              linkRpcdp.idcFixedCompleted;
-  
-            const newItem = {
-              'N°': cdp.consecutive,
-              'Mes Expedición CDP': cdp.date.getMonth() + 1,
-              'Fecha Documento CDP': getStringDate(cdp.date), // Asegúrate de tener la función getStringDate definida
-              'Objeto Contractual CDP': cdp.contractObject,
-              'Valor Inicial CDP': amount.amount,
-              'Modificado Contracrédito CDP': linkRpcdp.modifiedIdcCountercredit,
-              'Modificado Crédito CDP': linkRpcdp.modifiedCredit,
-              'Fijado Concluido CDP': linkRpcdp.idcFixedCompleted,
-              'Valor Final CDP': finalValue,
-              'Nombre Proyecto CDP': rpFunctionalProject.name,
-              'Pospre CDP': cdp.budget.number,
-              'Centro Gestor CDP': funds.name,
-              'Mes_Expedicion_RP': rp.dateCreate,
-              'Diferencia_CDP_RP': finalValue - rp.dateCreate,
-            };
-  
-            result.push(newItem);
-          }
-        }
+
+        const queryLinks = await LinkRpcdp.query()
+          .preload('budgetRecord', element.budgetRoute.id)
+          .orderBy("id", "asc");
+      
+        const resQueryLinks = queryLinks.map((i) => i.serialize());
+        const vrpLinks = resQueryLinks.map((elementLinks) => elementLinks);
+      
+        const queryPays = await Pago.query()
+          .where('vinculacionRpCode', vrpLinks[0].id)
+          .orderBy("id", "asc").toSQL();
+      
+          const getDataProject: IDataBasicProject | null =
+          await this.getProjectGeneral(
+            Number(element.budgetRoute.idProjectVinculation),
+            element.budgetRoute.pospreSapiencia?.description!
+          );
+        console.log(queryPays);
+        // Further processing...
       }
-    } */
+
+  
+
+
+    // console.log(resAmountAvailabily);
+
+
+    /*  try {
+       const query = `
+       SELECT
+       icd.ICD_CODIGO AS "ID ICD",
+       icd.ICD_CODCDP AS "Código CDP",
+       icd.ICD_CODRPP_RUTA_PRESUPUESTAL AS "Código RPP Ruta Presupuestal",
+       icd.ICD_POSICION AS "Posición CDP",
+       icd.ICD_VALOR AS "Valor CDP",
+       icd.ICD_ACTIVO AS "Activo",
+       icd.ICD_MOTIVO_ANULACION AS "Motivo Anulación",
+       icd.IDC_MODIFICADO_CONTRACREDITO AS "Modificado Contracrédito",
+       icd.IDC_MOFICICADO_CREDITO AS "Modificado Crédito",
+       icd.IDC_FIJADO_CONCLUIDO AS "Fijado Concluido",
+       icd.IDC_VALOR_FINAL AS "Valor Final",
+       cdp.CDP_CODIGO AS "ID CDP",
+       cdp.CDP_EJERCICIO AS "Ejercicio",
+       cdp.CDP_FECHA AS "Fecha CDP",
+       cdp.CDP_OBJETO_CONTRACTUAL AS "Objeto Contractual CDP",
+       cdp.CDP_CONSECUTIVO AS "Consecutivo CDP",
+       cdp.CDP_CONSECUTIVO_SAP AS "Consecutivo SAP CDP",
+       pps.PPS_CODIGO AS "CDP Pospre",
+       rpp.RPP_CENTRO_GESTOR as "Centro Gestor",
+       fnd.FND_NUMERO as "Fondo CDP",
+       arf.ARF_CODIGO_REFERENCIA as "AREA FUNCIONAL",
+       rpp.RPP_CODVPY_PROYECTO as "PROYECTO CDP",
+       rpp.RPP_DIV as "DIV CDP",
+       rpp.RPP_CODPPS_POSPRE_SAPIENCIA as "No. CDP Sap" ,
+       rpr.RPR_FECHA_CREO as "Mes expedicion rp",
+       rpr.RPR_FECHA_DOCUMENTO as "Fecha documento",
+       vrp.VRP_VALOR_INICIAL as "Valor inicial rp",
+       vrp.VRP_VALOR_MOD_CONTRACREDITO as "Modificado contra credito",
+       vrp.VRP_VALOR_MOD_CREDITO as "Modificado credito",
+       vrp.VRP_VALOR_FIJADO_CONCLUIDO as "Fijado concluido",
+       vrp.VRP_VALOR_FINAL AS "Valor final RP"
+   FROM
+       ICD_IMPORTES_CDP icd
+   JOIN
+       CDP_CERTIFICADO_DISPONIBILIDAD_PRESUPUESTAL cdp ON icd.ICD_CODCDP = cdp.CDP_CODIGO
+   JOIN
+       RPP_RUTAS_PRESUPUESTALES rpp ON rpp.RPP_CODIGO = icd.ICD_CODRPP_RUTA_PRESUPUESTAL
+   JOIN
+       VPY_VINCULACIONES_PROYECTO vpy on vpy.VPY_CODIGO = rpp.RPP_CODVPY_PROYECTO 
+   JOIN
+       PPS_POSICIONES_PRESUPUESTARIAS_SAPIENCIA pps ON pps.PPS_CODIGO = rpp.RPP_CODPPR_POSPRE 
+   JOIN
+       FND_FONDOS fnd ON fnd.FND_CODIGO = rpp.RPP_CODFND_FONDO
+   JOIN
+       ARF_AREAS_FUNCIONALES arf ON arf.ARF_CODIGO = vpy.VPY_CODARF_AREA_FUNCIONAL 
+   JOIN
+       VRP_VINCULACION_RPR_ICD vrp ON vrp.VRP_CODIGO = icd.ICD_CODRPP_RUTA_PRESUPUESTAL 
+   JOIN
+       RPR_REGISTRO_PRESUPUESTAL rpr ON rpr.RPR_CODIGO = vrp.VRP_CODRPR_REGISTRO_PRESUPUESTAL
+   WHERE
+       cdp.CDP_EJERCICIO = ?
+       `;
+ 
+       const rawQueryResult = await Database.rawQuery(query, [year]);
+       result = rawQueryResult.rows; // Convert RawBuilderContract to an array
+     } catch (error) {
+       console.error("Error executing SQL query:", error);
+     } */
+
+    return result;
 
     return result;
   }
-  
-  
+
+
+
 
 
 }

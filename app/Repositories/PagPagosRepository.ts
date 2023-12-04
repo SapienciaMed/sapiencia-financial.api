@@ -24,8 +24,14 @@ export default class PagoRepository implements IPagoRepository {
   
  
   mapPagoResponse(data: any[]): IPagoResponse[] {
+
+    const mesesDelAnio = [
+      "enero", "febrero", "marzo", "abril", "mayo", "junio",
+      "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+    ];
+
     return data.map((item) => ({
-      PAG_MES: item.mes,
+      PAG_MES: mesesDelAnio[item.mes - 1],
       CONSECUTIVO_SAP: item['$extras'].RPR_CONSECUTIVO_SAP,
       PAG_VALOR_CAUSADO: item.valorCausado,
       PAG_VALOR_PAGADO: item.valorPagado,
@@ -82,8 +88,6 @@ export default class PagoRepository implements IPagoRepository {
 
 
   public getPagosPaginated = async (filters: IPagoFilters): Promise<IPagingData<IPagoResponse | null>> => {
-
-
     const query = PagPagos.query();
     if (filters.vinculacionRpCode) {
       query
@@ -104,12 +108,30 @@ export default class PagoRepository implements IPagoRepository {
         ])
         .where('RPR_CONSECUTIVO_SAP', filters.vinculacionRpCode);
     }
+   
+    if (!filters.vinculacionRpCode) {
+      query
+        .innerJoin(
+          'VRP_VINCULACION_RPR_ICD',
+          'PAG_CODVRP_VINCULACION_RP',
+          'VRP_CODIGO'
+        )
+        .innerJoin(
+          'RPR_REGISTRO_PRESUPUESTAL',
+          'VRP_CODRPR_REGISTRO_PRESUPUESTAL',
+          'RPR_CODIGO'
+        )
+        .select([
+          'PAG_PAGOS.*', 
+          'VRP_VINCULACION_RPR_ICD.*', 
+          'RPR_REGISTRO_PRESUPUESTAL.RPR_CONSECUTIVO_SAP', 
+        ])
+    }
 
     if (filters.mes) {
       query.where('PAG_MES', filters.mes);
     }
-    
-
+     
     const res = await query.paginate(filters.page, filters.perPage);
     const dataExtra: any[] = [];
     res.forEach(element => {

@@ -43,12 +43,13 @@ export interface IPagoFilters {
 
 
 export interface IPagoResponse {
-  PAG_MES: number;
+  PAG_MES: string;
   CONSECUTIVO_SAP: number;
   PAG_VALOR_CAUSADO: number;
   PAG_VALOR_PAGADO: number;
   VRP_POSICION: number;
   VRP_VALOR_FINAL: number;
+  [key: string]: any;
 }
 
 
