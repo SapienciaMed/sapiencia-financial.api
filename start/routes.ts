@@ -121,7 +121,7 @@ Route.group(() => {
   Route.get("/get-by-id/:id", "VinculationMGAController.getVinculationMGAById");
   Route.post(
     "/get-paginated",
-    "VinculationMGAController.getVinculationMGAPaginated"
+    "VinculationMGAController.getActivityMGAPaginated"
   );
   Route.post(
     "/get-detailed-activities-api-planning",
@@ -138,6 +138,11 @@ Route.group(() => {
   Route.post(
     "/get-detailed-activities-api-planning-yesuseonpospre/:pospreorgid",
     "VinculationMGAController.getDetailedActivitiesYesUseOnPosPre"
+  );
+
+  Route.post(
+    "/get-detailed-activities-paginated/",
+    "VinculationMGAController.getDetailedActivitiesPaginated"
   );
   Route.get(
     "/get-detailed-activities-api-planning-by-id/:id",

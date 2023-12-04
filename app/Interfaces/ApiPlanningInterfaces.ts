@@ -59,7 +59,7 @@ export interface IApiSpecificPlanningProjectData {
   meta?: IInternalPagination;
 }
 
-export interface Activity {
+export interface IActivity {
   id: number;
   objetiveActivity: number;
   stageActivity: number;
@@ -85,7 +85,7 @@ export interface IApiPlanningDetailedActivities {
   validatorCPC: null;
   clasificatorCPC: null;
   sectionValidatorCPC: null;
-  activity: Activity;
+  activity: IActivity;
 }
 
 export interface IApiPlanningDetailedActivitiesSpecify {

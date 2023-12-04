@@ -64,6 +64,10 @@ export default class AppProvider {
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
 
+    const CoreService = await import(
+      "App/Services/External/CoreService"
+    );
+
     /**************************************************************************/
     /******************************** REPOSITORIES ****************************/
     /**************************************************************************/
@@ -176,7 +180,8 @@ export default class AppProvider {
           new VinculationMGARepository.default(),
           new StrategicDirectionService.default(
             new VinculationMGARepository.default()
-          )
+          ),
+          new CoreService.default()
         )
     );
     this.app.container.singleton(
