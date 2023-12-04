@@ -32,7 +32,6 @@ export default class ProjectsService implements IProjectsService {
       // Puedes agregar más lógica aquí para manejar el error según tus necesidades.
     }
     const res = await tranformProjectsVinculation(allProjects);
-    // console.log(allProjects);
 
     return new ApiResponse(res, EResponseCodes.OK);
   }
