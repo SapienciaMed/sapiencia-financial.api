@@ -27,6 +27,7 @@ export interface IPagoMasiveSave {
   valorPagado: number;  
   vinculacionRpCode: number;  
   mes?: number;  
+  ejercicio?: string;  
   usuarioCreo?: string;
   fechaCreo?: Date ;  
   
@@ -36,8 +37,9 @@ export interface IPagoMasiveSave {
 export interface IPagoFilters {
   vinculacionRpCode?: number;
   mes?: number;
+  exercise?: string;
   page: number;
-  perPage?: number;  // Cambiado a opcional
+  perPage?: number; 
 }
 
 
