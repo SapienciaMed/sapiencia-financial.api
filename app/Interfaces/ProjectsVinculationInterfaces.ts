@@ -12,9 +12,8 @@ export interface IProjectsVinculation {
   userCreate?: string;
   dateCreate?: DateTime;
 
-  areaFuntional?: IFunctionalArea
-  functionalProject?: IFunctionalProject
-  
+  areaFuntional?: IFunctionalArea;
+  functionalProject?: IFunctionalProject;
 }
 
 export interface IProjectsVinculationFull extends IProjectsVinculation {

@@ -36,7 +36,7 @@ export default class PagoRepository implements IPagoRepository {
       PAG_VALOR_CAUSADO: item.valorCausado,
       PAG_VALOR_PAGADO: item.valorPagado,
       VRP_POSICION: item['$extras'].VRP_POSICION,
-      VRP_VALOR_FINAL: item['$extras'].VRP_VALOR_FINAL,
+      VRP_VALOR_FINAL: item['$extras'].VRP_VALOR_FINAL.toFixed(2),
     }));
   }
 
