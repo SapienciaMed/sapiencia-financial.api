@@ -36,7 +36,7 @@ export default class PagoRepository implements IPagoRepository {
       PAG_VALOR_CAUSADO: item.valorCausado,
       PAG_VALOR_PAGADO: item.valorPagado,
       VRP_POSICION: item['$extras'].VRP_POSICION,
-      VRP_VALOR_FINAL: item['$extras'].VRP_VALOR_FINAL,
+      VRP_VALOR_FINAL: item['$extras'].VRP_VALOR_FINAL.toFixed(2),
     }));
   }
 
@@ -130,6 +130,10 @@ export default class PagoRepository implements IPagoRepository {
 
     if (filters.mes) {
       query.where('PAG_MES', filters.mes);
+    }
+  
+    if (filters.exercise) {
+      query.where('PAG_EJERCICIO', filters.exercise);
     }
      
     const res = await query.paginate(filters.page, filters.perPage);
