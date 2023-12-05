@@ -5,7 +5,7 @@ import {
 import BudgetsRoutes from "../Models/BudgetsRoutes";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
-
+import { IStrategicDirectionService } from "App/Services/External/StrategicDirectionService";
 
 export interface IBudgetsRoutesRepository {
   updateBudgetsRoutes(
@@ -14,6 +14,9 @@ export interface IBudgetsRoutesRepository {
   ): Promise<IBudgetsRoutes | null>;
   getBudgetsRoutesById(id: number): Promise<IBudgetsRoutes | null>;
   getBudgetsRoutesPaginated(
+    filters: IBudgetsRoutesFilters
+  ): Promise<IPagingData<IBudgetsRoutes>>;
+  getBudgetsRoutesPaginatedV2(
     filters: IBudgetsRoutesFilters
   ): Promise<IPagingData<IBudgetsRoutes>>;
   createBudgetsRoutes(budgets: IBudgetsRoutes): Promise<IBudgetsRoutes>;
@@ -33,9 +36,7 @@ export interface IBudgetsRoutesRepository {
   getBudgetsSpcifyExerciseWithPosPreSapi(
     posPreSapi: number
   ): Promise<IBudgetsRoutes[] | null>;
-  getFundsByProject(
-    ids: number
-  ): Promise<IBudgetsRoutes[] | null>;
+  getFundsByProject(ids: number): Promise<IBudgetsRoutes[] | null>;
   getPospreByProjectAndFund(
     projectId: number,
     fundId: number
@@ -45,7 +46,7 @@ export interface IBudgetsRoutesRepository {
 export default class BudgetsRoutesRepository
   implements IBudgetsRoutesRepository
 {
-  constructor() {}
+  constructor(private strategicDirectionService: IStrategicDirectionService) {}
   async getBudgetsRoutesById(id: number): Promise<IBudgetsRoutes | null> {
     const res = await BudgetsRoutes.find(id);
     return res ? (res.serialize() as IBudgetsRoutes) : null;
@@ -79,6 +80,59 @@ export default class BudgetsRoutesRepository
     };
   }
 
+  async getBudgetsRoutesPaginatedV2(
+    filters: IBudgetsRoutesFilters
+  ): Promise<IPagingData<IBudgetsRoutes>> {
+    let isValid = false;
+    const initalEmptyData = {
+      array: [],
+      meta: {
+        total: 0,
+        per_page: 10,
+        current_page: 1,
+        last_page: 1,
+        first_page: 1,
+        first_page_url: "/?page=1",
+        last_page_url: "/?page=1",
+        next_page_url: null,
+        previous_page_url: null,
+      },
+    };
+    if (filters.idProjectVinculation) {
+      const queryStrategyDirection =
+        await this.strategicDirectionService.getProjectById(
+          +filters.idProjectVinculation
+        );
+
+      if (queryStrategyDirection) isValid = true;
+    }
+
+    if (isValid) {
+      const query = BudgetsRoutes.query();
+
+      if (filters.idProjectVinculation)
+        query.where("idProjectVinculation", filters.idProjectVinculation);
+      if (filters.idRoute) query.where("id", Number(filters.idRoute));
+
+      query.preload("projectVinculation");
+      query.preload("budget");
+      query.preload("funds");
+      query.preload("pospreSapiencia");
+
+      const res = await query.paginate(filters.page, filters.perPage);
+      const { data, meta } = res.serialize();
+
+      console.log({ data, meta });
+
+      return {
+        array: data as IBudgetsRoutes[],
+        meta,
+      };
+    } else {
+      return initalEmptyData;
+    }
+  }
+
   async getBudgetsRoutesWithoutPagination(): Promise<IBudgetsRoutes[]> {
     const query = BudgetsRoutes.query();
 
@@ -91,18 +145,22 @@ export default class BudgetsRoutesRepository
 
     return res;
   }
-  async getFundsByProject(id:number): Promise<IBudgetsRoutes[]> {
-    const query = BudgetsRoutes.query().where('idProjectVinculation',id);
+  async getFundsByProject(id: number): Promise<IBudgetsRoutes[]> {
+    const query = BudgetsRoutes.query().where("idProjectVinculation", id);
     query.preload("funds");
-   
+
     const res = await query;
 
     return res;
   }
-  
 
-  async getPospreByProjectAndFund(projectId: number, fundId: number): Promise<IBudgetsRoutes[] | null> {
-    const query = BudgetsRoutes.query().where('idProjectVinculation',projectId).andWhere('idFund',fundId);
+  async getPospreByProjectAndFund(
+    projectId: number,
+    fundId: number
+  ): Promise<IBudgetsRoutes[] | null> {
+    const query = BudgetsRoutes.query()
+      .where("idProjectVinculation", projectId)
+      .andWhere("idFund", fundId);
     query.preload("pospreSapiencia");
     const res = await query;
 
