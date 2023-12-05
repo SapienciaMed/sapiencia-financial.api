@@ -59,7 +59,6 @@ export interface IStrategicDirectionService {
   getActivitiesFilters(
     data: IActivitiesFilters
   ): Promise<ApiResponse<IApiPlanningDetailedActivities[]>>;
-  getProjectById(idProject: number): Promise<ApiResponse<number | any>>;
 }
 
 export default class StrategicDirectionService
@@ -677,20 +676,5 @@ export default class StrategicDirectionService
     });
 
     return res.data;
-  }
-
-  async getProjectById(idProject: number): Promise<ApiResponse<number>> {
-    const urlConsumer = `/api/v1/projects/get-project-by-id`;
-    const dataResult = await this.axiosInstance.post<ApiResponse<number>>(
-      urlConsumer,
-      idProject,
-      {
-        headers: {
-          Authorization: process.env.CURRENT_AUTHORIZATION,
-        },
-      }
-    );
-
-    return dataResult.data;
   }
 }

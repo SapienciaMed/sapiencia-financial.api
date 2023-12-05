@@ -6,6 +6,8 @@ import BudgetsRoutes from "../Models/BudgetsRoutes";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
 import { IStrategicDirectionService } from "App/Services/External/StrategicDirectionService";
+import ProjectsVinculation from "App/Models/ProjectsVinculation";
+import FunctionalProject from "App/Models/FunctionalProject";
 
 export interface IBudgetsRoutesRepository {
   updateBudgetsRoutes(
@@ -83,7 +85,9 @@ export default class BudgetsRoutesRepository
   async getBudgetsRoutesPaginatedV2(
     filters: IBudgetsRoutesFilters
   ): Promise<IPagingData<IBudgetsRoutes>> {
-    let isValid = false;
+    let isValid: boolean = false;
+    let idProject: number = 0;
+    const idsProjects: number[] = [];
     const initalEmptyData = {
       array: [],
       meta: {
@@ -99,19 +103,47 @@ export default class BudgetsRoutesRepository
       },
     };
     if (filters.idProjectVinculation) {
-      const queryStrategyDirection =
-        await this.strategicDirectionService.getProjectById(
-          +filters.idProjectVinculation
-        );
+      const queryPfu = await FunctionalProject.query().where(
+        "number",
+        filters.idProjectVinculation.toString()
+      );
 
-      if (queryStrategyDirection) isValid = true;
+      const resPfu = queryPfu.map((i) => i.serialize());
+
+      if (!resPfu.length) {
+        const queryStrategyDirection =
+          await this.strategicDirectionService.getProjectByFilters({
+            codeList: [filters.idProjectVinculation.toString()],
+          });
+
+        if (
+          queryStrategyDirection.operation.code === "OK" &&
+          queryStrategyDirection.data.length > 0
+        ) {
+          idProject = queryStrategyDirection.data[0].id;
+          isValid = true;
+        }
+      } else {
+        idProject = resPfu[0].id;
+        isValid = true;
+      }
+
+      const queryVpy = await ProjectsVinculation.query().where(
+        !resPfu.length ? "investmentProjectId" : "operationProjectId",
+        idProject
+      );
+      const resVpy = queryVpy.map((i) => i.serialize());
+
+      resVpy.forEach((element) => {
+        idsProjects.push(element.id);
+      });
     }
 
     if (isValid) {
       const query = BudgetsRoutes.query();
 
       if (filters.idProjectVinculation)
-        query.where("idProjectVinculation", filters.idProjectVinculation);
+        query.whereIn("idProjectVinculation", idsProjects);
       if (filters.idRoute) query.where("id", Number(filters.idRoute));
 
       query.preload("projectVinculation");
@@ -121,8 +153,6 @@ export default class BudgetsRoutesRepository
 
       const res = await query.paginate(filters.page, filters.perPage);
       const { data, meta } = res.serialize();
-
-      console.log({ data, meta });
 
       return {
         array: data as IBudgetsRoutes[],

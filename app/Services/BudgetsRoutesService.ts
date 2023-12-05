@@ -26,6 +26,9 @@ export interface IBudgetsRoutesService {
     projectId: number,
     fundId: number
   ): Promise<ApiResponse<IPosPreSapiencia[] | null>>;
+  getBudgetsRoutesPaginatedV2(
+    filters: IBudgetsRoutesFilters
+  ): Promise<ApiResponse<IPagingData<IBudgetsRoutes>>>;
 }
 
 export default class BudgetsRoutesService implements IBudgetsRoutesService {
@@ -44,6 +47,16 @@ export default class BudgetsRoutesService implements IBudgetsRoutesService {
   }
 
   async getBudgetsRoutesPaginated(
+    filters: IBudgetsRoutesFilters
+  ): Promise<ApiResponse<IPagingData<IBudgetsRoutes>>> {
+    const res = await this.BudgetsRoutesRepository.getBudgetsRoutesPaginated(
+      filters
+    );
+
+    return new ApiResponse(res, EResponseCodes.OK);
+  }
+
+  async getBudgetsRoutesPaginatedV2(
     filters: IBudgetsRoutesFilters
   ): Promise<ApiResponse<IPagingData<IBudgetsRoutes>>> {
     const res = await this.BudgetsRoutesRepository.getBudgetsRoutesPaginatedV2(
