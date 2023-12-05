@@ -6,6 +6,7 @@ import BudgetsRoutes from "../Models/BudgetsRoutes";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
 
+
 export interface IBudgetsRoutesRepository {
   updateBudgetsRoutes(
     budgets: IBudgetsRoutes,
@@ -31,6 +32,13 @@ export interface IBudgetsRoutesRepository {
   ): Promise<IBudgetsRoutes | null>;
   getBudgetsSpcifyExerciseWithPosPreSapi(
     posPreSapi: number
+  ): Promise<IBudgetsRoutes[] | null>;
+  getFundsByProject(
+    ids: number
+  ): Promise<IBudgetsRoutes[] | null>;
+  getPospreByProjectAndFund(
+    projectId: number,
+    fundId: number
   ): Promise<IBudgetsRoutes[] | null>;
 }
 
@@ -79,6 +87,23 @@ export default class BudgetsRoutesRepository
     query.preload("funds");
     query.preload("pospreSapiencia");
 
+    const res = await query;
+
+    return res;
+  }
+  async getFundsByProject(id:number): Promise<IBudgetsRoutes[]> {
+    const query = BudgetsRoutes.query().where('idProjectVinculation',id);
+    query.preload("funds");
+   
+    const res = await query;
+
+    return res;
+  }
+  
+
+  async getPospreByProjectAndFund(projectId: number, fundId: number): Promise<IBudgetsRoutes[] | null> {
+    const query = BudgetsRoutes.query().where('idProjectVinculation',projectId).andWhere('idFund',fundId);
+    query.preload("pospreSapiencia");
     const res = await query;
 
     return res;

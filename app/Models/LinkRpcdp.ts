@@ -71,6 +71,7 @@ export default class LinkRpcdp extends BaseModel {
   @hasMany(() => Pago, {
     foreignKey: 'vinculacionRpCode', 
     localKey: 'id',
+    serializeAs: 'vinculacionRpCode'
   })
   public pagos: HasMany<typeof Pago>;
 

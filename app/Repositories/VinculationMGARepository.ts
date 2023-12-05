@@ -1,6 +1,8 @@
 import {
   IFiltersVinculationMGA,
-  IActivityMGA
+  IActivityMGA,
+  IVinculationMGAFilters,
+  IVinculationMGA
 } from "App/Interfaces/VinculationMGAInterfaces";
 
 import ActivitiesMGA from "App/Models/ActivitiesMGA";
@@ -17,7 +19,9 @@ export interface IVinculationMGARepository {
 
   getInitialResource(): Promise<string>;
   getVinculationMGAById(id: number): Promise<IActivityMGA | null>;
-  getVinculationMGAPaginated(filters: IFiltersVinculationMGA): Promise<IPagingData<IActivityMGA>>;
+  getVinculationMGAPaginated(filters: IVinculationMGAFilters): Promise<IPagingData<IVinculationMGA>>;
+
+  getActivityMGAPaginated(filters: IFiltersVinculationMGA): Promise<IPagingData<IActivityMGA>>;
   createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaV2): Promise<IVinculationMgaV2>;
   deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<IDesvinculationMgaV2 | boolean>;
   getVinculationMGAByPosPreOrg(id: number): Promise<IActivityMGA[] | any>;
@@ -31,6 +35,21 @@ export default class VinculationMGARepository implements IVinculationMGAReposito
 
   constructor() { }
 
+
+  async getVinculationMGAPaginated(
+    filters: IVinculationMGAFilters
+  ): Promise<IPagingData<IVinculationMGA>> {
+    const query = VinculationMGA.query().where("budgetId", filters.budgetId);
+
+    const res = await query.paginate(filters.page, filters.perPage);
+    const { data, meta } = res.serialize();
+
+    return {
+      array: data as IVinculationMGA[],
+      meta,
+    };
+  }
+
   async getInitialResource(): Promise<string> {
 
     return "Iniciando el Repo ...";
@@ -42,7 +61,7 @@ export default class VinculationMGARepository implements IVinculationMGAReposito
     return res ? (res.serialize() as IActivityMGA) : null;
   }
 
-  async getVinculationMGAPaginated(
+  async getActivityMGAPaginated(
     filters: IFiltersVinculationMGA
   ): Promise<IPagingData<IActivityMGA>> {
     const query = ActivitiesMGA.query();

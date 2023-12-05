@@ -26,6 +26,13 @@ export interface IProjectFilters {
   status?: boolean;
 }
 
+export interface IActivitiesFilters {
+  idList?: number[];
+  codeList?: string[];
+  status?: boolean;
+}
+
+
 export interface IStrategicDirectionService {
   getProjectInvestmentPaginated(
     filter: IProjectPaginated
@@ -51,8 +58,8 @@ export interface IStrategicDirectionService {
     filter: IGetTotalCostsByFilter
   ): Promise<ApiResponse<number>>;
   getActivitiesFilters(
-    data: any
-  ): Promise<ApiResponse<IApiPlanningDetailedActivities | any>>;
+    data: IActivitiesFilters
+  ): Promise<ApiResponse<IApiPlanningDetailedActivities[]>>
 }
 
 export default class StrategicDirectionService
@@ -207,6 +214,7 @@ export default class StrategicDirectionService
 
       const objResult: IApiPlanningDetailedActivitiesSpecify = {
         //* Info Actividad General
+        idProject: res.activity.idProject,
         activityId: res.activity.id,
         codeMga: res.activity.objetiveActivity,
         codeConsecutiveProductMga: res.activity.productMGA,
@@ -320,6 +328,7 @@ export default class StrategicDirectionService
 
         const objResult: IApiPlanningDetailedActivitiesSpecify = {
           //* Info Actividad General
+          idProject: resDetailtedActitivyList.activity.idProject,
           activityId: resDetailtedActitivyList.activity.id,
           codeMga: resDetailtedActitivyList.activity.objetiveActivity,
           codeConsecutiveProductMga:
@@ -459,7 +468,7 @@ export default class StrategicDirectionService
         const objResult: IApiPlanningDetailedActivitiesSpecify = {
           //* Info Vinculación MGA
           id: vinculationMga,
-
+          idProject:resDetailtedActitivyList.activity.idProject,
           //* Info Actividad General
           activityId: resDetailtedActitivyList.activity.id,
           codeMga: resDetailtedActitivyList.activity.objetiveActivity,
@@ -582,6 +591,7 @@ export default class StrategicDirectionService
 
         const objResult: IApiPlanningDetailedActivitiesSpecify = {
           //* Info Actividad General
+          idProject:resDetailtedActitivyList.activity.idProject,
           activityId: resDetailtedActitivyList.activity.id,
           codeMga: resDetailtedActitivyList.activity.objetiveActivity,
           codeConsecutiveProductMga:
@@ -654,7 +664,7 @@ export default class StrategicDirectionService
 
   //? Obtengo todo el listado de actividades de inversión desde planeación
   public async getActivitiesFilters(
-    filter: IProjectFilters
+    filter: IActivitiesFilters
   ): Promise<ApiResponse<IApiPlanningDetailedActivities[]>> {
     const urlConsumer = `/api/v1/activities/get-by-filters`;
 
@@ -666,33 +676,6 @@ export default class StrategicDirectionService
       },
     });
 
-    const requestResult: IApiPlanningDetailedActivities[] = [];
-    const dataI: IApiPlanningDetailedActivities[] = res.data.data;
-
-    dataI.forEach((res) => {
-      const objResult: IApiPlanningDetailedActivities = {
-        id: res.id,
-        activityId: res.activityId,
-        consecutive: res.consecutive,
-        detailActivity: res.detailActivity,
-        component: res.component,
-        measurement: res.measurement,
-        amount: res.amount,
-        unitCost: res.unitCost,
-        pospre: res.pospre,
-        validatorCPC: res.validatorCPC,
-        clasificatorCPC: res.clasificatorCPC,
-        sectionValidatorCPC: res.sectionValidatorCPC,
-        activity: res.activity,
-      };
-
-      requestResult.push(objResult);
-    });
-
-    return new ApiResponse(
-      requestResult,
-      EResponseCodes.OK,
-      "Listado de Proyectos de Inversión desde Planeación."
-    );
+    return res.data;
   }
 }

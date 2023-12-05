@@ -62,4 +62,26 @@ export default class BudgetsRoutesController {
       );
     }
   }
+  
+  public async getFundsByProject({ request, response }: HttpContextContract) {
+    try {
+      const { id } = request.params();
+      return response.send(await BudgetsRoutesProvider.getFundsByProject(Number(id)));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
+  
+  public async getPospreByProjectAndFund({ request, response }: HttpContextContract) {
+    try {
+      const { projectId, fundId }= request.params();
+      return response.send(await BudgetsRoutesProvider.getPospreByProjectAndFund(Number(projectId), Number(fundId)));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
 }
