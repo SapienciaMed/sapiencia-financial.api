@@ -65,9 +65,7 @@ Route.group(() => {
 }).prefix("/api/v1/pag-pagos");
 
 Route.group(() => {
-  Route.get("/get-by-id/:id", "BudgetsController.getBudgetsById").middleware(
-    "auth:POSPRE_VISUALIZAR"
-  );
+  Route.get("/get-by-id/:id", "BudgetsController.getBudgetsById")
   Route.post(
     "/get-paginated",
     "BudgetsController.getBudgetsPaginated"
