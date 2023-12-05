@@ -21,8 +21,8 @@ export default class ProjectsService implements IProjectsService {
 
   async getAllProjects(): Promise<ApiResponse<IProjectsVinculationFull[]>> {
     const allProjects =
-    await this.functionalAreaRepository.getAllProjectFunctionalArea();
-    
+      await this.functionalAreaRepository.getAllProjectFunctionalArea();
+
     // try {
     //   const transformedProjects = await tranformProjectsVinculation(allProjects);
     //   transformedProjects;

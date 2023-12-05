@@ -32,7 +32,6 @@ export interface IActivitiesFilters {
   status?: boolean;
 }
 
-
 export interface IStrategicDirectionService {
   getProjectInvestmentPaginated(
     filter: IProjectPaginated
@@ -59,7 +58,7 @@ export interface IStrategicDirectionService {
   ): Promise<ApiResponse<number>>;
   getActivitiesFilters(
     data: IActivitiesFilters
-  ): Promise<ApiResponse<IApiPlanningDetailedActivities[]>>
+  ): Promise<ApiResponse<IApiPlanningDetailedActivities[]>>;
 }
 
 export default class StrategicDirectionService
@@ -468,7 +467,7 @@ export default class StrategicDirectionService
         const objResult: IApiPlanningDetailedActivitiesSpecify = {
           //* Info Vinculación MGA
           id: vinculationMga,
-          idProject:resDetailtedActitivyList.activity.idProject,
+          idProject: resDetailtedActitivyList.activity.idProject,
           //* Info Actividad General
           activityId: resDetailtedActitivyList.activity.id,
           codeMga: resDetailtedActitivyList.activity.objetiveActivity,
@@ -591,7 +590,7 @@ export default class StrategicDirectionService
 
         const objResult: IApiPlanningDetailedActivitiesSpecify = {
           //* Info Actividad General
-          idProject:resDetailtedActitivyList.activity.idProject,
+          idProject: resDetailtedActitivyList.activity.idProject,
           activityId: resDetailtedActitivyList.activity.id,
           codeMga: resDetailtedActitivyList.activity.objetiveActivity,
           codeConsecutiveProductMga:
