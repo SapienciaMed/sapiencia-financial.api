@@ -23,14 +23,14 @@ export default class ProjectsService implements IProjectsService {
     const allProjects =
     await this.functionalAreaRepository.getAllProjectFunctionalArea();
     
-    try {
-      const transformedProjects = await tranformProjectsVinculation(allProjects);
-      transformedProjects;
-      // Continuar con el código después de la transformación, si es necesario.
-    } catch (error) {
-      console.error("Ocurrió un error al transformar los proyectos:", error);
-      // Puedes agregar más lógica aquí para manejar el error según tus necesidades.
-    }
+    // try {
+    //   const transformedProjects = await tranformProjectsVinculation(allProjects);
+    //   transformedProjects;
+    //   // Continuar con el código después de la transformación, si es necesario.
+    // } catch (error) {
+    //   console.error("Ocurrió un error al transformar los proyectos:", error);
+    //   // Puedes agregar más lógica aquí para manejar el error según tus necesidades.
+    // }
     const res = await tranformProjectsVinculation(allProjects);
 
     return new ApiResponse(res, EResponseCodes.OK);
