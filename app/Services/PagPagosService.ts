@@ -14,7 +14,7 @@ import PagPagos from 'App/Models/PagPagos';
 import LinkRpcdp from 'App/Models/LinkRpcdp';
 import BudgetRecord from 'App/Models/BudgetRecord';
 export interface IPagoService {
-  uploadMasivePagos(fileData: any, usuarioCreo: any, mes: number): Promise<ApiResponse<any>>;
+  uploadMasivePagos(fileData: any, usuarioCreo: any, mes: number, ejercicio:string): Promise<ApiResponse<any>>;
   getPagosPaginated(filters: IPagoFilters): Promise<IPagingData<IPagoResponse | null>>;
   processDocument(fileData: IFileData): Promise<void>;
   validarExistenciaRP(posicion: number, consecutivoSap: number);
@@ -87,7 +87,7 @@ export default class PagoService implements IPagoService {
     await this.pagoRepository.processDocument(documentType, fileContent);
   }
 
-  async uploadMasivePagos(fileData: any,usuarioCreo:any,mes:number): Promise<ApiResponse<any>> {
+  async uploadMasivePagos(fileData: any,usuarioCreo:any,mes:number,ejercicio:string): Promise<ApiResponse<any>> {
  
     const result = await this.processBase64(fileData);
     let responseData;
@@ -121,8 +121,10 @@ export default class PagoService implements IPagoService {
               valorPagado: parseFloat(item.valorPagado),
               usuarioCreo: usuarioCreo,
               mes: mes,
+              ejercicio: ejercicio,
               fechaCreo: new Date(new Date().toISOString().slice(0, 19).replace('T', ' ')),
             };
+            
             responseData = await this.insertItemsToDatabase([pago], PagPagosValidator, PagPagos);
         }
       } else {
@@ -209,10 +211,12 @@ export default class PagoService implements IPagoService {
   ): Promise<void> {
     for (const item of items) {
       try {
-        const { vinculacionRpCode, mes } = item;
+        const { vinculacionRpCode, mes, ejercicio } = item;
+        
         const existingRecord = await model.query()
           .where('PAG_CODVRP_VINCULACION_RP', vinculacionRpCode)
           .where('PAG_MES', mes)
+          .where('PAG_EJERCICIO', ejercicio)
           .first();
   
         if (existingRecord) {

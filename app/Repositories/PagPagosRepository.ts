@@ -131,6 +131,10 @@ export default class PagoRepository implements IPagoRepository {
     if (filters.mes) {
       query.where('PAG_MES', filters.mes);
     }
+  
+    if (filters.exercise) {
+      query.where('PAG_EJERCICIO', filters.exercise);
+    }
      
     const res = await query.paginate(filters.page, filters.perPage);
     const dataExtra: any[] = [];
