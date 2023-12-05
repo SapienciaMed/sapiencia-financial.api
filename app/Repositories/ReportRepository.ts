@@ -2170,9 +2170,9 @@ export default class ReportRepository implements IReportRepository {
 
   async generateReportCdpRpPayMga(year: number): Promise<any[]> {
     let result: any[] = [];
-  console.log(year);
-  
- /*    const cdps = await BudgetAvailability.query()
+    console.log(year);
+
+    /*    const cdps = await BudgetAvailability.query()
     console.log(year);
 
     // Obtener datos no anulados de la vigencia ingresada
@@ -2188,8 +2188,8 @@ export default class ReportRepository implements IReportRepository {
       .preload('amounts.linkRpcdps.budgetRecord.rp')
       .preload('amounts.linkRpcdps.budgetRecord.rp.functionalProject')
       .preload('amounts.linkRpcdps.budgetRecord.rp.functionalProject.funds'); */
-  
-      /* const cdps = await BudgetAvailability.query()
+
+    /* const cdps = await BudgetAvailability.query()
       .where('exercise', year)
       .preload('amounts', (subQuery) => {
         subQuery.whereNot('isActive', false);
@@ -2200,8 +2200,8 @@ export default class ReportRepository implements IReportRepository {
           subSubQuery.preload('budgetRecord.rp.functionalProject.funds');
         });
       }); */
-  
-/*     for (const cdp of cdps) {
+
+    /*     for (const cdp of cdps) {
       for (const amount of cdp.amounts) {
         for (const linkRpcdp of amount.linkRpcdps) {
           // Asegurémonos de que todos los niveles de relaciones existan antes de acceder a ellos
@@ -2247,8 +2247,4 @@ export default class ReportRepository implements IReportRepository {
 
     return result;
   }
-  
-  
-
-
 }
