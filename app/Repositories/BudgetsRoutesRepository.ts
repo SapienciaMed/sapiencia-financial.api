@@ -5,7 +5,9 @@ import {
 import BudgetsRoutes from "../Models/BudgetsRoutes";
 import { IPagingData } from "App/Utils/ApiResponses";
 import { DateTime } from "luxon";
-import { IPosPreSapiencia } from "App/Interfaces/PosPreSapienciaInterfaces";
+import { IStrategicDirectionService } from "App/Services/External/StrategicDirectionService";
+import ProjectsVinculation from "App/Models/ProjectsVinculation";
+import FunctionalProject from "App/Models/FunctionalProject";
 
 export interface IBudgetsRoutesRepository {
   updateBudgetsRoutes(
@@ -14,6 +16,9 @@ export interface IBudgetsRoutesRepository {
   ): Promise<IBudgetsRoutes | null>;
   getBudgetsRoutesById(id: number): Promise<IBudgetsRoutes | null>;
   getBudgetsRoutesPaginated(
+    filters: IBudgetsRoutesFilters
+  ): Promise<IPagingData<IBudgetsRoutes>>;
+  getBudgetsRoutesPaginatedV2(
     filters: IBudgetsRoutesFilters
   ): Promise<IPagingData<IBudgetsRoutes>>;
   createBudgetsRoutes(budgets: IBudgetsRoutes): Promise<IBudgetsRoutes>;
@@ -33,9 +38,7 @@ export interface IBudgetsRoutesRepository {
   getBudgetsSpcifyExerciseWithPosPreSapi(
     posPreSapi: number
   ): Promise<IBudgetsRoutes[] | null>;
-  getFundsByProject(
-    ids: number
-  ): Promise<IBudgetsRoutes[] | null>;
+  getFundsByProject(ids: number): Promise<IBudgetsRoutes[] | null>;
   getPospreByProjectAndFund(
     projectId: number,
     fundId: number
@@ -45,7 +48,7 @@ export interface IBudgetsRoutesRepository {
 export default class BudgetsRoutesRepository
   implements IBudgetsRoutesRepository
 {
-  constructor() {}
+  constructor(private strategicDirectionService: IStrategicDirectionService) {}
   async getBudgetsRoutesById(id: number): Promise<IBudgetsRoutes | null> {
     const res = await BudgetsRoutes.find(id);
     return res ? (res.serialize() as IBudgetsRoutes) : null;
@@ -79,6 +82,87 @@ export default class BudgetsRoutesRepository
     };
   }
 
+  async getBudgetsRoutesPaginatedV2(
+    filters: IBudgetsRoutesFilters
+  ): Promise<IPagingData<IBudgetsRoutes>> {
+    let isValid: boolean = false;
+    let idProject: number = 0;
+    const idsProjects: number[] = [];
+    const initalEmptyData = {
+      array: [],
+      meta: {
+        total: 0,
+        per_page: 10,
+        current_page: 1,
+        last_page: 1,
+        first_page: 1,
+        first_page_url: "/?page=1",
+        last_page_url: "/?page=1",
+        next_page_url: null,
+        previous_page_url: null,
+      },
+    };
+    if (filters.idProjectVinculation) {
+      const queryPfu = await FunctionalProject.query().where(
+        "number",
+        filters.idProjectVinculation.toString()
+      );
+
+      const resPfu = queryPfu.map((i) => i.serialize());
+
+      if (!resPfu.length) {
+        const queryStrategyDirection =
+          await this.strategicDirectionService.getProjectByFilters({
+            codeList: [filters.idProjectVinculation.toString()],
+          });
+
+        if (
+          queryStrategyDirection.operation.code === "OK" &&
+          queryStrategyDirection.data.length > 0
+        ) {
+          idProject = queryStrategyDirection.data[0].id;
+          isValid = true;
+        }
+      } else {
+        idProject = resPfu[0].id;
+        isValid = true;
+      }
+
+      const queryVpy = await ProjectsVinculation.query().where(
+        !resPfu.length ? "investmentProjectId" : "operationProjectId",
+        idProject
+      );
+      const resVpy = queryVpy.map((i) => i.serialize());
+
+      resVpy.forEach((element) => {
+        idsProjects.push(element.id);
+      });
+    }
+
+    if (isValid) {
+      const query = BudgetsRoutes.query();
+
+      if (filters.idProjectVinculation)
+        query.whereIn("idProjectVinculation", idsProjects);
+      if (filters.idRoute) query.where("id", Number(filters.idRoute));
+
+      query.preload("projectVinculation");
+      query.preload("budget");
+      query.preload("funds");
+      query.preload("pospreSapiencia");
+
+      const res = await query.paginate(filters.page, filters.perPage);
+      const { data, meta } = res.serialize();
+
+      return {
+        array: data as IBudgetsRoutes[],
+        meta,
+      };
+    } else {
+      return initalEmptyData;
+    }
+  }
+
   async getBudgetsRoutesWithoutPagination(): Promise<IBudgetsRoutes[]> {
     const query = BudgetsRoutes.query();
 
@@ -91,18 +175,22 @@ export default class BudgetsRoutesRepository
 
     return res;
   }
-  async getFundsByProject(id:number): Promise<IBudgetsRoutes[]> {
-    const query = BudgetsRoutes.query().where('idProjectVinculation',id);
+  async getFundsByProject(id: number): Promise<IBudgetsRoutes[]> {
+    const query = BudgetsRoutes.query().where("idProjectVinculation", id);
     query.preload("funds");
-   
+
     const res = await query;
 
     return res;
   }
-  
 
-  async getPospreByProjectAndFund(projectId: number, fundId: number): Promise<IBudgetsRoutes[] | null> {
-    const query = BudgetsRoutes.query().where('idProjectVinculation',projectId).andWhere('idFund',fundId);
+  async getPospreByProjectAndFund(
+    projectId: number,
+    fundId: number
+  ): Promise<IBudgetsRoutes[] | null> {
+    const query = BudgetsRoutes.query()
+      .where("idProjectVinculation", projectId)
+      .andWhere("idFund", fundId);
     query.preload("pospreSapiencia");
     const res = await query;
 

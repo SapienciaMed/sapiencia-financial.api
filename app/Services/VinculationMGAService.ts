@@ -2,24 +2,24 @@ import {
   ApiResponse,
   IPagingData
 } from "App/Utils/ApiResponses";
-
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
-
 import {
   IActivityMGA,
-  IVinculationMgaWithMultipleV2
+  IDetailedActivitiesFilter,
+  IDetailedActivity,
+  IVinculationMgaWithMultipleV2,
+  IFiltersVinculationMGA
 } from "App/Interfaces/VinculationMGAInterfaces";
-import { IFiltersVinculationMGA } from "App/Interfaces/VinculationMGAInterfaces";
 import { IDesvinculationMgaV2 } from '../Interfaces/VinculationMGAInterfaces';
-
 import { IVinculationMGARepository } from "App/Repositories/VinculationMGARepository";
 import { IStrategicDirectionService } from "./External/StrategicDirectionService";
 import { ICDPVinculateMGA } from "App/Interfaces/ICDPVinculateMGAInterface.ts";
+import CoreService from "./External/CoreService";
 
 export interface IVinculationMGAService {
-
+  getDetailedActivitiesPaginated(filters: IDetailedActivitiesFilter): Promise<ApiResponse<IPagingData<IDetailedActivity>>>
   getVinculationMGAById(id: number): Promise<ApiResponse<IActivityMGA>>;
-  getVinculationMGAPaginated(filters: IFiltersVinculationMGA): Promise<ApiResponse<IPagingData<IActivityMGA>>>;
+  getActivityMGAPaginated(filters: IFiltersVinculationMGA): Promise<ApiResponse<IPagingData<IActivityMGA>>>;
   createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaWithMultipleV2): Promise<ApiResponse<IVinculationMgaWithMultipleV2>>;
   deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<ApiResponse<IDesvinculationMgaV2 | boolean>>;
   getActivitiesDetail(data: any): Promise<ApiResponse<any>>;
@@ -30,9 +30,78 @@ export interface IVinculationMGAService {
 }
 
 export default class VinculationMGAService implements IVinculationMGAService {
-  constructor(private vinculationMGARepository: IVinculationMGARepository,
-    private strategicDirectionService: IStrategicDirectionService) { }
+  constructor(
+    private vinculationMGARepository: IVinculationMGARepository,
+    private strategicDirectionService: IStrategicDirectionService,
+    private coreService: CoreService
+  ) {}
 
+
+
+  async getDetailedActivitiesPaginated(
+    filters: IDetailedActivitiesFilter
+  ): Promise<ApiResponse<IPagingData<IDetailedActivity>>> {
+    const toReturn: IDetailedActivity[] = [];
+
+    const vinculations =
+      await this.vinculationMGARepository.getVinculationMGAPaginated({
+        perPage: filters.perPage,
+        page: filters.page,
+        budgetId: filters.budgetId,
+      });
+
+    const activities =
+      await this.strategicDirectionService.getActivitiesFilters({
+        idList: vinculations.array.map((i) => i.detailedActivityId),
+      });
+
+    const units = await this.coreService.getListByGroupers([
+      "UNIDAD_MEDIDA_OBJETIVOS",
+    ]);
+
+    vinculations.array.forEach((v) => {
+      const activity = activities.data.find(
+        (a) => a.id === v.detailedActivityId
+      );
+
+      const unit =
+        units.find((u) => u.itemCode == String(activity?.measurement || ""))
+          ?.itemDescription || "";
+
+      toReturn.push({
+        id: v.id,
+        activityId: activity?.activityId || 0,
+        codeMga: activity?.activity?.objetiveActivity || 0,
+        codeConsecutiveProductMga: activity?.activity?.productMGA || "",
+        productDescriptionMGA: activity?.activity?.productDescriptionMGA || "",
+        codeConsecutiveActivityMga: activity?.activity?.activityMGA || "",
+        activityDescriptionMGA:
+          activity?.activity?.activityDescriptionMGA || "",
+        activityDetailedId: v.detailedActivityId,
+        consecutiveActivityDetailed: activity?.consecutive || "",
+        detailActivityDetailed: activity?.detailActivity || "",
+        amountActivityDetailed: activity?.amount || 0,
+        measurementActivityDetailed: activity?.measurement || 0,
+        measurementActivityDetailedName: unit,
+        unitCostActivityDetailed: activity?.unitCost || 0,
+        totalCostActivityDetailed:
+          Number(activity?.unitCost) * Number(activity?.amount),
+      });
+    });
+
+    return new ApiResponse(
+      {
+        array: toReturn,
+        meta: vinculations.meta,
+      },
+      EResponseCodes.OK
+    );
+  }
+
+
+      
+  
+  
   async getVinculationMGAById(id: number): Promise<ApiResponse<IActivityMGA>> {
     const res = await this.vinculationMGARepository.getVinculationMGAById(id);
 
@@ -47,10 +116,10 @@ export default class VinculationMGAService implements IVinculationMGAService {
     return new ApiResponse(res, EResponseCodes.OK);
   }
 
-  async getVinculationMGAPaginated(
+  async getActivityMGAPaginated(
     filters: IFiltersVinculationMGA
   ): Promise<ApiResponse<IPagingData<IActivityMGA>>> {
-    const res = await this.vinculationMGARepository.getVinculationMGAPaginated(filters);
+    const res = await this.vinculationMGARepository.getActivityMGAPaginated(filters);
 
     return new ApiResponse(res, EResponseCodes.OK);
   }

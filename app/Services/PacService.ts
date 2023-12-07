@@ -524,7 +524,7 @@ export default class PacService implements IPacService {
   validateValuesByTypePac = (typePac: string, data: any, loadedRoutesCurrentExcersice: any, version: any) => {
 
     let errorsDetected: IErrosPac[] = []
-    data.condensed.forEach((e: any, index: number) => {
+    data.condensed?.forEach((e: any, index: number) => {
       let balance = e.balance;
       index+=1;
       let bugetPrgrammed = e.pacAnnualizationProgrammed.jan +

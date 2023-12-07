@@ -64,6 +64,8 @@ export default class AppProvider {
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
 
+    const CoreService = await import("App/Services/External/CoreService");
+
     /**************************************************************************/
     /******************************** REPOSITORIES ****************************/
     /**************************************************************************/
@@ -176,7 +178,8 @@ export default class AppProvider {
           new VinculationMGARepository.default(),
           new StrategicDirectionService.default(
             new VinculationMGARepository.default()
-          )
+          ),
+          new CoreService.default()
         )
     );
     this.app.container.singleton(
@@ -214,7 +217,13 @@ export default class AppProvider {
     this.app.container.singleton(
       "core.BudgetsRoutesProvider",
       () =>
-        new BudgetsRoutesService.default(new BudgetsRoutesRepository.default())
+        new BudgetsRoutesService.default(
+          new BudgetsRoutesRepository.default(
+            new StrategicDirectionService.default(
+              new VinculationMGARepository.default()
+            )
+          )
+        )
     );
 
     this.app.container.singleton(
@@ -227,7 +236,11 @@ export default class AppProvider {
           new FundsRepository.default(),
           new PosPreSapienciaRepository.default(),
           new BudgetsRepository.default(),
-          new BudgetsRoutesRepository.default(),
+          new BudgetsRoutesRepository.default(
+            new StrategicDirectionService.default(
+              new VinculationMGARepository.default()
+            )
+          ),
           new StrategicDirectionService.default(
             new VinculationMGARepository.default()
           )
@@ -244,7 +257,11 @@ export default class AppProvider {
           new FundsRepository.default(),
           new PosPreSapienciaRepository.default(),
           new BudgetsRepository.default(),
-          new BudgetsRoutesRepository.default(),
+          new BudgetsRoutesRepository.default(
+            new StrategicDirectionService.default(
+              new VinculationMGARepository.default()
+            )
+          ),
           new AdditionsRepository.default(),
           new StrategicDirectionService.default(
             new VinculationMGARepository.default()
@@ -278,7 +295,11 @@ export default class AppProvider {
           new FunctionalProjectRepository.default(),
           new FundsRepository.default(),
           new PosPreSapienciaRepository.default(),
-          new BudgetsRoutesRepository.default(),
+          new BudgetsRoutesRepository.default(
+            new StrategicDirectionService.default(
+              new VinculationMGARepository.default()
+            )
+          ),
           new StrategicDirectionService.default(
             new VinculationMGARepository.default()
           )
@@ -305,7 +326,11 @@ export default class AppProvider {
           new FunctionalProjectRepository.default(),
           new FundsRepository.default(),
           new PosPreSapienciaRepository.default(),
-          new BudgetsRoutesRepository.default(),
+          new BudgetsRoutesRepository.default(
+            new StrategicDirectionService.default(
+              new VinculationMGARepository.default()
+            )
+          ),
           new StrategicDirectionService.default(
             new VinculationMGARepository.default()
           )

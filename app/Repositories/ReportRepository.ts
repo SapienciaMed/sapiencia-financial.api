@@ -68,7 +68,7 @@ export interface IReportRepository {
 }
 
 export default class ReportRepository implements IReportRepository {
-  constructor(private strategicDirectionService: IStrategicDirectionService) { }
+  constructor(private strategicDirectionService: IStrategicDirectionService) {}
 
   //? Este array nos va permitir contener la información que busquemos de planeación, como una especie de "histórico"
   //? de esta manera, si ya tenemos cargada la información, no tenemos porque hacer nuevas consultas a la API de planeación
@@ -2177,93 +2177,88 @@ export default class ReportRepository implements IReportRepository {
         subQuery.where("exercise", year);
       })
       .preload("budgetRoute", (subQuery) => {
-        subQuery.preload("funds")
-        subQuery.preload("projectVinculation")
-        subQuery.preload("budget")
+        subQuery.preload("funds");
+        subQuery.preload("projectVinculation");
+        subQuery.preload("budget");
       })
       .preload("linkRpcdps")
       .orderBy("id", "desc");
 
-    const resAmountAvailabily = queryAmountAvailabily
-      .map((i) => i.serialize());
-      
-      for (const element of resAmountAvailabily) {
-        let MonthExpeditionCdp: string = "";
-        let DateDocumentCdp: string = "";
-        let ContractualObject: string = "";
-        let InitialValue: number = 0;
-        let ModifiedAgainstCredit: number = 0;
-        let ModifiedCredit: number = 0;
-        let FixedCompleted: number = 0;
-        let FinalValue: number = 0;
-        let ProjectName: string = "";
-        let Pospre: string = "";
-        let ManagementCenter: string = "";
-        let Funds: number = 0;
-        let FunctionalArea: string = "";
-        let Project: string = "";
-        let Div: string = "";
-        let NumberSapCdp: number = 0;
-        let TaxIdentification: string = "";
-        let Cdp: number = 0;
-        let Rp: number = 0;
-        let JanuaryIncurred: number = 0;
-        let JanuaryPaid: number = 0;
-        let FebruaryIncurred: number = 0;
-        let FebruaryPaid: number = 0;
-        let MarchIncurred: number = 0;
-        let MarchPaid: number = 0;
-        let AprilIncurred: number = 0;
-        let AprilPaid: number = 0;
-        let MayIncurred: number = 0;
-        let MayPaid: number = 0;
-        let JuneIncurred: number = 0;
-        let JunePaid: number = 0;
-        let JulyIncurred: number = 0;
-        let JulyPaid: number = 0;
-        let AugustIncurred: number = 0;
-        let AugustPaid: number = 0;
-        let SeptemberIncurred: number = 0;
-        let SeptemberPaid: number = 0;
-        let OctoberIncurred: number = 0;
-        let OctoberPaid: number = 0;
-        let NovemberIncurred: number = 0;
-        let NovemberPaid: number = 0;
-        let DecemberIncurred: number = 0;
-        let DecemberPaid: number = 0;
-        let LeaderOfTheProcessRP: string = "";
-        let SupervisorRP: string = "";
-        let ProductMGA: string = "";
-        let ActivityMGA: string = "";
-        let DetailedActivityMGA: string = "";
-        let CPC: string = "";
-  
+    const resAmountAvailabily = queryAmountAvailabily.map((i) => i.serialize());
 
-        const queryLinks = await LinkRpcdp.query()
-          .preload('budgetRecord', element.budgetRoute.id)
-          .orderBy("id", "asc");
-      
-        const resQueryLinks = queryLinks.map((i) => i.serialize());
-        const vrpLinks = resQueryLinks.map((elementLinks) => elementLinks);
-      
-        const queryPays = await Pago.query()
-          .where('vinculacionRpCode', vrpLinks[0].id)
-          .orderBy("id", "asc").toSQL();
-      
-          const getDataProject: IDataBasicProject | null =
-          await this.getProjectGeneral(
-            Number(element.budgetRoute.idProjectVinculation),
-            element.budgetRoute.pospreSapiencia?.description!
-          );
-        console.log(queryPays);
-        // Further processing...
-      }
+    for (const element of resAmountAvailabily) {
+      // let MonthExpeditionCdp: string = "";
+      // let DateDocumentCdp: string = "";
+      // let ContractualObject: string = "";
+      // let InitialValue: number = 0;
+      // let ModifiedAgainstCredit: number = 0;
+      // let ModifiedCredit: number = 0;
+      // let FixedCompleted: number = 0;
+      // let FinalValue: number = 0;
+      // let ProjectName: string = "";
+      // let Pospre: string = "";
+      // let ManagementCenter: string = "";
+      // let Funds: number = 0;
+      // let FunctionalArea: string = "";
+      // let Project: string = "";
+      // let Div: string = "";
+      // let NumberSapCdp: number = 0;
+      // let TaxIdentification: string = "";
+      // let Cdp: number = 0;
+      // let Rp: number = 0;
+      // let JanuaryIncurred: number = 0;
+      // let JanuaryPaid: number = 0;
+      // let FebruaryIncurred: number = 0;
+      // let FebruaryPaid: number = 0;
+      // let MarchIncurred: number = 0;
+      // let MarchPaid: number = 0;
+      // let AprilIncurred: number = 0;
+      // let AprilPaid: number = 0;
+      // let MayIncurred: number = 0;
+      // let MayPaid: number = 0;
+      // let JuneIncurred: number = 0;
+      // let JunePaid: number = 0;
+      // let JulyIncurred: number = 0;
+      // let JulyPaid: number = 0;
+      // let AugustIncurred: number = 0;
+      // let AugustPaid: number = 0;
+      // let SeptemberIncurred: number = 0;
+      // let SeptemberPaid: number = 0;
+      // let OctoberIncurred: number = 0;
+      // let OctoberPaid: number = 0;
+      // let NovemberIncurred: number = 0;
+      // let NovemberPaid: number = 0;
+      // let DecemberIncurred: number = 0;
+      // let DecemberPaid: number = 0;
+      // let LeaderOfTheProcessRP: string = "";
+      // let SupervisorRP: string = "";
+      // let ProductMGA: string = "";
+      // let ActivityMGA: string = "";
+      // let DetailedActivityMGA: string = "";
+      // let CPC: string = "";
 
-  
+      const queryLinks = await LinkRpcdp.query()
+        .preload("budgetRecord", element.budgetRoute.id)
+        .orderBy("id", "asc");
 
+      const resQueryLinks = queryLinks.map((i) => i.serialize());
+      const vrpLinks = resQueryLinks.map((elementLinks) => elementLinks);
+
+      const queryPays = await Pago.query()
+        .where("vinculacionRpCode", vrpLinks[0].id)
+        .orderBy("id", "asc")
+        .toSQL();
+
+      // const getDataProject: IDataBasicProject | null =
+      // await this.getProjectGeneral(
+      //   Number(element.budgetRoute.idProjectVinculation),
+      //   element.budgetRoute.pospreSapiencia?.description!
+      // );
+      console.log(queryPays);
+      // Further processing...
+    }
 
     // console.log(resAmountAvailabily);
-
 
     /*  try {
        const query = `
@@ -2328,12 +2323,5 @@ export default class ReportRepository implements IReportRepository {
      } */
 
     return result;
-
-    return result;
   }
-
-
-
-
-
 }
