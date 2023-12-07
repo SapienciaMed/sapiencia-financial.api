@@ -143,7 +143,7 @@ export default class BudgetAvailabilityRepository
   }
 
   async createCdps(cdpDataTotal: any) {
-    const { date, contractObject, sapConsecutive, icdArr } = cdpDataTotal;
+    const { date, contractObject, sapConsecutive, icdArr,exercise } = cdpDataTotal;
     let dateDecode = date.toString();
     dateDecode = dateDecode.split("T")[0];
 
@@ -169,6 +169,7 @@ export default class BudgetAvailabilityRepository
     cdp.contractObject = contractObject;
     cdp.consecutive = ultimoRegistro ? ultimoRegistro?.consecutive + 1 : 1;
     cdp.sapConsecutive = sapConsecutive;
+    cdp.exercise = exercise;
     await cdp.save();
     await cdp.related("amounts").createMany(icdArr);
 
