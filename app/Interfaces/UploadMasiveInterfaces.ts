@@ -13,10 +13,11 @@ export interface IErrorsUploadMasive {
 
 export interface IFundsUploadMasive {
   row?: number;
-  cpEntity: string;
-  code: string;
+  entityId: number;
+  number: string;
   denomination: string;
   description: string;
   dateFrom: Date;
   dateTo: Date;
+  userCreate? : string;
 }
