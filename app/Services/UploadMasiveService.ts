@@ -31,9 +31,11 @@ export default class UploadMasiveService implements IUploadMasiveService {
 
       break;
 
-      case "Fondos":
+      case "Funds":
+        const resultFondos = await this.fundsUploadMasiveService.uploadMasiveFunds(file,usuarioCreo);
+        if (resultFondos.operation.code === "FAIL")
+          return new ApiResponse(null, EResponseCodes.FAIL, "TODO: Retornamos errores para pintar en el Front (FONDOS)");
 
-        const resultFondos = await this.fundsUploadMasiveService.uploadMasiveFunds(file);
         generalRes = resultFondos;
 
       break;
