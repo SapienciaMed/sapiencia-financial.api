@@ -82,7 +82,6 @@ export default class TransfersController {
   public async getTransferById({request, response}: HttpContextContract) {
 
     try {
-
       const { id } = request.params();
       return response.send(await TransfersProvider.getTransferById(id));
 

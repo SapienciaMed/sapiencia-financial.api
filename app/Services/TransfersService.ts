@@ -359,16 +359,19 @@ export default class TransfersService implements ITransfersService {
         "Registro no encontrado"
       );
     }
-
-    for (const detail of transfer.details) {
+    for await(const detail of transfer.details) {
       if (detail.budgetRoute.projectVinculation) {
         const res = await tranformProjectsVinculation([
           detail.budgetRoute.projectVinculation,
         ]);
-        if (res.length > 0) detail.budgetRoute.projectVinculation = res[0];
+        console.log({res})
+        if (res.length > 0){
+          // TODO: ESTO ESTA COMENTADO DE MANERA PROVISIONAL, DEBIDO A LOS CAMBIOS EN CODIGOS DE PLANEACIÓN
+          //detail.budgetRoute.projectVinculation = Object(res)[0];
+        }
       }
     }
-
+    
     return new ApiResponse(transfer, EResponseCodes.OK);
   }
 
