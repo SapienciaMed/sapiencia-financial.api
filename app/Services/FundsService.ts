@@ -11,6 +11,7 @@ export interface IFundsService {
   createFund(fund: IFunds): Promise<ApiResponse<IFunds>>;
   updateFund(fund: IFunds, id: number): Promise<ApiResponse<IFunds>>;
   getAllFunds(): Promise<ApiResponse<IFunds[]>>;
+  verifyFunds(numero: string): Promise<ApiResponse<IFunds | undefined>>;
 }
 
 export default class FundsService implements IFundsService {
@@ -74,5 +75,19 @@ export default class FundsService implements IFundsService {
     const res = await this.fundsRepository.getAllFunds();
 
     return new ApiResponse(res, EResponseCodes.OK);
+  }
+
+  async verifyFunds(numero: string): Promise<ApiResponse<IFunds | undefined>> {
+    const validNumber = await this.fundsRepository.getFundsByNumber(numero);
+
+    if (validNumber.array.length > 0) {
+      return new ApiResponse(
+        {} as IFunds,
+        EResponseCodes.FAIL,
+        "Fondo ya existente."
+      );
+    }
+
+    return new ApiResponse(undefined, EResponseCodes.OK);
   }
 }

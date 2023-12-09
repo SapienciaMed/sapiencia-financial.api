@@ -42,12 +42,10 @@ export default class FundsUploadMasiveService
   public arrayErrorRepeat: IErrorsUploadMasive[] = []; //Repetidos en el excel
 
    async insertFundsinfo(items: any[], model: any): Promise<void> {
+
     for (const item of items) {
       try {
         const res = await model.create(item);
-        console.log(model.create(item).toSql());
-        
-        return res;
       } catch (error) {
         console.error(`Error de validación para el item: ${error}`);
       }
@@ -55,9 +53,6 @@ export default class FundsUploadMasiveService
   }
   async uploadMasiveFunds(file: string, usuarioCreo:string): Promise<any> {
     const result = await this.processBase64(file,usuarioCreo);
-    console.log(result?.data?.['items']);
-    
-    
     this.insertFundsinfo(result.data?.['items'],Funds)
     return result;
   }
