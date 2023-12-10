@@ -9,8 +9,8 @@ export default class ProjectsController {
   public async getAllProjects({ response }: HttpContextContract) {
 
     try {
-     
-      
+
+
       return response.send(await ProjectsProvider.getAllProjects());
 
     } catch (err) {
@@ -23,7 +23,7 @@ export default class ProjectsController {
 
   }
 
-  public async getUnrelatedProjects({request,response,}: HttpContextContract) {
+  public async getUnrelatedProjects({ request, response, }: HttpContextContract) {
 
     try {
 
