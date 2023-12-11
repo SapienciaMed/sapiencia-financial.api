@@ -344,9 +344,9 @@ Route.group(() => {
     "/get-actadmin-sapiencia",
     "TransfersController.getAllTransfersBySapiencia"
   ).middleware("auth:TRASLADO_CONSULTAR");
-  Route.get("/get-by-id/:id", "TransfersController.getTransferById").middleware(
+  Route.get("/get-by-id/:id", "TransfersController.getTransferById")/* .middleware(
     "auth:TRASLADO_VISUALIZAR"
-  );
+  ); */
   Route.post(
     "/update/:id",
     "TransfersController.updateTransferWithMov"
@@ -429,7 +429,7 @@ Route.group(() => {
   Route.post(
     "/create-cdp",
     "BudgetAvailabilityController.createCdpsCertificationBudgetAvailability"
-  ).middleware("auth:CDP_CREAR");
+  )/* .middleware("auth:CDP_CREAR"); */
   Route.post(
     "/asociate-amounts",
     "BudgetAvailabilityController.associateAmountsWithCdp"
@@ -460,7 +460,7 @@ Route.group(() => {
   ).middleware("auth:CDP_VISUALIZAR_RP");
 })
   .prefix("/api/v1/cdp")
-  .middleware("auth");
+  /* .middleware("auth"); */
 
 Route.group(() => {
   Route.post("/create-rp", "BudgetRecordsController.createRp").middleware(

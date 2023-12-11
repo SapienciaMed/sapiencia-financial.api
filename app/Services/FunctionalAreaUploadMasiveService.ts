@@ -80,7 +80,7 @@ export default class FunctionalAreaUploadMasiveService implements IFunctionalAre
         userCreate: row.getCell(2).value?.toString()!,
         denomination: row.getCell(3).value?.toString()!,
         description: row.getCell(4).value?.toString()!,
-        dateCreate: DateTime.fromJSDate(new Date()),,
+        dateCreate: DateTime.fromJSDate(new Date()),
       };
 
       if (
