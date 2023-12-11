@@ -46,6 +46,7 @@ Route.group(() => {
     "auth:FONDOS_EDITAR"
   );
   Route.get("/get-all", "FundsController.getAllFunds");
+  Route.post("/get-funds-by-number", "FundsController.getAllFundsByNumber");
 })
   .prefix("/api/v1/funds")
   .middleware("auth");
