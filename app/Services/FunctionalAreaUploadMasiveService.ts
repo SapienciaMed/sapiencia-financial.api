@@ -1,6 +1,5 @@
 import { IFunctionalAreaMasiveSave, IResponseUploadMasiveFunctionalArea } from './../Interfaces/FunctionalAreaInterfaces';
-// En el archivo FunctionalAreaService.ts
-
+import { DateTime } from 'luxon';
 import * as fs from 'fs';
 import * as mimeTypes from 'mime-types';
 import * as path from 'path';
@@ -11,11 +10,10 @@ import FunctionalArea from 'App/Models/FunctionalArea';
 
 
 export interface IFunctionalAreaUploadService {
-    // Otros métodos...
     uploadMasiveAreaFunctional(fileData: any, usuarioCreo: any): Promise<ApiResponse<any>>;
   }
-export default class FunctionalAreaService implements IFunctionalAreaUploadService {
-  public async uploadMasiveAreaFunctional(fileData: any, usuarioCreo: any): Promise<ApiResponse<any>> {
+export default class FunctionalAreaUploadMasiveService implements IFunctionalAreaUploadService {
+  public async uploadMasiveAreaFunctional(fileData: any, usuarioCreo: any): Promise<ApiResponse<any>> {   
     const result = await this.processBase64(fileData);
     let responseData;
 
@@ -24,13 +22,14 @@ export default class FunctionalAreaService implements IFunctionalAreaUploadServi
 
       if (items && Array.isArray(items) && items.length > 0) {
         for (const item of items) {
-          const functionalArea: IFunctionalAreaMasiveSave = {
-            number: item.number,
-            userCreate:usuarioCreo,
-            denomination:"NO EXPECIFICA",
-            description: "No expecifica",
-            dateCreate: new Date(new Date().toISOString().slice(0, 19).replace('T', ' ')),
-          };
+            const functionalArea: IFunctionalAreaMasiveSave = {
+                number: item.number,
+                userCreate: usuarioCreo,
+                denomination: "NO ESPECIFICA", 
+                description: "No especifica",   
+                dateCreate: DateTime.fromJSDate(new Date()),
+            }
+              
 
           responseData = await this.insertItemsToDatabase([functionalArea], FunctionalArea);
         }
@@ -78,8 +77,10 @@ export default class FunctionalAreaService implements IFunctionalAreaUploadServi
 
       const objResult: IFunctionalAreaMasiveSave = {
         number: row.getCell(1).value?.toString()!,
-        tipoProyecto: row.getCell(2).value?.toString()!,
-        proyecto: row.getCell(3).value?.toString()!,
+        userCreate: row.getCell(2).value?.toString()!,
+        denomination: row.getCell(3).value?.toString()!,
+        description: row.getCell(4).value?.toString()!,
+        dateCreate: DateTime.fromJSDate(new Date()),
       };
 
       if (
