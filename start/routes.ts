@@ -95,6 +95,10 @@ Route.group(() => {
     "/get-paginated",
     "PosPreSapienciaController.getPosPreSapienciaPaginated"
   ).middleware("auth:POSICION_PRESUPUESTAL_CONSULTAR");
+  Route.post(
+    "/get-validate-masive",
+    "PosPreSapienciaController.getPosPreByParamsMasive"
+  )
   Route.put(
     "/update/:id",
     "PosPreSapienciaController.updatePosPreSapiencia"

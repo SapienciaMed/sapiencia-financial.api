@@ -25,6 +25,22 @@ export default class PosPreSapienciaController {
     }
 
   }
+  public async getPosPreByParamsMasive({ request, response }: HttpContextContract) {
+
+    try {
+
+      const { pprNumero, pprEjercicio, ppsPosicion } = request['requestBody'];
+      return response.send(await PosPreSapienciaProvider.getPosPreByParamsMasive(pprNumero,pprEjercicio,ppsPosicion));
+
+    } catch (err) {
+
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+
+    }
+
+  }
 
   public async getAllPosPreSapiencia({ response }: HttpContextContract) {
 

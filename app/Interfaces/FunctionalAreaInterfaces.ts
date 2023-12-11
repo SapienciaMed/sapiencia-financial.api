@@ -32,7 +32,7 @@ export interface IFunctionalAreaMasiveSave {
   userCreate?: string;
   denomination?: string;
   description?: string;
-  dateCreate?: Date;
+  dateCreate?: DateTime;
   tipoProyecto?: string; // Puedes quitar estas propiedades si no son necesarias
   proyecto?: string;     // Puedes quitar estas propiedades
 }
