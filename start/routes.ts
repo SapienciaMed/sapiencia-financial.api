@@ -46,6 +46,7 @@ Route.group(() => {
     "auth:FONDOS_EDITAR"
   );
   Route.get("/get-all", "FundsController.getAllFunds");
+  Route.post("/get-funds-by-number", "FundsController.getAllFundsByNumber");
 })
   .prefix("/api/v1/funds")
   .middleware("auth");
@@ -94,6 +95,10 @@ Route.group(() => {
     "/get-paginated",
     "PosPreSapienciaController.getPosPreSapienciaPaginated"
   ).middleware("auth:POSICION_PRESUPUESTAL_CONSULTAR");
+  Route.post(
+    "/get-validate-masive",
+    "PosPreSapienciaController.getPosPreByParamsMasive"
+  )
   Route.put(
     "/update/:id",
     "PosPreSapienciaController.updatePosPreSapiencia"

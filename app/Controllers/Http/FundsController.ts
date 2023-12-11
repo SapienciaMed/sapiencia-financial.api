@@ -60,4 +60,13 @@ export default class FundsController {
       );
     }
   }
+  public async getAllFundsByNumber({ request, response }: HttpContextContract) {
+    try {
+      return response.send(await FundsProvider.verifyFunds(request['requestBody'].numero));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    } 
+  }
 }
