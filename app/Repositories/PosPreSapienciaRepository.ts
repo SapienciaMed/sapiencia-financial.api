@@ -15,7 +15,6 @@ import { IPosPreSapiencia } from "App/Interfaces/PosPreSapienciaInterfaces";
 
 
 export interface IPosPreSapienciaRepository {
-
   getPosPreSapienciaById(id: number): Promise<IPosPreSapiencia | null>;
   getAllPosPreSapiencia(): Promise<IPosPreSapiencia[]>;
   getListPosPreSapVinculationPaginated(filters: IFiltersPosPreSapienciaMix): Promise<IPagingData<IPosPreSapiencia>>;
@@ -24,7 +23,7 @@ export interface IPosPreSapienciaRepository {
   updatePosPreSapVinculation(posPreSapiencia: IPosPreSapiencia, id: number): Promise<IPosPreSapiencia | any>;
   getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<IPagingData<IPosPreSapienciaAdditionList>>;
   getPosPreSapiSpcifyExercise(exercise: number): Promise<IPosPreSapiencia[] | null>;
-
+  getPosPreByParamsMasive(pprNumero: string, pprEjercicio: number, ppsPosicion: number): Promise<any>;
 }
 
 export default class PosPreSapienciaRepository implements IPosPreSapienciaRepository {
@@ -36,6 +35,19 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
     return res as IPosPreSapiencia[];
   }
 
+  async getPosPreByParamsMasive(pprNumero: string, pprEjercicio: number, ppsPosicion: number): Promise<any> {
+
+    const queryGetInfo = await PosPreSapiencia.query()
+    .preload("budget", (subQuery) => {
+      subQuery.where("number",pprNumero)
+      subQuery.where("ejercise",pprEjercicio)
+    }).where("budgetId", ppsPosicion)
+
+    const resDataPospre = queryGetInfo.map((i) => i.serialize());
+
+    return resDataPospre
+  
+  }
   async getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<IPagingData<IPosPreSapienciaAdditionList>> {
 
     let { page, perPage } = filters;
