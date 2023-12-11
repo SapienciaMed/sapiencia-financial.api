@@ -45,7 +45,7 @@ export default class FundsUploadMasiveService
 
     for (const item of items) {
       try {
-        const res = await model.create(item);
+        await model.create(item);
       } catch (error) {
         console.error(`Error de validación para el item: ${error}`);
       }
