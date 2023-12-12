@@ -379,6 +379,8 @@ export interface ICreateAssociation {
     idBudget?: number;
     budgetSapiencia?: number;
     annualization?: IPacAnnualization;
+    userModify?:string;
+    userCreate?:string;
 
 }
 
