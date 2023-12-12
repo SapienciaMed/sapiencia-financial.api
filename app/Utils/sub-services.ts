@@ -55,6 +55,5 @@ export async function tranformProjectsVinculation(
       });
     }
   }
-
   return toReturn;
 }
