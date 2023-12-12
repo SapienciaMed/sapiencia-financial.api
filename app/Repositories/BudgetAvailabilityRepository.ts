@@ -57,9 +57,9 @@ export default class BudgetAvailabilityRepository
             query.preload("functionalProject");
           });
         });
-        subq.preload('linkRpcdps',(query)=>{
-          query.preload('budgetRecord')
-        })
+        subq.preload("linkRpcdps", (query) => {
+          query.preload("budgetRecord");
+        });
       })
       .orderBy("date", "desc");
 
@@ -120,7 +120,7 @@ export default class BudgetAvailabilityRepository
       array: data as IBudgetAvailability[],
     };
   }
-  
+
   async filterCdpsByDateAndContractObject(
     date: string,
     contractObject: string
@@ -142,8 +142,35 @@ export default class BudgetAvailabilityRepository
     await cdp.delete();
   }
 
+  calculatedFinalValueICD(icdArr: any[]) {
+    // Crea un nuevo array con los valores actualizados
+    const newArray = icdArr.map((i) => {
+
+      // Realiza los cálculos
+      const initialValue = parseInt(i.amount);
+      const credit = i.idcModifiedCredit ? parseInt(i.idcModifiedCredit) : 0;
+      const counterCredit = i.modifiedIdcCountercredit
+        ? parseInt(i.modifiedIdcCountercredit)
+        : 0;
+      const fixedComplete = i.idcFixedCompleted
+        ? parseInt(i.idcFixedCompleted)
+        : 0;
+      const finalValue =
+        i.idcFinalValue !== undefined
+          ? parseInt(i.idcFinalValue)
+          : initialValue + credit - counterCredit - fixedComplete;
+
+      // Devuelve un nuevo objeto con la propiedad idcFinalValue actualizada
+      return { ...i, idcFinalValue: finalValue };
+    });
+
+    // Devuelve el nuevo array
+    return newArray;
+  }
+
   async createCdps(cdpDataTotal: any) {
-    const { date, contractObject, sapConsecutive, icdArr,exercise } = cdpDataTotal;
+    const { date, contractObject, sapConsecutive, icdArr, exercise } =
+      cdpDataTotal;
     let dateDecode = date.toString();
     dateDecode = dateDecode.split("T")[0];
 
@@ -170,46 +197,31 @@ export default class BudgetAvailabilityRepository
     cdp.consecutive = ultimoRegistro ? ultimoRegistro?.consecutive + 1 : 1;
     cdp.sapConsecutive = sapConsecutive;
     cdp.exercise = exercise;
+
     await cdp.save();
-    await cdp.related("amounts").createMany(icdArr);
+    const newIcdArr = this.calculatedFinalValueICD(icdArr);
+    await cdp.related("amounts").createMany(newIcdArr);
 
     return { consecutive: ultimoRegistro?.consecutive + 1 };
   }
 
   async associateAmountsWithCdp(cdpId: number, amounts: any[]) {
-
-    
     try {
       const cdp = await BudgetAvailability.findOrFail(cdpId);
-    
-      // Imprimir los importes existentes para depuración
-     /*  const existingAmounts = await cdp
-        .related("amounts")
-        .query()
-        .select("idRppCode")
-        .exec(); */
-     
-      // Obtener los códigos existentes
-     /*  const existingIdRppCodes = existingAmounts.map(
-        (amount) => amount.idRppCode
-      ); */
-    
-      // Insertar todos los importes sin realizar ninguna verificación
-      await cdp.related("amounts").createMany(amounts);
+      const newAmounts = this.calculatedFinalValueICD(amounts);
+      await cdp.related("amounts").createMany(newAmounts);
     } catch (error) {
       throw new Error("Error al asociar importes al CDP: " + error.message);
     }
-    
   }
-
 
   getBudgetAvailabilityById = async (id: string): Promise<any> => {
     return await BudgetAvailability.query()
       .where("id", Number(id))
       .preload("amounts", (query) => {
-        query.preload('linkRpcdps',(query)=>{
-          query.where('isActive',1)
-        })
+        query.preload("linkRpcdps", (query) => {
+          query.where("isActive", 1);
+        });
         query.where("isActive", "=", true);
         query.preload("budgetRoute", (query) => {
           query.preload("projectVinculation", (query) => {
