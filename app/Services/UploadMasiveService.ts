@@ -5,7 +5,7 @@ import { IPagoService } from './PagPagosService';
 import { IFundsUploadMasiveService } from './FundsUploadMasiveService';
 
 export interface IUploadMasiveService {
-  initialRedirect(type: string, file: any, usuarioCreo: string, mes: number, ejercicio: string): Promise<ApiResponse<any>>;
+  initialRedirect(type: string, file: any, usuarioCreo: string, mes: number, ejercicio: string, aditionalData: [],): Promise<ApiResponse<any>>;
 }
 
 export default class UploadMasiveService implements IUploadMasiveService {
@@ -15,7 +15,7 @@ export default class UploadMasiveService implements IUploadMasiveService {
     private FunctionalAreaUploadMasiveService: IFunctionalAreaUploadService,
   ) {}
 
-  async initialRedirect(type: string, file: any, usuarioCreo: any, mes: number, ejercicio: string): Promise<ApiResponse<any>> {
+  async initialRedirect(type: string, file: any, usuarioCreo: any, mes: number, ejercicio: string, aditionalData: []): Promise<ApiResponse<any>> {
     let generalRes: any;
 
     switch(type) {
@@ -41,7 +41,7 @@ export default class UploadMasiveService implements IUploadMasiveService {
             return new ApiResponse(null, EResponseCodes.FAIL, "FunctionalAreaUploadMasiveService no está definido.");
           }
       
-          const resultAreaFuncional = await this.FunctionalAreaUploadMasiveService.uploadMasiveAreaFunctional(file, usuarioCreo);
+          const resultAreaFuncional = await this.FunctionalAreaUploadMasiveService.uploadMasiveAreaFunctional(file, usuarioCreo,aditionalData);
         
           generalRes = resultAreaFuncional;
         } catch (error) {

@@ -7,13 +7,13 @@ import * as ExcelJS from 'exceljs';
 import { ApiResponse } from '../Utils/ApiResponses';
 import { EResponseCodes } from '../Constants/ResponseCodesEnum';
 import FunctionalArea from 'App/Models/FunctionalArea';
-
+import ProjectsVinculation from 'App/Models/ProjectsVinculation';
 
 export interface IFunctionalAreaUploadService {
-    uploadMasiveAreaFunctional(fileData: any, usuarioCreo: any): Promise<ApiResponse<any>>;
-  }
+  uploadMasiveAreaFunctional(fileData: any, usuarioCreo: any, aditionalData: []): Promise<ApiResponse<any>>;
+}
 export default class FunctionalAreaUploadMasiveService implements IFunctionalAreaUploadService {
-  public async uploadMasiveAreaFunctional(fileData: any, usuarioCreo: any): Promise<ApiResponse<any>> {   
+  public async uploadMasiveAreaFunctional(fileData: any, usuarioCreo: any, aditionalData: []): Promise<ApiResponse<any>> {
     const result = await this.processBase64(fileData);
     let responseData;
 
@@ -21,17 +21,33 @@ export default class FunctionalAreaUploadMasiveService implements IFunctionalAre
       const items = result?.data?.items;
 
       if (items && Array.isArray(items) && items.length > 0) {
-        for (const item of items) {
-            const functionalArea: IFunctionalAreaMasiveSave = {
-                number: item.number,
-                userCreate: usuarioCreo,
-                denomination: "NO ESPECIFICA", 
-                description: "No especifica",   
-                dateCreate: DateTime.fromJSDate(new Date()),
-            }
-              
+        for (const [index, item] of items.entries()) {
+          const functionalArea: IFunctionalAreaMasiveSave = {
+            number: item.number,
+            userCreate: usuarioCreo,
+            denomination: "NO ESPECIFICA",
+            description: "No especifica",
+          }
+          
 
           responseData = await this.insertItemsToDatabase([functionalArea], FunctionalArea);
+          const insertedIds = await this.insertItemsToDatabase([functionalArea], FunctionalArea);
+          const aditionalDataItem = aditionalData;
+          const arrDataVpy = Object.values(aditionalDataItem)
+
+
+          const vpyArrayInformation = {
+            functionalAreaId: insertedIds,
+            linked: true,
+            type: arrDataVpy[index]['tipoProyecto'],
+            operationProjectId: arrDataVpy[index]['tipoProyecto'] === 'funcionamiento' ? arrDataVpy[index]['id'] : null,
+            investmentProjectId: arrDataVpy[index]['tipoProyecto'] === 'inversion' ? arrDataVpy[index]['id'] : null,
+            userCreate: usuarioCreo,
+            dateCreate: DateTime.fromJSDate(new Date()),
+          }
+          
+          await this.insertItemsToDatabaseVPY([vpyArrayInformation], ProjectsVinculation);
+
         }
       } else {
         console.error('La propiedad "items" no es un arreglo válido o está vacía.');
@@ -80,7 +96,7 @@ export default class FunctionalAreaUploadMasiveService implements IFunctionalAre
         userCreate: row.getCell(2).value?.toString()!,
         denomination: row.getCell(3).value?.toString()!,
         description: row.getCell(4).value?.toString()!,
-        dateCreate: DateTime.fromJSDate(new Date()),,
+        dateCreate: DateTime.fromJSDate(new Date()),
       };
 
       if (
@@ -109,23 +125,55 @@ export default class FunctionalAreaUploadMasiveService implements IFunctionalAre
   private async insertItemsToDatabase(
     items: IFunctionalAreaMasiveSave[],
     model: any
-  ): Promise<void> {
+  ): Promise<number> {
+    let insertedIds: number = 0;
+
     for (const item of items) {
       try {
         const { number } = item;
 
         const existingRecord = await model.query()
-          .where('ARF_CODIGO', number)
+          .where('ARF_CODIGO_REFERENCIA', number)
           .first();
+
+        let insertedId;
 
         if (existingRecord) {
           await existingRecord.merge(item).save();
+          insertedId = existingRecord.id;
         } else {
-          await model.create(item);
+          const newRecord = await model.create(item);
+          insertedId = newRecord.id;
         }
+
+        insertedIds = parseInt(insertedId);
       } catch (error) {
         console.error(`Error de validación para el item: ${error}`);
       }
     }
+
+    return insertedIds;
   }
+
+  private async insertItemsToDatabaseVPY(
+    items: any[],
+    model: any
+  ): Promise<number[]> {
+    const insertedIds: number[] = [];
+
+    for (const item of items) {
+      try {
+
+        let insertedId;
+        const newRecord = await model.create(item);
+        insertedId = newRecord.id;
+        insertedIds.push(insertedId);
+      } catch (error) {
+        console.error(`Error de validación para el item: ${error}`);
+      }
+    }
+
+    return insertedIds;
+  }
+
 }
