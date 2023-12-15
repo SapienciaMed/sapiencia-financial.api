@@ -1,5 +1,4 @@
 import { IPospreUploadMasive,IResponsePospreUploadMasive } from './../Interfaces/PosPreSapienciaInterfaces';
-import { IFunctionalAreaMasiveSave, IResponseUploadMasiveFunctionalArea } from './../Interfaces/FunctionalAreaInterfaces';
 import { DateTime } from 'luxon';
 import * as fs from 'fs';
 import * as mimeTypes from 'mime-types';
@@ -7,8 +6,6 @@ import * as path from 'path';
 import * as ExcelJS from 'exceljs';
 import { ApiResponse } from '../Utils/ApiResponses';
 import { EResponseCodes } from '../Constants/ResponseCodesEnum';
-import FunctionalArea from 'App/Models/FunctionalArea';
-import ProjectsVinculation from 'App/Models/ProjectsVinculation';
 import PosPreSapiencia from 'App/Models/PosPreSapiencia';
 export interface IPospreUploadMasiveService {
   uploadMasiveAreaFunctional(fileData: any, usuarioCreo: any, aditionalData: []): Promise<ApiResponse<any>>;

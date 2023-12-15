@@ -35,7 +35,7 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
     return res as IPosPreSapiencia[];
   }
 
-  async getPosPreByParamsMasive(pprNumero: string, pprEjercicio: number, ppsPosicion: number): Promise<any> {
+  async getPosPreByParamsMasive(pprNumero: string, pprEjercicio: number): Promise<any> {
 
     const queryGetInfo = await PosPreSapiencia.query()
     .preload("budget", (subQuery) => {
