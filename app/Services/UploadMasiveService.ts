@@ -49,6 +49,11 @@ export default class UploadMasiveService implements IUploadMasiveService {
           return new ApiResponse(null, EResponseCodes.FAIL, "TODO: Handle errors appropriately" + error);
         }
         break;
+      
+      case "PospreSapiencia":
+
+
+      break;
     }
 
     return generalRes;

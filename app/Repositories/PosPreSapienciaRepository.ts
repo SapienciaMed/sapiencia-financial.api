@@ -41,7 +41,7 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
     .preload("budget", (subQuery) => {
       subQuery.where("number",pprNumero)
       subQuery.where("ejercise",pprEjercicio)
-    }).where("budgetId", ppsPosicion)
+    })
 
     const resDataPospre = queryGetInfo.map((i) => i.serialize());
 
