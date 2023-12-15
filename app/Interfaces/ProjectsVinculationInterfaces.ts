@@ -11,9 +11,10 @@ export interface IProjectsVinculation {
   operationProjectId: number;
   userCreate?: string;
   dateCreate?: DateTime;
-
   areaFuntional?: IFunctionalArea;
   functionalProject?: IFunctionalProject;
+  plannedValue?: number;
+  assignedValue?: number;
 }
 
 export interface IProjectsVinculationFull extends IProjectsVinculation {

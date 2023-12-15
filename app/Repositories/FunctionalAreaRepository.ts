@@ -8,8 +8,10 @@ import {
   IProjectsVinculateFilters,
   IProjectsVinculation,
 } from "App/Interfaces/ProjectsVinculationInterfaces";
+import BudgetsRoutes from "App/Models/BudgetsRoutes";
 import FunctionalArea from "App/Models/FunctionalArea";
 import ProjectsVinculation from "App/Models/ProjectsVinculation";
+import { IStrategicDirectionService } from "App/Services/External/StrategicDirectionService";
 import { IPagingData } from "App/Utils/ApiResponses";
 
 export interface IFunctionalAreaRepository {
@@ -45,7 +47,7 @@ export interface IFunctionalAreaRepository {
 export default class FunctionalAreaRepository
   implements IFunctionalAreaRepository
 {
-  constructor() {}
+  constructor(private strategicDirectionService: IStrategicDirectionService) {}
 
   async getAllInvestmentProjectIds(): Promise<number[]> {
     const res = await ProjectsVinculation.query().where(
@@ -191,6 +193,38 @@ export default class FunctionalAreaRepository
 
     const res = await query.paginate(filters.page, filters.perPage);
     const { data, meta } = res.serialize();
+
+    for (const i of data) {
+      let assignedValue = 0;
+      const queryBudgetRoutes = await BudgetsRoutes.query().where(
+        "idProjectVinculation",
+        i.id
+      );
+
+      if (i.investmentProjectId) {
+        const queryStrategyDirection =
+          await this.strategicDirectionService.getProjectByFilters({
+            idList: [i.investmentProjectId],
+          });
+
+        if (
+          queryStrategyDirection.operation.code === "OK" &&
+          queryStrategyDirection.data.length > 0
+        ) {
+          assignedValue = queryStrategyDirection.data[0].assignmentValue;
+        }
+      }
+
+      const resQueryBudgetRoutes = queryBudgetRoutes.map((iterator) =>
+        iterator.serialize()
+      );
+      const valuePlanning = resQueryBudgetRoutes.reduce(
+        (total, item) => total + parseInt(item.initialBalance),
+        0
+      );
+      i.valuePlanning = valuePlanning;
+      i.assignedValue = assignedValue;
+    }
 
     return {
       array: data as IProjectsVinculation[],

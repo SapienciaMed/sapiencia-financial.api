@@ -77,8 +77,6 @@ export default class AppProvider {
     const PagPagosRepository = await import(
       "App/Repositories/PagPagosRepository"
     );
-    
-  
 
     const BudgetsRepository = await import(
       "App/Repositories/BudgetsRepository"
@@ -191,7 +189,11 @@ export default class AppProvider {
       "core.FunctionalAreaProvider",
       () =>
         new FunctionalAreaService.default(
-          new FunctionalAreaRepository.default()
+          new FunctionalAreaRepository.default(
+            new StrategicDirectionService.default(
+              new VinculationMGARepository.default()
+            )
+          )
         )
     );
     this.app.container.singleton(
@@ -201,7 +203,11 @@ export default class AppProvider {
           new StrategicDirectionService.default(
             new VinculationMGARepository.default()
           ),
-          new FunctionalAreaRepository.default()
+          new FunctionalAreaRepository.default(
+            new StrategicDirectionService.default(
+              new VinculationMGARepository.default()
+            )
+          )
         )
     );
 
@@ -374,7 +380,7 @@ export default class AppProvider {
         new UploadMasiveService.default(
           new PagPagosService.default(new PagPagosRepository.default()),
           new FundsUploadMasiveService.default(new FundsRepository.default()),
-          new FunctionalAreaUploadMasiveService.default(),
+          new FunctionalAreaUploadMasiveService.default()
         )
     );
   }
