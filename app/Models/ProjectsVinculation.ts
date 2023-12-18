@@ -1,4 +1,11 @@
-import { BaseModel, BelongsTo, HasOne, belongsTo, column, hasOne } from "@ioc:Adonis/Lucid/Orm";
+import {
+  BaseModel,
+  BelongsTo,
+  HasOne,
+  belongsTo,
+  column,
+  hasOne,
+} from "@ioc:Adonis/Lucid/Orm";
 import { DateTime } from "luxon";
 import FuntionalAreas from "./FunctionalArea";
 import FunctionalProject from "./FunctionalProject";
@@ -60,5 +67,4 @@ export default class ProjectsVinculation extends BaseModel {
     foreignKey: "operationProjectId",
   })
   public functionalProject: BelongsTo<typeof FunctionalProject>;
-
 }

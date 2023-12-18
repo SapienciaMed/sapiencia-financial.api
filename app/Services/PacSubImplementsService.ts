@@ -681,8 +681,8 @@ export default class PacSubImplementsService implements IPacSubImplementsService
       exercise: data.exercise,
       resourceType: data.resourceType,
       route: getRoute.id,
-      version: version
-    }
+      version: version,
+     }
 
     const savePac = await this.pacRepository.createAssociations(objInsertPac);
     if( !savePac || savePac == null || savePac == undefined )

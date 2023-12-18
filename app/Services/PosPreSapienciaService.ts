@@ -15,6 +15,7 @@ export interface IPosPreSapienciaService {
   createPosPreSapVinculation(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia | any>>;
   updatePosPreSapVinculation(posPreSapiencia: IPosPreSapiencia , id: number): Promise<ApiResponse<IPosPreSapiencia | null>>;
   getAllPosPreSapiencia(): Promise<ApiResponse<IPosPreSapiencia[]>>;
+  getPosPreByParamsMasive(pprNumero: string, pprEjercicio: number, ppsPosicion: string): Promise<ApiResponse<any | null>>;
 
 }
 
@@ -25,6 +26,22 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
     id: number
   ): Promise<ApiResponse<IPosPreSapiencia>> {
     const res = await this.posPreSapienciaRepository.getPosPreSapienciaById(id);
+
+    if (!res) {
+      return new ApiResponse(
+        {} as IPosPreSapiencia,
+        EResponseCodes.WARN,
+        "Registro no encontrado"
+      );
+    }
+
+    return new ApiResponse(res, EResponseCodes.OK);
+  }
+ 
+  async getPosPreByParamsMasive(
+    pprNumero: string, pprEjercicio: number, ppsPosicion: string
+  ): Promise<ApiResponse<IPosPreSapiencia>> {
+    const res = await this.posPreSapienciaRepository.getPosPreByParamsMasive(pprNumero,pprEjercicio,ppsPosicion);
 
     if (!res) {
       return new ApiResponse(

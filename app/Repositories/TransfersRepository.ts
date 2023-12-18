@@ -81,7 +81,6 @@ export default class TransfersRepository implements ITransfersRepository {
 
   //?OBTENER UNA ADICIÓN CON SUS MOVIMIENTOS EN PARALELO A TRAVÉS DE UN ID PARAM
   async getTransferById(id: number): Promise<ITransfersWithMovements | any> {
-
     const head = await Transfer
       .query()
       .where("id", id)

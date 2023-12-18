@@ -1,3 +1,4 @@
+
 import { DateTime } from "luxon";
 import { IBudgets } from "./BudgetsInterfaces";
 import { IEntities } from './EntitiesInterfaces';
@@ -45,4 +46,34 @@ export interface IFiltersPosPreSapienciaMix {
   budgetNumberOrig?: number; //Number Pospre Origen
   budgetIdSapi?: number; //Id Pospre Sapienica
   budgetNumberSapi?: number | string; //Number Pospre Sapienica
+}
+
+export interface IPospreUploadMasive {
+  id?: number;
+  number?: string;
+  budgetId?: number;
+  ejercise?: number;
+  description?: string;
+  consecutive?: string;
+  assignedTo?: string;
+  userModify?: string;
+  dateModify?: Date;
+  userCreate?: string;
+  dateCreate?: DateTime;
+  entityId?: number;
+  denomination?: string;
+  descriptionOrigen?: string;
+}
+
+export interface IErrorsUploadMasive {
+  rowIndex: number;
+  columnName: string;
+  errorMessage: string;
+}
+
+export interface IResponsePospreUploadMasive {
+  generalResponse: string;
+  errorsResponse: IErrorsUploadMasive[] | null;
+  headers: string[];
+  items: IPospreUploadMasive[];
 }

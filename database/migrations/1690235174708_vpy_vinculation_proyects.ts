@@ -21,25 +21,6 @@ export default class extends BaseSchema {
         .inTable("ARF_AREAS_FUNCIONALES")
         .comment("Codigo de la entidad (FK ARF_AREAS_FUNCIONALES)");
 
-      table
-        .string("VPY_CODIGO_PROYECTO",20)
-        .notNullable()
-        .comment("Codigo del proyecto (Direccion Estrategica)");
-
-      table
-        .string("VPY_CONCEPTO_PROYECTO",200)
-        .notNullable()
-        .comment("Nombre / Concepto del proyecto (Direccion Estrategica)");
-
-      table
-        .bigInteger("VPY_VALOR_PRESUPUESTADO")
-        .notNullable()
-        .comment("Valor presupuestado");
-
-      table
-        .bigInteger("VPY_VALOR_ASIGNADO")
-        .notNullable()
-        .comment("Valor asignado");
 
       table
         .boolean("VPY_VINCULADO")

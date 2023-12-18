@@ -11,10 +11,12 @@ import {
 } from "../Interfaces/UploadMasiveInterfaces";
 import { ApiResponse } from "../Utils/ApiResponses";
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
+import Funds from "App/Models/Funds";
 //import Funds from 'App/Models/Funds';
 
 export interface IFundsUploadMasiveService {
-  uploadMasiveFunds(file: string): Promise<any>;
+  uploadMasiveFunds(file: string, usuarioCreo: string): Promise<any>;
+  
 }
 
 export default class FundsUploadMasiveService
@@ -39,14 +41,25 @@ export default class FundsUploadMasiveService
   public arrayErrorExist: IErrorsUploadMasive[] = []; //Ya existe en la base de datos
   public arrayErrorRepeat: IErrorsUploadMasive[] = []; //Repetidos en el excel
 
-  async uploadMasiveFunds(file: string): Promise<any> {
-    const result = await this.processBase64(file);
+   async insertFundsinfo(items: any[], model: any): Promise<void> {
 
+    for (const item of items) {
+      try {
+        await model.create(item);
+      } catch (error) {
+        console.error(`Error de validación para el item: ${error}`);
+      }
+    }
+  }
+  async uploadMasiveFunds(file: string, usuarioCreo:string): Promise<any> {
+    const result = await this.processBase64(file,usuarioCreo);
+    this.insertFundsinfo(result.data?.['items'],Funds)
     return result;
   }
 
   async processBase64(
-    fileContent: string
+    fileContent: string,
+    usuarioCreo:string
   ): Promise<
     ApiResponse<IResponseUploadMasive | IErrorsUploadMasive[] | null>
   > {
@@ -66,14 +79,15 @@ export default class FundsUploadMasiveService
       throw new Error(error);
     }
 
-    const readInfo = await this.readExcel(fileBuffer);
+    const readInfo = await this.readExcel(fileBuffer,usuarioCreo);
     fs.unlinkSync(tempFilePath);
 
     return readInfo;
   }
 
   public readExcel = async (
-    fileBuffer: Buffer
+    fileBuffer: Buffer,
+    usuarioCreo: string
   ): Promise<
     ApiResponse<IResponseUploadMasive | IErrorsUploadMasive[] | null>
   > => {
@@ -125,13 +139,13 @@ export default class FundsUploadMasiveService
       if (validDates !== null) bandControlForValidDates = true;
 
       const objResult: IFundsUploadMasive = {
-        row: rowIndex,
-        cpEntity: row.getCell(1).value?.toString()!,
-        code: row.getCell(2).value?.toString()!,
+        entityId: 1,
+        number: row.getCell(2).value?.toString()!,
         denomination: row.getCell(3).value?.toString()!,
         description: row.getCell(4).value?.toString()!,
         dateFrom: new Date(Date.parse(row.getCell(5).value?.toString()!)),
         dateTo: new Date(Date.parse(row.getCell(6).value?.toString()!)),
+        userCreate:usuarioCreo
       };
 
       // auxArrayFunds.push(row.getCell(2).value?.toString()!)
@@ -144,18 +158,18 @@ export default class FundsUploadMasiveService
     let applyRow: number = 1;
     for (const iterFunds of items) {
       applyRow += 1;
-      if (auxArrayFunds.includes(iterFunds.code)) {
+      if (auxArrayFunds.includes(iterFunds.number)) {
         const objError: IErrorsUploadMasive = {
           row: applyRow,
           description: `Tiene datos duplicados en el archivo`,
-          additionalDef: `El fondo ${iterFunds.code} ubicado en la fila ${applyRow} se encuentra repetivo en el archivo`,
+          additionalDef: `El fondo ${iterFunds.number} ubicado en la fila ${applyRow} se encuentra repetivo en el archivo`,
         };
 
         this.arrayErrorRepeat.push(objError);
         bandControlForRepeatExcelFunds = true;
       }
 
-      auxArrayFunds.push(iterFunds.code);
+      auxArrayFunds.push(iterFunds.number);
     }
 
     // ----------------------------------------- //
@@ -165,14 +179,14 @@ export default class FundsUploadMasiveService
     for (const iterFunds of items) {
       numberRow += 1;
       const search = await this.fundsRepository.getFundsByNumber(
-        iterFunds.code
+        iterFunds.number
       );
 
       if (search.array.length > 0) {
         const objError: IErrorsUploadMasive = {
           row: numberRow,
           description: `El fondo ya existe`,
-          additionalDef: `El fondo ${iterFunds.code} ubicado en la fila ${numberRow} ya está registrado en la base de datos`,
+          additionalDef: `El fondo ${iterFunds.number} ubicado en la fila ${numberRow} ya está registrado en la base de datos`,
         };
 
         this.arrayErrorExist.push(objError);
@@ -408,14 +422,5 @@ export default class FundsUploadMasiveService
     return null;
   }
 
-  async insertFundsinfo(items: any[], model: any): Promise<void> {
-    for (const item of items) {
-      try {
-        const res = await model.create(item);
-        return res;
-      } catch (error) {
-        console.error(`Error de validación para el item: ${error}`);
-      }
-    }
-  }
+
 }

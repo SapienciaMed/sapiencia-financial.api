@@ -68,6 +68,7 @@ export default class AmountBudgetAvailability extends BaseModel {
   @hasMany(() => LinkRpcdp, {
     localKey: 'id',
     foreignKey: 'amountCdpId',
+    serializeAs: 'linkRpcdps',
   })
   public linkRpcdps: HasMany<typeof LinkRpcdp>;
 

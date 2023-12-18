@@ -86,7 +86,7 @@ export default class BudgetsRepository implements IBudgetsRepository {
     }
 
     if (filters.number) {
-      query.where("number", filters.number);
+      query.whereILike("number", `%${filters.number}%`);
     }
 
     await query.preload("entity");

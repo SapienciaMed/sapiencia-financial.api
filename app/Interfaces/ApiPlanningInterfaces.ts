@@ -59,7 +59,7 @@ export interface IApiSpecificPlanningProjectData {
   meta?: IInternalPagination;
 }
 
-export interface Activity {
+export interface IActivity {
   id: number;
   objetiveActivity: number;
   stageActivity: number;
@@ -85,13 +85,13 @@ export interface IApiPlanningDetailedActivities {
   validatorCPC: null;
   clasificatorCPC: null;
   sectionValidatorCPC: null;
-  activity: Activity;
+  activity: IActivity;
 }
 
 export interface IApiPlanningDetailedActivitiesSpecify {
   //* Vinculación MGA
   id?: number;
-
+  idProject:number;
   //*Actividad Detallada MGA
   activityDetailedId: number; // PK Actividad Detallada
   consecutiveActivityDetailed: string; // Código Consecuetivo Actividad Detallada #.#.# ...

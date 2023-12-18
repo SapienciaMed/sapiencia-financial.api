@@ -19,11 +19,9 @@ export async function tranformProjectsVinculation(
   );
 
   if (projects.find((i) => i.type == EProjectTypes.investment)) {
- 
     const res = await strategicDirectionService.getProjectByFilters({
       idList: projects.map((i) => i.investmentProjectId),
     });
-
 
     if (res.operation.code !== EResponseCodes.OK) {
       throw new Error(
@@ -57,6 +55,5 @@ export async function tranformProjectsVinculation(
       });
     }
   }
-
   return toReturn;
 }

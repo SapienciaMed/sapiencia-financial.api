@@ -20,7 +20,6 @@ import { ITransfersRepository } from "../Repositories/TransfersRepository";
 import { IMovementTransferRepository } from "../Repositories/MovementTransferRepository";
 import Transfer from "../Models/Transfer";
 import TransfersMovement from "../Models/TransfersMovement";
-import { tranformProjectsVinculation } from "App/Utils/sub-services";
 import { IAdditionsRepository } from "App/Repositories/AdditionsRepository";
 import { IStrategicDirectionService } from "./External/StrategicDirectionService";
 import { filterMovementsByTypeAndPospreAddAndTransfer } from "App/Utils/functions";
@@ -360,16 +359,31 @@ export default class TransfersService implements ITransfersService {
         "Registro no encontrado"
       );
     }
+    
+   
+// Supongamos que `response` es la respuesta que has mostrado
+transfer.details = await Promise.all (await transfer.details.map(async detail => {
+   let d = detail.toJSON()
+  d['projectInvestment']=d.budgetRoute.projectVinculation.type=='Inversion' ? (await this.strategicDirectionRepository.getProjectByFilters({idList:[d.budgetRoute.projectVinculation.investmentProjectId]})).data[0] : null;
+  return d
+}));
 
-    for (const detail of transfer.details) {
+    /* for await(const detail of transfer.details) {
       if (detail.budgetRoute.projectVinculation) {
         const res = await tranformProjectsVinculation([
           detail.budgetRoute.projectVinculation,
         ]);
-        if (res.length > 0) detail.budgetRoute.projectVinculation = res[0];
+        if (res.length > 0){
+          let projectInvesment = await this.strategicDirectionRepository.getProjectInvestmentPaginated({page:1,perPage:10,excludeIds:[detail.budgetRoute.projectVinculation.investmentProjectId]})
+          //console.log({projectInvesment:projectInvesment.data.array})
+          //detail.budgetRoute.projectVinculation['projectInvesment'] = projectInvesment.data.array;
+          let d = detail.$preloaded.budgetRoute.$preloaded.projectVinculation.toJSON()
+          d['projectInvestment'] = d.type=='Inversion' ? (await this.strategicDirectionRepository.getProjectByFilters({idList:[d.investmentProjectId]})).data[0] : null;
+       
+        }
       }
-    }
-
+    } */
+    
     return new ApiResponse(transfer, EResponseCodes.OK);
   }
 
@@ -580,11 +594,24 @@ export default class TransfersService implements ITransfersService {
     if (addToHead.id) {
       //* Agreguemos los detalles del traslado
       let isValidAccordingToPlanning = false;
+      let arraytransferMovesGroups: any[] = [];
+      if (transfer.transferMovesGroups.length > 1) {
+        for (const transferMoves of transfer.transferMovesGroups) {
+          arraytransferMovesGroups.push(...transferMoves.data);
+        }
+      } else {
+        arraytransferMovesGroups = transfer.transferMovesGroups[0].data;
+      }
       const resultPospreOriginIds =
         await filterMovementsByTypeAndPospreAddAndTransfer(
-          transfer.transferMovesGroups[0].data,
+          arraytransferMovesGroups,
           "Transfer"
         );
+
+      // console.log({
+      //   resultPospreOriginIds,
+      //   arraytransferMovesGroups,
+      // });
 
       if (resultPospreOriginIds && resultPospreOriginIds?.length > 0) {
         let isValid = 0;
@@ -595,6 +622,8 @@ export default class TransfersService implements ITransfersService {
             res
           );
 
+          // console.log({ res, isValidMovement });
+
           if (
             isValidMovement.operation.code === EResponseCodes.OK &&
             isValidMovement.data !== res.total
@@ -604,6 +633,8 @@ export default class TransfersService implements ITransfersService {
         }
 
         if (isValid === 0) {
+          // console.log("Paso.....................................");
+
           isValidAccordingToPlanning = true;
         } else {
           const addData = await Transfer.findOrFail(addToHead.id);

@@ -90,7 +90,7 @@ export default class ReportService implements IReportService {
         );
         break;
       case EReportIds.reportCdpRpPayMga:
-        dataTable = await this.reportRepository.generateReportBudgetExecution(
+        dataTable = await this.reportRepository.generateReportCdpRpPayMga(
           filters.year
         );
         break;
