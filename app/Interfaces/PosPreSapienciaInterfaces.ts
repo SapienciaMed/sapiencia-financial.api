@@ -59,6 +59,9 @@ export interface IPospreUploadMasive {
   dateModify?: Date;
   userCreate?: string;
   dateCreate?: DateTime;
+  entityId?: number;
+  denomination?: string;
+  descriptionOrigen?: string;
 }
 
 export interface IErrorsUploadMasive {
