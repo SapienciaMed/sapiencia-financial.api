@@ -135,7 +135,7 @@ export default class StrategicDirectionService
 
     dataI.forEach((res) => {
       const objResult: IProject = {
-        assignmentValue: 0,
+        assignmentValue: res.goal ? +res.goal : 0,
         plannedValue: 0,
         name: res.project,
         id: res.id,

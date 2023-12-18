@@ -1,4 +1,5 @@
 import { IPospreUploadMasive,IResponsePospreUploadMasive } from './../Interfaces/PosPreSapienciaInterfaces';
+
 import { DateTime } from 'luxon';
 import * as fs from 'fs';
 import * as mimeTypes from 'mime-types';
