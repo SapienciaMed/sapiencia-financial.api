@@ -1,4 +1,4 @@
-// import { IPospreUploadMasiveService } from './../Services/PospreUploadMasiveService';
+
 import { DateTime } from "luxon";
 import { IBudgets } from "./BudgetsInterfaces";
 import { IEntities } from './EntitiesInterfaces';
@@ -60,6 +60,9 @@ export interface IPospreUploadMasive {
   dateModify?: Date;
   userCreate?: string;
   dateCreate?: DateTime;
+  entityId?: number;
+  denomination?: string;
+  descriptionOrigen?: string;
 }
 
 export interface IErrorsUploadMasive {
