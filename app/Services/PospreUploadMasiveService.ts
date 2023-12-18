@@ -20,10 +20,11 @@ export default class PospreUploadMasiveService implements IPospreUploadMasiveSer
     if (Object.keys(result).length > 0) {
       const items = result?.data?.items;
       const aditionalDataItem = aditionalData;
-     
+      aditionalDataItem;
 
       if (items && Array.isArray(items) && items.length > 0) {
         for (const [index, item] of items.entries()) {
+          index;
           const pospreOrigen: IPospreUploadMasive = {
             number: item.number,
             userCreate: usuarioCreo,

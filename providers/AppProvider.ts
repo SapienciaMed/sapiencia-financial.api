@@ -380,11 +380,10 @@ export default class AppProvider {
         new UploadMasiveService.default(
           new PagPagosService.default(new PagPagosRepository.default()),
           new FundsUploadMasiveService.default(new FundsRepository.default()),
-<<<<<<< HEAD
-          new BudgetsRoutesRepository.default()
-=======
+          new BudgetsRoutesRepository.default(new StrategicDirectionService.default(
+            new VinculationMGARepository.default()
+          )),
           new FunctionalAreaUploadMasiveService.default()
->>>>>>> 89425d2e64e9ec8c11b898d358e0d3684399ae4c
         )
     );
   }
