@@ -69,6 +69,7 @@ export interface ITransfersService {
     foundId: number,
     posPreId: number
   ): Promise<string>;
+  getProjectVinculationByProjectInvestmentId(proyectsIds:number[]):Promise<ApiResponse<any>>
 }
 
 export default class TransfersService implements ITransfersService {
@@ -793,4 +794,25 @@ export default class TransfersService implements ITransfersService {
       );
     }
   }
+
+  async getProjectVinculationByProjectInvestmentId(proyectsIds:number[]):Promise<ApiResponse<any>> {
+    try {
+      let data =
+      await this.projectRepository.getProjectVinculationByProjectInvestmentId(proyectsIds);
+      return new ApiResponse(
+          data,
+          EResponseCodes.OK,
+          "Vinculacion de proyectos encontrados exitosamente"
+      );
+
+  } catch (error) {
+      return new ApiResponse(
+          null,
+          EResponseCodes.FAIL,
+          "Error en la consulta de proyectos vinculados" + error
+      );
+  }
+    
+  }
+
 }

@@ -9,6 +9,7 @@ export interface IBudgetsRoutesService {
     getBudgetsRoutesWithoutPagination(): Promise<ApiResponse<IBudgetsRoutes[]>>;
     createBudgetsRoutes(BudgetsRoutes: IBudgetsRoutes): Promise<ApiResponse<IBudgetsRoutes>>;
     updateBudgetsRoutes(BudgetsRoutes: IBudgetsRoutes, id: number): Promise<ApiResponse<IBudgetsRoutes | null>>;
+    getAllRoutesByExcercise(excercise:number): Promise<ApiResponse<IBudgetsRoutes[] | null>>;
 }
 
 
@@ -50,6 +51,17 @@ export default class BudgetsRoutesService implements IBudgetsRoutesService {
         if (!res) {
             return new ApiResponse(
                 {} as IBudgetsRoutes,
+                EResponseCodes.FAIL,
+                "Registro no encontrado"
+            );
+        }
+        return new ApiResponse(res, EResponseCodes.OK);
+    }
+    async getAllRoutesByExcercise(excercise:number): Promise<ApiResponse<IBudgetsRoutes[] | null>> {
+        const res = await this.BudgetsRoutesRepository.getAllRoutesByExcercise(excercise);
+        if (!res) {
+            return new ApiResponse(
+                [] as IBudgetsRoutes[],
                 EResponseCodes.FAIL,
                 "Registro no encontrado"
             );

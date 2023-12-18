@@ -343,7 +343,8 @@ export default class AppProvider {
       () =>
         new UploadMasiveService.default(
           new PagPagosService.default(new PagPagosRepository.default()),
-          new FundsUploadMasiveService.default(new FundsRepository.default())
+          new FundsUploadMasiveService.default(new FundsRepository.default()),
+          new BudgetsRoutesRepository.default()
         )
     );
   }

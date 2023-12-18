@@ -62,4 +62,15 @@ export default class BudgetsRoutesController {
       );
     }
   }
+  
+  public async getAllRoutesByExcercise({ request, response }: HttpContextContract) {
+    try {
+      const { excercise } = request.params();
+      return response.send(await BudgetsRoutesProvider.getAllRoutesByExcercise(excercise));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
 }

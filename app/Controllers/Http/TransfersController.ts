@@ -183,5 +183,18 @@ export default class TransfersController {
     }
 
   }
+  
+  public async getProjectVinculationByProjectInvestmentId({request, response}: HttpContextContract) {
+    try {
+      const proyects = request.body() as {projectsIds: Array<number>};
+      console.log(proyects)
+      return response.send(await TransfersProvider.getProjectVinculationByProjectInvestmentId(proyects.projectsIds));
+
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
 
 }

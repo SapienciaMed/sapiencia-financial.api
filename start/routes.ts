@@ -256,9 +256,11 @@ Route.group(() => {
     "/update/:id",
     "BudgetsRoutesController.updateBudgetsRoutes"
   ).middleware("auth:RUTA_PRESUPUESTAL_EDITAR");
+    Route.get('get-all-routes-by-excercise/:excercise','BudgetsRoutesController.getAllRoutesByExcercise' )
+
 })
   .prefix("/api/v1/budget-routes")
-  .middleware("auth");
+  /* .middleware("auth"); */
 
 Route.group(() => {
   Route.post(
@@ -332,6 +334,9 @@ Route.group(() => {
     "/update-save/:id",
     "TransfersController.executeUpdateTransferWithMov"
   ).middleware("auth:TRASLADO_EDITAR");
+})
+Route.group(() => {
+  Route.post("/get-all-vinculation-project-strategic", "TransfersController.getProjectVinculationByProjectInvestmentId");
 })
   .prefix("/api/v1/transfers")
   .middleware("auth");

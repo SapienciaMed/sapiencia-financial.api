@@ -32,6 +32,10 @@ export interface IBudgetsRoutesRepository {
   getBudgetsSpcifyExerciseWithPosPreSapi(
     posPreSapi: number
   ): Promise<IBudgetsRoutes[] | null>;
+  getAllRoutesByExcercise(
+    excercise: number
+  ): Promise<IBudgetsRoutes[] | null>;
+  createManyBudgetRoutes(budgetsRoutes:IBudgetsRoutes[]):Promise<BudgetsRoutes[]>
 }
 
 export default class BudgetsRoutesRepository
@@ -187,5 +191,25 @@ export default class BudgetsRoutesRepository
       .where("idPospreSapiencia", posPreSapi);
 
     return query.map((i) => i.serialize() as IBudgetsRoutes);
+  }
+  
+  async  getAllRoutesByExcercise(
+    excercise: number
+  ): Promise<IBudgetsRoutes[] | null> {
+    const routes = await BudgetsRoutes.query()
+      .preload('budget')
+      .preload('funds')
+      .whereHas('pospreSapiencia',(query)=>{
+        query.where('ejercise',excercise)
+      })
+      .preload('pospreSapiencia')
+      .preload('projectVinculation')
+      
+    return routes.map((i) => i.serialize() as IBudgetsRoutes);
+  }
+
+  async createManyBudgetRoutes(budgetsRoutes:IBudgetsRoutes[]): Promise<BudgetsRoutes[]> {
+    const res = BudgetsRoutes.createMany(budgetsRoutes);
+    return res;
   }
 }
