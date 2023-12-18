@@ -23,7 +23,7 @@ export interface IPosPreSapienciaRepository {
   updatePosPreSapVinculation(posPreSapiencia: IPosPreSapiencia, id: number): Promise<IPosPreSapiencia | any>;
   getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<IPagingData<IPosPreSapienciaAdditionList>>;
   getPosPreSapiSpcifyExercise(exercise: number): Promise<IPosPreSapiencia[] | null>;
-  getPosPreByParamsMasive(pprNumero: string, pprEjercicio: number, ppsPosicion: number): Promise<any>;
+  getPosPreByParamsMasive(pprNumero: string, pprEjercicio: number, ppsPosicion: string): Promise<any>;
 }
 
 export default class PosPreSapienciaRepository implements IPosPreSapienciaRepository {
@@ -35,13 +35,13 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
     return res as IPosPreSapiencia[];
   }
 
-  async getPosPreByParamsMasive(pprNumero: string, pprEjercicio: number, ppsPosicion: number): Promise<any> {
+  async getPosPreByParamsMasive(pprNumero: string, pprEjercicio: number, ppsPosicion: string): Promise<any> {
 
     const queryGetInfo = await PosPreSapiencia.query()
     .preload("budget", (subQuery) => {
       subQuery.where("number",pprNumero)
-      subQuery.where("ejercise",pprEjercicio)
-    })
+    }).where("consecutive", ppsPosicion.toString())
+    .where("ejercise",pprEjercicio)
 
     const resDataPospre = queryGetInfo.map((i) => i.serialize());
 

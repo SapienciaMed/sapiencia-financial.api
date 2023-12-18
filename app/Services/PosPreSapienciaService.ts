@@ -15,7 +15,7 @@ export interface IPosPreSapienciaService {
   createPosPreSapVinculation(posPreSapiencia: IPosPreSapiencia): Promise<ApiResponse<IPosPreSapiencia | any>>;
   updatePosPreSapVinculation(posPreSapiencia: IPosPreSapiencia , id: number): Promise<ApiResponse<IPosPreSapiencia | null>>;
   getAllPosPreSapiencia(): Promise<ApiResponse<IPosPreSapiencia[]>>;
-  getPosPreByParamsMasive(pprNumero: string, pprEjercicio: number, ppsPosicion: number): Promise<ApiResponse<any | null>>;
+  getPosPreByParamsMasive(pprNumero: string, pprEjercicio: number, ppsPosicion: string): Promise<ApiResponse<any | null>>;
 
 }
 
@@ -39,7 +39,7 @@ export default class PosPreSapienciaService implements IPosPreSapienciaService {
   }
  
   async getPosPreByParamsMasive(
-    pprNumero: string, pprEjercicio: number, ppsPosicion: number
+    pprNumero: string, pprEjercicio: number, ppsPosicion: string
   ): Promise<ApiResponse<IPosPreSapiencia>> {
     const res = await this.posPreSapienciaRepository.getPosPreByParamsMasive(pprNumero,pprEjercicio,ppsPosicion);
 
