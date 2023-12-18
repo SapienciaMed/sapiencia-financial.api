@@ -1,5 +1,5 @@
 import { IPospreUploadMasive,IResponsePospreUploadMasive } from './../Interfaces/PosPreSapienciaInterfaces';
-import { IFunctionalAreaMasiveSave, IResponseUploadMasiveFunctionalArea } from './../Interfaces/FunctionalAreaInterfaces';
+
 import { DateTime } from 'luxon';
 import * as fs from 'fs';
 import * as mimeTypes from 'mime-types';
@@ -7,9 +7,8 @@ import * as path from 'path';
 import * as ExcelJS from 'exceljs';
 import { ApiResponse } from '../Utils/ApiResponses';
 import { EResponseCodes } from '../Constants/ResponseCodesEnum';
-import FunctionalArea from 'App/Models/FunctionalArea';
-import ProjectsVinculation from 'App/Models/ProjectsVinculation';
 import PosPreSapiencia from 'App/Models/PosPreSapiencia';
+import Budgets from 'App/Models/Budgets';
 export interface IPospreUploadMasiveService {
   uploadMasiveAreaFunctional(fileData: any, usuarioCreo: any, aditionalData: []): Promise<ApiResponse<any>>;
 }
@@ -21,19 +20,31 @@ export default class PospreUploadMasiveService implements IPospreUploadMasiveSer
     if (Object.keys(result).length > 0) {
       const items = result?.data?.items;
       const aditionalDataItem = aditionalData;
-      const arrDataVpy = Object.values(aditionalDataItem)
+     
 
       if (items && Array.isArray(items) && items.length > 0) {
         for (const [index, item] of items.entries()) {
-          const pospreSapiencia: IPospreUploadMasive = {
-            number: item.number+"12",
+          const pospreOrigen: IPospreUploadMasive = {
+            number: item.number,
             userCreate: usuarioCreo,
+            ejercise: item.ejercise,
+            entityId: 1,
+            denomination: item.denomination,
+            description: item.descriptionOrigen,
             dateCreate: DateTime.fromJSDate(new Date()),
-            consecutive: "0",
-            assignedTo: item.number,
-            budgetId: arrDataVpy[index]['id']
           }
-          await this.insertItemsToDatabaseVPY([pospreSapiencia], PosPreSapiencia);
+
+         let idPospreOringen : number =  await this.insertIntoPosPreOrigen([pospreOrigen], Budgets);
+         
+         const pospreSapiencia: IPospreUploadMasive = {
+           number: item.number+"12",
+           userCreate: usuarioCreo,
+           dateCreate: DateTime.fromJSDate(new Date()),
+           consecutive: "0",
+           assignedTo: item.number,
+           budgetId: idPospreOringen
+          }
+         await this.insertIntoPosPreOrigen([pospreSapiencia], PosPreSapiencia);
         
         
         }
@@ -84,6 +95,8 @@ export default class PospreUploadMasiveService implements IPospreUploadMasiveSer
         consecutive: row.getCell(4).value?.toString()!,
         ejercise: parseInt(String(row.getCell(5).value) || '0', 10),
         description: row.getCell(6).value?.toString()!,
+        descriptionOrigen: row.getCell(2).value?.toString()!,
+        denomination: row.getCell(3).value?.toString()!,
       };
 
       if (
@@ -111,19 +124,16 @@ export default class PospreUploadMasiveService implements IPospreUploadMasiveSer
 
 
 
-  private async insertItemsToDatabaseVPY(
+  private async insertIntoPosPreOrigen(
     items: any[],
     model: any
-  ): Promise<number[]> {
-    const insertedIds: number[] = [];
+  ): Promise<number> {
+    let insertedIds: number = 0;
 
     for (const item of items) {
       try {
-
-        let insertedId;
         const newRecord = await model.create(item);
-        insertedId = newRecord.id;
-        insertedIds.push(insertedId);
+        insertedIds = newRecord.id;
       } catch (error) {
         console.error(`Error de validación para el item: ${error}`);
       }
