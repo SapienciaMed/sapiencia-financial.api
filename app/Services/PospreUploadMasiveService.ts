@@ -40,7 +40,7 @@ export default class PospreUploadMasiveService implements IPospreUploadMasiveSer
          let idPospreOringen : number =  await this.insertIntoPosPreOrigen([pospreOrigen], Budgets);
          
          const pospreSapiencia: IPospreUploadMasive = {
-           number: item.number+"12",
+           number: item.number,
            userCreate: usuarioCreo,
            dateCreate: DateTime.fromJSDate(new Date()),
            consecutive: item.consecutive,
