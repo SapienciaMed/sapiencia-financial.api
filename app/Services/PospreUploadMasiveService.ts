@@ -43,11 +43,13 @@ export default class PospreUploadMasiveService implements IPospreUploadMasiveSer
            number: item.number+"12",
            userCreate: usuarioCreo,
            dateCreate: DateTime.fromJSDate(new Date()),
-           consecutive: "0",
+           consecutive: item.consecutive,
+           description: item.description,
            assignedTo: item.number,
-           budgetId: idPospreOringen
+           budgetId: idPospreOringen,
+           ejercise:item.ejercise,
           }
-         await this.insertIntoPosPreOrigen([pospreSapiencia], PosPreSapiencia);
+         await this.insertIntoPosPreSapiencia([pospreSapiencia], PosPreSapiencia);
         
         
         }
@@ -143,6 +145,19 @@ export default class PospreUploadMasiveService implements IPospreUploadMasiveSer
     }
 
     return insertedIds;
+  }
+  private async insertIntoPosPreSapiencia(
+    items: any[],
+    model: any
+  ): Promise<void> {
+    for (const item of items) {
+      try {
+        await model.create(item);
+      } catch (error) {
+        console.error(`Error de validación para el item: ${error}`);
+      }
+    }
+
   }
 
 }
