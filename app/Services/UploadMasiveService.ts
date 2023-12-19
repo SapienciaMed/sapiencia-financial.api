@@ -3,6 +3,7 @@ import { ApiResponse } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "../Constants/ResponseCodesEnum";
 import { IPagoService } from './PagPagosService';
 import { IFundsUploadMasiveService } from './FundsUploadMasiveService';
+import { IBudgetsRoutesRepository } from "App/Repositories/BudgetsRoutesRepository";
 
 export interface IUploadMasiveService {
   initialRedirect(type: string, file: any, usuarioCreo: string, mes: number, ejercicio: string, aditionalData: [],): Promise<ApiResponse<any>>;
@@ -12,6 +13,7 @@ export default class UploadMasiveService implements IUploadMasiveService {
   constructor(
     private pagoService: IPagoService,
     private fundsUploadMasiveService: IFundsUploadMasiveService,
+    private budgetsRouteRepository: IBudgetsRoutesRepository,
     private FunctionalAreaUploadMasiveService: IFunctionalAreaUploadService,
   ) {}
 
@@ -54,6 +56,18 @@ export default class UploadMasiveService implements IUploadMasiveService {
 
 
       break;
+
+      case "RutaPptoInicial":
+        try {
+          const resultBudgetsRoute = await this.budgetsRouteRepository.createManyBudgetRoutes(file)
+          return new ApiResponse(resultBudgetsRoute, EResponseCodes.OK, "Rutas presupuestales cargadas existosamente");
+        } catch (error) {
+          
+          return new ApiResponse(null, EResponseCodes.FAIL, "Falla en el almacenamiento de rutas presupuestales "+error );
+        }
+        
+      break;
+
     }
 
     return generalRes;

@@ -6,6 +6,7 @@ import { IProjectsVinculation, IProjectsVinculationFull } from "App/Interfaces/P
 export interface IProjectsRepository {
   getProjectById(projectId: number): Promise<IProjectsVinculationFull | null>;
   getProjectByInvestmentProjectId(id: number): Promise<IProject | null>;
+  getProjectVinculationByProjectInvestmentId(proyectsIds: number[]): Promise<ProjectsVinculation[]>
 }
 
 export default class ProjectsRepository implements IProjectsRepository {
@@ -39,6 +40,14 @@ export default class ProjectsRepository implements IProjectsRepository {
       .first();
 
     return res ? (res.serialize() as IProject) : null;
+  }
+  
+  async getProjectVinculationByProjectInvestmentId(proyectsIds: number[]): Promise<ProjectsVinculation[]> {
+
+    const res = await ProjectsVinculation.query()
+      .whereIn("investmentProjectId", proyectsIds)
+      
+    return res;
   }
 
 }
