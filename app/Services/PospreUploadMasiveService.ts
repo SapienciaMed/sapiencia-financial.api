@@ -14,16 +14,19 @@ export interface IPospreUploadMasiveService {
 }
 export default class PospreUploadMasiveService implements IPospreUploadMasiveService {
   public async uploadMasiveAreaFunctional(fileData: any, usuarioCreo: any, aditionalData: []): Promise<ApiResponse<any>> {
+    aditionalData;
     const result = await this.processBase64(fileData);
     let responseData;
 
     if (Object.keys(result).length > 0) {
       const items = result?.data?.items;
-      const aditionalDataItem = aditionalData;
-     
+      // const aditionalDataItem = aditionalData;
+      
 
       if (items && Array.isArray(items) && items.length > 0) {
         for (const [index, item] of items.entries()) {
+          console.log({index});
+          
           const pospreOrigen: IPospreUploadMasive = {
             number: item.number,
             userCreate: usuarioCreo,
@@ -37,14 +40,16 @@ export default class PospreUploadMasiveService implements IPospreUploadMasiveSer
          let idPospreOringen : number =  await this.insertIntoPosPreOrigen([pospreOrigen], Budgets);
          
          const pospreSapiencia: IPospreUploadMasive = {
-           number: item.number+"12",
+           number: item.number+item.consecutive,
            userCreate: usuarioCreo,
            dateCreate: DateTime.fromJSDate(new Date()),
-           consecutive: "0",
+           consecutive: item.consecutive,
+           description: item.description,
            assignedTo: item.number,
-           budgetId: idPospreOringen
+           budgetId: idPospreOringen,
+           ejercise:item.ejercise,
           }
-         await this.insertIntoPosPreOrigen([pospreSapiencia], PosPreSapiencia);
+         await this.insertIntoPosPreSapiencia([pospreSapiencia], PosPreSapiencia);
         
         
         }
@@ -140,6 +145,19 @@ export default class PospreUploadMasiveService implements IPospreUploadMasiveSer
     }
 
     return insertedIds;
+  }
+  private async insertIntoPosPreSapiencia(
+    items: any[],
+    model: any
+  ): Promise<void> {
+    for (const item of items) {
+      try {
+        await model.create(item);
+      } catch (error) {
+        console.error(`Error de validación para el item: ${error}`);
+      }
+    }
+
   }
 
 }

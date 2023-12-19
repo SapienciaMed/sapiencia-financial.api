@@ -63,6 +63,9 @@ export default class AppProvider {
     const FunctionalAreaUploadMasiveService = await import(
       "App/Services/FunctionalAreaUploadMasiveService"
     );
+    const PospreUploadMasiveService = await import(
+      "App/Services/PospreUploadMasiveService"
+    );
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -380,7 +383,11 @@ export default class AppProvider {
         new UploadMasiveService.default(
           new PagPagosService.default(new PagPagosRepository.default()),
           new FundsUploadMasiveService.default(new FundsRepository.default()),
-          new FunctionalAreaUploadMasiveService.default()
+          new BudgetsRoutesRepository.default(new StrategicDirectionService.default(
+            new VinculationMGARepository.default()
+          )),
+          new FunctionalAreaUploadMasiveService.default(),
+          new PospreUploadMasiveService.default()
         )
     );
   }
