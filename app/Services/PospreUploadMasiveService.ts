@@ -14,12 +14,13 @@ export interface IPospreUploadMasiveService {
 }
 export default class PospreUploadMasiveService implements IPospreUploadMasiveService {
   public async uploadMasiveAreaFunctional(fileData: any, usuarioCreo: any, aditionalData: []): Promise<ApiResponse<any>> {
+    aditionalData;
     const result = await this.processBase64(fileData);
     let responseData;
 
     if (Object.keys(result).length > 0) {
       const items = result?.data?.items;
-      const aditionalDataItem = aditionalData;
+      // const aditionalDataItem = aditionalData;
       
 
       if (items && Array.isArray(items) && items.length > 0) {
