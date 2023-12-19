@@ -357,9 +357,10 @@ Route.group(() => {
     "/update-save/:id",
     "TransfersController.executeUpdateTransferWithMov"
   ).middleware("auth:TRASLADO_EDITAR");
-})
-Route.group(() => {
-  Route.post("/get-all-vinculation-project-strategic", "TransfersController.getProjectVinculationByProjectInvestmentId");
+  Route.group(() => {
+    Route.post("/get-all-vinculation-project-strategic", "TransfersController.getProjectVinculationByProjectInvestmentId");
+  })
+
 })
   .prefix("/api/v1/transfers")
   .middleware("auth");
