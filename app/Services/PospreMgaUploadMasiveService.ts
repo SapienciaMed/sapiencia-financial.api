@@ -23,7 +23,7 @@ export default class PospreUploadMasiveMgaService implements IPospreMgaUploadMas
       
       
       if (items && Array.isArray(items) && items.length > 0) {
-        for (const [index, item] of items.entries()) {
+        for (const [index] of items.entries()) {
         
             const aditionalDataItem = aditionalData;
             const arrDataVpy = Object.values(aditionalDataItem)
