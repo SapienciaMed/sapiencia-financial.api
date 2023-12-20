@@ -66,6 +66,9 @@ export default class AppProvider {
     const PospreUploadMasiveService = await import(
       "App/Services/PospreUploadMasiveService"
     );
+    const PospreUploadMasiveMgaService = await import(
+      "App/Services/PospreMgaUploadMasiveService"
+    );
     /**************************************************************************/
     /************************ EXTERNAL SERVICES ********************************/
     /**************************************************************************/
@@ -387,7 +390,8 @@ export default class AppProvider {
             new VinculationMGARepository.default()
           )),
           new FunctionalAreaUploadMasiveService.default(),
-          new PospreUploadMasiveService.default()
+          new PospreUploadMasiveService.default(),
+          new PospreUploadMasiveMgaService.default(),
         )
     );
   }

@@ -1,3 +1,4 @@
+import { IPospreMgaUploadMasiveService } from './PospreMgaUploadMasiveService';
 import { IPospreUploadMasiveService } from './PospreUploadMasiveService';
 import { IFunctionalAreaUploadService } from './FunctionalAreaUploadMasiveService';
 import { ApiResponse } from "App/Utils/ApiResponses";
@@ -18,6 +19,7 @@ export default class UploadMasiveService implements IUploadMasiveService {
     private budgetsRouteRepository: IBudgetsRoutesRepository,
     private FunctionalAreaUploadMasiveService: IFunctionalAreaUploadService,
     private PospreUploadMasiveService: IPospreUploadMasiveService,
+    private PospreMgaUploadMasiveService: IPospreMgaUploadMasiveService,
   ) { }
 
   async initialRedirect(type: string, file: any, usuarioCreo: any, mes: number, ejercicio: string, aditionalData: []): Promise<ApiResponse<any>> {
@@ -70,6 +72,21 @@ export default class UploadMasiveService implements IUploadMasiveService {
         }
 
         break;
+
+       case "PospreMGA":
+        try {
+          if (!this.PospreMgaUploadMasiveService) {
+            return new ApiResponse(null, EResponseCodes.FAIL, "PospreUploadMasiveMGA no está definido.");
+          }
+
+          const resultPospreMga = await this.PospreMgaUploadMasiveService.uploadMasiveMga(file, usuarioCreo, aditionalData);
+
+          generalRes = resultPospreMga;
+        } catch (error) {
+          console.error(error);
+          return new ApiResponse(null, EResponseCodes.FAIL, "TODO: Handle errors appropriately" + error);
+        }
+       break;
 
       case "RutaPptoInicial":
         try {
