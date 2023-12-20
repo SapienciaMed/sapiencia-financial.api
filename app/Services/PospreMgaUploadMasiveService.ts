@@ -29,12 +29,13 @@ export default class PospreUploadMasiveMgaService implements IPospreMgaUploadMas
             const arrDataVpy = Object.values(aditionalDataItem)
 
           const vinculationMgaData: IVinculationMGAData = {
-            budgetId:arrDataVpy[index]['pospre'],
+            budgetId:arrDataVpy[index]['posePre'],
             userCreate: usuarioCreo,
             activityId:arrDataVpy[index]['id'],
             consecutiveActivityDetailed: arrDataVpy[index]['activityMGA'],
             detailedActivityId: arrDataVpy[index]['idProject'],
             dateCreate: DateTime.fromJSDate(new Date()),
+            
           }
 
            await this.insertIntoMga([vinculationMgaData], VinculationMGA);
