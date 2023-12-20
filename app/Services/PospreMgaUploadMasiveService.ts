@@ -32,8 +32,8 @@ export default class PospreUploadMasiveMgaService implements IPospreMgaUploadMas
             budgetId:arrDataVpy[index]['posePre'],
             userCreate: usuarioCreo,
             activityId:arrDataVpy[index]['id'],
-            consecutiveActivityDetailed: arrDataVpy[index]['idDetail'],
-            detailedActivityId: arrDataVpy[index]['idProject'],
+            consecutiveActivityDetailed: arrDataVpy[index]['activityMGA'],
+            detailedActivityId: arrDataVpy[index]['idDetail'],
             dateCreate: DateTime.fromJSDate(new Date()),
             
           }
