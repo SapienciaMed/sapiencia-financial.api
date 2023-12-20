@@ -35,6 +35,15 @@ export interface IActivityMGA {
   userCreate?: string;
   dateCreate?: Date;
 }
+export interface IVinculationMGAData {
+  id?: number;
+  budgetId?: number;
+  activityId?: number;
+  consecutiveActivityDetailed?: string;
+  detailedActivityId?: number;
+  userCreate?: string;
+  dateCreate?: DateTime;
+}
 
 export interface IVinculationMGA {
   id: number;
