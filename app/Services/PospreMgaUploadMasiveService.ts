@@ -32,7 +32,7 @@ export default class PospreUploadMasiveMgaService implements IPospreMgaUploadMas
             budgetId:arrDataVpy[index]['posePre'],
             userCreate: usuarioCreo,
             activityId:arrDataVpy[index]['id'],
-            consecutiveActivityDetailed: arrDataVpy[index]['activityMGA'],
+            consecutiveActivityDetailed: item.consecutiveActivityDetailed,
             detailedActivityId: arrDataVpy[index]['idDetail'],
             dateCreate: DateTime.fromJSDate(new Date()),
             
@@ -117,8 +117,21 @@ export default class PospreUploadMasiveMgaService implements IPospreMgaUploadMas
     model: any
   ): Promise<void> {
     for (const item of items) {
+      
       try {
-        await model.create(item);
+        const {budgetId,consecutiveActivityDetailed} = item;
+
+        const existingRecord = await model.query()
+        .where('VMG_CODPPR_POSICION_PRESUPUESTAL', budgetId)
+        .where('VMG_CONSECUTIVO_ACTIVIDAD_DETALLADA', consecutiveActivityDetailed)
+        .first();
+
+        if (existingRecord) {
+          await existingRecord.merge(item).save();
+        } else {
+          await model.create(item);
+        }
+     
       } catch (error) {
         console.error(`Error de validación para el item: ${error}`);
       }
