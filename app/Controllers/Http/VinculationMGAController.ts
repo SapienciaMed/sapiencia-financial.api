@@ -53,6 +53,19 @@ export default class VinculationMGAController {
     }
   }
 
+  public async getVinculationMGAByPosPreVerify({ request, response }: HttpContextContract) {
+    try {
+      const { pospre,consecutive } = request['requestBody'];
+      console.log(request);
+      
+      return response.send(await VinculationMGAProvider.getVinculationMGAByPosPreVerify(pospre,consecutive));
+    } catch (err) {
+      return response.badRequest(
+        new ApiResponse(null, EResponseCodes.FAIL, String(err))
+      );
+    }
+  }
+
   public async getActivityMGAPaginated({ request, response }: HttpContextContract) {
     try {
       const data = request.body() as IFiltersVinculationMGA;

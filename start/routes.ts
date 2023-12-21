@@ -126,6 +126,7 @@ Route.group(() => {
 
 Route.group(() => {
   Route.get("/get-by-id/:id", "VinculationMGAController.getVinculationMGAById");
+  Route.post("/get-by-params-data", "VinculationMGAController.getVinculationMGAByPosPreVerify");
   Route.post(
     "/get-paginated",
     "VinculationMGAController.getActivityMGAPaginated"
