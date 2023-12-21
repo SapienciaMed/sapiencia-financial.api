@@ -25,6 +25,7 @@ export interface IVinculationMGARepository {
   createVinculationWithPlanningV2(vinculationMGA: IVinculationMgaV2): Promise<IVinculationMgaV2>;
   deleteVinculationWithPlanningV2(vinculationMGA: IDesvinculationMgaV2, id: number): Promise<IDesvinculationMgaV2 | boolean>;
   getVinculationMGAByPosPreOrg(id: number): Promise<IActivityMGA[] | any>;
+  getVinculationMGAByPosPreVerify(pospre: number, consecutive: string): Promise<any[] | any>;
   createVinculationMga(data: ICDPVinculateMGA): Promise<ICDPVinculateMGA[]>;
   validateVinculationMga(data: any): Promise<any>;
   validateAllCdp(data: any): Promise<any>;
@@ -115,6 +116,15 @@ export default class VinculationMGARepository implements IVinculationMGAReposito
   async getVinculationMGAByPosPreOrg(id: number): Promise<IActivityMGA[] | any> {
 
     const query = await VinculationMGA.query().where("budgetId", id);
+    return query;
+
+  }
+
+  async getVinculationMGAByPosPreVerify(pospre: number, consecutive: string): Promise<IActivityMGA[] | any> {
+
+    const query = await VinculationMGA.query()
+    .where("budgetId", pospre)
+    .where("consecutiveActivityDetailed", consecutive);
     return query;
 
   }
