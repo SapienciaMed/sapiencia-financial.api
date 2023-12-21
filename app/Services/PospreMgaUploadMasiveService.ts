@@ -23,24 +23,22 @@ export default class PospreUploadMasiveMgaService implements IPospreMgaUploadMas
       
       
       if (items && Array.isArray(items) && items.length > 0) {
+ 
         for (const [index, item] of items.entries()) {
-        
-            const aditionalDataItem = aditionalData;
-            const arrDataVpy = Object.values(aditionalDataItem)
-
+          const aditionalDataItem = aditionalData;
+          const arrDataVpy = Object.values(aditionalDataItem);
+      
           const vinculationMgaData: IVinculationMGAData = {
-            budgetId:arrDataVpy[index]['posePre'],
-            userCreate: usuarioCreo,
-            activityId:arrDataVpy[index]['id'],
-            consecutiveActivityDetailed: item.consecutiveActivityDetailed,
-            detailedActivityId: arrDataVpy[index]['idDetail'],
-            dateCreate: DateTime.fromJSDate(new Date()),
-            
-          }
-
-           await this.insertIntoMga([vinculationMgaData], VinculationMGA);
-        
-        }
+              budgetId: arrDataVpy[index]['posePre'],
+              userCreate: usuarioCreo,
+              activityId: arrDataVpy[index]['id'],
+              consecutiveActivityDetailed: item.consecutiveActivityDetailed,
+              detailedActivityId: arrDataVpy[index]['idDetail'],
+              dateCreate: DateTime.fromJSDate(new Date()),
+          };
+      
+          await this.insertIntoMga([vinculationMgaData], VinculationMGA);
+      }
       } else {
         console.error('La propiedad "items" no es un arreglo válido o está vacía.');
       }
