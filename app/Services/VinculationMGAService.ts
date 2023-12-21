@@ -26,6 +26,7 @@ export interface IVinculationMGAService {
   createVinculationMga(data: ICDPVinculateMGA): Promise<ApiResponse<ICDPVinculateMGA[]>>;
   validateVinculationMga(data: any): Promise<ApiResponse<any>>;
   validateAllCdp(data: any): Promise<ApiResponse<any>>;
+  getVinculationMGAByPosPreVerify(pospre: number, consecutive: string): Promise<any[] | any>;
 
 }
 
@@ -104,6 +105,20 @@ export default class VinculationMGAService implements IVinculationMGAService {
   
   async getVinculationMGAById(id: number): Promise<ApiResponse<IActivityMGA>> {
     const res = await this.vinculationMGARepository.getVinculationMGAById(id);
+
+    if (!res) {
+      return new ApiResponse(
+        {} as IActivityMGA,
+        EResponseCodes.WARN,
+        "Registro no encontrado"
+      );
+    }
+
+    return new ApiResponse(res, EResponseCodes.OK);
+  }
+  
+  async getVinculationMGAByPosPreVerify(pospre: number, consecutive:string): Promise<ApiResponse<any>> {
+    const res = await this.vinculationMGARepository.getVinculationMGAByPosPreVerify(pospre,consecutive);
 
     if (!res) {
       return new ApiResponse(
