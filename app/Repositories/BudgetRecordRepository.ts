@@ -64,6 +64,14 @@ export default class BudgetRecordRepository implements IBudgetRecordRepository {
         await BudgetRecordCreated
             .related('linksRp')
             .createMany(linkRpData)
+
+            if(budgetRecord.isNewContractObject){
+                await ActivityObjectContract.create({
+                    description:budgetRecord.contractualObject,
+                    isActive:true
+                })
+            }
+
         return BudgetRecordCreated;
     }
 
