@@ -54,6 +54,7 @@ test.group("BudgetRecordService TEST for createCdps", () => {
     dependencyId: 1,
     dateValidity: null,
     documentDate: "",
+    isNewContractObject:false,
     contractorDocument: "",
     linksRp: [],
   };
@@ -81,6 +82,7 @@ test.group("BudgetRecordService TEST for createCdps", () => {
     dependencyId: 1,
     dateValidity: null,
     documentDate: "",
+    isNewContractObject:false,
     contractorDocument: "",
     linksRp: [],
   };
@@ -108,6 +110,7 @@ test.group("BudgetRecordService TEST for updateDataBasicRp", () => {
     dependencyId: 1,
     dateValidity: null,
     documentDate: "",
+    isNewContractObject:false,
     contractorDocument: "",
     linksRp: [],
   };

@@ -7,7 +7,7 @@ export default class ActivityObjectContract extends BaseModel {
   public id: number;
 
   @column({ columnName: "AOC_DESCRIPCION", serializeAs: "description" })
-  public description: number;
+  public description: string;
 
   @column({ columnName: "AOC_ESTADO", serializeAs: "isActive" })
   public isActive: boolean;
