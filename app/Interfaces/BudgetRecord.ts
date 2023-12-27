@@ -8,6 +8,7 @@ export interface IBudgetRecord {
     documentDate: any;
     dateValidity: any;
     dependencyId: number;
+    isNewContractObject:boolean;
     contractualObject: string;
     componentId: number;
     consecutiveSap?: number;
