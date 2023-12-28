@@ -50,7 +50,6 @@ import {
   InitialReportRpBalance,
 } from "App/Constants/ReportConstants";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
-/* import LinkRpcdp from "App/Models/LinkRpcdp"; */
 import FunctionalArea from "App/Models/FunctionalArea";
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
@@ -2220,9 +2219,8 @@ export default class ReportRepository implements IReportRepository {
 
 
   async generateReportCdpRpPayMga(year: number): Promise<any[]> {
+
     let resultData: any[] = [];
-
-
     const queryAmountAvailabily = await AmountBudgetAvailability.query()
       .preload("budgetAvailability", (subQuery) => {
         subQuery.where("exercise", year);
