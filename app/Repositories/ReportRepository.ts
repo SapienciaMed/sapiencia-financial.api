@@ -50,7 +50,7 @@ import {
   InitialReportRpBalance,
 } from "App/Constants/ReportConstants";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
-import LinkRpcdp from "App/Models/LinkRpcdp";
+/* import LinkRpcdp from "App/Models/LinkRpcdp"; */
 import FunctionalArea from "App/Models/FunctionalArea";
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
@@ -2217,9 +2217,7 @@ export default class ReportRepository implements IReportRepository {
 
   async generateReportCdpRpPayMga(year: number): Promise<any[]> {
     let resultData: ObjectFinaldata[] = [];
-    let months: any = [
-      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-    ];
+  
 
     const queryAmountAvailabily = await AmountBudgetAvailability.query()
       .preload("budgetAvailability", (subQuery) => {
@@ -2252,8 +2250,11 @@ export default class ReportRepository implements IReportRepository {
           .orderBy("id", "asc")
 
         const resPaysData = queryPays.map((i) => i.serialize());
-        resPaysData.forEach((elementPays, index) => {
-
+        resPaysData.forEach((elementPays) => {
+          let NumberSapCdp: number = 0;
+          let TaxIdentification: string = "";
+          let Cdp: number = 0;
+          let Rp: number = 0;
           let areaFuncitonalNumber = infoAreaFuncional[0].number;
           //  let MonthExpeditionCdp: string = "";
           let DateDocumentCdp: string = "";
@@ -2270,10 +2271,7 @@ export default class ReportRepository implements IReportRepository {
           let FunctionalAreaSave: string = "";
           let Project: string = "";
           let Div: string = "";
-          let NumberSapCdp: number = 0;
-          let TaxIdentification: string = "";
-          let Cdp: number = 0;
-          let Rp: number = 0;
+        
           let JanuaryIncurred: number = 0;
           let JanuaryPaid: number = 0;
           let FebruaryIncurred: number = 0;
@@ -2298,12 +2296,12 @@ export default class ReportRepository implements IReportRepository {
           let NovemberPaid: number = 0;
           let DecemberIncurred: number = 0;
           let DecemberPaid: number = 0;
-          let LeaderOfTheProcessRP: string = "";
+  /*         let LeaderOfTheProcessRP: string = "";
           let SupervisorRP: string = "";
           let ProductMGA: string = "";
           let ActivityMGA: string = "";
           let DetailedActivityMGA: string = "";
-          let CPC: string = "";
+          let CPC: string = ""; */
 
           const monthNumber = elementPays.mes;
 
