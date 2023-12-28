@@ -8,6 +8,7 @@ export default class extends BaseSeeder {
         { id:2, name:'Gastos de personal' },
         { id:3, name:'Misional' },
         { id:4, name:'Soporte logístico y administrativo' },
+        { id:5, name:'Talento humano' },
     ])
 
   }
