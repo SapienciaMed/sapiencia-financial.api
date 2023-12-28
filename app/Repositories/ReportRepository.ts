@@ -50,7 +50,6 @@ import {
   InitialReportRpBalance,
 } from "App/Constants/ReportConstants";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
-import LinkRpcdp from "App/Models/LinkRpcdp";
 import FunctionalArea from "App/Models/FunctionalArea";
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
@@ -2220,7 +2219,7 @@ export default class ReportRepository implements IReportRepository {
     let months: any = [
       'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
     ];
-
+    months;
     const queryAmountAvailabily = await AmountBudgetAvailability.query()
       .preload("budgetAvailability", (subQuery) => {
         subQuery.where("exercise", year);
@@ -2252,7 +2251,7 @@ export default class ReportRepository implements IReportRepository {
           .orderBy("id", "asc")
 
         const resPaysData = queryPays.map((i) => i.serialize());
-        resPaysData.forEach((elementPays, index) => {
+        resPaysData.forEach((elementPays) => {
 
           let areaFuncitonalNumber = infoAreaFuncional[0].number;
           //  let MonthExpeditionCdp: string = "";
