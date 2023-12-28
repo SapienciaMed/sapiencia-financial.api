@@ -106,6 +106,10 @@ interface ObjectFinaldata {
   NovemberPaid: number;
   DecemberIncurred: number;
   DecemberPaid: number;
+  Tax: string;
+  Cdp: number;
+  Rp: number;
+  NumberSapCdp: number;
 }
 
 
@@ -2252,7 +2256,10 @@ export default class ReportRepository implements IReportRepository {
 
         const resPaysData = queryPays.map((i) => i.serialize());
         resPaysData.forEach((elementPays) => {
-
+          let NumberSapCdp: number = 0;
+          let TaxIdentification: string = "";
+          let Cdp: number = 0;
+          let Rp: number = 0;
           let areaFuncitonalNumber = infoAreaFuncional[0].number;
           //  let MonthExpeditionCdp: string = "";
           let DateDocumentCdp: string = "";
@@ -2269,10 +2276,7 @@ export default class ReportRepository implements IReportRepository {
           let FunctionalAreaSave: string = "";
           let Project: string = "";
           let Div: string = "";
-          let NumberSapCdp: number = 0;
-          let TaxIdentification: string = "";
-          let Cdp: number = 0;
-          let Rp: number = 0;
+
           let JanuaryIncurred: number = 0;
           let JanuaryPaid: number = 0;
           let FebruaryIncurred: number = 0;
@@ -2297,12 +2301,12 @@ export default class ReportRepository implements IReportRepository {
           let NovemberPaid: number = 0;
           let DecemberIncurred: number = 0;
           let DecemberPaid: number = 0;
-          let LeaderOfTheProcessRP: string = "";
-          let SupervisorRP: string = "";
-          let ProductMGA: string = "";
-          let ActivityMGA: string = "";
-          let DetailedActivityMGA: string = "";
-          let CPC: string = "";
+          /*         let LeaderOfTheProcessRP: string = "";
+                  let SupervisorRP: string = "";
+                  let ProductMGA: string = "";
+                  let ActivityMGA: string = "";
+                  let DetailedActivityMGA: string = "";
+                  let CPC: string = ""; */
 
           const monthNumber = elementPays.mes;
 
@@ -2355,7 +2359,7 @@ export default class ReportRepository implements IReportRepository {
               DecemberIncurred = elementPays.valorCausado;
               DecemberPaid = elementPays.valorPagado;
               break;
-        
+
           }
 
           Div = element?.budgetRoute?.div;
@@ -2392,6 +2396,10 @@ export default class ReportRepository implements IReportRepository {
             "Funds": Funds,
             "FunctionalAreaSave": FunctionalAreaSave,
             "Project": Project,
+            "Tax": TaxIdentification,
+            "Cdp": Cdp,
+            "Rp": Rp,
+            "NumberSapCdp": NumberSapCdp,
             "JanuaryIncurred": JanuaryIncurred,
             "JanuaryPaid": JanuaryPaid,
             "FebruaryIncurred": FebruaryIncurred,
@@ -2417,7 +2425,7 @@ export default class ReportRepository implements IReportRepository {
             "DecemberIncurred": DecemberIncurred,
             "DecemberPaid": DecemberPaid,
           };
-            
+
 
 
           resultData.push(objectFinaldata);
