@@ -2219,11 +2219,8 @@ export default class ReportRepository implements IReportRepository {
 
 
   async generateReportCdpRpPayMga(year: number): Promise<any[]> {
-    let resultData: ObjectFinaldata[] = [];
-    let months: any = [
-      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-    ];
-    months;
+
+    let resultData: any[] = [];
     const queryAmountAvailabily = await AmountBudgetAvailability.query()
       .preload("budgetAvailability", (subQuery) => {
         subQuery.where("exercise", year);
@@ -2381,50 +2378,51 @@ export default class ReportRepository implements IReportRepository {
           Cdp = element?.bugetAvailability?.id;
           Rp = element?.budgetRoute?.id;
 
-          let objectFinaldata: ObjectFinaldata = {
+          let objectFinaldata = {
             "Div": Div,
-            "DateDocumentCdp": DateDocumentCdp,
-            "ContractualObject": ContractualObject,
-            "InitialValue": InitialValue,
-            "ModifiedAgainstCredit": ModifiedAgainstCredit,
-            "ModifiedCredit": ModifiedCredit,
-            "FixedCompleted": FixedCompleted,
-            "FinalValue": FinalValue,
-            "ProjectName": ProjectName,
+            "Fecha Documento CDP": DateDocumentCdp,
+            "Objeto Contractual": ContractualObject,
+            "Valor Inicial": InitialValue,
+            "Modificado Contra Crédito": ModifiedAgainstCredit,
+            "Crédito Modificado": ModifiedCredit,
+            "Completado Fijo": FixedCompleted,
+            "Valor Final": FinalValue,
+            "Nombre Proyecto": ProjectName,
             "Pospre": Pospre,
-            "ManagementCenter": ManagementCenter,
-            "Funds": Funds,
-            "FunctionalAreaSave": FunctionalAreaSave,
-            "Project": Project,
-            "Tax": TaxIdentification,
-            "Cdp": Cdp,
-            "Rp": Rp,
-            "NumberSapCdp": NumberSapCdp,
-            "JanuaryIncurred": JanuaryIncurred,
-            "JanuaryPaid": JanuaryPaid,
-            "FebruaryIncurred": FebruaryIncurred,
-            "FebruaryPaid": FebruaryPaid,
-            "MarchIncurred": MarchIncurred,
-            "MarchPaid": MarchPaid,
-            "AprilIncurred": AprilIncurred,
-            "AprilPaid": AprilPaid,
-            "MayIncurred": MayIncurred,
-            "MayPaid": MayPaid,
-            "JuneIncurred": JuneIncurred,
-            "JunePaid": JunePaid,
-            "JulyIncurred": JulyIncurred,
-            "JulyPaid": JulyPaid,
-            "AugustIncurred": AugustIncurred,
-            "AugustPaid": AugustPaid,
-            "SeptemberIncurred": SeptemberIncurred,
-            "SeptemberPaid": SeptemberPaid,
-            "OctoberIncurred": OctoberIncurred,
-            "OctoberPaid": OctoberPaid,
-            "NovemberIncurred": NovemberIncurred,
-            "NovemberPaid": NovemberPaid,
-            "DecemberIncurred": DecemberIncurred,
-            "DecemberPaid": DecemberPaid,
-          };
+            "Centro Gestor": ManagementCenter,
+            "Fondos": Funds,
+            "Área Funcional Guardar": FunctionalAreaSave,
+            "Proyecto": Project,
+            "Impuesto": TaxIdentification,
+            "CDP": Cdp,
+            "RP": Rp,
+            "Número SAP CDP": NumberSapCdp,
+            "Incurrido Enero": JanuaryIncurred,
+            "Pagado Enero": JanuaryPaid,
+            "Incurrido Febrero": FebruaryIncurred,
+            "Pagado Febrero": FebruaryPaid,
+            "Incurrido Marzo": MarchIncurred,
+            "Pagado Marzo": MarchPaid,
+            "Incurrido Abril": AprilIncurred,
+            "Pagado Abril": AprilPaid,
+            "Incurrido Mayo": MayIncurred,
+            "Pagado Mayo": MayPaid,
+            "Incurrido Junio": JuneIncurred,
+            "Pagado Junio": JunePaid,
+            "Incurrido Julio": JulyIncurred,
+            "Pagado Julio": JulyPaid,
+            "Incurrido Agosto": AugustIncurred,
+            "Pagado Agosto": AugustPaid,
+            "Incurrido Septiembre": SeptemberIncurred,
+            "Pagado Septiembre": SeptemberPaid,
+            "Incurrido Octubre": OctoberIncurred,
+            "Pagado Octubre": OctoberPaid,
+            "Incurrido Noviembre": NovemberIncurred,
+            "Pagado Noviembre": NovemberPaid,
+            "Incurrido Diciembre": DecemberIncurred,
+            "Pagado Diciembre": DecemberPaid,
+        };
+        
 
 
 
