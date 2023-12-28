@@ -50,7 +50,8 @@ import {
   InitialReportRpBalance,
 } from "App/Constants/ReportConstants";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
-import LinkRpcdp from "App/Models/LinkRpcdp";
+/* import LinkRpcdp from "App/Models/LinkRpcdp"; */
+import FunctionalArea from "App/Models/FunctionalArea";
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
   generateReportDetailChangeBudgets(year: number): Promise<any[]>;
@@ -67,8 +68,55 @@ export interface IReportRepository {
   generateReportCdpRpPayMga(year: number): Promise<any[]>;
 }
 
+interface ObjectFinaldata {
+  Div: string;
+  DateDocumentCdp: string;
+  ContractualObject: string;
+  InitialValue: number;
+  ModifiedAgainstCredit: number;
+  ModifiedCredit: number;
+  FixedCompleted: number;
+  FinalValue: number;
+  ProjectName: string;
+  Pospre: string;
+  ManagementCenter: string;
+  Funds: number;
+  FunctionalAreaSave: string;
+  Project: string;
+  JanuaryIncurred: number;
+  JanuaryPaid: number;
+  FebruaryIncurred: number;
+  FebruaryPaid: number;
+  MarchIncurred: number;
+  MarchPaid: number;
+  AprilIncurred: number;
+  AprilPaid: number;
+  MayIncurred: number;
+  MayPaid: number;
+  JuneIncurred: number;
+  JunePaid: number;
+  JulyIncurred: number;
+  JulyPaid: number;
+  AugustIncurred: number;
+  AugustPaid: number;
+  SeptemberIncurred: number;
+  SeptemberPaid: number;
+  OctoberIncurred: number;
+  OctoberPaid: number;
+  NovemberIncurred: number;
+  NovemberPaid: number;
+  DecemberIncurred: number;
+  DecemberPaid: number;
+  Tax: string;
+  Cdp: number;
+  Rp: number;
+  NumberSapCdp: number;
+}
+
+
+
 export default class ReportRepository implements IReportRepository {
-  constructor(private strategicDirectionService: IStrategicDirectionService) {}
+  constructor(private strategicDirectionService: IStrategicDirectionService) { }
 
   //? Este array nos va permitir contener la información que busquemos de planeación, como una especie de "histórico"
   //? de esta manera, si ya tenemos cargada la información, no tenemos porque hacer nuevas consultas a la API de planeación
@@ -2169,8 +2217,11 @@ export default class ReportRepository implements IReportRepository {
     return resObject;
   }
 
+
+
   async generateReportCdpRpPayMga(year: number): Promise<any[]> {
-    let result = [];
+    let resultData: ObjectFinaldata[] = [];
+
 
     const queryAmountAvailabily = await AmountBudgetAvailability.query()
       .preload("budgetAvailability", (subQuery) => {
@@ -2184,144 +2235,211 @@ export default class ReportRepository implements IReportRepository {
       .preload("linkRpcdps")
       .orderBy("id", "desc");
 
+
     const resAmountAvailabily = queryAmountAvailabily.map((i) => i.serialize());
 
+
     for (const element of resAmountAvailabily) {
-      // let MonthExpeditionCdp: string = "";
-      // let DateDocumentCdp: string = "";
-      // let ContractualObject: string = "";
-      // let InitialValue: number = 0;
-      // let ModifiedAgainstCredit: number = 0;
-      // let ModifiedCredit: number = 0;
-      // let FixedCompleted: number = 0;
-      // let FinalValue: number = 0;
-      // let ProjectName: string = "";
-      // let Pospre: string = "";
-      // let ManagementCenter: string = "";
-      // let Funds: number = 0;
-      // let FunctionalArea: string = "";
-      // let Project: string = "";
-      // let Div: string = "";
-      // let NumberSapCdp: number = 0;
-      // let TaxIdentification: string = "";
-      // let Cdp: number = 0;
-      // let Rp: number = 0;
-      // let JanuaryIncurred: number = 0;
-      // let JanuaryPaid: number = 0;
-      // let FebruaryIncurred: number = 0;
-      // let FebruaryPaid: number = 0;
-      // let MarchIncurred: number = 0;
-      // let MarchPaid: number = 0;
-      // let AprilIncurred: number = 0;
-      // let AprilPaid: number = 0;
-      // let MayIncurred: number = 0;
-      // let MayPaid: number = 0;
-      // let JuneIncurred: number = 0;
-      // let JunePaid: number = 0;
-      // let JulyIncurred: number = 0;
-      // let JulyPaid: number = 0;
-      // let AugustIncurred: number = 0;
-      // let AugustPaid: number = 0;
-      // let SeptemberIncurred: number = 0;
-      // let SeptemberPaid: number = 0;
-      // let OctoberIncurred: number = 0;
-      // let OctoberPaid: number = 0;
-      // let NovemberIncurred: number = 0;
-      // let NovemberPaid: number = 0;
-      // let DecemberIncurred: number = 0;
-      // let DecemberPaid: number = 0;
-      // let LeaderOfTheProcessRP: string = "";
-      // let SupervisorRP: string = "";
-      // let ProductMGA: string = "";
-      // let ActivityMGA: string = "";
-      // let DetailedActivityMGA: string = "";
-      // let CPC: string = "";
 
-      const queryLinks = await LinkRpcdp.query()
-        .preload("budgetRecord", element.budgetRoute.id)
-        .orderBy("id", "asc");
+      const functionAreas = await FunctionalArea.query()
+        .where('id', element?.budgetRoute?.projectVinculation?.functionalAreaId);
+      let infoAreaFuncional = functionAreas.map((i) => i.serialize());
 
-      const resQueryLinks = queryLinks.map((i) => i.serialize());
-      const vrpLinks = resQueryLinks.map((elementLinks) => elementLinks);
 
-      const queryPays = await Pago.query()
-        .where("vinculacionRpCode", vrpLinks[0].id)
-        .orderBy("id", "asc")
-        .toSQL();
+      if (element.linkRpcdps[0]?.id !== undefined) {
 
-      // const getDataProject: IDataBasicProject | null =
-      // await this.getProjectGeneral(
-      //   Number(element.budgetRoute.idProjectVinculation),
-      //   element.budgetRoute.pospreSapiencia?.description!
-      // );
-      console.log(queryPays);
-      // Further processing...
-    }
+        const queryPays = await Pago.query()
+          .where("vinculacionRpCode", element.linkRpcdps[0]?.id)
+          .where('ejercicio', year)
+          .orderBy("id", "asc")
 
-    // console.log(resAmountAvailabily);
+        const resPaysData = queryPays.map((i) => i.serialize());
+        resPaysData.forEach((elementPays) => {
+          let NumberSapCdp: number = 0;
+          let TaxIdentification: string = "";
+          let Cdp: number = 0;
+          let Rp: number = 0;
+          let areaFuncitonalNumber = infoAreaFuncional[0].number;
+          //  let MonthExpeditionCdp: string = "";
+          let DateDocumentCdp: string = "";
+          let ContractualObject: string = "";
+          let InitialValue: number = 0;
+          let ModifiedAgainstCredit: number = 0;
+          let ModifiedCredit: number = 0;
+          let FixedCompleted: number = 0;
+          let FinalValue: number = 0;
+          let ProjectName: string = "";
+          let Pospre: string = "";
+          let ManagementCenter: string = "";
+          let Funds: number = 0;
+          let FunctionalAreaSave: string = "";
+          let Project: string = "";
+          let Div: string = "";
 
-    /*  try {
-       const query = `
-       SELECT
-       icd.ICD_CODIGO AS "ID ICD",
-       icd.ICD_CODCDP AS "Código CDP",
-       icd.ICD_CODRPP_RUTA_PRESUPUESTAL AS "Código RPP Ruta Presupuestal",
-       icd.ICD_POSICION AS "Posición CDP",
-       icd.ICD_VALOR AS "Valor CDP",
-       icd.ICD_ACTIVO AS "Activo",
-       icd.ICD_MOTIVO_ANULACION AS "Motivo Anulación",
-       icd.IDC_MODIFICADO_CONTRACREDITO AS "Modificado Contracrédito",
-       icd.IDC_MOFICICADO_CREDITO AS "Modificado Crédito",
-       icd.IDC_FIJADO_CONCLUIDO AS "Fijado Concluido",
-       icd.IDC_VALOR_FINAL AS "Valor Final",
-       cdp.CDP_CODIGO AS "ID CDP",
-       cdp.CDP_EJERCICIO AS "Ejercicio",
-       cdp.CDP_FECHA AS "Fecha CDP",
-       cdp.CDP_OBJETO_CONTRACTUAL AS "Objeto Contractual CDP",
-       cdp.CDP_CONSECUTIVO AS "Consecutivo CDP",
-       cdp.CDP_CONSECUTIVO_SAP AS "Consecutivo SAP CDP",
-       pps.PPS_CODIGO AS "CDP Pospre",
-       rpp.RPP_CENTRO_GESTOR as "Centro Gestor",
-       fnd.FND_NUMERO as "Fondo CDP",
-       arf.ARF_CODIGO_REFERENCIA as "AREA FUNCIONAL",
-       rpp.RPP_CODVPY_PROYECTO as "PROYECTO CDP",
-       rpp.RPP_DIV as "DIV CDP",
-       rpp.RPP_CODPPS_POSPRE_SAPIENCIA as "No. CDP Sap" ,
-       rpr.RPR_FECHA_CREO as "Mes expedicion rp",
-       rpr.RPR_FECHA_DOCUMENTO as "Fecha documento",
-       vrp.VRP_VALOR_INICIAL as "Valor inicial rp",
-       vrp.VRP_VALOR_MOD_CONTRACREDITO as "Modificado contra credito",
-       vrp.VRP_VALOR_MOD_CREDITO as "Modificado credito",
-       vrp.VRP_VALOR_FIJADO_CONCLUIDO as "Fijado concluido",
-       vrp.VRP_VALOR_FINAL AS "Valor final RP"
-   FROM
-       ICD_IMPORTES_CDP icd
-   JOIN
-       CDP_CERTIFICADO_DISPONIBILIDAD_PRESUPUESTAL cdp ON icd.ICD_CODCDP = cdp.CDP_CODIGO
-   JOIN
-       RPP_RUTAS_PRESUPUESTALES rpp ON rpp.RPP_CODIGO = icd.ICD_CODRPP_RUTA_PRESUPUESTAL
-   JOIN
-       VPY_VINCULACIONES_PROYECTO vpy on vpy.VPY_CODIGO = rpp.RPP_CODVPY_PROYECTO 
-   JOIN
-       PPS_POSICIONES_PRESUPUESTARIAS_SAPIENCIA pps ON pps.PPS_CODIGO = rpp.RPP_CODPPR_POSPRE 
-   JOIN
-       FND_FONDOS fnd ON fnd.FND_CODIGO = rpp.RPP_CODFND_FONDO
-   JOIN
-       ARF_AREAS_FUNCIONALES arf ON arf.ARF_CODIGO = vpy.VPY_CODARF_AREA_FUNCIONAL 
-   JOIN
-       VRP_VINCULACION_RPR_ICD vrp ON vrp.VRP_CODIGO = icd.ICD_CODRPP_RUTA_PRESUPUESTAL 
-   JOIN
-       RPR_REGISTRO_PRESUPUESTAL rpr ON rpr.RPR_CODIGO = vrp.VRP_CODRPR_REGISTRO_PRESUPUESTAL
-   WHERE
-       cdp.CDP_EJERCICIO = ?
-       `;
- 
-       const rawQueryResult = await Database.rawQuery(query, [year]);
-       result = rawQueryResult.rows; // Convert RawBuilderContract to an array
-     } catch (error) {
-       console.error("Error executing SQL query:", error);
-     } */
+          let JanuaryIncurred: number = 0;
+          let JanuaryPaid: number = 0;
+          let FebruaryIncurred: number = 0;
+          let FebruaryPaid: number = 0;
+          let MarchIncurred: number = 0;
+          let MarchPaid: number = 0;
+          let AprilIncurred: number = 0;
+          let AprilPaid: number = 0;
+          let MayIncurred: number = 0;
+          let MayPaid: number = 0;
+          let JuneIncurred: number = 0;
+          let JunePaid: number = 0;
+          let JulyIncurred: number = 0;
+          let JulyPaid: number = 0;
+          let AugustIncurred: number = 0;
+          let AugustPaid: number = 0;
+          let SeptemberIncurred: number = 0;
+          let SeptemberPaid: number = 0;
+          let OctoberIncurred: number = 0;
+          let OctoberPaid: number = 0;
+          let NovemberIncurred: number = 0;
+          let NovemberPaid: number = 0;
+          let DecemberIncurred: number = 0;
+          let DecemberPaid: number = 0;
+          /*         let LeaderOfTheProcessRP: string = "";
+                  let SupervisorRP: string = "";
+                  let ProductMGA: string = "";
+                  let ActivityMGA: string = "";
+                  let DetailedActivityMGA: string = "";
+                  let CPC: string = ""; */
 
-    return result;
+          const monthNumber = elementPays.mes;
+
+          switch (monthNumber) {
+            case 1:
+              JanuaryIncurred = elementPays.valorCausado;
+              JanuaryPaid = elementPays.valorPagado;
+              break;
+            case 2:
+              FebruaryIncurred = elementPays.valorCausado;
+              FebruaryPaid = elementPays.valorPagado;
+              break;
+            case 3:
+              MarchIncurred = elementPays.valorCausado;
+              MarchPaid = elementPays.valorPagado;
+              break;
+            case 4:
+              AprilIncurred = elementPays.valorCausado;
+              AprilPaid = elementPays.valorPagado;
+              break;
+            case 5:
+              MayIncurred = elementPays.valorCausado;
+              MayPaid = elementPays.valorPagado;
+              break;
+            case 6:
+              JuneIncurred = elementPays.valorCausado;
+              JunePaid = elementPays.valorPagado;
+              break;
+            case 7:
+              JulyIncurred = elementPays.valorCausado;
+              JulyPaid = elementPays.valorPagado;
+              break;
+            case 8:
+              AugustIncurred = elementPays.valorCausado;
+              AugustPaid = elementPays.valorPagado;
+              break;
+            case 9:
+              SeptemberIncurred = elementPays.valorCausado;
+              SeptemberPaid = elementPays.valorPagado;
+              break;
+            case 10:
+              OctoberIncurred = elementPays.valorCausado;
+              OctoberPaid = elementPays.valorPagado;
+              break;
+            case 11:
+              NovemberIncurred = elementPays.valorCausado;
+              NovemberPaid = elementPays.valorPagado;
+              break;
+            case 12:
+              DecemberIncurred = elementPays.valorCausado;
+              DecemberPaid = elementPays.valorPagado;
+              break;
+
+          }
+
+          Div = element?.budgetRoute?.div;
+          DateDocumentCdp = element?.budgetRoute?.dateCreate;
+          ContractualObject = element?.budgetAvailability?.contractObject;
+          InitialValue = element?.budgetRoute?.initialBalance;
+          ModifiedAgainstCredit = element?.modifiedIdcCountercredit;
+          ModifiedCredit = element?.bugetAvailability?.icdModifiedCredit;
+          FixedCompleted = element?.bugetAvailability?.icdFixedCompleted;
+          FinalValue = element?.bugetAvailability?.icdFinalValue;
+          ProjectName = "pendiente";
+          Pospre = element?.budgetRoute?.budget?.number;
+          ManagementCenter = element?.budgetRoute?.managementCenter;
+          Funds = parseInt(element?.budgetRoute?.funds?.number);
+          FunctionalAreaSave = areaFuncitonalNumber;
+          Project = "Pendiente";
+          NumberSapCdp = element?.linkRpcdps[0]?.id;
+          TaxIdentification = "0";
+          Cdp = element?.bugetAvailability?.id;
+          Rp = element?.budgetRoute?.id;
+
+          let objectFinaldata: ObjectFinaldata = {
+            "Div": Div,
+            "DateDocumentCdp": DateDocumentCdp,
+            "ContractualObject": ContractualObject,
+            "InitialValue": InitialValue,
+            "ModifiedAgainstCredit": ModifiedAgainstCredit,
+            "ModifiedCredit": ModifiedCredit,
+            "FixedCompleted": FixedCompleted,
+            "FinalValue": FinalValue,
+            "ProjectName": ProjectName,
+            "Pospre": Pospre,
+            "ManagementCenter": ManagementCenter,
+            "Funds": Funds,
+            "FunctionalAreaSave": FunctionalAreaSave,
+            "Project": Project,
+            "Tax": TaxIdentification,
+            "Cdp": Cdp,
+            "Rp": Rp,
+            "NumberSapCdp": NumberSapCdp,
+            "JanuaryIncurred": JanuaryIncurred,
+            "JanuaryPaid": JanuaryPaid,
+            "FebruaryIncurred": FebruaryIncurred,
+            "FebruaryPaid": FebruaryPaid,
+            "MarchIncurred": MarchIncurred,
+            "MarchPaid": MarchPaid,
+            "AprilIncurred": AprilIncurred,
+            "AprilPaid": AprilPaid,
+            "MayIncurred": MayIncurred,
+            "MayPaid": MayPaid,
+            "JuneIncurred": JuneIncurred,
+            "JunePaid": JunePaid,
+            "JulyIncurred": JulyIncurred,
+            "JulyPaid": JulyPaid,
+            "AugustIncurred": AugustIncurred,
+            "AugustPaid": AugustPaid,
+            "SeptemberIncurred": SeptemberIncurred,
+            "SeptemberPaid": SeptemberPaid,
+            "OctoberIncurred": OctoberIncurred,
+            "OctoberPaid": OctoberPaid,
+            "NovemberIncurred": NovemberIncurred,
+            "NovemberPaid": NovemberPaid,
+            "DecemberIncurred": DecemberIncurred,
+            "DecemberPaid": DecemberPaid,
+          };
+
+
+
+          resultData.push(objectFinaldata);
+
+        });
+        console.log(resPaysData);
+      }
+
+
+    };
+
+    //console.log("etre", resultData);
+
+
+
+    return resultData;
   }
 }
