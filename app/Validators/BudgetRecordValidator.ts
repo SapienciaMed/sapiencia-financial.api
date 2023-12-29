@@ -12,7 +12,7 @@ export default class BudgetRecordValidator {
     documentDate: schema.date.optional(),
     dateValidity: schema.date.optional(),
     dependencyId: schema.number(),
-    isNewContractObject:schema.boolean(),
+    isNewContractObject:schema.boolean.optional(),
     contractualObject: schema.string(),
     componentId: schema.number(),
     consecutiveSap: schema.number.optional(),
