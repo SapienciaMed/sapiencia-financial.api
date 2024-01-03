@@ -67,7 +67,7 @@ export interface IReportRepository {
   generateReportCdpRpPayMga(year: number): Promise<any[]>;
 }
 
-interface ObjectFinaldata {
+/* interface ObjectFinaldata {
   Div: string;
   DateDocumentCdp: string;
   ContractualObject: string;
@@ -110,7 +110,7 @@ interface ObjectFinaldata {
   Cdp: number;
   Rp: number;
   NumberSapCdp: number;
-}
+} */
 
 
 
@@ -2219,6 +2219,7 @@ export default class ReportRepository implements IReportRepository {
 
 
   async generateReportCdpRpPayMga(year: number): Promise<any[]> {
+
     let resultData: any[] = [];
 
 
