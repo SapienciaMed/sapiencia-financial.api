@@ -4,6 +4,7 @@ import { IReportRepository } from "App/Repositories/ReportRepository";
 import { ApiResponse } from "App/Utils/ApiResponses";
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { IExcelReportFilters } from "App/Interfaces/ReportsInterfaces";
+import { IPayrollService } from "./External/PayrollService";
 
 export interface IReportService {
   generateExcelReport(
@@ -12,7 +13,7 @@ export interface IReportService {
 }
 
 export default class ReportService implements IReportService {
-  constructor(private reportRepository: IReportRepository) {}
+  constructor(private reportRepository: IReportRepository, private payrollService:IPayrollService) {}
 
   private async generateExcelFile(data: any[]): Promise<any> {
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -90,15 +91,17 @@ export default class ReportService implements IReportService {
         );
         break;
       case EReportIds.reportCdpRpPayMga:
+        const dependenciesList = await this.payrollService.getAllDependencies()
         dataTable = await this.reportRepository.generateReportCdpRpPayMga(
-          filters.year
-        );
-        break;
-
-      default:
-        dataTable = [];
-        break;
-    }
+          filters.year,
+          Object(dependenciesList).data.data
+          );
+          break;
+          
+          default:
+            dataTable = [];
+            break;
+          }
 
     const res = await this.generateExcelFile(dataTable);
 
