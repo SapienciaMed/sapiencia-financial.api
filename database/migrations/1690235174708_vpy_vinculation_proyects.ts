@@ -39,6 +39,7 @@ export default class extends BaseSchema {
 
       table
         .integer("VPY_CODINV_PROYECTO_INVERSION")
+        .unique()
         .nullable()
         .comment("Código PK del proyecto de inversión si aplica (Ref Planeación)");
 

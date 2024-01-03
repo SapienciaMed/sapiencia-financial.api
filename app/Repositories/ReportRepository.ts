@@ -50,7 +50,6 @@ import {
   InitialReportRpBalance,
 } from "App/Constants/ReportConstants";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
-/* import LinkRpcdp from "App/Models/LinkRpcdp"; */
 import FunctionalArea from "App/Models/FunctionalArea";
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
@@ -2300,12 +2299,12 @@ export default class ReportRepository implements IReportRepository {
           let NovemberPaid: number = 0;
           let DecemberIncurred: number = 0;
           let DecemberPaid: number = 0;
-          /*         let LeaderOfTheProcessRP: string = "";
-                  let SupervisorRP: string = "";
-                  let ProductMGA: string = "";
-                  let ActivityMGA: string = "";
-                  let DetailedActivityMGA: string = "";
-                  let CPC: string = ""; */
+          let LeaderOfTheProcessRP: string = "";
+          let SupervisorRP: string = "";
+          let ProductMGA: string = "";
+          let ActivityMGA: string = "";
+          let DetailedActivityMGA: string = "";
+          let CPC: string = "";
 
           const monthNumber = elementPays.mes;
 
@@ -2424,10 +2423,7 @@ export default class ReportRepository implements IReportRepository {
             "Incurrido Diciembre": DecemberIncurred,
             "Pagado Diciembre": DecemberPaid,
         };
-        
-
-
-
+      
           resultData.push(objectFinaldata);
 
         });

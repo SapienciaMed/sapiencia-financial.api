@@ -134,10 +134,23 @@ export default class PospreUploadMasiveService implements IPospreUploadMasiveSer
     model: any
   ): Promise<number> {
     let insertedIds: number = 0;
+    let newRecord;
 
     for (const item of items) {
       try {
-        const newRecord = await model.create(item);
+        const { number } = item;
+        
+        const existingRecord = await model.query()
+          .where('PPR_NUMERO', number)
+          .first();
+
+
+          if (existingRecord) {
+            newRecord = await existingRecord.merge(item).save();
+          } else {
+            newRecord = await model.create(item);
+          }
+          
         insertedIds = newRecord.id;
       } catch (error) {
         console.error(`Error de validación para el item: ${error}`);
