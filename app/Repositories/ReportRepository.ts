@@ -2300,12 +2300,12 @@ export default class ReportRepository implements IReportRepository {
           let NovemberPaid: number = 0;
           let DecemberIncurred: number = 0;
           let DecemberPaid: number = 0;
-          let LeaderOfTheProcessRP: string = "";
+      /*     let LeaderOfTheProcessRP: string = "";
           let SupervisorRP: string = "";
           let ProductMGA: string = "";
           let ActivityMGA: string = "";
           let DetailedActivityMGA: string = "";
-          let CPC: string = "";
+          let CPC: string = ""; */
 
           const monthNumber = elementPays.mes;
 
