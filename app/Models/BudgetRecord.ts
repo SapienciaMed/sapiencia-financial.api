@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, BelongsTo, HasMany, belongsTo, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import LinkRpcdp from './LinkRpcdp';
 import Creditor from './Creditor';
+import Component from './Component';
 
 export default class BudgetRecord extends BaseModel {
   public static table = "RPR_REGISTRO_PRESUPUESTAL";
@@ -74,7 +75,13 @@ export default class BudgetRecord extends BaseModel {
     serializeAs: "creditor",
   })
   public creditor: BelongsTo<typeof Creditor>;    
-
+  
+  @belongsTo(() => Component, {
+    localKey: "id",
+    foreignKey: "componentId",
+    serializeAs: "component",
+  })
+  public component: BelongsTo<typeof Component>;    
   
   
 }
