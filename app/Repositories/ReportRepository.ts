@@ -50,7 +50,9 @@ import {
   InitialReportRpBalance,
 } from "App/Constants/ReportConstants";
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
-import FunctionalArea from "App/Models/FunctionalArea";
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
   generateReportDetailChangeBudgets(year: number): Promise<any[]>;
@@ -139,7 +141,6 @@ export default class ReportRepository implements IReportRepository {
 
       if (result && result != null && result != undefined) {
         let objResult: IDataBasicProject;
-
         if (result.projectCode === "9000000") {
           objResult = {
             projectCode: result.projectCode,
@@ -175,7 +176,6 @@ export default class ReportRepository implements IReportRepository {
     const searchProject = await ProjectsVinculation.query()
       .where("id", vinculationId)
       .preload("areaFuntional");
-
     const getProject = searchProject.map((i) => i.serialize());
     const pkInvestmentProject: number = Number(
       getProject[0].investmentProjectId
@@ -190,6 +190,7 @@ export default class ReportRepository implements IReportRepository {
       projectName = candidateName;
     } else {
       for (const projPlanning of getProjectPlanning.data.array) {
+        console.log({projPlanning})
         if (projPlanning.id === pkInvestmentProject) {
           projectCode = projPlanning.projectCode;
           projectName = projPlanning.name;
@@ -2216,10 +2217,10 @@ export default class ReportRepository implements IReportRepository {
     return resObject;
   }
 
-
+  
 
   async generateReportCdpRpPayMga(year: number): Promise<any[]> {
-
+    console.log("**************************************************************************")
     let resultData: any[] = [];
 
 
@@ -2231,19 +2232,28 @@ export default class ReportRepository implements IReportRepository {
         subQuery.preload("funds");
         subQuery.preload("projectVinculation");
         subQuery.preload("budget");
+        subQuery.preload("projectVinculation", (query) => {
+          query.preload('functionalProject')
+        });
+
       })
-      .preload("linkRpcdps")
+      .preload("linkRpcdps", (query) => {
+        query.preload('budgetRecord', (query) => {
+          query.preload('linksRp')
+          query.preload('creditor')
+          query.preload('component')
+        })
+      })
       .orderBy("id", "desc");
 
 
     const resAmountAvailabily = queryAmountAvailabily.map((i) => i.serialize());
 
-
+    let count = 1;
     for (const element of resAmountAvailabily) {
-
-      const functionAreas = await FunctionalArea.query()
-        .where('id', element?.budgetRoute?.projectVinculation?.functionalAreaId);
-      let infoAreaFuncional = functionAreas.map((i) => i.serialize());
+      /* const functionAreas = await FunctionalArea.query()
+      .where('id', element?.budgetRoute?.projectVinculation?.functionalAreaId);
+      let infoAreaFuncional = functionAreas.map((i) => i.serialize()); */
 
 
       if (element.linkRpcdps[0]?.id !== undefined) {
@@ -2253,13 +2263,23 @@ export default class ReportRepository implements IReportRepository {
           .where('ejercicio', year)
           .orderBy("id", "asc")
 
+
+        const getDataProject: IDataBasicProject | null =
+          await this.getProjectGeneral(
+            Number(element.budgetRoute.idProjectVinculation),
+            element.budgetRoute.budget.number
+          );
+
         const resPaysData = queryPays.map((i) => i.serialize());
-        resPaysData.forEach((elementPays) => {
+        //resPaysData.forEach((elementPays) => {
+        for await (const elementPays of resPaysData) {
+
+
           let NumberSapCdp: number = 0;
           let TaxIdentification: string = "";
           let Cdp: number = 0;
           let Rp: number = 0;
-          let areaFuncitonalNumber = infoAreaFuncional[0].number;
+          //let areaFuncitonalNumber = getDataProject?.functionalArea;  //infoAreaFuncional[0].number;
           //  let MonthExpeditionCdp: string = "";
           let DateDocumentCdp: string = "";
           let ContractualObject: string = "";
@@ -2358,77 +2378,117 @@ export default class ReportRepository implements IReportRepository {
               DecemberIncurred = elementPays.valorCausado;
               DecemberPaid = elementPays.valorPagado;
               break;
-
           }
 
+          //console.log({ element: element?.budgetRoute}) // este punto analizarlo con Sandra frente a la cantidad de rp arr
+
           Div = element?.budgetRoute?.div;
-          DateDocumentCdp = element?.budgetRoute?.dateCreate;
+          DateDocumentCdp = element?.budgetRoute?.dateCreate.split('T')[0];
           ContractualObject = element?.budgetAvailability?.contractObject;
           InitialValue = element?.budgetRoute?.initialBalance;
           ModifiedAgainstCredit = element?.modifiedIdcCountercredit;
           ModifiedCredit = element?.bugetAvailability?.icdModifiedCredit;
           FixedCompleted = element?.bugetAvailability?.icdFixedCompleted;
           FinalValue = element?.bugetAvailability?.icdFinalValue;
-          ProjectName = "pendiente";
+          ProjectName = getDataProject?.projectName!;
           Pospre = element?.budgetRoute?.budget?.number;
           ManagementCenter = element?.budgetRoute?.managementCenter;
-          Funds = parseInt(element?.budgetRoute?.funds?.number);
-          FunctionalAreaSave = areaFuncitonalNumber;
-          Project = "Pendiente";
+          Funds = parseInt(element?.budgetRoute?.fund?.number);
+          FunctionalAreaSave = getDataProject?.functionalArea!;
+          Project = getDataProject?.projectCode!;
           NumberSapCdp = element?.linkRpcdps[0]?.id;
           TaxIdentification = "0";
           Cdp = element?.bugetAvailability?.id;
           Rp = element?.budgetRoute?.id;
 
+          const fecha = new Date(DateDocumentCdp);
+          const nombreMes = format(fecha, 'MMMM', { locale: es });
+
           let objectFinaldata = {
-            "Div": Div,
+            "No": count++,
+            "Mes Expedición CDP": nombreMes,
             "Fecha Documento CDP": DateDocumentCdp,
-            "Objeto Contractual": ContractualObject,
-            "Valor Inicial": InitialValue,
-            "Modificado Contra Crédito": ModifiedAgainstCredit,
-            "Crédito Modificado": ModifiedCredit,
-            "Completado Fijo": FixedCompleted,
-            "Valor Final": FinalValue,
-            "Nombre Proyecto": ProjectName,
-            "Pospre": Pospre,
-            "Centro Gestor": ManagementCenter,
-            "Fondos": Funds,
-            "Área Funcional Guardar": FunctionalAreaSave,
-            "Proyecto": Project,
-            "Impuesto": TaxIdentification,
+            "Objeto Contractual CDP": ContractualObject,
+            "Valor Inicial CDP": InitialValue,
+            "Modificado Contracrédito CDP": ModifiedAgainstCredit,
+            "Modificado Crédito CDP": ModifiedCredit,
+            "Fijado Concluido CDP": FixedCompleted,
+            "Valor Final CDP": FinalValue,
+            "Nombre Proyecto CDP": ProjectName,
+            "Pospre CDP": Pospre,
+            "Centro Gestor CDP": ManagementCenter,
+            "Fondo CDP": Funds,
+            "Área Funcional CDP": FunctionalAreaSave,
+            "Proyecto CDP": Project,
+            "Div CDP": Div,
+            "No. CDP Sap": NumberSapCdp,
+
+            "Mes Expedición RP": nombreMes,
+            "Fecha Documento RP": DateDocumentCdp,
+            "Valor Inicial RP": InitialValue,
+            "Modificado Contracrédito RP": ModifiedAgainstCredit,
+            "Modificado Crédito RP": ModifiedCredit,
+            "Fijado Concluido RP": FixedCompleted,
+            "Valor Final RP": FinalValue,
+            "Nombre Proyecto RP": ProjectName,
+            "Pospre RP": Pospre,
+            "Centro Gestor RP": ManagementCenter,
+            "Fondo RP": Funds,
+            "Área Funcional RP": FunctionalAreaSave,
+            "Proyecto RP": Project,
+            "Div RP": Div,
+            "Identificación Fiscal RP": TaxIdentification,
+
             "CDP": Cdp,
-            "RP": Rp,
-            "Número SAP CDP": NumberSapCdp,
-            "Incurrido Enero": JanuaryIncurred,
-            "Pagado Enero": JanuaryPaid,
-            "Incurrido Febrero": FebruaryIncurred,
-            "Pagado Febrero": FebruaryPaid,
-            "Incurrido Marzo": MarchIncurred,
-            "Pagado Marzo": MarchPaid,
-            "Incurrido Abril": AprilIncurred,
-            "Pagado Abril": AprilPaid,
-            "Incurrido Mayo": MayIncurred,
-            "Pagado Mayo": MayPaid,
-            "Incurrido Junio": JuneIncurred,
-            "Pagado Junio": JunePaid,
-            "Incurrido Julio": JulyIncurred,
-            "Pagado Julio": JulyPaid,
-            "Incurrido Agosto": AugustIncurred,
-            "Pagado Agosto": AugustPaid,
-            "Incurrido Septiembre": SeptemberIncurred,
-            "Pagado Septiembre": SeptemberPaid,
-            "Incurrido Octubre": OctoberIncurred,
-            "Pagado Octubre": OctoberPaid,
-            "Incurrido Noviembre": NovemberIncurred,
-            "Pagado Noviembre": NovemberPaid,
-            "Incurrido Diciembre": DecemberIncurred,
-            "Pagado Diciembre": DecemberPaid,
-        };
-      
+            "Posición RP": element.id,
+            "Fecha Vencimiento RP": element.linkRpcdps[0].budgetRecord.dateValidity, // validar RP
+            "Nombre Contratista RP": "Nombre Contratista RP",
+            "Dependencia": element.linkRpcdps[0].budgetRecord.dependencyId, // validar RP,
+            "No. De Contrato RP": element.linkRpcdps[0].budgetRecord.contractNumber, // validar RP
+            "Identificación RP": "Identificación RP",
+            "No. RP Sap": NumberSapCdp,
+            "Actividad Del Objeto Contractual RP": ContractualObject,
+            "Componente RP": element.linkRpcdps[0].budgetRecord.component.name, // validar RP,
+            "Diferencia CDP - RP (Liberar Saldo) ": Cdp - Rp,
+            "Observación Ruta RP": "",
+            //"RP": Rp,
+
+            "Enero Causado": JanuaryIncurred,
+            "Enero Pagado": JanuaryPaid,
+            "Febrero Causado": FebruaryIncurred,
+            "Febrero Pagado": FebruaryPaid,
+            "Marzo Causado": MarchIncurred,
+            "Marzo Pagado": MarchPaid,
+            "Abril Causado": AprilIncurred,
+            "Abril Pagado": AprilPaid,
+            "Mayo Causado": MayIncurred,
+            "Mayo Pagado": MayPaid,
+            "Junio Causado": JuneIncurred,
+            "Junio Pagado": JunePaid,
+            "Julio Causado": JulyIncurred,
+            "Julio Pagado": JulyPaid,
+            "Agosto Causado": AugustIncurred,
+            "Agosto Pagado": AugustPaid,
+            "Septiembre Causado": SeptemberIncurred,
+            "Septiembre Pagado": SeptemberPaid,
+            "Octubre Causado": OctoberIncurred,
+            "Octubre Pagado": OctoberPaid,
+            "Noviembre Causado": NovemberIncurred,
+            "Noviembre Pagado": NovemberPaid,
+            "Diciembre Causado": DecemberIncurred,
+            "Diciembre Pagado": DecemberPaid,
+
+            "Líder Del Proceso RP": element.linkRpcdps[0].budgetRecord.responsibleDocument, // validar RP,
+            "Supervisor RP": element.linkRpcdps[0].budgetRecord.supervisorDocument, // validar RP,,
+            "Producto MGA": "Producto MGA",
+            "Actividad MGA": "Actividad MGA",
+            "Actividad detallada MGA": "Actividad detallada MGA",
+            "CPC": "CPC",
+          };
+
           resultData.push(objectFinaldata);
 
-        });
-        console.log(resPaysData);
+        }
       }
 
 
