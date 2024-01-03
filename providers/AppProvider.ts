@@ -152,7 +152,8 @@ export default class AppProvider {
             new StrategicDirectionService.default(
               new VinculationMGARepository.default()
             )
-          )
+          ),
+          new PayrollService.default()
         )
     );
 

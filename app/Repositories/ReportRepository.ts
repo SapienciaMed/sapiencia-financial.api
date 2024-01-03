@@ -52,6 +52,7 @@ import {
 import AmountBudgetAvailability from "App/Models/AmountBudgetAvailability";
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import PayrollService from "App/Services/External/PayrollService";
 
 export interface IReportRepository {
   generateReportPac(year: number): Promise<any[]>;
@@ -66,7 +67,7 @@ export interface IReportRepository {
   generateReportDetailedExecution(year: number): Promise<any[]>;
   generateReportExecutionIncome(year: number): Promise<any[]>;
   generateReportBudgetExecution(year: number): Promise<any[]>;
-  generateReportCdpRpPayMga(year: number): Promise<any[]>;
+  generateReportCdpRpPayMga(year: number, dependenciesList:any[]): Promise<any[]>;
 }
 
 /* interface ObjectFinaldata {
@@ -190,7 +191,6 @@ export default class ReportRepository implements IReportRepository {
       projectName = candidateName;
     } else {
       for (const projPlanning of getProjectPlanning.data.array) {
-        console.log({projPlanning})
         if (projPlanning.id === pkInvestmentProject) {
           projectCode = projPlanning.projectCode;
           projectName = projPlanning.name;
@@ -1488,16 +1488,17 @@ export default class ReportRepository implements IReportRepository {
 
                 const newItem: IReportColumnCdpBalance = {
                   // Id: idCdp,
+                  "Nombre proyecto": projectName,
+                  "Posicion Presupuestaria": numberPospre,
+                  "Centro Gestor": nameManagementCenter,
+                  Fondo: fund,
+                  "Area Funcional": functionalArea,
+                  Proyecto: projectCode,
                   "Consecutivo CDP SAP": consecutiveSap,
                   "Consecutivo CDP Aurora": consecutiveAurora,
                   Posición: positionIcd,
-                  Fondo: fund,
-                  "Centro Gestor": nameManagementCenter,
-                  "Posicion Presupuestaria": numberPospre,
-                  "Area Funcional": functionalArea,
-                  Proyecto: projectCode,
-                  "Nombre proyecto": projectName,
                   "Valor Final": finalAmount,
+                  
                 };
                 // Agregar el objeto al resultado
                 resObject.push(newItem);
@@ -2219,9 +2220,9 @@ export default class ReportRepository implements IReportRepository {
 
   
 
-  async generateReportCdpRpPayMga(year: number): Promise<any[]> {
-    console.log("**************************************************************************")
+  async generateReportCdpRpPayMga(year: number, dependenciesList:any[]): Promise<any[]> {
     let resultData: any[] = [];
+    let supplierDocuments:{supplierType?:string,supplierId?:number, id?:number, supplierDocument:string; }[] = []
 
 
     const queryAmountAvailabily = await AmountBudgetAvailability.query()
@@ -2379,9 +2380,10 @@ export default class ReportRepository implements IReportRepository {
               DecemberPaid = elementPays.valorPagado;
               break;
           }
-
+          //console.log({element})
           //console.log({ element: element?.budgetRoute}) // este punto analizarlo con Sandra frente a la cantidad de rp arr
 
+          console.log("element.linkRpcdps",element.linkRpcdps)
           Div = element?.budgetRoute?.div;
           DateDocumentCdp = element?.budgetRoute?.dateCreate.split('T')[0];
           ContractualObject = element?.budgetAvailability?.contractObject;
@@ -2401,12 +2403,17 @@ export default class ReportRepository implements IReportRepository {
           Cdp = element?.bugetAvailability?.id;
           Rp = element?.budgetRoute?.id;
 
-          const fecha = new Date(DateDocumentCdp);
-          const nombreMes = format(fecha, 'MMMM', { locale: es });
+          const dateDocument = new Date(DateDocumentCdp);
+          const monthName = format(dateDocument, 'MMMM', { locale: es });
+
+          let supplierName = element.linkRpcdps[0].budgetRecord.supplierType == 'Acreedor'
+            ? element.linkRpcdps[0].budgetRecord.creditor.name
+            : {document: element.linkRpcdps[0].budgetRecord.contractorDocument, supplierType: element.linkRpcdps[0].budgetRecord.supplierType }
+
 
           let objectFinaldata = {
             "No": count++,
-            "Mes Expedición CDP": nombreMes,
+            "Mes Expedición CDP": monthName,
             "Fecha Documento CDP": DateDocumentCdp,
             "Objeto Contractual CDP": ContractualObject,
             "Valor Inicial CDP": InitialValue,
@@ -2423,7 +2430,7 @@ export default class ReportRepository implements IReportRepository {
             "Div CDP": Div,
             "No. CDP Sap": NumberSapCdp,
 
-            "Mes Expedición RP": nombreMes,
+            "Mes Expedición RP": monthName,
             "Fecha Documento RP": DateDocumentCdp,
             "Valor Inicial RP": InitialValue,
             "Modificado Contracrédito RP": ModifiedAgainstCredit,
@@ -2442,14 +2449,14 @@ export default class ReportRepository implements IReportRepository {
             "CDP": Cdp,
             "Posición RP": element.id,
             "Fecha Vencimiento RP": element.linkRpcdps[0].budgetRecord.dateValidity, // validar RP
-            "Nombre Contratista RP": "Nombre Contratista RP",
-            "Dependencia": element.linkRpcdps[0].budgetRecord.dependencyId, // validar RP,
+            "Nombre Contratista RP": supplierName,
+            "Dependencia": (dependenciesList.find(e=>e.id == element.linkRpcdps[0].budgetRecord.dependencyId).name) , // validar RP,
             "No. De Contrato RP": element.linkRpcdps[0].budgetRecord.contractNumber, // validar RP
-            "Identificación RP": "Identificación RP",
+            "Identificación RP": element.linkRpcdps[0].budgetRecord.id,
             "No. RP Sap": NumberSapCdp,
             "Actividad Del Objeto Contractual RP": ContractualObject,
             "Componente RP": element.linkRpcdps[0].budgetRecord.component.name, // validar RP,
-            "Diferencia CDP - RP (Liberar Saldo) ": Cdp - Rp,
+            "Diferencia CDP - RP (Liberar Saldo) ": Cdp ?? 0 - Rp ?? 0,
             "Observación Ruta RP": "",
             //"RP": Rp,
 
@@ -2487,17 +2494,29 @@ export default class ReportRepository implements IReportRepository {
           };
 
           resultData.push(objectFinaldata);
-
+          supplierDocuments.push({
+              id:element.linkRpcdps[0].budgetRecord.id,
+              supplierId: element.linkRpcdps[0].budgetRecord.supplierId,
+              supplierType: element.linkRpcdps[0].budgetRecord.supplierType,
+              supplierDocument:element.linkRpcdps[0].budgetRecord.contractorDocument!
+          })
         }
       }
-
-
     };
 
-    //console.log("etre", resultData);
+    const supplierDocsToSearch = supplierDocuments.map(e=>e.supplierDocument)
 
+    const payrollService = new PayrollService()
+    let suppliersFound =await payrollService.getContractorsByDocuments({documentList:supplierDocsToSearch!.filter(e=>e!=undefined)})
+    
+   const resultDataFixed =  resultData.map(e=>{
+    let user = Object(suppliersFound).data.data.filter(usr=>usr.numberDocument ==e['Nombre Contratista RP'].document);
+    e['Nombre Contratista RP'] = e['Nombre Contratista RP'].supplierType == 'Contratista'
+      ?`${user[0].firstName } ${user[0].secondName } ${user[0].surname } ${user[0].secondSurname }`
+      : e['Nombre Contratista RP']
+     return e;
+    })
 
-
-    return resultData;
+    return resultDataFixed;
   }
 }
