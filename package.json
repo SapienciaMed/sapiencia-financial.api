@@ -30,6 +30,7 @@
     "@adonisjs/repl": "^3.1.11",
     "adonis5-swagger": "^1.4.1",
     "axios": "^1.5.0",
+    "date-fns": "^3.0.6",
     "exceljs": "^4.3.0",
     "fs": "^0.0.1-security",
     "japa": "^4.0.0",
