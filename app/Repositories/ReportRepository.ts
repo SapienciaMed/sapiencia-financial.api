@@ -2284,7 +2284,7 @@ export default class ReportRepository implements IReportRepository {
 
 
           let NumberSapCdp: number = 0;
-          let TaxIdentification: string = "";
+          //let TaxIdentification: string = "";
           let Cdp: number = 0;
           let Rp: number = 0;
           //let areaFuncitonalNumber = getDataProject?.functionalArea;  //infoAreaFuncional[0].number;
@@ -2405,7 +2405,7 @@ export default class ReportRepository implements IReportRepository {
           FunctionalAreaSave = getDataProject?.functionalArea!;
           Project = getDataProject?.projectCode!;
           NumberSapCdp = element?.linkRpcdps[0]?.id;
-          TaxIdentification = "0";
+          //TaxIdentification = "0";
           Cdp = element?.bugetAvailability?.id;
           Rp = element?.budgetRoute?.id;
 
