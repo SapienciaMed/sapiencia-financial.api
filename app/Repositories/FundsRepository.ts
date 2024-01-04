@@ -31,7 +31,6 @@ export default class FundsRepository implements IFundsRepository {
   ): Promise<IPagingData<IFunds>> {
     const query = Funds.query();
     query.orderBy("dateFrom", "desc");
-
     if (filters.number) {
       query.where("number", filters.number);
     }
@@ -41,11 +40,11 @@ export default class FundsRepository implements IFundsRepository {
     }
 
     if (filters.dateFrom) {
-      query.where("dateFrom", ">=", filters.dateFrom.toLocaleString());
+      query.where("dateFrom", ">=", filters.dateFrom?.toString().split('T')[0]);
     }
 
     if (filters.dateTo) {
-      query.where("dateTo", "<=", filters.dateTo.toLocaleString());
+      query.where("dateTo", "<=", filters.dateTo?.toString().split('T')[0]);
     }
 
     await query.preload("entity");
