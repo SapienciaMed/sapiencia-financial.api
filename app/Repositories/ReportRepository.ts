@@ -67,7 +67,7 @@ export interface IReportRepository {
   generateReportDetailedExecution(year: number): Promise<any[]>;
   generateReportExecutionIncome(year: number): Promise<any[]>;
   generateReportBudgetExecution(year: number): Promise<any[]>;
-  generateReportCdpRpPayMga(year: number, dependenciesList:any[]): Promise<any[]>;
+  generateReportCdpRpPayMga(year: number, dependenciesList: any[]): Promise<any[]>;
 }
 
 /* interface ObjectFinaldata {
@@ -1498,7 +1498,7 @@ export default class ReportRepository implements IReportRepository {
                   "Consecutivo CDP Aurora": consecutiveAurora,
                   Posición: positionIcd,
                   "Valor Final": finalAmount,
-                  
+
                 };
                 // Agregar el objeto al resultado
                 resObject.push(newItem);
@@ -2218,11 +2218,11 @@ export default class ReportRepository implements IReportRepository {
     return resObject;
   }
 
-  
 
-  async generateReportCdpRpPayMga(year: number, dependenciesList:any[]): Promise<any[]> {
+
+  async generateReportCdpRpPayMga(year: number, dependenciesList: any[]): Promise<any[]> {
     let resultData: any[] = [];
-    let supplierDocuments:{supplierType?:string,supplierId?:number, id?:number, supplierDocument:string; }[] = []
+    let supplierDocuments: { supplierType?: string, supplierId?: number, id?: number, supplierDocument: string; }[] = []
 
 
     const queryAmountAvailabily = await AmountBudgetAvailability.query()
@@ -2251,7 +2251,10 @@ export default class ReportRepository implements IReportRepository {
     const resAmountAvailabily = queryAmountAvailabily.map((i) => i.serialize());
 
     let count = 1;
-    for (const element of resAmountAvailabily) {
+    for await (const element of resAmountAvailabily) {
+      
+      
+      
       /* const functionAreas = await FunctionalArea.query()
       .where('id', element?.budgetRoute?.projectVinculation?.functionalAreaId);
       let infoAreaFuncional = functionAreas.map((i) => i.serialize()); */
@@ -2271,6 +2274,10 @@ export default class ReportRepository implements IReportRepository {
             element.budgetRoute.budget.number
           );
 
+          /* let projectFound = await this.strategicDirectionService.getProjectByFilters({
+            codeList:[getDataProject?.projectCode!]
+          })   
+          console.log({projectFound:projectFound.data}) */
         const resPaysData = queryPays.map((i) => i.serialize());
         //resPaysData.forEach((elementPays) => {
         for await (const elementPays of resPaysData) {
@@ -2321,12 +2328,12 @@ export default class ReportRepository implements IReportRepository {
           let NovemberPaid: number = 0;
           let DecemberIncurred: number = 0;
           let DecemberPaid: number = 0;
-      /*     let LeaderOfTheProcessRP: string = "";
-          let SupervisorRP: string = "";
-          let ProductMGA: string = "";
-          let ActivityMGA: string = "";
-          let DetailedActivityMGA: string = "";
-          let CPC: string = ""; */
+          /*     let LeaderOfTheProcessRP: string = "";
+              let SupervisorRP: string = "";
+              let ProductMGA: string = "";
+              let ActivityMGA: string = "";
+              let DetailedActivityMGA: string = "";
+              let CPC: string = ""; */
 
           const monthNumber = elementPays.mes;
 
@@ -2383,7 +2390,6 @@ export default class ReportRepository implements IReportRepository {
           //console.log({element})
           //console.log({ element: element?.budgetRoute}) // este punto analizarlo con Sandra frente a la cantidad de rp arr
 
-          console.log("element.linkRpcdps",element.linkRpcdps)
           Div = element?.budgetRoute?.div;
           DateDocumentCdp = element?.budgetRoute?.dateCreate.split('T')[0];
           ContractualObject = element?.budgetAvailability?.contractObject;
@@ -2408,8 +2414,11 @@ export default class ReportRepository implements IReportRepository {
 
           let supplierName = element.linkRpcdps[0].budgetRecord.supplierType == 'Acreedor'
             ? element.linkRpcdps[0].budgetRecord.creditor.name
-            : {document: element.linkRpcdps[0].budgetRecord.contractorDocument, supplierType: element.linkRpcdps[0].budgetRecord.supplierType }
+            : { document: element.linkRpcdps[0].budgetRecord.contractorDocument, supplierType: element.linkRpcdps[0].budgetRecord.supplierType }
 
+          let fiscalIdentification = element.linkRpcdps[0].budgetRecord.supplierType == 'Acreedor'
+            ? element.linkRpcdps[0].budgetRecord.creditor.taxIdentification
+            : { document: element.linkRpcdps[0].budgetRecord.contractorDocument, supplierType: element.linkRpcdps[0].budgetRecord.supplierType }
 
           let objectFinaldata = {
             "No": count++,
@@ -2444,20 +2453,20 @@ export default class ReportRepository implements IReportRepository {
             "Área Funcional RP": FunctionalAreaSave,
             "Proyecto RP": Project,
             "Div RP": Div,
-            "Identificación Fiscal RP": TaxIdentification,
+            "Identificación Fiscal RP": fiscalIdentification,
 
             "CDP": Cdp,
             "Posición RP": element.id,
             "Fecha Vencimiento RP": element.linkRpcdps[0].budgetRecord.dateValidity, // validar RP
             "Nombre Contratista RP": supplierName,
-            "Dependencia": (dependenciesList.find(e=>e.id == element.linkRpcdps[0].budgetRecord.dependencyId).name) , // validar RP,
+            "Dependencia": (dependenciesList.find(e => e.id == element.linkRpcdps[0].budgetRecord.dependencyId).name), // validar RP,
             "No. De Contrato RP": element.linkRpcdps[0].budgetRecord.contractNumber, // validar RP
             "Identificación RP": element.linkRpcdps[0].budgetRecord.id,
             "No. RP Sap": NumberSapCdp,
             "Actividad Del Objeto Contractual RP": ContractualObject,
             "Componente RP": element.linkRpcdps[0].budgetRecord.component.name, // validar RP,
             "Diferencia CDP - RP (Liberar Saldo) ": Cdp ?? 0 - Rp ?? 0,
-            "Observación Ruta RP": "",
+            "Observación Ruta RP": element.linkRpcdps[0].observation,
             //"RP": Rp,
 
             "Enero Causado": JanuaryIncurred,
@@ -2495,26 +2504,31 @@ export default class ReportRepository implements IReportRepository {
 
           resultData.push(objectFinaldata);
           supplierDocuments.push({
-              id:element.linkRpcdps[0].budgetRecord.id,
-              supplierId: element.linkRpcdps[0].budgetRecord.supplierId,
-              supplierType: element.linkRpcdps[0].budgetRecord.supplierType,
-              supplierDocument:element.linkRpcdps[0].budgetRecord.contractorDocument!
+            id: element.linkRpcdps[0].budgetRecord.id,
+            supplierId: element.linkRpcdps[0].budgetRecord.supplierId,
+            supplierType: element.linkRpcdps[0].budgetRecord.supplierType,
+            supplierDocument: element.linkRpcdps[0].budgetRecord.contractorDocument!
           })
         }
       }
     };
 
-    const supplierDocsToSearch = supplierDocuments.map(e=>e.supplierDocument)
+    const supplierDocsToSearch = supplierDocuments.map(e => e.supplierDocument)
 
     const payrollService = new PayrollService()
-    let suppliersFound =await payrollService.getContractorsByDocuments({documentList:supplierDocsToSearch!.filter(e=>e!=undefined)})
-    
-   const resultDataFixed =  resultData.map(e=>{
-    let user = Object(suppliersFound).data.data.filter(usr=>usr.numberDocument ==e['Nombre Contratista RP'].document);
-    e['Nombre Contratista RP'] = e['Nombre Contratista RP'].supplierType == 'Contratista'
-      ?`${user[0].firstName } ${user[0].secondName } ${user[0].surname } ${user[0].secondSurname }`
-      : e['Nombre Contratista RP']
-     return e;
+    let suppliersFound = await payrollService.getContractorsByDocuments({ documentList: supplierDocsToSearch!.filter(e => e != undefined) })
+    const resultDataFixed = resultData.map(e => {
+      let user = Object(suppliersFound).data.data.filter(usr => usr.numberDocument == e['Nombre Contratista RP'].document);
+
+      e['Identificación Fiscal RP'] = e['Nombre Contratista RP'].supplierType == 'Contratista'
+        ? user[0].fiscalIdentification
+        : e['Identificación Fiscal RP']
+
+      e['Nombre Contratista RP'] = e['Nombre Contratista RP'].supplierType == 'Contratista'
+        ? `${user[0].firstName} ${user[0].secondName} ${user[0].surname} ${user[0].secondSurname}`
+        : e['Nombre Contratista RP']
+
+      return e;
     })
 
     return resultDataFixed;
