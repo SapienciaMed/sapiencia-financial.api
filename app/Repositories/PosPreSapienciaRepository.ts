@@ -39,16 +39,21 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
   async getPosPreByParamsMasive(pprNumero: string, pprEjercicio: number, ppsPosicion: string): Promise<any> {
 
 
-    const queryGetInfo = await PosPreSapiencia.query()
-    .preload("budget", (subQuery) => {
-      subQuery.where("number",pprNumero)
-    }).where("consecutive", ppsPosicion.toString())
-    .where("ejercise",pprEjercicio)
+    const queryOne = await Budgets.query().where('number', pprNumero);
+    if (queryOne.length > 0) {
+      const id = queryOne[0].id;
+      const queryGetInfo = await PosPreSapiencia.query()
+        .where("consecutive", ppsPosicion.toString())
+        .where("budgetId", id)
+        .where("ejercise", pprEjercicio);
+      const resDataPospre = queryGetInfo.map((i) => i.serialize());
+      return resDataPospre
+    } else {
+      console.log('No se encontró ningún resultado para el número proporcionado.');
+    }
 
-    const resDataPospre = queryGetInfo.map((i) => i.serialize());
 
-    return resDataPospre
-  
+
   }
   async getPosPreSapienciaList(filters: IProjectAdditionFilters): Promise<IPagingData<IPosPreSapienciaAdditionList>> {
 
@@ -224,9 +229,9 @@ export default class PosPreSapienciaRepository implements IPosPreSapienciaReposi
   async getPosPreSapiSpcifyExercise(exercise: number): Promise<IPosPreSapiencia[] | null> {
 
     const query = await PosPreSapiencia
-    .query()
-    .select("id", "number", "ejercise")
-    .where("ejercise", exercise);
+      .query()
+      .select("id", "number", "ejercise")
+      .where("ejercise", exercise);
 
     return query.map((i) => i.serialize() as IPosPreSapiencia);
 
