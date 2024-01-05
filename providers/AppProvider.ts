@@ -213,9 +213,10 @@ export default class AppProvider {
           new FunctionalAreaRepository.default(
             new StrategicDirectionService.default(
               new VinculationMGARepository.default()
-            )
-          )
-        )
+            ),
+            ),
+            new FunctionalProjectRepository.default()
+        ),
     );
 
     this.app.container.singleton(
