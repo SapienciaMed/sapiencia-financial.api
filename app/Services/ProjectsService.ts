@@ -5,7 +5,6 @@ import { IFunctionalAreaRepository } from "../Repositories/FunctionalAreaReposit
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { IProjectsVinculationFull } from "App/Interfaces/ProjectsVinculationInterfaces";
 import { tranformProjectsVinculation } from "App/Utils/sub-services";
-import { IFunctionalProject } from "App/Interfaces/FunctionalProjectInterfaces";
 import { IFunctionalProjectRepository } from "App/Repositories/FunctionalProjectRepository";
 
 export interface IProjectsService {
