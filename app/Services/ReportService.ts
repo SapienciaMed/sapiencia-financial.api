@@ -104,7 +104,6 @@ export default class ReportService implements IReportService {
           }
 
     const res = await this.generateExcelFile(dataTable);
-
     return new ApiResponse(res, EResponseCodes.OK);
   }
 }
