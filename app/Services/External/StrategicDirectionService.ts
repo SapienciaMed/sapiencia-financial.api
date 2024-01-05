@@ -39,6 +39,9 @@ export interface IStrategicDirectionService {
   getProjectByFilters(
     filter: IProjectFilters
   ): Promise<ApiResponse<IProject[]>>;
+  getProjectAllDataByFilters(
+    filter: IProjectFilters
+  ): Promise<ApiResponse<IProject[]>>;
   getDetailedActivitiesByIds(
     ids: Array<number>
   ): Promise<ApiResponse<IApiPlanningDetailedActivitiesSpecify[]>>;
@@ -144,6 +147,42 @@ export default class StrategicDirectionService
       };
 
       requestResult.push(objResult);
+    });
+
+    return new ApiResponse(
+      requestResult,
+      EResponseCodes.OK,
+      "Listado de Proyectos de Inversión desde Planeación."
+    );
+  }
+  
+  public async getProjectAllDataByFilters(
+    filter: IProjectFilters
+  ): Promise<ApiResponse<IProject[]>> {
+    const urlConsumer = `/api/v1/project/get-by-filters`;
+
+    const res = await this.axiosInstance.post<
+      ApiResponse<IApiPlanningProject[]>
+    >(urlConsumer, filter, {
+      headers: {
+        Authorization: process.env.CURRENT_AUTHORIZATION,
+      },
+    });
+
+    const requestResult: any[] = [];
+    const dataI: IApiPlanningProject[] = res.data.data;
+
+    dataI.forEach((res) => {
+      /* const objResult: IProject = {
+        assignmentValue: res.goal ? +res.goal : 0,
+        plannedValue: 0,
+        name: res.project,
+        id: res.id,
+        projectCode: res.bpin,
+        type: EProjectTypes.investment,
+      }; */
+
+      requestResult.push(res);
     });
 
     return new ApiResponse(

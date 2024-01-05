@@ -68,6 +68,7 @@ export interface IReportRepository {
   generateReportExecutionIncome(year: number): Promise<any[]>;
   generateReportBudgetExecution(year: number): Promise<any[]>;
   generateReportCdpRpPayMga(year: number, dependenciesList: any[]): Promise<any[]>;
+  generateReportCdpRpPayMga2(year: number, dependenciesList: any[]): Promise<any[]>;
 }
 
 /* interface ObjectFinaldata {
@@ -2219,6 +2220,42 @@ export default class ReportRepository implements IReportRepository {
   }
 
 
+  async generateReportCdpRpPayMga2(year: number, dependenciesList: any[]): Promise<any[]> {
+    year;
+    dependenciesList;
+    /* const queryAmountAvailabily = await AmountBudgetAvailability.query()
+      .preload('budgetRoute', (query) => {
+        query.preload('budget')
+        query.preload('budget')
+        query.preload('pospreSapiencia')
+        query.preload('projectVinculation')
+      })
+      .preload('budgetAvailability')
+      .preload('linkRpcdps', (query) => {
+        query.preload('budgetRecord', (query) => {
+          query.preload('component')
+          query.preload('creditor')
+        })
+        query.preload('pagos')
+      })
+    console.log({ queryAmountAvailabily: queryAmountAvailabily.map(e => e.$attributes) })
+    console.log({ queryAmountAvailabily: queryAmountAvailabily.map(e => e.$preloaded) })
+    return queryAmountAvailabily; */
+      
+   return await Pago.query().preload('LinkRpcdp',(query)=>{
+    query.preload('amountBudgetAvailability',(query)=>{
+      query.preload('budgetAvailability')
+      query.preload('budgetRoute')
+    })
+    query.preload('budgetRecord',(query)=>{
+      query.preload('component')
+      query.preload('creditor')
+      query.preload('linksRp')
+    })
+   })
+  
+  }
+
 
   async generateReportCdpRpPayMga(year: number, dependenciesList: any[]): Promise<any[]> {
     let resultData: any[] = [];
@@ -2228,6 +2265,7 @@ export default class ReportRepository implements IReportRepository {
     const queryAmountAvailabily = await AmountBudgetAvailability.query()
       .preload("budgetAvailability", (subQuery) => {
         subQuery.where("exercise", year);
+        subQuery.preload('amounts')
       })
       .preload("budgetRoute", (subQuery) => {
         subQuery.preload("funds");
@@ -2241,277 +2279,286 @@ export default class ReportRepository implements IReportRepository {
       .preload("linkRpcdps", (query) => {
         query.preload('budgetRecord', (query) => {
           query.preload('linksRp')
-          query.preload('creditor')
+          query.preload('creditor',)
           query.preload('component')
         })
       })
       .orderBy("id", "desc");
 
 
+
     const resAmountAvailabily = queryAmountAvailabily.map((i) => i.serialize());
 
     let count = 1;
     for await (const element of resAmountAvailabily) {
-      
-      
-      
+
+
+
       /* const functionAreas = await FunctionalArea.query()
       .where('id', element?.budgetRoute?.projectVinculation?.functionalAreaId);
       let infoAreaFuncional = functionAreas.map((i) => i.serialize()); */
 
-
-      if (element.linkRpcdps[0]?.id !== undefined) {
-
-        const queryPays = await Pago.query()
-          .where("vinculacionRpCode", element.linkRpcdps[0]?.id)
-          .where('ejercicio', year)
-          .orderBy("id", "asc")
+      let countRp = -1
+      for await (let linkRp of element.linkRpcdps) {
+        linkRp;
+        countRp += 1;
+        if (element.linkRpcdps[countRp]?.id !== undefined) {
 
 
-        const getDataProject: IDataBasicProject | null =
-          await this.getProjectGeneral(
-            Number(element.budgetRoute.idProjectVinculation),
-            element.budgetRoute.budget.number
-          );
-
-          /* let projectFound = await this.strategicDirectionService.getProjectByFilters({
-            codeList:[getDataProject?.projectCode!]
-          })   
-          console.log({projectFound:projectFound.data}) */
-        const resPaysData = queryPays.map((i) => i.serialize());
-        //resPaysData.forEach((elementPays) => {
-        for await (const elementPays of resPaysData) {
+          const queryPays = await Pago.query()
+            .where("vinculacionRpCode", element.linkRpcdps[countRp]?.id)
+            .where('ejercicio', year)
+            .orderBy("id", "asc")
 
 
-          let NumberSapCdp: number = 0;
-          //let TaxIdentification: string = "";
-          let Cdp: number = 0;
-          let Rp: number = 0;
-          //let areaFuncitonalNumber = getDataProject?.functionalArea;  //infoAreaFuncional[0].number;
-          //  let MonthExpeditionCdp: string = "";
-          let DateDocumentCdp: string = "";
-          let ContractualObject: string = "";
-          let InitialValue: number = 0;
-          let ModifiedAgainstCredit: number = 0;
-          let ModifiedCredit: number = 0;
-          let FixedCompleted: number = 0;
-          let FinalValue: number = 0;
-          let ProjectName: string = "";
-          let Pospre: string = "";
-          let ManagementCenter: string = "";
-          let Funds: number = 0;
-          let FunctionalAreaSave: string = "";
-          let Project: string = "";
-          let Div: string = "";
+          const getDataProject: IDataBasicProject | null =
+            await this.getProjectGeneral(
+              Number(element.budgetRoute.idProjectVinculation),
+              element.budgetRoute.budget.number
+            );
 
-          let JanuaryIncurred: number = 0;
-          let JanuaryPaid: number = 0;
-          let FebruaryIncurred: number = 0;
-          let FebruaryPaid: number = 0;
-          let MarchIncurred: number = 0;
-          let MarchPaid: number = 0;
-          let AprilIncurred: number = 0;
-          let AprilPaid: number = 0;
-          let MayIncurred: number = 0;
-          let MayPaid: number = 0;
-          let JuneIncurred: number = 0;
-          let JunePaid: number = 0;
-          let JulyIncurred: number = 0;
-          let JulyPaid: number = 0;
-          let AugustIncurred: number = 0;
-          let AugustPaid: number = 0;
-          let SeptemberIncurred: number = 0;
-          let SeptemberPaid: number = 0;
-          let OctoberIncurred: number = 0;
-          let OctoberPaid: number = 0;
-          let NovemberIncurred: number = 0;
-          let NovemberPaid: number = 0;
-          let DecemberIncurred: number = 0;
-          let DecemberPaid: number = 0;
-          /*     let LeaderOfTheProcessRP: string = "";
-              let SupervisorRP: string = "";
-              let ProductMGA: string = "";
-              let ActivityMGA: string = "";
-              let DetailedActivityMGA: string = "";
-              let CPC: string = ""; */
+          const resPaysData = queryPays.map((i) => i.serialize());
+          //resPaysData.forEach((elementPays) => {
+          for await (const elementPays of resPaysData) {
 
-          const monthNumber = elementPays.mes;
 
-          switch (monthNumber) {
-            case 1:
-              JanuaryIncurred = elementPays.valorCausado;
-              JanuaryPaid = elementPays.valorPagado;
-              break;
-            case 2:
-              FebruaryIncurred = elementPays.valorCausado;
-              FebruaryPaid = elementPays.valorPagado;
-              break;
-            case 3:
-              MarchIncurred = elementPays.valorCausado;
-              MarchPaid = elementPays.valorPagado;
-              break;
-            case 4:
-              AprilIncurred = elementPays.valorCausado;
-              AprilPaid = elementPays.valorPagado;
-              break;
-            case 5:
-              MayIncurred = elementPays.valorCausado;
-              MayPaid = elementPays.valorPagado;
-              break;
-            case 6:
-              JuneIncurred = elementPays.valorCausado;
-              JunePaid = elementPays.valorPagado;
-              break;
-            case 7:
-              JulyIncurred = elementPays.valorCausado;
-              JulyPaid = elementPays.valorPagado;
-              break;
-            case 8:
-              AugustIncurred = elementPays.valorCausado;
-              AugustPaid = elementPays.valorPagado;
-              break;
-            case 9:
-              SeptemberIncurred = elementPays.valorCausado;
-              SeptemberPaid = elementPays.valorPagado;
-              break;
-            case 10:
-              OctoberIncurred = elementPays.valorCausado;
-              OctoberPaid = elementPays.valorPagado;
-              break;
-            case 11:
-              NovemberIncurred = elementPays.valorCausado;
-              NovemberPaid = elementPays.valorPagado;
-              break;
-            case 12:
-              DecemberIncurred = elementPays.valorCausado;
-              DecemberPaid = elementPays.valorPagado;
-              break;
+            let NumberSapCdp: number = 0;
+            let NumberSapRp: number = 0;
+            //let TaxIdentification: string = "";
+            let Cdp: number = 0;
+            let Rp: number = 0;
+            //let areaFuncitonalNumber = getDataProject?.functionalArea;  //infoAreaFuncional[0].number;
+            //  let MonthExpeditionCdp: string = "";
+            let DateDocumentCdp: string = "";
+            let ContractualObject: string = "";
+            let InitialValue: number = 0;
+            let ModifiedAgainstCredit: number = 0;
+            let ModifiedCredit: number = 0;
+            let FixedCompleted: number = 0;
+            let FinalValue: number = 0;
+            let ProjectName: string = "";
+            let Pospre: string = "";
+            let ManagementCenter: string = "";
+            let Funds: number = 0;
+            let FunctionalAreaSave: string = "";
+            let Project: string = "";
+            let Div: string = "";
+
+            let JanuaryIncurred: number = 0;
+            let JanuaryPaid: number = 0;
+            let FebruaryIncurred: number = 0;
+            let FebruaryPaid: number = 0;
+            let MarchIncurred: number = 0;
+            let MarchPaid: number = 0;
+            let AprilIncurred: number = 0;
+            let AprilPaid: number = 0;
+            let MayIncurred: number = 0;
+            let MayPaid: number = 0;
+            let JuneIncurred: number = 0;
+            let JunePaid: number = 0;
+            let JulyIncurred: number = 0;
+            let JulyPaid: number = 0;
+            let AugustIncurred: number = 0;
+            let AugustPaid: number = 0;
+            let SeptemberIncurred: number = 0;
+            let SeptemberPaid: number = 0;
+            let OctoberIncurred: number = 0;
+            let OctoberPaid: number = 0;
+            let NovemberIncurred: number = 0;
+            let NovemberPaid: number = 0;
+            let DecemberIncurred: number = 0;
+            let DecemberPaid: number = 0;
+            /*     let LeaderOfTheProcessRP: string = "";
+                let SupervisorRP: string = "";
+                let ProductMGA: string = "";
+                let ActivityMGA: string = "";
+                let DetailedActivityMGA: string = "";
+                let CPC: string = ""; */
+
+            const monthNumber = elementPays.mes;
+
+            switch (monthNumber) {
+              case 1:
+                JanuaryIncurred = elementPays.valorCausado;
+                JanuaryPaid = elementPays.valorPagado;
+                break;
+              case 2:
+                FebruaryIncurred = elementPays.valorCausado;
+                FebruaryPaid = elementPays.valorPagado;
+                break;
+              case 3:
+                MarchIncurred = elementPays.valorCausado;
+                MarchPaid = elementPays.valorPagado;
+                break;
+              case 4:
+                AprilIncurred = elementPays.valorCausado;
+                AprilPaid = elementPays.valorPagado;
+                break;
+              case 5:
+                MayIncurred = elementPays.valorCausado;
+                MayPaid = elementPays.valorPagado;
+                break;
+              case 6:
+                JuneIncurred = elementPays.valorCausado;
+                JunePaid = elementPays.valorPagado;
+                break;
+              case 7:
+                JulyIncurred = elementPays.valorCausado;
+                JulyPaid = elementPays.valorPagado;
+                break;
+              case 8:
+                AugustIncurred = elementPays.valorCausado;
+                AugustPaid = elementPays.valorPagado;
+                break;
+              case 9:
+                SeptemberIncurred = elementPays.valorCausado;
+                SeptemberPaid = elementPays.valorPagado;
+                break;
+              case 10:
+                OctoberIncurred = elementPays.valorCausado;
+                OctoberPaid = elementPays.valorPagado;
+                break;
+              case 11:
+                NovemberIncurred = elementPays.valorCausado;
+                NovemberPaid = elementPays.valorPagado;
+                break;
+              case 12:
+                DecemberIncurred = elementPays.valorCausado;
+                DecemberPaid = elementPays.valorPagado;
+                break;
+            }
+            let dateDocumentCdp = element.budgetAvailability?.date
+            Div = element?.budgetRoute?.div;
+            DateDocumentCdp = dateDocumentCdp ?? '';
+            ContractualObject = element?.budgetAvailability?.contractObject;
+            InitialValue = element?.amount;//element?.budgetRoute?.initialBalance;
+            ModifiedAgainstCredit = element?.modifiedIdcCountercredit;
+            ModifiedCredit = element?.idcModifiedCredit;
+            FixedCompleted = element?.idcFixedCompleted;
+            FinalValue = element?.idcFinalValue;
+            ProjectName = getDataProject?.projectName!;
+            Pospre = element?.budgetRoute?.budget?.number;
+            ManagementCenter = element?.budgetRoute?.managementCenter;
+            Funds = parseInt(element?.budgetRoute?.fund?.number);
+            FunctionalAreaSave = getDataProject?.functionalArea!;
+            Project = getDataProject?.projectCode!;
+            NumberSapCdp = element?.budgetAvailability?.sapConsecutive;
+            NumberSapRp = element?.linkRpcdps[countRp]?.budgetRecord.consecutiveSap;
+            //TaxIdentification = "0";
+            const totalAmountCDP = element?.budgetAvailability?.amounts.reduce((acc, item) => acc + parseFloat(item.amount), 0);
+            const totalAmountRP = element.linkRpcdps[countRp].budgetRecord.linksRp.reduce((acc, item) => acc + parseFloat(item.finalAmount), 0);
+            Cdp = totalAmountCDP;
+            Rp = totalAmountRP;
+            const dateDocument = DateDocumentCdp != "" ? new Date(DateDocumentCdp) : '';
+            const monthName = DateDocumentCdp != "" ? format(dateDocument, 'MMMM', { locale: es }) : '';
+
+            let supplierName = element.linkRpcdps[countRp]?.budgetRecord.supplierType == 'Acreedor'
+              ? element.linkRpcdps[countRp]?.budgetRecord.creditor.name
+              : { document: element.linkRpcdps[countRp]?.budgetRecord.contractorDocument, supplierType: element.linkRpcdps[countRp].budgetRecord.supplierType }
+
+            let fiscalIdentification = element.linkRpcdps[countRp]?.budgetRecord.supplierType == 'Acreedor'
+              ? element.linkRpcdps[countRp].budgetRecord.creditor.taxIdentification
+              : { document: element.linkRpcdps[countRp].budgetRecord.contractorDocument, supplierType: element.linkRpcdps[countRp].budgetRecord.supplierType }
+
+            let objectFinaldata = {
+              "No": count++,
+              "Mes Expedición CDP": monthName,
+              "Fecha Documento CDP": DateDocumentCdp,
+              "Objeto Contractual CDP": ContractualObject,
+              "Valor Inicial CDP": InitialValue,
+              "Modificado Contracrédito CDP": ModifiedAgainstCredit,
+              "Modificado Crédito CDP": ModifiedCredit,
+              "Fijado Concluido CDP": FixedCompleted,
+              "Valor Final CDP": FinalValue,
+              "Nombre Proyecto CDP": ProjectName,
+              "Pospre CDP": Pospre,
+              "Centro Gestor CDP": ManagementCenter,
+              "Fondo CDP": Funds,
+              "Área Funcional CDP": FunctionalAreaSave,
+              "Proyecto CDP": Project,
+              "Div CDP": Div,
+              "No. CDP Sap": NumberSapCdp,
+
+              "Mes Expedición RP": monthName,
+              "Fecha Documento RP": DateDocumentCdp,
+              "Valor Inicial RP": element.linkRpcdps[countRp].initialAmount,
+              "Modificado Contracrédito RP": element.linkRpcdps[countRp].againtsAmount,
+              "Modificado Crédito RP": element.linkRpcdps[countRp].creditAmount,
+              "Fijado Concluido RP": element.linkRpcdps[countRp].fixedCompleted,
+              "Valor Final RP": element.linkRpcdps[countRp].finalAmount,
+              "Nombre Proyecto RP": ProjectName,
+              "Pospre RP": Pospre,
+              "Centro Gestor RP": ManagementCenter,
+              "Fondo RP": Funds,
+              "Área Funcional RP": FunctionalAreaSave,
+              "Proyecto RP": Project,
+              "Div RP": Div,
+              "Identificación Fiscal RP": fiscalIdentification,
+
+              "CDP": Cdp,
+              "Posición RP": element.linkRpcdps[countRp].position,
+              "Fecha Vencimiento RP": element.linkRpcdps[countRp].budgetRecord.dateValidity, // validar RP
+              "Nombre Contratista RP": supplierName,
+              "Dependencia": (dependenciesList.find(e => e.id == element.linkRpcdps[countRp].budgetRecord.dependencyId).name), // validar RP,
+              "No. De Contrato RP": element.linkRpcdps[countRp].budgetRecord.contractNumber, // validar RP
+              "Identificación RP": element.linkRpcdps[countRp].budgetRecord.id,
+              "No. RP Sap": NumberSapRp,
+              "Actividad Del Objeto Contractual RP": ContractualObject,
+              "Componente RP": element.linkRpcdps[countRp].budgetRecord.component.name, // validar RP,
+              "Diferencia CDP - RP (Liberar Saldo) ": Cdp ?? 0 - Rp ?? 0,
+              "Observación Ruta RP": element.linkRpcdps[countRp].observation,
+              //"RP": Rp,
+
+              "Enero Causado": JanuaryIncurred,
+              "Enero Pagado": JanuaryPaid,
+              "Febrero Causado": FebruaryIncurred,
+              "Febrero Pagado": FebruaryPaid,
+              "Marzo Causado": MarchIncurred,
+              "Marzo Pagado": MarchPaid,
+              "Abril Causado": AprilIncurred,
+              "Abril Pagado": AprilPaid,
+              "Mayo Causado": MayIncurred,
+              "Mayo Pagado": MayPaid,
+              "Junio Causado": JuneIncurred,
+              "Junio Pagado": JunePaid,
+              "Julio Causado": JulyIncurred,
+              "Julio Pagado": JulyPaid,
+              "Agosto Causado": AugustIncurred,
+              "Agosto Pagado": AugustPaid,
+              "Septiembre Causado": SeptemberIncurred,
+              "Septiembre Pagado": SeptemberPaid,
+              "Octubre Causado": OctoberIncurred,
+              "Octubre Pagado": OctoberPaid,
+              "Noviembre Causado": NovemberIncurred,
+              "Noviembre Pagado": NovemberPaid,
+              "Diciembre Causado": DecemberIncurred,
+              "Diciembre Pagado": DecemberPaid,
+
+              "Líder Del Proceso RP": element.linkRpcdps[countRp].budgetRecord.responsibleDocument, // validar RP,
+              "Supervisor RP": element.linkRpcdps[countRp].budgetRecord.supervisorDocument, // validar RP,,
+              "Producto MGA": "Producto MGA",
+              "Actividad MGA": "Actividad MGA",
+              "Actividad detallada MGA": "Actividad detallada MGA",
+              "CPC": "CPC",
+            };
+
+            resultData.push(objectFinaldata);
+            supplierDocuments.push({
+              id: element.linkRpcdps[countRp].budgetRecord.id,
+              supplierId: element.linkRpcdps[countRp].budgetRecord.supplierId,
+              supplierType: element.linkRpcdps[countRp].budgetRecord.supplierType,
+              supplierDocument: element.linkRpcdps[countRp].budgetRecord.contractorDocument!
+            })
           }
-          //console.log({element})
-          //console.log({ element: element?.budgetRoute}) // este punto analizarlo con Sandra frente a la cantidad de rp arr
-
-          Div = element?.budgetRoute?.div;
-          DateDocumentCdp = element?.budgetRoute?.dateCreate.split('T')[0];
-          ContractualObject = element?.budgetAvailability?.contractObject;
-          InitialValue = element?.budgetRoute?.initialBalance;
-          ModifiedAgainstCredit = element?.modifiedIdcCountercredit;
-          ModifiedCredit = element?.bugetAvailability?.icdModifiedCredit;
-          FixedCompleted = element?.bugetAvailability?.icdFixedCompleted;
-          FinalValue = element?.bugetAvailability?.icdFinalValue;
-          ProjectName = getDataProject?.projectName!;
-          Pospre = element?.budgetRoute?.budget?.number;
-          ManagementCenter = element?.budgetRoute?.managementCenter;
-          Funds = parseInt(element?.budgetRoute?.fund?.number);
-          FunctionalAreaSave = getDataProject?.functionalArea!;
-          Project = getDataProject?.projectCode!;
-          NumberSapCdp = element?.linkRpcdps[0]?.id;
-          //TaxIdentification = "0";
-          Cdp = element?.bugetAvailability?.id;
-          Rp = element?.budgetRoute?.id;
-
-          const dateDocument = new Date(DateDocumentCdp);
-          const monthName = format(dateDocument, 'MMMM', { locale: es });
-
-          let supplierName = element.linkRpcdps[0].budgetRecord.supplierType == 'Acreedor'
-            ? element.linkRpcdps[0].budgetRecord.creditor.name
-            : { document: element.linkRpcdps[0].budgetRecord.contractorDocument, supplierType: element.linkRpcdps[0].budgetRecord.supplierType }
-
-          let fiscalIdentification = element.linkRpcdps[0].budgetRecord.supplierType == 'Acreedor'
-            ? element.linkRpcdps[0].budgetRecord.creditor.taxIdentification
-            : { document: element.linkRpcdps[0].budgetRecord.contractorDocument, supplierType: element.linkRpcdps[0].budgetRecord.supplierType }
-
-          let objectFinaldata = {
-            "No": count++,
-            "Mes Expedición CDP": monthName,
-            "Fecha Documento CDP": DateDocumentCdp,
-            "Objeto Contractual CDP": ContractualObject,
-            "Valor Inicial CDP": InitialValue,
-            "Modificado Contracrédito CDP": ModifiedAgainstCredit,
-            "Modificado Crédito CDP": ModifiedCredit,
-            "Fijado Concluido CDP": FixedCompleted,
-            "Valor Final CDP": FinalValue,
-            "Nombre Proyecto CDP": ProjectName,
-            "Pospre CDP": Pospre,
-            "Centro Gestor CDP": ManagementCenter,
-            "Fondo CDP": Funds,
-            "Área Funcional CDP": FunctionalAreaSave,
-            "Proyecto CDP": Project,
-            "Div CDP": Div,
-            "No. CDP Sap": NumberSapCdp,
-
-            "Mes Expedición RP": monthName,
-            "Fecha Documento RP": DateDocumentCdp,
-            "Valor Inicial RP": InitialValue,
-            "Modificado Contracrédito RP": ModifiedAgainstCredit,
-            "Modificado Crédito RP": ModifiedCredit,
-            "Fijado Concluido RP": FixedCompleted,
-            "Valor Final RP": FinalValue,
-            "Nombre Proyecto RP": ProjectName,
-            "Pospre RP": Pospre,
-            "Centro Gestor RP": ManagementCenter,
-            "Fondo RP": Funds,
-            "Área Funcional RP": FunctionalAreaSave,
-            "Proyecto RP": Project,
-            "Div RP": Div,
-            "Identificación Fiscal RP": fiscalIdentification,
-
-            "CDP": Cdp,
-            "Posición RP": element.id,
-            "Fecha Vencimiento RP": element.linkRpcdps[0].budgetRecord.dateValidity, // validar RP
-            "Nombre Contratista RP": supplierName,
-            "Dependencia": (dependenciesList.find(e => e.id == element.linkRpcdps[0].budgetRecord.dependencyId).name), // validar RP,
-            "No. De Contrato RP": element.linkRpcdps[0].budgetRecord.contractNumber, // validar RP
-            "Identificación RP": element.linkRpcdps[0].budgetRecord.id,
-            "No. RP Sap": NumberSapCdp,
-            "Actividad Del Objeto Contractual RP": ContractualObject,
-            "Componente RP": element.linkRpcdps[0].budgetRecord.component.name, // validar RP,
-            "Diferencia CDP - RP (Liberar Saldo) ": Cdp ?? 0 - Rp ?? 0,
-            "Observación Ruta RP": element.linkRpcdps[0].observation,
-            //"RP": Rp,
-
-            "Enero Causado": JanuaryIncurred,
-            "Enero Pagado": JanuaryPaid,
-            "Febrero Causado": FebruaryIncurred,
-            "Febrero Pagado": FebruaryPaid,
-            "Marzo Causado": MarchIncurred,
-            "Marzo Pagado": MarchPaid,
-            "Abril Causado": AprilIncurred,
-            "Abril Pagado": AprilPaid,
-            "Mayo Causado": MayIncurred,
-            "Mayo Pagado": MayPaid,
-            "Junio Causado": JuneIncurred,
-            "Junio Pagado": JunePaid,
-            "Julio Causado": JulyIncurred,
-            "Julio Pagado": JulyPaid,
-            "Agosto Causado": AugustIncurred,
-            "Agosto Pagado": AugustPaid,
-            "Septiembre Causado": SeptemberIncurred,
-            "Septiembre Pagado": SeptemberPaid,
-            "Octubre Causado": OctoberIncurred,
-            "Octubre Pagado": OctoberPaid,
-            "Noviembre Causado": NovemberIncurred,
-            "Noviembre Pagado": NovemberPaid,
-            "Diciembre Causado": DecemberIncurred,
-            "Diciembre Pagado": DecemberPaid,
-
-            "Líder Del Proceso RP": element.linkRpcdps[0].budgetRecord.responsibleDocument, // validar RP,
-            "Supervisor RP": element.linkRpcdps[0].budgetRecord.supervisorDocument, // validar RP,,
-            "Producto MGA": "Producto MGA",
-            "Actividad MGA": "Actividad MGA",
-            "Actividad detallada MGA": "Actividad detallada MGA",
-            "CPC": "CPC",
-          };
-
-          resultData.push(objectFinaldata);
-          supplierDocuments.push({
-            id: element.linkRpcdps[0].budgetRecord.id,
-            supplierId: element.linkRpcdps[0].budgetRecord.supplierId,
-            supplierType: element.linkRpcdps[0].budgetRecord.supplierType,
-            supplierDocument: element.linkRpcdps[0].budgetRecord.contractorDocument!
-          })
         }
       }
     };
+
+    const projectCodeToSearch = resultData.map(e => e['Proyecto RP'])
+
+    let projectFound = await this.strategicDirectionService.getProjectAllDataByFilters({
+      codeList: projectCodeToSearch
+    })
 
     const supplierDocsToSearch = supplierDocuments.map(e => e.supplierDocument)
 
@@ -2519,6 +2566,23 @@ export default class ReportRepository implements IReportRepository {
     let suppliersFound = await payrollService.getContractorsByDocuments({ documentList: supplierDocsToSearch!.filter(e => e != undefined) })
     const resultDataFixed = resultData.map(e => {
       let user = Object(suppliersFound).data.data.filter(usr => usr.numberDocument == e['Nombre Contratista RP'].document);
+
+      // Filtrar las activities donde pospre coincida con un valor específico
+      let projectCode = e['Proyecto CDP'];
+      let filteredActivities = Object(projectFound).data.find(e => e.bpin == projectCode).activities.filter(activity => activity.detailActivities.some(detail => detail.pospre === 110));
+      // Construir el objeto response
+      let response = {
+        "productMGA": filteredActivities[0]?.productMGA || '',
+        "activityMGA": filteredActivities[0]?.activityMGA || '',
+        "clasificatorCPC": filteredActivities[0]?.detailActivities[0]?.clasificatorCPC || '',
+        "detailActivity": filteredActivities[0]?.detailActivities[0]?.detailActivity || ''
+      };
+
+      //el['Producto MGA'] = 
+      e['Producto MGA'] = response.productMGA;
+      e['Actividad MGA'] = response.activityMGA;
+      e['Actividad detallada MGA'] = response.clasificatorCPC;
+      e['CPC'] = response.detailActivity;
 
       e['Identificación Fiscal RP'] = e['Nombre Contratista RP'].supplierType == 'Contratista'
         ? user[0].fiscalIdentification
