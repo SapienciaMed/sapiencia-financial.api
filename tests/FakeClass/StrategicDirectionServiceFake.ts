@@ -13,6 +13,9 @@ import { ApiResponse, IPagingData } from "App/Utils/ApiResponses";
 export class StrategicDirectionServiceFake
   implements IStrategicDirectionService
 {
+  getProjectAllDataByFilters(_filter: IProjectFilters): Promise<ApiResponse<IProject[]>> {
+    throw new Error("Method not implemented.");
+  }
   getProjectInvestmentPaginated(
     _filter: IProjectPaginated
   ): Promise<ApiResponse<IPagingData<IProject>>> {
