@@ -195,7 +195,7 @@ Route.group(() => {
   Route.post(
     "/link/create",
     "FunctionalAreaController.createProjectFunctionalArea"
-  ).middleware("auth:AREA_FUNCIONAL_AGREGAR_PROYECTO");
+  )/* .middleware("auth:AREA_FUNCIONAL_AGREGAR_PROYECTO") */;
   Route.post(
     "/link/update",
     "FunctionalAreaController.updateProjectFunctionalArea"

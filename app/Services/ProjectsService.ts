@@ -5,6 +5,8 @@ import { IFunctionalAreaRepository } from "../Repositories/FunctionalAreaReposit
 import { EResponseCodes } from "App/Constants/ResponseCodesEnum";
 import { IProjectsVinculationFull } from "App/Interfaces/ProjectsVinculationInterfaces";
 import { tranformProjectsVinculation } from "App/Utils/sub-services";
+import { IFunctionalProject } from "App/Interfaces/FunctionalProjectInterfaces";
+import { IFunctionalProjectRepository } from "App/Repositories/FunctionalProjectRepository";
 
 export interface IProjectsService {
   getAllProjects(): Promise<ApiResponse<IProjectsVinculationFull[]>>;
@@ -16,8 +18,9 @@ export interface IProjectsService {
 export default class ProjectsService implements IProjectsService {
   constructor(
     private strategicDirectionService: IStrategicDirectionService,
-    private functionalAreaRepository: IFunctionalAreaRepository
-  ) {}
+    private functionalAreaRepository: IFunctionalAreaRepository,
+    private functionalProjectRepository: IFunctionalProjectRepository
+  ) { }
 
   async getAllProjects(): Promise<ApiResponse<IProjectsVinculationFull[]>> {
     const allProjects =
@@ -39,14 +42,41 @@ export default class ProjectsService implements IProjectsService {
   async getUnrelatedProjects(
     filters: IProjectFilters
   ): Promise<ApiResponse<IPagingData<IProject>>> {
+    
+    const functionProject =  await this.functionalProjectRepository.getFunctionalProjectPaginated({page:1,perPage:100000000})
+    
+    const actualYear = new Date().getFullYear()
+    console.log({actualYear})
+
+    const actualunctionalProject = functionProject.array.find(e=>e.exercise == actualYear)
+
+    console.log({actualunctionalProject})
+
+    //console.log({functionProject:functionProject.array})
     const proyectsIds =
       await this.functionalAreaRepository.getAllInvestmentProjectIds();
 
-    return await this.strategicDirectionService.getProjectInvestmentPaginated({
+    let r = await this.strategicDirectionService.getProjectInvestmentPaginated({
       nameOrCode: filters.id,
       page: filters.page,
       perPage: filters.perPage,
       excludeIds: proyectsIds,
     });
+
+    r.data.meta.total = r.data.meta.total+1; 
+
+    const isLastPage = Object(r).data.meta.current_page === Object(r).data.meta.last_page;
+
+
+    isLastPage && r.data.array.push({
+      assignmentValue: actualunctionalProject?.assignmentValue! ?? 0,
+      plannedValue: actualunctionalProject?.budgetValue! ?? 0,
+      name: actualunctionalProject?.name!,
+      id: actualunctionalProject?.id!,
+      projectCode: actualunctionalProject?.number!,
+      type: 'Funcionamiento'
+    })
+
+    return r;
   }
 }
